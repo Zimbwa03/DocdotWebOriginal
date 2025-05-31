@@ -1,0 +1,114 @@
+Perfect. Let’s start by crafting a **powerful Replit prompt** that will guide your Replit AI agent to **build a full authentication system** for **Docdot** using **Supabase**—with clean design, email + social auth (Google, Apple), and your theme colors.
+
+---
+
+## ✅ 🔥 Replit Prompt for Authentication Page — Docdot WebApp
+
+---
+
+**Title:** `Docdot – Authentication UI with Supabase (Email + Google + Apple)`
+
+---
+
+**Prompt:**
+
+> Build a **responsive and modern authentication system** for the **Docdot medical education web application** using **Supabase for backend services** (auth, user storage, email verification).
+>
+> 🎯 **Core Features**:
+>
+> * Sign Up + Log In using:
+>
+>   * ✅ Email & Password (with email verification)
+>   * ✅ Google Sign In
+>   * ✅ Apple Sign In (use placeholder or library support)
+> * Authentication should be fully managed using **Supabase JS SDK**.
+> * After successful authentication, redirect user to `/home`.
+> * Use `SupabaseProvider` for global auth context and protect routes.
+> * Save and auto-login with Supabase session/token.
+>
+> ---
+>
+> ## 🔑 Supabase Credentials
+>
+> You can set these as secrets or `.env` variables:
+>
+> ```env
+> NEXT_PUBLIC_SUPABASE_URL=https://jncxejkssgvxhdurmvxy.supabase.co  
+> NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+> ```
+>
+> ---
+>
+> ## 🎨 Design System for Docdot
+>
+> Use the following UI theme colors based on Docdot's brand:
+>
+> * **Primary CTA Buttons**: `#3399FF` (Accent Blue)
+> * **Navbar / Sidebar Background**: `#FFFFFF` or `#D1E8F9`
+> * **Text**:
+>
+>   * Body: `#2E2E2E`
+>   * Headings: `#1C1C1C`
+> * **Background**: Light: `#F7FAFC` or `#FFFFFF`
+> * **Hover/Focus States**: Slightly darker blue or shadow with `rgba(102, 204, 255, 0.3)`
+> * **Font**: `Inter` or `Roboto`
+>
+> ---
+>
+> ## 💻 UI Pages
+>
+> ### 1. **Log In Page**
+>
+> * Fields: Email, Password
+> * Login Button (Primary)
+> * "Continue with Google" + "Continue with Apple"
+> * Link to Sign Up
+>
+> ### 2. **Sign Up Page**
+>
+> * Fields: Email, Password, Confirm Password
+> * Sign Up Button (Primary)
+> * Social Login buttons
+> * Auto-sent email verification
+> * Redirect to `/home` after confirmation
+>
+> ### 3. **Home Redirect**
+>
+> * After login, go to `/home` route.
+> * Page should say:
+>   **Welcome to Docdot, \[User's Name]!**
+>
+> ---
+>
+> ## ⚙️ Stack
+>
+> * **Frontend**: React + TailwindCSS (preferred)
+> * **Auth**: Supabase JS SDK (`@supabase/supabase-js`)
+> * **Routing**: React Router (or Next.js if using SSR)
+>
+> ---
+>
+> ## 🧠 Extras
+>
+> * Add Supabase auth listener to auto-redirect logged-in users
+> * Auth context (`useAuth`) for protecting private routes
+> * Save tokens/session securely
+>
+> ---
+>
+> ## ✅ Requirements
+>
+> * Use modern UI components (rounded, shadowed, responsive)
+> * Validate inputs (e.g. password length)
+> * Display error/success messages (e.g. "Email sent")
+> * Include subtle hover/active states using theme
+>
+> ---
+>
+> 📌 Start by setting up Supabase client and a layout with Login + Sign Up tabs.
+
+---
+
+### ⚙️ Want me to generate the actual React + Tailwind auth code?
+
+I can now create the `supabaseClient.js`, the `AuthProvider`, and complete SignUp/Login UI with your styles. Ready to proceed with the code?
