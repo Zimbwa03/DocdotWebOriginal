@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { AuthForm } from "@/components/AuthForm";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { Navigation } from "@/components/Navigation";
 import Home from "@/pages/Home";
 import Quiz from "@/pages/Quiz";
 import Notes from "@/pages/Notes";
@@ -38,31 +39,37 @@ function Router() {
       <Route path="/" component={AuthRedirect} />
       <Route path="/home">
         <ProtectedRoute>
+          <Navigation />
           <Home />
         </ProtectedRoute>
       </Route>
       <Route path="/quiz">
         <ProtectedRoute>
+          <Navigation />
           <Quiz />
         </ProtectedRoute>
       </Route>
       <Route path="/notes">
         <ProtectedRoute>
+          <Navigation />
           <Notes />
         </ProtectedRoute>
       </Route>
       <Route path="/pricing">
         <ProtectedRoute>
+          <Navigation />
           <Pricing />
         </ProtectedRoute>
       </Route>
       <Route path="/study-guide">
         <ProtectedRoute>
+          <Navigation />
           <StudyGuide />
         </ProtectedRoute>
       </Route>
       <Route path="/ai-tools">
         <ProtectedRoute>
+          <Navigation />
           <AiTools />
         </ProtectedRoute>
       </Route>
