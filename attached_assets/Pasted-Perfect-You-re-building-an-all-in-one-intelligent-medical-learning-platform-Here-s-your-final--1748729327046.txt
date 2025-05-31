@@ -1,0 +1,204 @@
+Perfect! You’re building an all-in-one, intelligent, medical learning platform. Here's your **final, master Replit prompt** that includes:
+
+* ✅ Full dashboard and routing
+* ✅ Quiz engine
+* ✅ Topic Notes per category
+* ✅ Study Guide with AI-based Flashcards and Mnemonics
+* ✅ AI Tutoring
+* ✅ Concept Mastery
+* ✅ Study Calendar with Planner
+* ✅ Supabase integration for users, authentication, storage
+* ✅ **Pricing & Billing with access control per tier**
+
+---
+
+## ✅ MASTER REPLIT PROMPT: **Docdot – AI Medical WebApp with Access Tiers & Planner**
+
+---
+
+**Title:** `Docdot – Full AI-Powered Medical Education Platform (Tiers + Notes + Flashcards + Planner)`
+
+---
+
+**Prompt:**
+
+> Build the complete **Docdot** web application for authenticated users, integrating Supabase for authentication, data storage, and role-based access. This app must support **medical quizzes, flashcards, notes, tutoring, and pricing tiers**.
+>
+> Ensure the Replit **Preview loads correctly from `/home`**. If preview fails, automatically correct port binding, Tailwind config, or routing setup.
+
+---
+
+### 🧠 Purpose:
+
+Docdot is an intelligent medical assistant helping students learn anatomy, physiology, histology, and more through:
+
+* Quizzes
+* AI tutoring
+* Concept mastery tracking
+* Topic notes
+* Flashcards + mnemonics
+* Study planning system
+
+---
+
+### 🔐 Supabase Integration
+
+> Supabase handles:
+
+* Auth (email, Google, Apple)
+* User sessions
+* Role-based access: Free, Starter, Premium
+* Topic notes, quiz stats, AI results, planner storage
+
+Set via `.env`:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://jncxejkssgvxhdurmvxy.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+---
+
+## 📄 Pages and Features (Post-Login)
+
+### 🏠 `/home`
+
+* Welcome message
+* XP, Level, Streak display
+* Quick links to: Quiz, Notes, Study Guide, AI Tutor, Flashcards
+
+---
+
+### 🧪 `/quiz`
+
+* Choose Category (e.g. Anatomy)
+* Subcategory → e.g. Head and Neck → Options:
+
+  * ✅ Gross Anatomy
+  * ✅ Histology
+  * ✅ Embryology
+* Each has broken-down topics (stored in Supabase)
+* Show questions → Answer → Explanation → Track XP, badges
+
+---
+
+### 📘 `/notes`
+
+* Browse **Topic Notes** per subject:
+
+  * Categories:
+
+    * Anatomy: \[Head and Neck, Upper Limb, Thorax...]
+    * Physiology: \[Cell, Endocrine, Blood...]
+  * Each has Gross, Histo, Embryo sections
+* Access controlled by pricing tier
+
+---
+
+### 📚 `/study-guide`
+
+* Interactive study planner with calendar
+* Create a schedule for weekly/monthly reading
+* Track what was studied
+* Add reminders
+
+---
+
+### 🧠 `/ai-tools`
+
+* **Flashcard Generator**
+  → AI converts notes/questions into Q\&A format
+* **Mnemonics Assistant**
+  → AI suggests custom mnemonics for tough topics
+* Premium-only features
+
+---
+
+### 🤖 `/ask-ai`
+
+* Chat interface to ask anything (e.g. "What’s the blood supply of the cerebellum?")
+* Optional text-to-speech (ElevenLabs in future)
+
+---
+
+### 🏆 `/leaderboard`
+
+* Show top students by accuracy or XP
+* Filter by category
+
+---
+
+### 💳 `/pricing`
+
+Show full **Feature-Based Pricing Table** with Supabase Role Handling:
+
+| Tier        | Price     | Features                                                                                                        |
+| ----------- | --------- | --------------------------------------------------------------------------------------------------------------- |
+| **Free**    | \$0       | ✅ Limited quizzes<br>✅ View Notes<br>✅ Basic stats<br>🔍 Preview Book Library<br>📚 View Topic Videos           |
+| **Starter** | \$9.99/mo | ✅ Unlimited quizzes<br>✅ Basic analytics<br>📥 Book downloads                                                   |
+| **Premium** | \$20/mo   | ✅ All Starter features<br>🤖 AI Tutoring<br>🧠 Concept Mastery<br>🗓 Study Planner<br>🧠 Flashcards & Mnemonics |
+
+> Users must be upgraded via Stripe or Supabase role. Redirect Free users if they try Premium features.
+
+---
+
+### 💝 `/donate`
+
+* EcoCash: `+263 78 483 7096 – Takudzwa Zimbwa`
+* QR code display
+* Button to confirm donation
+
+---
+
+### 🧩 Advanced AI Logic (in backend or cloud function)
+
+* Adaptive learning style detection (visual, auditory, etc.)
+* Personalized explanations
+* Track time, mastery, accuracy over time
+* Save progress to Supabase
+
+---
+
+### 🎨 UI Theme (Brand Consistency)
+
+* CTA: `#3399FF`
+* Navbar/Sidebar: `#D1E8F9`
+* Background: `#F7FAFC` or `#FFFFFF`
+* Text: `#2E2E2E`, Headers: `#1C1C1C`
+* Hover: `rgba(102, 204, 255, 0.3)`
+* Font: `Inter` or `Roboto`
+* Responsive and mobile-first
+
+---
+
+### ⚙️ Stack
+
+* Frontend: React + TailwindCSS
+* Auth & DB: Supabase
+* API: Flask or FastAPI for quiz logic (optional)
+* Payment: Stripe or Supabase roles
+* Deployment: Replit
+
+---
+
+### 🔥 Additional Requirements:
+
+* All protected routes should check user role and redirect unauthorized users
+* Flashcards and AI tools only for Premium
+* Automatically sync sessions using Supabase’s AuthListener
+* Preview **must work instantly** in Replit preview
+
+---
+
+### ✅ Next Steps (optional help from me):
+
+* I can:
+
+  * Generate Topic Notes schema in Supabase
+  * Create Quiz + Notes + Planner React components
+  * Setup role-based access logic
+  * Build AI Flashcard & Mnemonic generators
+
+---
+
+Would you like me to start generating the first key component (e.g., Quiz page or Notes system)?
