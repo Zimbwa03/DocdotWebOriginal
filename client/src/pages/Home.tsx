@@ -40,7 +40,7 @@ import {
   Image,
   AlertCircle
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import QuizQuestion from '@/components/quizzes/quiz-question';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -48,6 +48,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { supabase } from '@/lib/supabase';
 
 // QuizSection Component
 function QuizSection() {
@@ -64,6 +65,14 @@ function QuizSection() {
   const [selectedSubcategory, setSelectedSubcategory] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [quizType, setQuizType] = useState<'text' | 'cadaver' | 'histology' | 'image'>('text');
+  const [currentCategory, setCurrentCategory] = useState("");
+  const [currentSubcategory, setCurrentSubcategory] = useState("");
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
+  const [score, setScore] = useState(0);
+  const [totalAnswered, setTotalAnswered] = useState(0);
+  const [supabaseQuestions, setSupabaseQuestions] = useState<any[]>([]);
+  const [showQuizResult, setShowQuizResult] = useState(false);
+  const [currentAnswer, setCurrentAnswer] = useState<any>(null);
 
   // Categories and subcategories as specified
   const categories = {
@@ -221,6 +230,81 @@ function QuizSection() {
     setActiveQuiz(quizId);
     setCurrentQuestion(0);
     setSelectedAnswers({});
+  };
+
+  // Fetch questions from Supabase docdot_mcqs table
+  const fetchQuestionsFromSupabase = async (category: string) => {
+    try {
+      setIsLoadingQuestions(true);
+      
+      const { data, error } = await supabase
+        .from('docdot_mcqs')
+        .select('*')
+        .eq('category', category)
+        .order('id');
+
+      if (error) {
+        console.error('Error fetching questions:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load questions from database.",
+          variant: "destructive",
+        });
+        return [];
+      }
+
+      // Randomize the questions
+      const shuffledQuestions = data?.sort(() => Math.random() - 0.5) || [];
+      return shuffledQuestions.slice(0, 20); // Limit to 20 questions
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to connect to database.",
+        variant: "destructive",
+      });
+      return [];
+    } finally {
+      setIsLoadingQuestions(false);
+    }
+  };
+
+  const startCategoryQuiz = async (category: string, subcategory: string) => {
+    setCurrentCategory(category);
+    setCurrentSubcategory(subcategory);
+    setActiveQuiz(999); // Special ID for category quiz
+    setCurrentQuestion(0);
+    setSelectedAnswers({});
+    setScore(0);
+    setTotalAnswered(0);
+
+    // Fetch questions from Supabase
+    const questions = await fetchQuestionsFromSupabase(subcategory);
+    
+    if (questions.length === 0) {
+      toast({
+        title: "No questions found",
+        description: `No questions available for ${subcategory} category.`,
+        variant: "destructive",
+      });
+      setActiveQuiz(null);
+      return;
+    }
+
+    // Transform Supabase data to match our question format
+    const transformedQuestions = questions.map(q => ({
+      id: q.id,
+      question: q.question || q.text || '',
+      options: q.options || [],
+      correctAnswer: q.correct_answer || q.answer || '',
+      explanation: q.explanation || '',
+      ai_explanation: q.ai_explanation || '',
+      reference_data: q.reference_data || '',
+      questionType: 'text' as const,
+      difficulty: q.difficulty || 'medium' as const
+    }));
+
+    setSupabaseQuestions(transformedQuestions);
   };
 
   const generateQuizWithAI = async () => {
@@ -515,47 +599,85 @@ function QuizSection() {
             </Card>
           </div>
 
-          {/* Available Quizzes */}
-          <h4 className="text-xl font-bold mb-4" style={{ color: '#1C1C1C' }}>Available Quizzes</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mockQuizzes
-              .filter(quiz => quizType === 'text' ? quiz.questionType === 'text' : ['cadaver', 'histology', 'image'].includes(quiz.questionType))
-              .map((quiz) => (
-              <Card key={quiz.id} className="hover:shadow-lg transition-shadow cursor-pointer" style={{ backgroundColor: '#F7FAFC' }}>
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-3">
-                    <h5 className="font-semibold text-lg" style={{ color: '#1C1C1C' }}>{quiz.title}</h5>
-                    {quiz.questionType === 'cadaver' && (
-                      <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-medium">
-                        Cadaver
-                      </span>
-                    )}
-                    {quiz.questionType === 'histology' && (
-                      <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs font-medium">
-                        Histology
-                      </span>
-                    )}
+          {/* Categories and Subcategories Display */}
+          {quizType === 'text' ? (
+            <div className="space-y-6">
+              <h4 className="text-xl font-bold mb-4" style={{ color: '#1C1C1C' }}>Select Category</h4>
+              
+              {Object.entries(categories).map(([categoryName, subcategories]) => (
+                <div key={categoryName} className="space-y-4">
+                  <h5 className="text-lg font-semibold" style={{ color: '#1C1C1C' }}>{categoryName}</h5>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {subcategories.map((subcategory) => (
+                      <Card 
+                        key={subcategory} 
+                        className="hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-blue-300" 
+                        style={{ backgroundColor: '#F7FAFC' }}
+                        onClick={() => startCategoryQuiz(categoryName, subcategory)}
+                      >
+                        <CardContent className="p-4">
+                          <div className="text-center">
+                            <h6 className="font-medium" style={{ color: '#1C1C1C' }}>{subcategory}</h6>
+                            <p className="text-sm mt-2" style={{ color: '#2E2E2E' }}>
+                              {categoryName} Quiz
+                            </p>
+                            <div className="mt-3">
+                              <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                                MCQ Questions
+                              </span>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
-                  <p className="text-sm mb-4" style={{ color: '#2E2E2E' }}>{quiz.description}</p>
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="text-xs font-medium px-2 py-1 rounded-full bg-gray-100 text-gray-800">
-                      {quiz.questionCount} questions
-                    </span>
-                    <span className="text-xs font-medium px-2 py-1 rounded-full bg-gray-100 text-gray-800 capitalize">
-                      {quiz.difficulty}
-                    </span>
-                  </div>
-                  <Button 
-                    className="w-full"
-                    style={{ backgroundColor: '#3399FF' }}
-                    onClick={() => startQuiz(quiz.id)}
-                  >
-                    Start Quiz
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div>
+              <h4 className="text-xl font-bold mb-4" style={{ color: '#1C1C1C' }}>Available {quizType.charAt(0).toUpperCase() + quizType.slice(1)} Quizzes</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {mockQuizzes
+                  .filter(quiz => ['cadaver', 'histology', 'image'].includes(quiz.questionType))
+                  .map((quiz) => (
+                  <Card key={quiz.id} className="hover:shadow-lg transition-shadow cursor-pointer" style={{ backgroundColor: '#F7FAFC' }}>
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-3">
+                        <h5 className="font-semibold text-lg" style={{ color: '#1C1C1C' }}>{quiz.title}</h5>
+                        {quiz.questionType === 'cadaver' && (
+                          <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-medium">
+                            Cadaver
+                          </span>
+                        )}
+                        {quiz.questionType === 'histology' && (
+                          <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs font-medium">
+                            Histology
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm mb-4" style={{ color: '#2E2E2E' }}>{quiz.description}</p>
+                      <div className="flex justify-between items-center mb-4">
+                        <span className="text-xs font-medium px-2 py-1 rounded-full bg-gray-100 text-gray-800">
+                          {quiz.questionCount} questions
+                        </span>
+                        <span className="text-xs font-medium px-2 py-1 rounded-full bg-gray-100 text-gray-800 capitalize">
+                          {quiz.difficulty}
+                        </span>
+                      </div>
+                      <Button 
+                        className="w-full"
+                        style={{ backgroundColor: '#3399FF' }}
+                        onClick={() => startQuiz(quiz.id)}
+                      >
+                        Start Quiz
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>
