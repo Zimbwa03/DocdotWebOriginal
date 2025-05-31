@@ -7,6 +7,11 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { AuthForm } from "@/components/AuthForm";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Home from "@/pages/Home";
+import Quiz from "@/pages/Quiz";
+import Notes from "@/pages/Notes";
+import Pricing from "@/pages/Pricing";
+import StudyGuide from "@/pages/StudyGuide";
+import AiTools from "@/pages/AiTools";
 import NotFound from "@/pages/not-found";
 
 function AuthRedirect() {
@@ -34,6 +39,31 @@ function Router() {
       <Route path="/home">
         <ProtectedRoute>
           <Home />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/quiz">
+        <ProtectedRoute>
+          <Quiz />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/notes">
+        <ProtectedRoute>
+          <Notes />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/pricing">
+        <ProtectedRoute>
+          <Pricing />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/study-guide">
+        <ProtectedRoute>
+          <StudyGuide />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/ai-tools">
+        <ProtectedRoute>
+          <AiTools />
         </ProtectedRoute>
       </Route>
       <Route component={NotFound} />
