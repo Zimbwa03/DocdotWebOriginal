@@ -1,30 +1,32 @@
-
-import { useAuth } from '@/contexts/AuthContext'
-import { Navigate } from 'react-router-dom'
-import { Skeleton } from '@/components/ui/skeleton'
+import { useAuth } from '@/contexts/AuthContext';
+import { useEffect } from 'react';
+import { useLocation } from 'wouter';
 
 interface ProtectedRouteProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
-export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, loading } = useAuth()
+export function ProtectedRoute({ children }: ProtectedRouteProps) {
+  const { user, loading } = useAuth();
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      setLocation('/');
+    }
+  }, [user, loading, setLocation]);
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="space-y-4">
-          <Skeleton className="h-12 w-64" />
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-8 w-56" />
-        </div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-docdot-blue"></div>
       </div>
-    )
+    );
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />
+    return null;
   }
 
-  return <>{children}</>
+  return <>{children}</>;
 }
