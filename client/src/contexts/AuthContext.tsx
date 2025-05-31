@@ -54,45 +54,67 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [toast]);
 
   const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/home`
-      }
-    });
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/home`
+        }
+      });
 
-    if (error) {
+      if (error) {
+        console.error('Supabase sign up error:', error);
+        toast({
+          variant: "destructive",
+          title: "Sign up failed",
+          description: error.message || "Failed to connect to authentication service",
+        });
+      } else {
+        toast({
+          title: "Check your email",
+          description: "We've sent you a verification link to complete your registration.",
+        });
+      }
+
+      return { error };
+    } catch (networkError) {
+      console.error('Network error during sign up:', networkError);
       toast({
         variant: "destructive",
-        title: "Sign up failed",
-        description: error.message,
+        title: "Connection failed",
+        description: "Unable to connect to authentication service. Please check your internet connection.",
       });
-    } else {
-      toast({
-        title: "Check your email",
-        description: "We've sent you a verification link to complete your registration.",
-      });
+      return { error: networkError as any };
     }
-
-    return { error };
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (error) {
+      if (error) {
+        console.error('Supabase sign in error:', error);
+        toast({
+          variant: "destructive",
+          title: "Sign in failed",
+          description: error.message || "Failed to connect to authentication service",
+        });
+      }
+
+      return { error };
+    } catch (networkError) {
+      console.error('Network error during sign in:', networkError);
       toast({
         variant: "destructive",
-        title: "Sign in failed",
-        description: error.message,
+        title: "Connection failed",
+        description: "Unable to connect to authentication service. Please check your internet connection.",
       });
+      return { error: networkError as any };
     }
-
-    return { error };
   };
 
   const signInWithOAuth = async (provider: 'google' | 'apple') => {
