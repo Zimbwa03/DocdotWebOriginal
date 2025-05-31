@@ -69,16 +69,16 @@ export function AuthForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-docdot-bg">
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: '#FFFFFF' }}>
       <div className="max-w-md w-full space-y-8">
         
         {/* Header */}
         <div className="text-center">
-          <div className="mx-auto h-16 w-16 bg-docdot-blue rounded-full flex items-center justify-center mb-6">
+          <div className="mx-auto h-16 w-16 rounded-full flex items-center justify-center mb-6" style={{ backgroundColor: '#3399FF' }}>
             <Stethoscope className="text-white text-2xl" size={24} />
           </div>
-          <h1 className="text-3xl font-bold text-docdot-heading mb-2">Docdot</h1>
-          <p className="text-gray-600 text-sm">Your Medical Education Platform</p>
+          <h1 className="text-3xl font-bold mb-2" style={{ color: '#1C1C1C' }}>Docdot</h1>
+          <p className="text-sm" style={{ color: '#2E2E2E' }}>Your Medical Education Platform</p>
         </div>
 
         {/* Auth Tabs */}
@@ -87,21 +87,31 @@ export function AuthForm() {
           <div className="flex border-b border-gray-200">
             <button
               onClick={() => setIsLogin(true)}
-              className={`flex-1 py-4 px-6 text-center font-medium transition-all duration-200 ${
+              className={`flex-1 py-4 px-6 text-center font-medium transition-all duration-200 border-b-2 ${
                 isLogin
-                  ? 'text-docdot-blue border-b-2 border-docdot-blue bg-docdot-blue-light bg-opacity-30'
-                  : 'text-gray-500 border-b-2 border-transparent hover:text-docdot-blue'
+                  ? 'border-b-2 bg-opacity-30'
+                  : 'text-gray-500 border-transparent hover:text-blue-600'
               }`}
+              style={isLogin ? { 
+                color: '#3399FF', 
+                borderColor: '#3399FF', 
+                backgroundColor: '#D1E8F9' 
+              } : {}}
             >
               Sign In
             </button>
             <button
               onClick={() => setIsLogin(false)}
-              className={`flex-1 py-4 px-6 text-center font-medium transition-all duration-200 ${
+              className={`flex-1 py-4 px-6 text-center font-medium transition-all duration-200 border-b-2 ${
                 !isLogin
-                  ? 'text-docdot-blue border-b-2 border-docdot-blue bg-docdot-blue-light bg-opacity-30'
-                  : 'text-gray-500 border-b-2 border-transparent hover:text-docdot-blue'
+                  ? 'border-b-2 bg-opacity-30'
+                  : 'text-gray-500 border-transparent hover:text-blue-600'
               }`}
+              style={!isLogin ? { 
+                color: '#3399FF', 
+                borderColor: '#3399FF', 
+                backgroundColor: '#D1E8F9' 
+              } : {}}
             >
               Sign Up
             </button>
@@ -111,7 +121,7 @@ export function AuthForm() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Email Field */}
               <div>
-                <Label htmlFor="email" className="block text-sm font-medium text-docdot-heading mb-2">
+                <Label htmlFor="email" className="block text-sm font-medium mb-2" style={{ color: '#1C1C1C' }}>
                   Email Address
                 </Label>
                 <Input
@@ -121,7 +131,11 @@ export function AuthForm() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docdot-blue focus:border-docdot-blue transition-colors duration-200 text-docdot-text"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 transition-colors duration-200"
+                  style={{ 
+                    color: '#2E2E2E',
+                    borderColor: '#E5E7EB'
+                  }}
                   placeholder="Enter your email"
                 />
               </div>
@@ -234,7 +248,8 @@ export function AuthForm() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-docdot-blue text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-docdot-blue focus:ring-offset-2 transition-colors duration-200 flex items-center justify-center"
+                className="w-full text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 flex items-center justify-center"
+                style={{ backgroundColor: '#3399FF' }}
               >
                 {loading ? (
                   <>
