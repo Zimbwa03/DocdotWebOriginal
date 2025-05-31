@@ -36,7 +36,9 @@ import {
   Heart,
   Activity,
   Plus,
-  Bell
+  Bell,
+  Image,
+  AlertCircle
 } from 'lucide-react';
 import { useState } from 'react';
 import QuizQuestion from '@/components/quizzes/quiz-question';
@@ -46,7 +48,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Image, AlertCircle } from 'lucide-react';
 
 // QuizSection Component
 function QuizSection() {
@@ -60,42 +61,97 @@ function QuizSection() {
   const [aiQuestionCount, setAiQuestionCount] = useState("5");
   const [aiDifficulty, setAiDifficulty] = useState("medium");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedSubcategory, setSelectedSubcategory] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [quizType, setQuizType] = useState<'text' | 'cadaver' | 'histology' | 'image'>('text');
 
-  // Mock data for demonstration
+  // Categories and subcategories as specified
+  const categories = {
+    "Anatomy": [
+      "Head and Neck",
+      "Upper Limb", 
+      "Thorax",
+      "Lower Limb",
+      "Pelvis and Perineum",
+      "Neuroanatomy",
+      "Abdomen"
+    ],
+    "Physiology": [
+      "Cell",
+      "Nerve and Muscle",
+      "Blood",
+      "Endocrine", 
+      "Reproductive",
+      "Gastrointestinal Tract",
+      "Renal",
+      "Cardiovascular System",
+      "Respiration",
+      "Medical Genetics",
+      "Neurophysiology"
+    ]
+  };
+
+  // Sample quizzes for demonstration
   const mockQuizzes = [
     {
       id: 1,
-      title: "Anatomy Cadaver Quiz",
-      description: "Identify structures on cadaver specimens",
+      title: "Head and Neck Cadaver Quiz",
+      description: "Identify anatomical structures in head and neck cadaver specimens",
       questionCount: 15,
       difficulty: "medium",
-      questionType: "cadaver"
+      questionType: "cadaver" as const,
+      category: "Anatomy",
+      subcategory: "Head and Neck"
     },
     {
       id: 2,
-      title: "Histology Slide Quiz",
-      description: "Identify tissues and cellular structures under microscope",
+      title: "Thorax Histology Quiz", 
+      description: "Identify tissues and cellular structures in thoracic specimens",
       questionCount: 20,
-      difficulty: "hard", 
-      questionType: "histology"
+      difficulty: "hard" as const,
+      questionType: "histology" as const,
+      category: "Anatomy",
+      subcategory: "Thorax"
     },
     {
       id: 3,
-      title: "Cardiology Fundamentals",
-      description: "Basic cardiovascular anatomy and physiology",
+      title: "Cardiovascular System Quiz",
+      description: "Comprehensive cardiovascular physiology assessment", 
       questionCount: 25,
-      difficulty: "easy",
-      questionType: "text"
+      difficulty: "easy" as const,
+      questionType: "text" as const,
+      category: "Physiology",
+      subcategory: "Cardiovascular System"
     },
     {
       id: 4,
-      title: "Respiratory System",
-      description: "Comprehensive respiratory system quiz",
+      title: "Respiratory Physiology Quiz",
+      description: "Test your knowledge of respiratory system functions",
       questionCount: 18,
-      difficulty: "medium",
-      questionType: "text"
+      difficulty: "medium" as const,
+      questionType: "text" as const,
+      category: "Physiology", 
+      subcategory: "Respiration"
+    },
+    {
+      id: 5,
+      title: "Upper Limb Anatomy Quiz",
+      description: "Identify muscles, bones, and nerves of the upper limb",
+      questionCount: 22,
+      difficulty: "medium" as const,
+      questionType: "cadaver" as const,
+      category: "Anatomy",
+      subcategory: "Upper Limb"
+    },
+    {
+      id: 6,
+      title: "Neuroanatomy Histology Quiz",
+      description: "Microscopic examination of nervous system tissues",
+      questionCount: 16,
+      difficulty: "hard" as const,
+      questionType: "histology" as const,
+      category: "Anatomy",
+      subcategory: "Neuroanatomy"
     }
   ];
 
@@ -107,8 +163,8 @@ function QuizSection() {
       correctAnswer: "Aortic arch",
       explanation: "The aortic arch is the curved portion of the aorta that gives rise to the major vessels supplying the head, neck, and upper extremities.",
       imageUrl: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&h=400&fit=crop",
-      questionType: "cadaver",
-      difficulty: "medium"
+      questionType: "cadaver" as const,
+      difficulty: "medium" as const
     },
     {
       id: 2,
@@ -117,16 +173,9 @@ function QuizSection() {
       correctAnswer: "Stratified squamous epithelium",
       explanation: "Stratified squamous epithelium consists of multiple layers of flattened cells and is found in areas subject to wear and tear, such as the skin and oral cavity.",
       imageUrl: "https://images.unsplash.com/photo-1576086213369-97a306d36557?w=600&h=400&fit=crop",
-      questionType: "histology",
-      difficulty: "hard"
+      questionType: "histology" as const,
+      difficulty: "hard" as const
     }
-  ];
-
-  const mockCategories = [
-    { id: 1, name: "Anatomy" },
-    { id: 2, name: "Physiology" },
-    { id: 3, name: "Pathology" },
-    { id: 4, name: "Pharmacology" }
   ];
 
   const handleAnswerSelect = (questionId: number, answer: string) => {
@@ -193,16 +242,27 @@ function QuizSection() {
       return;
     }
 
+    if (!selectedSubcategory) {
+      toast({
+        title: "Subcategory required", 
+        description: "Please select a subcategory for the quiz.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsGenerating(true);
     
     // Simulate AI generation
     setTimeout(() => {
       toast({
         title: "Quiz generated",
-        description: `Successfully generated a quiz about ${aiTopic}.`,
+        description: `Successfully generated a ${selectedCategory} - ${selectedSubcategory} quiz about ${aiTopic}.`,
       });
       setAiDialogOpen(false);
       setAiTopic("");
+      setSelectedCategory("");
+      setSelectedSubcategory("");
       setIsGenerating(false);
     }, 2000);
   };
@@ -238,19 +298,40 @@ function QuizSection() {
               </div>
               <div>
                 <Label htmlFor="category">Category</Label>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <Select value={selectedCategory} onValueChange={(value) => {
+                  setSelectedCategory(value);
+                  setSelectedSubcategory(""); // Reset subcategory when category changes
+                }}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {mockCategories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id.toString()}>
-                        {cat.name}
+                    {Object.keys(categories).map((categoryName) => (
+                      <SelectItem key={categoryName} value={categoryName}>
+                        {categoryName}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
+              
+              {selectedCategory && (
+                <div>
+                  <Label htmlFor="subcategory">Subcategory</Label>
+                  <Select value={selectedSubcategory} onValueChange={setSelectedSubcategory}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select subcategory" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories[selectedCategory as keyof typeof categories]?.map((subcategoryName) => (
+                        <SelectItem key={subcategoryName} value={subcategoryName}>
+                          {subcategoryName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div>
                 <Label htmlFor="count">Number of Questions</Label>
                 <Select value={aiQuestionCount} onValueChange={setAiQuestionCount}>
