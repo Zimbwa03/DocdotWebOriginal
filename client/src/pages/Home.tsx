@@ -39,6 +39,447 @@ import {
   Bell
 } from 'lucide-react';
 import { useState } from 'react';
+import QuizQuestion from '@/components/quizzes/quiz-question';
+import { useToast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Image, AlertCircle } from 'lucide-react';
+
+// QuizSection Component
+function QuizSection() {
+  const { toast } = useToast();
+  const [activeQuiz, setActiveQuiz] = useState<number | null>(null);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [timeRemaining, setTimeRemaining] = useState("14:32");
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
+  const [aiDialogOpen, setAiDialogOpen] = useState(false);
+  const [aiTopic, setAiTopic] = useState("");
+  const [aiQuestionCount, setAiQuestionCount] = useState("5");
+  const [aiDifficulty, setAiDifficulty] = useState("medium");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [quizType, setQuizType] = useState<'text' | 'cadaver' | 'histology' | 'image'>('text');
+
+  // Mock data for demonstration
+  const mockQuizzes = [
+    {
+      id: 1,
+      title: "Anatomy Cadaver Quiz",
+      description: "Identify structures on cadaver specimens",
+      questionCount: 15,
+      difficulty: "medium",
+      questionType: "cadaver"
+    },
+    {
+      id: 2,
+      title: "Histology Slide Quiz",
+      description: "Identify tissues and cellular structures under microscope",
+      questionCount: 20,
+      difficulty: "hard", 
+      questionType: "histology"
+    },
+    {
+      id: 3,
+      title: "Cardiology Fundamentals",
+      description: "Basic cardiovascular anatomy and physiology",
+      questionCount: 25,
+      difficulty: "easy",
+      questionType: "text"
+    },
+    {
+      id: 4,
+      title: "Respiratory System",
+      description: "Comprehensive respiratory system quiz",
+      questionCount: 18,
+      difficulty: "medium",
+      questionType: "text"
+    }
+  ];
+
+  const mockQuestions = [
+    {
+      id: 1,
+      question: "Identify the structure pointed to by the arrow in this cadaver specimen:",
+      options: ["Left ventricle", "Right atrium", "Aortic arch", "Pulmonary trunk"],
+      correctAnswer: "Aortic arch",
+      explanation: "The aortic arch is the curved portion of the aorta that gives rise to the major vessels supplying the head, neck, and upper extremities.",
+      imageUrl: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&h=400&fit=crop",
+      questionType: "cadaver",
+      difficulty: "medium"
+    },
+    {
+      id: 2,
+      question: "What type of tissue is shown in this histological section?",
+      options: ["Simple squamous epithelium", "Stratified squamous epithelium", "Simple columnar epithelium", "Pseudostratified columnar epithelium"],
+      correctAnswer: "Stratified squamous epithelium",
+      explanation: "Stratified squamous epithelium consists of multiple layers of flattened cells and is found in areas subject to wear and tear, such as the skin and oral cavity.",
+      imageUrl: "https://images.unsplash.com/photo-1576086213369-97a306d36557?w=600&h=400&fit=crop",
+      questionType: "histology",
+      difficulty: "hard"
+    }
+  ];
+
+  const mockCategories = [
+    { id: 1, name: "Anatomy" },
+    { id: 2, name: "Physiology" },
+    { id: 3, name: "Pathology" },
+    { id: 4, name: "Pharmacology" }
+  ];
+
+  const handleAnswerSelect = (questionId: number, answer: string) => {
+    setSelectedAnswers(prev => ({
+      ...prev,
+      [questionId]: answer
+    }));
+  };
+
+  const handleNextQuestion = () => {
+    if (mockQuestions && currentQuestion < mockQuestions.length - 1) {
+      setCurrentQuestion(prev => prev + 1);
+    }
+  };
+
+  const handlePreviousQuestion = () => {
+    if (currentQuestion > 0) {
+      setCurrentQuestion(prev => prev - 1);
+    }
+  };
+
+  const handleEndQuiz = async () => {
+    if (!activeQuiz || !mockQuestions) return;
+    
+    let score = 0;
+    mockQuestions.forEach(q => {
+      if (selectedAnswers[q.id] === q.correctAnswer) {
+        score++;
+      }
+    });
+    
+    toast({
+      title: "Quiz Completed!",
+      description: `You scored ${score}/${mockQuestions.length} (${Math.round((score / mockQuestions.length) * 100)}%)`,
+    });
+    
+    setActiveQuiz(null);
+    setCurrentQuestion(0);
+    setSelectedAnswers({});
+  };
+
+  const startQuiz = (quizId: number) => {
+    setActiveQuiz(quizId);
+    setCurrentQuestion(0);
+    setSelectedAnswers({});
+  };
+
+  const generateQuizWithAI = async () => {
+    if (!aiTopic.trim()) {
+      toast({
+        title: "Topic required",
+        description: "Please enter a topic for generating quiz questions.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!selectedCategory) {
+      toast({
+        title: "Category required", 
+        description: "Please select a category for the quiz.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGenerating(true);
+    
+    // Simulate AI generation
+    setTimeout(() => {
+      toast({
+        title: "Quiz generated",
+        description: `Successfully generated a quiz about ${aiTopic}.`,
+      });
+      setAiDialogOpen(false);
+      setAiTopic("");
+      setIsGenerating(false);
+    }, 2000);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-2xl font-semibold" style={{ color: '#1C1C1C' }}>Medical Quizzes</h3>
+          <p className="text-lg mt-2" style={{ color: '#2E2E2E' }}>Test your knowledge with comprehensive medical quizzes</p>
+        </div>
+        
+        <Dialog open={aiDialogOpen} onOpenChange={setAiDialogOpen}>
+          <DialogTrigger asChild>
+            <Button style={{ backgroundColor: '#3399FF' }}>
+              <Plus size={20} className="mr-2" />
+              Generate AI Quiz
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Generate Quiz with AI</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="topic">Topic</Label>
+                <Input
+                  id="topic"
+                  placeholder="e.g., Cardiovascular System"
+                  value={aiTopic}
+                  onChange={(e) => setAiTopic(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="category">Category</Label>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {mockCategories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id.toString()}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="count">Number of Questions</Label>
+                <Select value={aiQuestionCount} onValueChange={setAiQuestionCount}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">5 questions</SelectItem>
+                    <SelectItem value="10">10 questions</SelectItem>
+                    <SelectItem value="15">15 questions</SelectItem>
+                    <SelectItem value="20">20 questions</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="difficulty">Difficulty</Label>
+                <Select value={aiDifficulty} onValueChange={setAiDifficulty}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="easy">Easy</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="hard">Hard</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button 
+                onClick={generateQuizWithAI}
+                disabled={isGenerating}
+                className="w-full"
+                style={{ backgroundColor: '#3399FF' }}
+              >
+                {isGenerating ? "Generating..." : "Generate Quiz"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {activeQuiz && mockQuestions ? (
+        <Card style={{ backgroundColor: '#F7FAFC' }}>
+          <div className="p-6 border-b">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-medium" style={{ color: '#1C1C1C' }}>
+                {mockQuizzes?.find(q => q.id === activeQuiz)?.title || 'Quiz'}
+              </h3>
+              <span className="px-3 py-1 rounded-full text-sm font-medium" style={{ backgroundColor: '#D1E8F9', color: '#3399FF' }}>
+                Question {currentQuestion + 1} of {mockQuestions.length}
+              </span>
+            </div>
+          </div>
+          
+          <div className="p-6">
+            <QuizQuestion 
+              question={mockQuestions[currentQuestion]}
+              selectedAnswer={selectedAnswers[mockQuestions[currentQuestion].id] || ''}
+              onAnswerSelect={(answer) => handleAnswerSelect(mockQuestions[currentQuestion].id, answer)}
+            />
+            
+            <div className="flex justify-between mt-6">
+              <Button 
+                variant="outline" 
+                onClick={handlePreviousQuestion}
+                disabled={currentQuestion === 0}
+              >
+                Previous
+              </Button>
+              <Button 
+                onClick={handleNextQuestion}
+                disabled={currentQuestion === mockQuestions.length - 1}
+                style={{ backgroundColor: '#3399FF' }}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+          
+          <div className="p-6 border-t" style={{ backgroundColor: '#F7FAFC' }}>
+            <div className="flex justify-between items-center">
+              <div>
+                <div className="text-sm" style={{ color: '#2E2E2E' }}>Time remaining</div>
+                <div className="text-lg font-medium" style={{ color: '#1C1C1C' }}>{timeRemaining}</div>
+              </div>
+              <Button 
+                variant="secondary" 
+                onClick={handleEndQuiz}
+              >
+                End Quiz
+              </Button>
+            </div>
+          </div>
+        </Card>
+      ) : (
+        <>
+          {/* Quiz Type Selector */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <Card className={`cursor-pointer border-2 transition-all ${quizType === 'text' ? 'border-blue-500' : 'border-gray-200'}`} 
+                  onClick={() => setQuizType('text')}>
+              <CardContent className="p-4 text-center">
+                <FileText className="mx-auto mb-2" style={{ color: '#3399FF' }} size={24} />
+                <div className="font-medium" style={{ color: '#1C1C1C' }}>Text-Based</div>
+                <div className="text-sm" style={{ color: '#2E2E2E' }}>Traditional MCQs</div>
+              </CardContent>
+            </Card>
+            
+            <Card className={`cursor-pointer border-2 transition-all ${quizType === 'cadaver' ? 'border-blue-500' : 'border-gray-200'}`}
+                  onClick={() => setQuizType('cadaver')}>
+              <CardContent className="p-4 text-center">
+                <Heart className="mx-auto mb-2" style={{ color: '#3399FF' }} size={24} />
+                <div className="font-medium" style={{ color: '#1C1C1C' }}>Cadaver</div>
+                <div className="text-sm" style={{ color: '#2E2E2E' }}>Anatomy specimens</div>
+              </CardContent>
+            </Card>
+            
+            <Card className={`cursor-pointer border-2 transition-all ${quizType === 'histology' ? 'border-blue-500' : 'border-gray-200'}`}
+                  onClick={() => setQuizType('histology')}>
+              <CardContent className="p-4 text-center">
+                <Activity className="mx-auto mb-2" style={{ color: '#3399FF' }} size={24} />
+                <div className="font-medium" style={{ color: '#1C1C1C' }}>Histology</div>
+                <div className="text-sm" style={{ color: '#2E2E2E' }}>Microscope slides</div>
+              </CardContent>
+            </Card>
+            
+            <Card className={`cursor-pointer border-2 transition-all ${quizType === 'image' ? 'border-blue-500' : 'border-gray-200'}`}
+                  onClick={() => setQuizType('image')}>
+              <CardContent className="p-4 text-center">
+                <Image className="mx-auto mb-2" style={{ color: '#3399FF' }} size={24} />
+                <div className="font-medium" style={{ color: '#1C1C1C' }}>Image-Based</div>
+                <div className="text-sm" style={{ color: '#2E2E2E' }}>Medical imaging</div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Statistics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <Card style={{ backgroundColor: '#F7FAFC' }}>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-3 rounded-lg" style={{ backgroundColor: '#D1E8F9' }}>
+                    <FileText style={{ color: '#3399FF' }} size={24} />
+                  </div>
+                  <div className="ml-4">
+                    <div className="text-sm" style={{ color: '#2E2E2E' }}>Topic Quizzes</div>
+                    <div className="text-2xl font-bold" style={{ color: '#1C1C1C' }}>
+                      {mockQuizzes.filter(q => q.questionType === 'text').length}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card style={{ backgroundColor: '#F7FAFC' }}>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-3 rounded-lg" style={{ backgroundColor: '#D1E8F9' }}>
+                    <Image style={{ color: '#3399FF' }} size={24} />
+                  </div>
+                  <div className="ml-4">
+                    <div className="text-sm" style={{ color: '#2E2E2E' }}>Image Quizzes</div>
+                    <div className="text-2xl font-bold" style={{ color: '#1C1C1C' }}>
+                      {mockQuizzes.filter(q => ['cadaver', 'histology', 'image'].includes(q.questionType)).length}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card style={{ backgroundColor: '#F7FAFC' }}>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-3 rounded-lg" style={{ backgroundColor: '#D1E8F9' }}>
+                    <Clock style={{ color: '#3399FF' }} size={24} />
+                  </div>
+                  <div className="ml-4">
+                    <div className="text-sm" style={{ color: '#2E2E2E' }}>Timed Exams</div>
+                    <div className="text-2xl font-bold" style={{ color: '#1C1C1C' }}>12</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Available Quizzes */}
+          <h4 className="text-xl font-bold mb-4" style={{ color: '#1C1C1C' }}>Available Quizzes</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {mockQuizzes
+              .filter(quiz => quizType === 'text' ? quiz.questionType === 'text' : ['cadaver', 'histology', 'image'].includes(quiz.questionType))
+              .map((quiz) => (
+              <Card key={quiz.id} className="hover:shadow-lg transition-shadow cursor-pointer" style={{ backgroundColor: '#F7FAFC' }}>
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between mb-3">
+                    <h5 className="font-semibold text-lg" style={{ color: '#1C1C1C' }}>{quiz.title}</h5>
+                    {quiz.questionType === 'cadaver' && (
+                      <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-medium">
+                        Cadaver
+                      </span>
+                    )}
+                    {quiz.questionType === 'histology' && (
+                      <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs font-medium">
+                        Histology
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm mb-4" style={{ color: '#2E2E2E' }}>{quiz.description}</p>
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-xs font-medium px-2 py-1 rounded-full bg-gray-100 text-gray-800">
+                      {quiz.questionCount} questions
+                    </span>
+                    <span className="text-xs font-medium px-2 py-1 rounded-full bg-gray-100 text-gray-800 capitalize">
+                      {quiz.difficulty}
+                    </span>
+                  </div>
+                  <Button 
+                    className="w-full"
+                    style={{ backgroundColor: '#3399FF' }}
+                    onClick={() => startQuiz(quiz.id)}
+                  >
+                    Start Quiz
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 export default function Home() {
   const { user, signOut } = useAuth();
@@ -451,89 +892,7 @@ export default function Home() {
             )}
 
             {activeSection === 'quiz' && (
-              <div className="space-y-6">
-                <h3 className="text-2xl font-semibold" style={{ color: '#1C1C1C' }}>Medical Quizzes</h3>
-                <p className="text-lg" style={{ color: '#2E2E2E' }}>Choose a category to start your quiz</p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="p-6 rounded-xl border" style={{ backgroundColor: '#F7FAFC' }}>
-                    <div className="flex items-center space-x-3 mb-4">
-                      <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#D1E8F9' }}>
-                        <Heart style={{ color: '#3399FF' }} size={24} />
-                      </div>
-                      <h4 className="font-semibold text-lg" style={{ color: '#1C1C1C' }}>Anatomy</h4>
-                    </div>
-                    <p className="text-sm mb-4" style={{ color: '#2E2E2E' }}>Test your knowledge of human anatomy</p>
-                    
-                    <div className="space-y-2 mb-4">
-                      <div className="text-sm font-medium" style={{ color: '#1C1C1C' }}>Available Topics:</div>
-                      <div className="flex flex-wrap gap-2">
-                        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">Head and Neck</span>
-                        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">Upper Limb</span>
-                        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">Thorax</span>
-                        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">Abdomen</span>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Button className="w-full" style={{ backgroundColor: '#3399FF' }}>
-                        Gross Anatomy Quiz
-                      </Button>
-                      <Button variant="outline" className="w-full">
-                        Histology Quiz
-                      </Button>
-                      <Button variant="outline" className="w-full">
-                        Embryology Quiz
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="p-6 rounded-xl border" style={{ backgroundColor: '#F7FAFC' }}>
-                    <div className="flex items-center space-x-3 mb-4">
-                      <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#D1E8F9' }}>
-                        <Activity style={{ color: '#3399FF' }} size={24} />
-                      </div>
-                      <h4 className="font-semibold text-lg" style={{ color: '#1C1C1C' }}>Physiology</h4>
-                    </div>
-                    <p className="text-sm mb-4" style={{ color: '#2E2E2E' }}>Body systems and functions</p>
-                    
-                    <div className="space-y-2 mb-4">
-                      <div className="text-sm font-medium" style={{ color: '#1C1C1C' }}>Available Topics:</div>
-                      <div className="flex flex-wrap gap-2">
-                        <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Cell Biology</span>
-                        <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Endocrine</span>
-                        <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Blood</span>
-                        <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Respiratory</span>
-                      </div>
-                    </div>
-                    
-                    <Button className="w-full" style={{ backgroundColor: '#3399FF' }}>
-                      Start Physiology Quiz
-                    </Button>
-                  </div>
-                </div>
-                
-                <div className="mt-8">
-                  <h4 className="text-lg font-semibold mb-4" style={{ color: '#1C1C1C' }}>Recent Quiz Results</h4>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-4 rounded-lg border" style={{ backgroundColor: '#F7FAFC' }}>
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#D1E8F9' }}>
-                          <Brain style={{ color: '#3399FF' }} size={16} />
-                        </div>
-                        <div>
-                          <div className="font-medium" style={{ color: '#1C1C1C' }}>Cardiology Quiz</div>
-                          <div className="text-sm" style={{ color: '#2E2E2E' }}>15 questions • Completed 2 hours ago</div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-lg font-semibold" style={{ color: '#3399FF' }}>85%</div>
-                        <div className="text-sm" style={{ color: '#2E2E2E' }}>+120 XP</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <QuizSection />
             )}
 
             {activeSection === 'notes' && (
