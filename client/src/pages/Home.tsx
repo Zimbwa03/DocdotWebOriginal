@@ -3,6 +3,14 @@ import { Link, useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { 
   Stethoscope, 
   BookOpen, 
@@ -15,12 +23,20 @@ import {
   Play,
   BookOpenCheck,
   Bot,
-  CreditCard
+  CreditCard,
+  User,
+  Settings,
+  BarChart3,
+  Users,
+  Menu,
+  X
 } from 'lucide-react';
+import { useState } from 'react';
 
 export default function Home() {
   const { user, signOut } = useAuth();
   const [, setLocation] = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleSignOut = async () => {
     const { error } = await signOut();
@@ -52,86 +68,174 @@ export default function Home() {
       case 'premium':
         return <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">Premium</Badge>;
       case 'starter':
-        return <Badge className="bg-docdot-blue text-white">Starter</Badge>;
+        return <Badge style={{ backgroundColor: '#3399FF', color: 'white' }}>Starter</Badge>;
       default:
         return <Badge variant="outline">Free</Badge>;
     }
   };
 
+  const navigationItems = [
+    { name: 'Take Quiz', href: '/quiz', icon: Play },
+    { name: 'Study Notes', href: '/notes', icon: BookOpenCheck },
+    { name: 'Study Planner', href: '/study-guide', icon: Calendar },
+    { name: 'AI Tools', href: '/ai-tools', icon: Bot },
+    { name: 'Analytics', href: '/analytics', icon: BarChart3 },
+    { name: 'Leaderboard', href: '/leaderboard', icon: Trophy },
+  ];
+
   return (
-    <div className="min-h-screen bg-docdot-bg">
-      {/* Navigation */}
-      <nav className="bg-white shadow-sm border-b border-gray-200">
+    <div className="min-h-screen" style={{ backgroundColor: '#F7FAFC' }}>
+      {/* Enhanced Navigation Header */}
+      <nav style={{ backgroundColor: '#D1E8F9' }} className="shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
+            {/* Logo Section */}
             <div className="flex items-center">
-              <div className="h-8 w-8 bg-docdot-blue rounded-full flex items-center justify-center">
-                <Stethoscope className="text-white text-sm" size={16} />
+              <div className="h-10 w-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#3399FF' }}>
+                <Stethoscope className="text-white" size={20} />
               </div>
-              <span className="ml-2 text-xl font-bold text-docdot-heading">Docdot</span>
+              <span className="ml-3 text-2xl font-bold" style={{ color: '#1C1C1C' }}>Docdot</span>
             </div>
+
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-8">
+              {navigationItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link key={item.name} href={item.href}>
+                    <div className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 hover:bg-white hover:bg-opacity-50" style={{ color: '#2E2E2E' }}>
+                      <Icon size={16} />
+                      <span>{item.name}</span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* User Section */}
             <div className="flex items-center space-x-4">
               {getTierBadge(userStats.subscriptionTier)}
-              <span className="text-docdot-text">
-                {getUserDisplayName()}
-              </span>
+              
+              {/* User Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center space-x-2 px-3 py-2">
+                    <div className="h-8 w-8 rounded-full bg-white flex items-center justify-center">
+                      <User size={16} style={{ color: '#3399FF' }} />
+                    </div>
+                    <span style={{ color: '#2E2E2E' }}>{getUserDisplayName()}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                  </DropdownMenuItem>
+                  <Link href="/pricing">
+                    <DropdownMenuItem>
+                      <CreditCard className="mr-2 h-4 w-4" />
+                      <span>Upgrade Plan</span>
+                    </DropdownMenuItem>
+                  </Link>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Sign out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Mobile Menu Button */}
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleSignOut}
-                className="text-gray-500 hover:text-docdot-blue"
+                className="md:hidden"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >
-                <LogOut size={16} />
+                {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
               </Button>
             </div>
           </div>
         </div>
+
+        {/* Mobile Navigation Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden border-t border-gray-200" style={{ backgroundColor: '#D1E8F9' }}>
+            <div className="px-2 pt-2 pb-3 space-y-1">
+              {navigationItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link key={item.name} href={item.href}>
+                    <div className="flex items-center space-x-3 px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 hover:bg-white hover:bg-opacity-50" style={{ color: '#2E2E2E' }}>
+                      <Icon size={18} />
+                      <span>{item.name}</span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Welcome Section */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-docdot-heading mb-4">
+          <h1 className="text-4xl font-bold mb-4" style={{ color: '#1C1C1C' }}>
             Welcome back,{' '}
-            <span className="text-docdot-blue">{getUserDisplayName()}</span>!
+            <span style={{ color: '#3399FF' }}>{getUserDisplayName()}</span>!
           </h1>
-          <p className="text-xl text-docdot-text">
+          <p className="text-xl" style={{ color: '#2E2E2E' }}>
             Continue your medical education journey
           </p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardContent className="p-4 text-center">
-              <Zap className="text-yellow-500 mx-auto mb-2" size={24} />
-              <p className="text-2xl font-bold text-docdot-heading">{userStats.xp.toLocaleString()}</p>
-              <p className="text-sm text-docdot-text">XP Points</p>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-white shadow-lg border-0 rounded-xl overflow-hidden">
+            <CardContent className="p-6 text-center">
+              <div className="h-12 w-12 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ backgroundColor: '#3399FF' }}>
+                <Zap className="text-white" size={24} />
+              </div>
+              <p className="text-3xl font-bold mb-2" style={{ color: '#1C1C1C' }}>{userStats.xp.toLocaleString()}</p>
+              <p className="text-sm" style={{ color: '#2E2E2E' }}>XP Points</p>
             </CardContent>
           </Card>
           
-          <Card>
-            <CardContent className="p-4 text-center">
-              <Trophy className="text-docdot-blue mx-auto mb-2" size={24} />
-              <p className="text-2xl font-bold text-docdot-heading">Level {userStats.level}</p>
-              <p className="text-sm text-docdot-text">Current Level</p>
+          <Card className="bg-white shadow-lg border-0 rounded-xl overflow-hidden">
+            <CardContent className="p-6 text-center">
+              <div className="h-12 w-12 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ backgroundColor: '#3399FF' }}>
+                <Trophy className="text-white" size={24} />
+              </div>
+              <p className="text-3xl font-bold mb-2" style={{ color: '#1C1C1C' }}>Level {userStats.level}</p>
+              <p className="text-sm" style={{ color: '#2E2E2E' }}>Current Level</p>
             </CardContent>
           </Card>
           
-          <Card>
-            <CardContent className="p-4 text-center">
-              <Target className="text-green-500 mx-auto mb-2" size={24} />
-              <p className="text-2xl font-bold text-docdot-heading">{userStats.streak} days</p>
-              <p className="text-sm text-docdot-text">Study Streak</p>
+          <Card className="bg-white shadow-lg border-0 rounded-xl overflow-hidden">
+            <CardContent className="p-6 text-center">
+              <div className="h-12 w-12 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ backgroundColor: '#3399FF' }}>
+                <Target className="text-white" size={24} />
+              </div>
+              <p className="text-3xl font-bold mb-2" style={{ color: '#1C1C1C' }}>{userStats.streak} days</p>
+              <p className="text-sm" style={{ color: '#2E2E2E' }}>Study Streak</p>
             </CardContent>
           </Card>
           
-          <Card>
-            <CardContent className="p-4 text-center">
-              <BookOpen className="text-purple-500 mx-auto mb-2" size={24} />
-              <p className="text-2xl font-bold text-docdot-heading">24</p>
-              <p className="text-sm text-docdot-text">Topics Studied</p>
+          <Card className="bg-white shadow-lg border-0 rounded-xl overflow-hidden">
+            <CardContent className="p-6 text-center">
+              <div className="h-12 w-12 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ backgroundColor: '#3399FF' }}>
+                <BookOpen className="text-white" size={24} />
+              </div>
+              <p className="text-3xl font-bold mb-2" style={{ color: '#1C1C1C' }}>24</p>
+              <p className="text-sm" style={{ color: '#2E2E2E' }}>Topics Studied</p>
             </CardContent>
           </Card>
         </div>
@@ -139,17 +243,15 @@ export default function Home() {
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <Link href="/quiz">
-            <Card className="cursor-pointer hover:shadow-lg transition-shadow duration-200 border-2 hover:border-docdot-blue">
-              <CardHeader className="pb-3">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-docdot-blue-light rounded-lg">
-                    <Play className="text-docdot-blue" size={24} />
-                  </div>
-                  <CardTitle className="text-docdot-heading">Take Quiz</CardTitle>
+            <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white border-0 rounded-xl overflow-hidden">
+              <CardHeader className="text-center pb-4">
+                <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: '#3399FF' }}>
+                  <Play className="text-white" size={28} />
                 </div>
+                <CardTitle style={{ color: '#1C1C1C' }} className="text-xl">Take a Quiz</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-docdot-text text-sm">
+              <CardContent className="pt-0">
+                <p style={{ color: '#2E2E2E' }} className="text-center leading-relaxed">
                   Test your knowledge with interactive medical quizzes
                 </p>
               </CardContent>
@@ -157,144 +259,125 @@ export default function Home() {
           </Link>
 
           <Link href="/notes">
-            <Card className="cursor-pointer hover:shadow-lg transition-shadow duration-200 border-2 hover:border-docdot-blue">
-              <CardHeader className="pb-3">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <BookOpenCheck className="text-green-600" size={24} />
-                  </div>
-                  <CardTitle className="text-docdot-heading">Study Notes</CardTitle>
+            <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white border-0 rounded-xl overflow-hidden">
+              <CardHeader className="text-center pb-4">
+                <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: '#3399FF' }}>
+                  <BookOpenCheck className="text-white" size={28} />
                 </div>
+                <CardTitle style={{ color: '#1C1C1C' }} className="text-xl">Study Notes</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-docdot-text text-sm">
-                  Access comprehensive medical notes and materials
+              <CardContent className="pt-0">
+                <p style={{ color: '#2E2E2E' }} className="text-center leading-relaxed">
+                  Access comprehensive study materials and notes
                 </p>
               </CardContent>
             </Card>
           </Link>
 
           <Link href="/study-guide">
-            <Card className="cursor-pointer hover:shadow-lg transition-shadow duration-200 border-2 hover:border-docdot-blue">
-              <CardHeader className="pb-3">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <Calendar className="text-purple-600" size={24} />
-                  </div>
-                  <CardTitle className="text-docdot-heading">Study Planner</CardTitle>
+            <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white border-0 rounded-xl overflow-hidden">
+              <CardHeader className="text-center pb-4">
+                <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: '#3399FF' }}>
+                  <Calendar className="text-white" size={28} />
                 </div>
+                <CardTitle style={{ color: '#1C1C1C' }} className="text-xl">Study Planner</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-docdot-text text-sm">
-                  Organize your study schedule and track progress
+              <CardContent className="pt-0">
+                <p style={{ color: '#2E2E2E' }} className="text-center leading-relaxed">
+                  Plan and organize your study sessions effectively
                 </p>
               </CardContent>
             </Card>
           </Link>
 
           <Link href="/ai-tools">
-            <Card className="cursor-pointer hover:shadow-lg transition-shadow duration-200 border-2 hover:border-docdot-blue">
-              <CardHeader className="pb-3">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-orange-100 rounded-lg">
-                    <Zap className="text-orange-600" size={24} />
-                  </div>
-                  <div>
-                    <CardTitle className="text-docdot-heading">AI Tools</CardTitle>
-                    {userStats.subscriptionTier === 'free' && (
-                      <Badge variant="outline" className="text-xs">Premium</Badge>
-                    )}
-                  </div>
+            <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white border-0 rounded-xl overflow-hidden">
+              <CardHeader className="text-center pb-4">
+                <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: '#3399FF' }}>
+                  <Bot className="text-white" size={28} />
                 </div>
+                <CardTitle style={{ color: '#1C1C1C' }} className="text-xl">AI Tools</CardTitle>
+                {userStats.subscriptionTier === 'free' && (
+                  <Badge variant="outline" className="text-xs mt-2">Premium</Badge>
+                )}
               </CardHeader>
-              <CardContent>
-                <p className="text-docdot-text text-sm">
-                  Generate flashcards and mnemonics with AI
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link href="/ask-ai">
-            <Card className="cursor-pointer hover:shadow-lg transition-shadow duration-200 border-2 hover:border-docdot-blue">
-              <CardHeader className="pb-3">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Bot className="text-blue-600" size={24} />
-                  </div>
-                  <div>
-                    <CardTitle className="text-docdot-heading">AI Tutor</CardTitle>
-                    {userStats.subscriptionTier === 'free' && (
-                      <Badge variant="outline" className="text-xs">Premium</Badge>
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-docdot-text text-sm">
-                  Ask questions and get personalized explanations
+              <CardContent className="pt-0">
+                <p style={{ color: '#2E2E2E' }} className="text-center leading-relaxed">
+                  Get help from AI tutors and study assistants
                 </p>
               </CardContent>
             </Card>
           </Link>
 
           <Link href="/pricing">
-            <Card className="cursor-pointer hover:shadow-lg transition-shadow duration-200 border-2 hover:border-gradient-to-r from-purple-500 to-pink-500">
-              <CardHeader className="pb-3">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg">
-                    <CreditCard className="text-purple-600" size={24} />
-                  </div>
-                  <CardTitle className="text-docdot-heading">Upgrade</CardTitle>
+            <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white border-0 rounded-xl overflow-hidden">
+              <CardHeader className="text-center pb-4">
+                <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: '#3399FF' }}>
+                  <CreditCard className="text-white" size={28} />
                 </div>
+                <CardTitle style={{ color: '#1C1C1C' }} className="text-xl">Upgrade Plan</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-docdot-text text-sm">
+              <CardContent className="pt-0">
+                <p style={{ color: '#2E2E2E' }} className="text-center leading-relaxed">
                   Unlock premium features and advanced tools
                 </p>
               </CardContent>
             </Card>
           </Link>
+
+          <Card className="cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white border-0 rounded-xl overflow-hidden">
+            <CardHeader className="text-center pb-4">
+              <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: '#3399FF' }}>
+                <Trophy className="text-white" size={28} />
+              </div>
+              <CardTitle style={{ color: '#1C1C1C' }} className="text-xl">Leaderboard</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <p style={{ color: '#2E2E2E' }} className="text-center leading-relaxed">
+                Compete with peers and track your progress
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Recent Activity */}
-        <Card>
+        <Card className="bg-white shadow-lg border-0 rounded-xl overflow-hidden">
           <CardHeader>
-            <CardTitle className="text-docdot-heading">Recent Activity</CardTitle>
+            <CardTitle style={{ color: '#1C1C1C' }} className="text-2xl">Recent Activity</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-green-100 rounded-full">
-                  <Trophy className="text-green-600" size={16} />
+            <div className="space-y-6">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#D1E8F9' }}>
+                  <Trophy style={{ color: '#3399FF' }} size={20} />
                 </div>
-                <div>
-                  <p className="text-docdot-heading font-medium">Completed Anatomy Quiz</p>
-                  <p className="text-docdot-text text-sm">Scored 85% on Head and Neck anatomy</p>
+                <div className="flex-1">
+                  <p className="font-semibold" style={{ color: '#1C1C1C' }}>Quiz Completed</p>
+                  <p className="text-sm" style={{ color: '#2E2E2E' }}>Cardiology Basics - Score: 85%</p>
                 </div>
-                <span className="text-docdot-text text-sm ml-auto">2 hours ago</span>
+                <span className="text-xs" style={{ color: '#6B7280' }}>2 hours ago</span>
               </div>
               
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-blue-100 rounded-full">
-                  <BookOpen className="text-blue-600" size={16} />
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#D1E8F9' }}>
+                  <BookOpen style={{ color: '#3399FF' }} size={20} />
                 </div>
-                <div>
-                  <p className="text-docdot-heading font-medium">Studied Physiology Notes</p>
-                  <p className="text-docdot-text text-sm">Reviewed cardiovascular system</p>
+                <div className="flex-1">
+                  <p className="font-semibold" style={{ color: '#1C1C1C' }}>Study Session</p>
+                  <p className="text-sm" style={{ color: '#2E2E2E' }}>Anatomy - Respiratory System</p>
                 </div>
-                <span className="text-docdot-text text-sm ml-auto">Yesterday</span>
+                <span className="text-xs" style={{ color: '#6B7280' }}>1 day ago</span>
               </div>
               
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-purple-100 rounded-full">
-                  <Brain className="text-purple-600" size={16} />
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#D1E8F9' }}>
+                  <Brain style={{ color: '#3399FF' }} size={20} />
                 </div>
-                <div>
-                  <p className="text-docdot-heading font-medium">Created Study Plan</p>
-                  <p className="text-docdot-text text-sm">Weekly schedule for histology</p>
+                <div className="flex-1">
+                  <p className="font-semibold" style={{ color: '#1C1C1C' }}>AI Tutor Session</p>
+                  <p className="text-sm" style={{ color: '#2E2E2E' }}>Pharmacology Discussion</p>
                 </div>
-                <span className="text-docdot-text text-sm ml-auto">2 days ago</span>
+                <span className="text-xs" style={{ color: '#6B7280' }}>2 days ago</span>
               </div>
             </div>
           </CardContent>
