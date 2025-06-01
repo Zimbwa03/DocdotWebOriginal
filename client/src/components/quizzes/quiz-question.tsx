@@ -14,15 +14,17 @@ interface QuizQuestionProps {
     questionType?: 'text' | 'image' | 'cadaver' | 'histology';
     difficulty?: 'easy' | 'medium' | 'hard';
   };
-  selectedAnswer: string;
-  onAnswerSelect: (answer: string) => void;
+  selectedAnswer?: string;
+  onAnswerSelect?: (answer: string) => void;
+  onAnswer?: (isCorrect: boolean) => void;
   showExplanation?: boolean;
 }
 
 export default function QuizQuestion({ 
   question, 
-  selectedAnswer, 
+  selectedAnswer = '', 
   onAnswerSelect, 
+  onAnswer,
   showExplanation = false 
 }: QuizQuestionProps) {
   const isCorrect = selectedAnswer === question.correctAnswer;
@@ -127,7 +129,16 @@ export default function QuizQuestion({
                 <button
                   key={index}
                   className={buttonStyle}
-                  onClick={() => !showExplanation && onAnswerSelect(option)}
+                  onClick={() => {
+                    if (!showExplanation) {
+                      if (onAnswerSelect) {
+                        onAnswerSelect(option);
+                      }
+                      if (onAnswer) {
+                        onAnswer(option === question.correctAnswer);
+                      }
+                    }
+                  }}
                   disabled={showExplanation}
                 >
                   <div className="flex items-center justify-between">
