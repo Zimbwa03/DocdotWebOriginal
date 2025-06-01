@@ -44,41 +44,27 @@ export const topics = pgTable("topics", {
   accessTier: text("access_tier").notNull().default("free"), // free, starter, premium
 });
 
-// MCQ Database - True/False Questions
-export const mcqQuestions = pgTable("mcq_questions", {
-  id: integer("id").primaryKey(),
+// Quiz system
+export const quizzes = pgTable("quizzes", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  topicId: integer("topic_id").references(() => topics.id),
   question: text("question").notNull(),
-  answer: text("answer").notNull(), // "True", "False", 1, 0
-  category: text("category").notNull(),
-  explanation: text("explanation").notNull(),
-  aiExplanation: text("ai_explanation"),
-  referenceData: text("reference_data"),
-  referenceJson: text("reference_json"),
-  createdAt: timestamp("created_at").defaultNow(),
+  options: json("options").notNull(), // Array of answer options
+  correctAnswer: integer("correct_answer").notNull(),
+  explanation: text("explanation"),
+  difficulty: text("difficulty").notNull().default("medium"), // easy, medium, hard
+  xpReward: integer("xp_reward").notNull().default(10),
 });
 
-// User quiz attempts for MCQs
-export const mcqAttempts = pgTable("mcq_attempts", {
+// User quiz attempts
+export const quizAttempts = pgTable("quiz_attempts", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   userId: text("user_id").references(() => users.id),
-  questionId: integer("question_id").references(() => mcqQuestions.id),
-  userAnswer: text("user_answer").notNull(), // "True" or "False"
+  quizId: integer("quiz_id").references(() => quizzes.id),
+  selectedAnswer: integer("selected_answer").notNull(),
   isCorrect: boolean("is_correct").notNull(),
   timeSpent: integer("time_spent"), // in seconds
-  category: text("category").notNull(),
   attemptedAt: timestamp("attempted_at").defaultNow(),
-});
-
-// Quiz sessions for tracking performance
-export const quizSessions = pgTable("quiz_sessions", {
-  id: text("id").primaryKey(),
-  userId: text("user_id").references(() => users.id),
-  category: text("category").notNull(),
-  questionsCount: integer("questions_count").notNull(),
-  correctAnswers: integer("correct_answers").notNull(),
-  totalTime: integer("total_time"), // in seconds
-  accuracy: integer("accuracy"), // percentage
-  completedAt: timestamp("completed_at").defaultNow(),
 });
 
 // Flashcards
@@ -154,9 +140,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
 
 export const insertCategorySchema = createInsertSchema(categories);
 export const insertTopicSchema = createInsertSchema(topics);
-export const insertMcqQuestionSchema = createInsertSchema(mcqQuestions);
-export const insertMcqAttemptSchema = createInsertSchema(mcqAttempts);
-export const insertQuizSessionSchema = createInsertSchema(quizSessions);
+export const insertQuizSchema = createInsertSchema(quizzes);
 export const insertFlashcardSchema = createInsertSchema(flashcards);
 export const insertStudyPlanSchema = createInsertSchema(studyPlans);
 export const insertAiSessionSchema = createInsertSchema(aiSessions);
@@ -166,9 +150,8 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type Category = typeof categories.$inferSelect;
 export type Topic = typeof topics.$inferSelect;
-export type McqQuestion = typeof mcqQuestions.$inferSelect;
-export type McqAttempt = typeof mcqAttempts.$inferSelect;
-export type QuizSession = typeof quizSessions.$inferSelect;
+export type Quiz = typeof quizzes.$inferSelect;
+export type QuizAttempt = typeof quizAttempts.$inferSelect;
 export type Flashcard = typeof flashcards.$inferSelect;
 export type StudyPlan = typeof studyPlans.$inferSelect;
 export type StudySession = typeof studySessions.$inferSelect;
