@@ -1,0 +1,138 @@
+Thanks! Since you're now loading questions **from a local `Docdot JSON file`** (instead of Supabase), I'll rewrite the Replit prompt to match that exactly.
+
+This prompt will ensure the app:
+
+* Loads quiz questions from a structured `.json` file
+* Filters by category and subcategory (e.g., "Physiology" → "Cell")
+* Randomizes question order
+* Validates answers and shows feedback
+* Displays explanation, AI explanation, and references
+
+---
+
+## ✅ Final Replit Prompt — Load Quiz MCQs from `Docdot.json` File
+
+---
+
+**Title:** `Docdot – Offline MCQ Quiz Engine using Local JSON File (Anatomy & Physiology)`
+
+---
+
+**Prompt:**
+
+> Build a quiz interface for the **Docdot medical education platform** that loads all True/False questions from a local file called `Docdot.json`.
+>
+> This replaces the previous Supabase connection.
+> The quiz system must:
+>
+> * Filter questions by `category` and `subcategory`
+> * Randomize questions
+> * Validate answers (True/False)
+> * Show detailed feedback (including explanations and references)
+
+---
+
+### 📁 Data Source
+
+**File:** `Docdot.json`
+
+**JSON Structure Example:**
+
+```json
+[
+  {
+    "id": 1,
+    "category": "Physiology",
+    "subcategory": "Cell",
+    "topic": "Membrane Transport",
+    "question_text": "Diffusion is a passive process.",
+    "answer": true,
+    "explanation": "Diffusion does not require energy.",
+    "ai_explanation": "Diffusion relies on the natural kinetic energy of molecules to move across concentration gradients.",
+    "reference_json": {
+      "source": "Guyton Physiology",
+      "page": "101"
+    }
+  },
+  ...
+]
+```
+
+---
+
+### ✅ Functional Requirements
+
+1. **Category/Subcategory Filter**:
+
+   * User selects `category` (e.g., “Anatomy”)
+   * Then selects `subcategory` (e.g., “Thorax”)
+   * Load only questions that match these fields from the JSON
+
+2. **Randomized Questions**:
+
+   * Shuffle the order
+   * Limit to one question at a time
+
+3. **Answer Evaluation**:
+
+   * If selected answer matches `answer` → show “Correct ✅”
+   * Else → show “Incorrect ❌”
+
+4. **Feedback**:
+
+   * Show `explanation`
+   * Show `ai_explanation`
+   * Show formatted citation from `reference_json` (e.g., “Guyton Physiology, p. 101”)
+
+---
+
+### 🎨 UI Design
+
+* Primary CTA: `#3399FF`
+* Background: `#F7FAFC`
+* Font color: `#2E2E2E`
+* Rounded, mobile-first design
+* Clean clinical layout
+
+---
+
+### 🧠 Bonus Features (optional)
+
+* Track session score
+* Show “Next Question” button after feedback
+* Toggle “Show Explanation Automatically”
+
+---
+
+### 📦 Expected Folder Setup
+
+```
+/replit-app/
+├── public/
+│   └── Docdot.json
+├── src/
+│   └── components/
+│       └── QuizPage.jsx
+├── index.html
+├── main.js or App.jsx
+```
+
+---
+
+### ⚙️ JavaScript (Data Load Snippet)
+
+```js
+fetch('/Docdot.json')
+  .then(res => res.json())
+  .then(data => {
+    const filtered = data.filter(q =>
+      q.category === 'Anatomy' && q.subcategory === 'Thorax'
+    );
+    const shuffled = filtered.sort(() => 0.5 - Math.random());
+    setQuestions(shuffled);
+  });
+```
+
+---
+
+Let me know if you want me to generate the actual `QuizPage.jsx` component or structure your `Docdot.json` file for upload.
