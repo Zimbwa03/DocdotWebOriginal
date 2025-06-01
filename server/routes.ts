@@ -445,8 +445,90 @@ CRITICAL FORMATTING RULES:
     }
   });
 
-  // Get user statistics
-  app.get("/api/user/:userId/stats", async (req, res) => {
+  // Get user statistics - Enhanced with comprehensive analytics
+  app.get("/api/user-stats/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const userStats = await dbStorage.getUserStats(userId);
+      
+      if (!userStats) {
+        // Return default stats for new users
+        return res.json({
+          totalXp: 0,
+          level: 1,
+          currentStreak: 0,
+          averageAccuracy: 0,
+          totalQuizzes: 0,
+          totalTimeSpent: 0,
+          rank: 0,
+          totalQuestions: 0,
+          correctAnswers: 0,
+          longestStreak: 0
+        });
+      }
+      
+      res.json(userStats);
+    } catch (error) {
+      console.error("Error fetching user stats:", error);
+      res.status(500).json({ error: "Failed to fetch user statistics" });
+    }
+  });
+
+  // Get category-specific statistics
+  app.get("/api/category-stats/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const categoryStats = await dbStorage.getCategoryStats(userId);
+      res.json(categoryStats);
+    } catch (error) {
+      console.error("Error fetching category stats:", error);
+      res.status(500).json({ error: "Failed to fetch category statistics" });
+    }
+  });
+
+  // Get daily performance statistics
+  app.get("/api/daily-stats/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const days = parseInt(req.query.days as string) || 7;
+      const dailyStats = await dbStorage.getDailyStats(userId, days);
+      res.json(dailyStats);
+    } catch (error) {
+      console.error("Error fetching daily stats:", error);
+      res.status(500).json({ error: "Failed to fetch daily statistics" });
+    }
+  });
+
+  // Get recent quiz attempts
+  app.get("/api/quiz-attempts/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const limit = parseInt(req.query.limit as string) || 10;
+      
+      // This would typically come from database, but for now using in-memory storage
+      const attempts = await dbStorage.getRecentQuizAttempts(userId, limit);
+      res.json(attempts);
+    } catch (error) {
+      console.error("Error fetching quiz attempts:", error);
+      res.status(500).json({ error: "Failed to fetch quiz attempts" });
+    }
+  });
+
+  // Get leaderboard data
+  app.get("/api/leaderboard", async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const category = req.query.category as string;
+      const leaderboard = await dbStorage.getLeaderboard(limit, category);
+      res.json(leaderboard);
+    } catch (error) {
+      console.error("Error fetching leaderboard:", error);
+      res.status(500).json({ error: "Failed to fetch leaderboard" });
+    }
+  });
+
+  // Enhanced quiz attempt recording with detailed analytics
+  app.post("/api/quiz/record-attempt", async (req, res) => {
     try {
       const { userId } = req.params;
       const stats = await dbStorage.getUserStats(userId);
