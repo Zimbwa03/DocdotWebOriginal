@@ -111,23 +111,37 @@ export class DatabaseStorage {
   }
 
   // Quiz Analytics Methods
-  async recordQuizAttempt(attempt: InsertQuizAttempt): Promise<QuizAttempt> {
+  async recordQuizAttempt(attemptData: InsertQuizAttempt): Promise<QuizAttempt> {
     try {
-      const result = await db.insert(quizAttempts).values(attempt).returning();
+      // First, ensure we have all required fields
+      const insertData = {
+        userId: attemptData.userId!,
+        quizId: attemptData.quizId || null,
+        category: attemptData.category,
+        selectedAnswer: attemptData.selectedAnswer,
+        correctAnswer: attemptData.correctAnswer,
+        isCorrect: attemptData.isCorrect,
+        timeSpent: attemptData.timeSpent || 0,
+        difficulty: attemptData.difficulty || 'medium',
+        xpEarned: attemptData.xpEarned || 0
+      };
+
+      const result = await db.insert(quizAttempts).values(insertData).returning();
+      const attempt = result[0];
       
       // Update user stats after recording attempt
-      await this.updateUserStats(attempt.userId!, attempt.isCorrect, attempt.xpEarned || 0, attempt.timeSpent || 0);
+      await this.updateUserStats(insertData.userId, insertData.isCorrect, insertData.xpEarned, insertData.timeSpent);
       
       // Update category stats
-      await this.updateCategoryStats(attempt.userId!, attempt.category, attempt.isCorrect, attempt.timeSpent || 0);
+      await this.updateCategoryStats(insertData.userId, insertData.category, insertData.isCorrect, insertData.timeSpent);
       
       // Update daily stats
-      await this.updateDailyStats(attempt.userId!, attempt.category, attempt.isCorrect, attempt.xpEarned || 0);
+      await this.updateDailyStats(insertData.userId, insertData.category, insertData.isCorrect, insertData.xpEarned);
       
       // Update leaderboard
-      await this.updateLeaderboard(attempt.userId!);
+      await this.updateLeaderboard(insertData.userId);
       
-      return result[0];
+      return attempt;
     } catch (error) {
       console.error('Error recording quiz attempt:', error);
       throw error;

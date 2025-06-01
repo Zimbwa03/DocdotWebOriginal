@@ -198,9 +198,10 @@ export const insertUserSchema = createInsertSchema(users).pick({
 export const insertCategorySchema = createInsertSchema(categories);
 export const insertTopicSchema = createInsertSchema(topics);
 export const insertQuizSchema = createInsertSchema(quizzes);
-export const insertQuizAttemptSchema = createInsertSchema(quizAttempts, {
-  quizId: z.number().optional(),
-}).omit({ id: true, attemptedAt: true });
+export const insertQuizAttemptSchema = createInsertSchema(quizAttempts).omit({ 
+  id: true, 
+  attemptedAt: true 
+});
 export const insertUserStatsSchema = createInsertSchema(userStats).omit({ id: true, updatedAt: true });
 export const insertCategoryStatsSchema = createInsertSchema(categoryStats).omit({ id: true });
 export const insertDailyStatsSchema = createInsertSchema(dailyStats).omit({ id: true });

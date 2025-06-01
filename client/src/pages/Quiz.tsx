@@ -162,10 +162,13 @@ export default function Quiz() {
       setScore(score + 1);
     }
 
-    // Record quiz attempt with comprehensive analytics
+    // Record quiz attempt with comprehensive analytics following the Python model
     if (user?.id) {
       try {
-        const xpEarned = isCorrect ? 15 : 5; // Award XP based on correctness
+        // Calculate XP based on correctness and streak (like the Python code)
+        const baseXP = isCorrect ? 10 : 2;
+        const streakBonus = isCorrect ? (score * 2) : 0; // Streak bonus for correct answers
+        const xpEarned = baseXP + streakBonus;
         
         const response = await fetch('/api/quiz/attempt', {
           method: 'POST',
@@ -180,22 +183,31 @@ export default function Quiz() {
             isCorrect,
             timeSpent,
             xpEarned,
-            difficulty: currentQuestion.difficulty || 'medium'
+            difficulty: currentQuestion.difficulty || 'medium',
+            questionId: currentQuestion.id,
+            currentQuestionIndex: currentQuestionIndex + 1,
+            totalQuestions: questions.length
           })
         });
 
         if (response.ok) {
           const result = await response.json();
-          console.log('Quiz attempt recorded:', result);
+          console.log('Quiz attempt recorded with XP:', result.xpEarned);
           
-          // Invalidate and refetch user stats to update analytics
-          queryClient.invalidateQueries({ queryKey: ['/api/user-stats', user.id] });
-          queryClient.invalidateQueries({ queryKey: ['/api/quiz-attempts', user.id] });
-          queryClient.invalidateQueries({ queryKey: ['/api/category-stats', user.id] });
-          queryClient.invalidateQueries({ queryKey: ['/api/daily-stats', user.id] });
+          // Force immediate refresh of all analytics data
+          await queryClient.invalidateQueries({ queryKey: ['/api/user-stats'] });
+          await queryClient.refetchQueries({ queryKey: ['/api/user-stats', user.id] });
+          
+          // Also refresh other related queries
+          queryClient.invalidateQueries({ queryKey: ['/api/quiz-attempts'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/category-stats'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/daily-stats'] });
           queryClient.invalidateQueries({ queryKey: ['/api/leaderboard'] });
+          
         } else {
           console.error('Failed to record quiz attempt:', response.status);
+          const errorText = await response.text();
+          console.error('Error details:', errorText);
         }
       } catch (error) {
         console.error('Error recording quiz attempt:', error);

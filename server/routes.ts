@@ -416,11 +416,14 @@ CRITICAL FORMATTING RULES:
 
   // Analytics and User Stats API Routes
   
-  // Record quiz attempt
+  // Record quiz attempt with comprehensive stats tracking
   app.post("/api/quiz/attempt", async (req, res) => {
     try {
       const attemptData = req.body;
-      const xpEarned = attemptData.isCorrect ? 10 : 5; // 10 XP for correct, 5 for attempt
+      console.log('Recording quiz attempt for user:', attemptData.userId);
+      
+      // Use the XP calculation from frontend (includes streak bonus)
+      const xpEarned = attemptData.xpEarned || (attemptData.isCorrect ? 10 : 2);
       
       const quizAttempt = await dbStorage.recordQuizAttempt({
         userId: attemptData.userId,
@@ -434,10 +437,11 @@ CRITICAL FORMATTING RULES:
         xpEarned: xpEarned
       });
       
+      console.log('Quiz attempt recorded successfully:', quizAttempt.id);
       res.json({ success: true, attempt: quizAttempt, xpEarned });
     } catch (error) {
       console.error("Error recording quiz attempt:", error);
-      res.status(500).json({ error: "Failed to record quiz attempt" });
+      res.status(500).json({ error: "Failed to record quiz attempt", details: error.message });
     }
   });
 
