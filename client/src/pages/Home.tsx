@@ -22,9 +22,11 @@ import {
   BarChart3,
   ChevronRight,
   Timer,
-  Users
+  Users,
+  Plus
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Link } from 'wouter';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -113,9 +115,35 @@ function QuizSection() {
 
 export default function Home() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Fetch real user statistics
-  const { data: userStats, isLoading: loadingStats } = useQuery({
+  // Update time every minute for accurate greeting
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Get time-based greeting
+  const getTimeBasedGreeting = () => {
+    const hour = currentTime.getHours();
+    const firstName = user?.user_metadata?.firstName || user?.email?.split('@')[0] || 'User';
+    
+    if (hour >= 5 && hour < 12) {
+      return `Good Morning, ${firstName}! ☀️`;
+    } else if (hour >= 12 && hour < 17) {
+      return `Good Afternoon, ${firstName}! 🌤️`;
+    } else if (hour >= 17 && hour < 21) {
+      return `Good Evening, ${firstName}! 🌆`;
+    } else {
+      return `Good Night, ${firstName}! 🌙`;
+    }
+  };
+
+  // Fetch real user statistics with refetch on focus
+  const { data: userStats, isLoading: loadingStats, refetch: refetchStats } = useQuery({
     queryKey: ['/api/user-stats', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
@@ -124,10 +152,12 @@ export default function Home() {
       return response.json();
     },
     enabled: !!user?.id,
+    refetchOnWindowFocus: true,
+    refetchInterval: 30000, // Refetch every 30 seconds
   });
 
   // Fetch recent quiz attempts
-  const { data: recentQuizzes } = useQuery({
+  const { data: recentQuizzes, refetch: refetchQuizzes } = useQuery({
     queryKey: ['/api/quiz-attempts', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -136,7 +166,20 @@ export default function Home() {
       return response.json();
     },
     enabled: !!user?.id,
+    refetchOnWindowFocus: true,
+    refetchInterval: 30000,
   });
+
+  // Refresh data when returning to Home page
+  useEffect(() => {
+    if (user?.id) {
+      refetchStats();
+      refetchQuizzes();
+      // Invalidate all related queries to force refresh
+      queryClient.invalidateQueries({ queryKey: ['/api/user-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/quiz-attempts'] });
+    }
+  }, [user?.id, refetchStats, refetchQuizzes, queryClient]);
 
   const defaultStats = {
     totalXp: 0,
@@ -153,8 +196,17 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-6 lg:py-8">
-        {/* Hero Section */}
+        {/* Hero Section with Personalized Greeting */}
         <div className="text-center mb-8 lg:mb-12">
+          <div className="mb-6">
+            <h1 className="text-2xl lg:text-4xl font-bold text-gray-900 mb-2">
+              {getTimeBasedGreeting()}
+            </h1>
+            <p className="text-lg lg:text-xl text-gray-600">
+              Ready to continue your medical learning journey?
+            </p>
+          </div>
+          
           <div className="flex items-center justify-center mb-4">
             <div 
               className="w-12 h-12 lg:w-16 lg:h-16 rounded-full flex items-center justify-center mr-4" 
@@ -162,13 +214,45 @@ export default function Home() {
             >
               <GraduationCap className="w-6 h-6 lg:w-8 lg:h-8 text-white" />
             </div>
-            <h1 className="text-3xl lg:text-5xl font-bold text-gray-900">
-              Welcome to Docdot
-            </h1>
+            <div className="text-left">
+              <h2 className="text-xl lg:text-2xl font-bold text-gray-900">
+                Docdot Medical Platform
+              </h2>
+              <p className="text-sm lg:text-base text-gray-600">
+                Authentic questions from authoritative medical textbooks
+              </p>
+            </div>
           </div>
-          <p className="text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto px-4">
-            Your comprehensive medical education platform with authentic questions from authoritative medical textbooks
-          </p>
+
+          {/* Quick Study Insights */}
+          <div className="bg-white rounded-lg shadow-sm p-4 lg:p-6 max-w-4xl mx-auto">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-center">
+              <div>
+                <div className="text-xl lg:text-2xl font-bold text-blue-600">
+                  {loadingStats ? '...' : Math.round((stats.totalTimeSpent || 0) / 60)}
+                </div>
+                <div className="text-xs lg:text-sm text-gray-600">Minutes Today</div>
+              </div>
+              <div>
+                <div className="text-xl lg:text-2xl font-bold text-green-600">
+                  {loadingStats ? '...' : stats.currentStreak || 0}
+                </div>
+                <div className="text-xs lg:text-sm text-gray-600">Day Streak</div>
+              </div>
+              <div>
+                <div className="text-xl lg:text-2xl font-bold text-purple-600">
+                  {loadingStats ? '...' : stats.totalXp || 0}
+                </div>
+                <div className="text-xs lg:text-sm text-gray-600">Total XP</div>
+              </div>
+              <div>
+                <div className="text-xl lg:text-2xl font-bold text-orange-600">
+                  Level {loadingStats ? '...' : stats.level || 1}
+                </div>
+                <div className="text-xs lg:text-sm text-gray-600">Your Level</div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* User Statistics Dashboard - Mobile Responsive */}
@@ -298,44 +382,122 @@ export default function Home() {
           </Card>
         </div>
 
-        {/* Action Cards - Mobile Responsive */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 mb-8 lg:mb-12">
-          <Link href="/quiz">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-              <CardContent className="p-4 lg:p-6 text-center">
-                <GraduationCap className="w-10 h-10 lg:w-12 lg:h-12 mx-auto mb-4 text-blue-600" />
-                <h3 className="text-lg lg:text-xl font-bold text-gray-900 mb-2">Take a Quiz</h3>
-                <p className="text-gray-600 text-sm lg:text-base">Test your knowledge with medical questions</p>
-                <Button className="mt-4 w-full" style={{ backgroundColor: '#3399FF' }}>
-                  Start Quiz <ChevronRight className="w-4 h-4 ml-2" />
+        {/* Advanced Study Features - Professional Layout */}
+        <div className="mb-8 lg:mb-12">
+          <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-6 text-center lg:text-left">
+            Study Tools & Resources
+          </h2>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {/* Today's Study Plan */}
+            <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
+              <CardHeader>
+                <CardTitle className="flex items-center text-blue-800">
+                  <Calendar className="w-5 h-5 mr-2" />
+                  Today's Study Plan
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-700">Anatomy Review</span>
+                    <Badge variant="outline" className="text-blue-600">30 min</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-700">Physiology Quiz</span>
+                    <Badge variant="outline" className="text-green-600">20 min</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-700">Case Studies</span>
+                    <Badge variant="outline" className="text-purple-600">25 min</Badge>
+                  </div>
+                </div>
+                <Progress value={45} className="mt-4" />
+                <p className="text-xs text-gray-600 mt-2">3 of 7 tasks completed today</p>
+              </CardContent>
+            </Card>
+
+            {/* Recent Notes */}
+            <Card className="bg-gradient-to-r from-green-50 to-green-100 border-green-200">
+              <CardHeader>
+                <CardTitle className="flex items-center text-green-800">
+                  <FileText className="w-5 h-5 mr-2" />
+                  Recent Study Notes
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-700">Cardiovascular System</span>
+                    <span className="text-xs text-gray-500">2 hours ago</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-700">Respiratory Physiology</span>
+                    <span className="text-xs text-gray-500">Yesterday</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-700">Nervous System</span>
+                    <span className="text-xs text-gray-500">2 days ago</span>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" className="w-full mt-4">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add New Note
                 </Button>
               </CardContent>
             </Card>
-          </Link>
+          </div>
 
-          <Link href="/analytics">
+          {/* Action Cards - Mobile Responsive */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6">
+            <Link href="/quiz">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+                <CardContent className="p-4 lg:p-6 text-center">
+                  <GraduationCap className="w-8 h-8 lg:w-10 lg:h-10 mx-auto mb-3 text-blue-600" />
+                  <h3 className="text-base lg:text-lg font-bold text-gray-900 mb-2">Take Quiz</h3>
+                  <p className="text-gray-600 text-xs lg:text-sm mb-3">Test your knowledge</p>
+                  <Button size="sm" className="w-full" style={{ backgroundColor: '#3399FF' }}>
+                    Start <ChevronRight className="w-3 h-3 ml-1" />
+                  </Button>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/analytics">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+                <CardContent className="p-4 lg:p-6 text-center">
+                  <BarChart3 className="w-8 h-8 lg:w-10 lg:h-10 mx-auto mb-3 text-green-600" />
+                  <h3 className="text-base lg:text-lg font-bold text-gray-900 mb-2">Analytics</h3>
+                  <p className="text-gray-600 text-xs lg:text-sm mb-3">Track progress</p>
+                  <Button size="sm" variant="outline" className="w-full">
+                    View <ChevronRight className="w-3 h-3 ml-1" />
+                  </Button>
+                </CardContent>
+              </Card>
+            </Link>
+
             <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
               <CardContent className="p-4 lg:p-6 text-center">
-                <BarChart3 className="w-10 h-10 lg:w-12 lg:h-12 mx-auto mb-4 text-green-600" />
-                <h3 className="text-lg lg:text-xl font-bold text-gray-900 mb-2">View Analytics</h3>
-                <p className="text-gray-600 text-sm lg:text-base">Track your progress and performance</p>
-                <Button className="mt-4 w-full" variant="outline">
-                  View Stats <ChevronRight className="w-4 h-4 ml-2" />
+                <Brain className="w-8 h-8 lg:w-10 lg:h-10 mx-auto mb-3 text-purple-600" />
+                <h3 className="text-base lg:text-lg font-bold text-gray-900 mb-2">AI Tutor</h3>
+                <p className="text-gray-600 text-xs lg:text-sm mb-3">Get help</p>
+                <Button size="sm" variant="outline" className="w-full">
+                  Chat <ChevronRight className="w-3 h-3 ml-1" />
                 </Button>
               </CardContent>
             </Card>
-          </Link>
 
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-            <CardContent className="p-4 lg:p-6 text-center">
-              <Brain className="w-10 h-10 lg:w-12 lg:h-12 mx-auto mb-4 text-purple-600" />
-              <h3 className="text-lg lg:text-xl font-bold text-gray-900 mb-2">AI Study Tools</h3>
-              <p className="text-gray-600 text-sm lg:text-base">Get personalized study assistance</p>
-              <Button className="mt-4 w-full" variant="outline">
-                Explore AI <ChevronRight className="w-4 h-4 ml-2" />
-              </Button>
-            </CardContent>
-          </Card>
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+              <CardContent className="p-4 lg:p-6 text-center">
+                <Trophy className="w-8 h-8 lg:w-10 lg:h-10 mx-auto mb-3 text-orange-600" />
+                <h3 className="text-base lg:text-lg font-bold text-gray-900 mb-2">Achievements</h3>
+                <p className="text-gray-600 text-xs lg:text-sm mb-3">View badges</p>
+                <Button size="sm" variant="outline" className="w-full">
+                  Explore <ChevronRight className="w-3 h-3 ml-1" />
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         {/* Recent Activity - Mobile Responsive */}
