@@ -493,6 +493,71 @@ CRITICAL FORMATTING RULES:
     }
   });
 
+  // Alternative user stats route to match frontend expectations
+  app.get("/api/user-stats/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const stats = await dbStorage.getUserStats(userId);
+      
+      if (!stats) {
+        return res.json({
+          totalXp: 0,
+          level: 1,
+          currentStreak: 0,
+          averageAccuracy: 0,
+          totalQuizzes: 0,
+          totalTimeSpent: 0,
+          rank: 0
+        });
+      }
+      
+      res.json(stats);
+    } catch (error) {
+      console.error("Error getting user stats:", error);
+      res.status(500).json({ error: "Failed to get user stats" });
+    }
+  });
+
+  // Quiz attempts route to match frontend expectations
+  app.get("/api/quiz-attempts/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { limit = 10 } = req.query;
+      
+      // Get recent quiz attempts for user
+      const attempts = []; // This should fetch from database
+      res.json(attempts);
+    } catch (error) {
+      console.error("Error getting quiz attempts:", error);
+      res.status(500).json({ error: "Failed to get quiz attempts" });
+    }
+  });
+
+  // Category stats route to match frontend expectations
+  app.get("/api/category-stats/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const categoryStats = await dbStorage.getCategoryStats(userId);
+      res.json(categoryStats);
+    } catch (error) {
+      console.error("Error getting category stats:", error);
+      res.status(500).json({ error: "Failed to get category stats" });
+    }
+  });
+
+  // Daily stats route to match frontend expectations
+  app.get("/api/daily-stats/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { days = 7 } = req.query;
+      const dailyStats = await dbStorage.getDailyStats(userId, parseInt(days as string));
+      res.json(dailyStats);
+    } catch (error) {
+      console.error("Error getting daily stats:", error);
+      res.status(500).json({ error: "Failed to get daily stats" });
+    }
+  });
+
   // Get leaderboard
   app.get("/api/leaderboard", async (req, res) => {
     try {

@@ -167,7 +167,7 @@ export default function Quiz() {
       try {
         const xpEarned = isCorrect ? 15 : 5; // Award XP based on correctness
         
-        const response = await fetch('/api/quiz-attempts', {
+        const response = await fetch('/api/quiz/attempt', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
