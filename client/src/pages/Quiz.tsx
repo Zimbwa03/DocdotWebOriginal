@@ -61,6 +61,7 @@ export default function Quiz() {
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [startTime, setStartTime] = useState<Date | null>(null);
+  const [questionStartTime, setQuestionStartTime] = useState<number | null>(null);
 
   const cadaverTopics = [
     { id: 'head-neck', name: 'Head and Neck', icon: Eye, description: 'Cranial anatomy, facial structures, cervical region' },
@@ -126,6 +127,7 @@ export default function Quiz() {
         setQuizCompleted(false);
         setSelectedAnswer('');
         setIsAnswered(false);
+        setQuestionStartTime(Date.now()); // Start timing for first question
       } else {
         console.error('No questions available for this category.');
       }
@@ -142,14 +144,43 @@ export default function Quiz() {
     }
   };
 
-  const handleSubmitAnswer = () => {
+  const handleSubmitAnswer = async () => {
     if (!selectedAnswer || isAnswered) return;
 
+    const currentQuestion = questions[currentQuestionIndex];
+    const isCorrect = selectedAnswer === currentQuestion.correct_answer;
+    const timeSpent = questionStartTime ? Math.floor((Date.now() - questionStartTime) / 1000) : 0;
+    
     setIsAnswered(true);
-    const isCorrect = selectedAnswer === questions[currentQuestionIndex].correct_answer;
-
+    
     if (isCorrect) {
       setScore(score + 1);
+    }
+
+    // Record quiz attempt with comprehensive analytics
+    try {
+      const response = await fetch('/api/quiz/attempt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: 'demo-user', // In a real app, this would come from auth context
+          category: selectedCategory,
+          selectedAnswer,
+          correctAnswer: currentQuestion.correct_answer,
+          isCorrect,
+          timeSpent,
+          difficulty: currentQuestion.difficulty || 'medium'
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Quiz attempt recorded:', result);
+      }
+    } catch (error) {
+      console.error('Error recording quiz attempt:', error);
     }
   };
 
@@ -158,6 +189,7 @@ export default function Quiz() {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedAnswer('');
       setIsAnswered(false);
+      setQuestionStartTime(Date.now()); // Start timing for new question
     } else {
       setQuizCompleted(true);
     }
