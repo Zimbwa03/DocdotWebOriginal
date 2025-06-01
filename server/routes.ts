@@ -1,6 +1,10 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { openRouterAI } from "./ai";
+import { db } from "./db";
+import { aiSessions, aiChats } from "../shared/schema";
+import { eq, desc } from "drizzle-orm";
+import { v4 as uuidv4 } from "uuid";
 
 // Temporary in-memory storage for user profiles
 const userProfiles = new Map<string, any>();
@@ -78,12 +82,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // AI-powered endpoints
   
-  // AI Tutor Chat
+  // Get AI chat sessions for user
+  app.get("/api/ai/sessions/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const sessions = await db
+        .select()
+        .from(aiSessions)
+        .where(eq(aiSessions.userId, userId))
+        .orderBy(desc(aiSessions.updatedAt));
+      res.json({ sessions });
+    } catch (error) {
+      console.error("Get sessions error:", error);
+      res.status(500).json({ error: "Failed to fetch sessions" });
+    }
+  });
+
+  // Get chat history for a session
+  app.get("/api/ai/chat/:sessionId", async (req, res) => {
+    try {
+      const { sessionId } = req.params;
+      const messages = await db
+        .select()
+        .from(aiChats)
+        .where(eq(aiChats.sessionId, sessionId))
+        .orderBy(aiChats.createdAt);
+      res.json({ messages });
+    } catch (error) {
+      console.error("Get chat history error:", error);
+      res.status(500).json({ error: "Failed to fetch chat history" });
+    }
+  });
+
+  // AI Tutor Chat with history
   app.post("/api/ai/chat", async (req, res) => {
     try {
-      const { message, context } = req.body;
+      const { message, context, userId, sessionId, toolType = 'tutor' } = req.body;
+      
+      let currentSessionId = sessionId;
+      
+      // Create new session if none provided
+      if (!currentSessionId) {
+        currentSessionId = uuidv4();
+        await db.insert(aiSessions).values({
+          id: currentSessionId,
+          userId,
+          toolType,
+          title: message.substring(0, 50) + (message.length > 50 ? '...' : ''),
+          lastMessage: message,
+        });
+      }
+
+      // Store user message
+      await db.insert(aiChats).values({
+        sessionId: currentSessionId,
+        userId,
+        role: 'user',
+        content: message,
+        toolType,
+        context: context ? { context } : null,
+      });
+
+      // Get conversation history for context
+      const chatHistory = await db
+        .select()
+        .from(aiChats)
+        .where(eq(aiChats.sessionId, currentSessionId))
+        .orderBy(aiChats.createdAt);
+
+      // Build conversation context for AI
+      const conversationMessages = chatHistory.map(chat => ({
+        role: chat.role === 'user' ? 'user' : 'assistant',
+        content: chat.content
+      }));
+
       const response = await openRouterAI.tutorResponse(message, context);
-      res.json({ response });
+
+      // Store AI response
+      await db.insert(aiChats).values({
+        sessionId: currentSessionId,
+        userId,
+        role: 'ai',
+        content: response,
+        toolType,
+      });
+
+      // Update session last message
+      await db
+        .update(aiSessions)
+        .set({ 
+          lastMessage: response.substring(0, 100) + (response.length > 100 ? '...' : ''),
+          updatedAt: new Date()
+        })
+        .where(eq(aiSessions.id, currentSessionId));
+
+      res.json({ response, sessionId: currentSessionId });
     } catch (error) {
       console.error("AI Chat error:", error);
       res.status(500).json({ error: "AI service unavailable" });

@@ -20,6 +20,9 @@ class OpenRouterAI {
 
   async generateResponse(messages: AIMessage[], temperature = 0.7): Promise<string> {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
@@ -32,18 +35,27 @@ class OpenRouterAI {
           model: 'deepseek/deepseek-r1:free',
           messages,
           temperature,
-          max_tokens: 2000
-        })
+          max_tokens: 1500,
+          stream: false
+        }),
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        throw new Error(`OpenRouter API error: ${response.status}`);
+        const errorText = await response.text();
+        console.error('OpenRouter API error:', response.status, errorText);
+        throw new Error(`OpenRouter API error: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json() as any;
       return data.choices[0]?.message?.content || 'I apologize, but I could not generate a response.';
-    } catch (error) {
+    } catch (error: any) {
       console.error('AI Generation Error:', error);
+      if (error.name === 'AbortError') {
+        throw new Error('Request timed out. Please try again.');
+      }
       throw error;
     }
   }

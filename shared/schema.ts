@@ -102,13 +102,25 @@ export const studySessions = pgTable("study_sessions", {
   completedAt: timestamp("completed_at").defaultNow(),
 });
 
-// AI chat history
+// AI chat history with sessions
+export const aiSessions = pgTable("ai_sessions", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => users.id),
+  toolType: text("tool_type").notNull(), // 'tutor', 'explain', 'questions', etc.
+  title: text("title").notNull(),
+  lastMessage: text("last_message"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const aiChats = pgTable("ai_chats", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  sessionId: text("session_id").references(() => aiSessions.id),
   userId: text("user_id").references(() => users.id),
-  message: text("message").notNull(),
-  response: text("response").notNull(),
-  context: json("context"), // Topic context for better responses
+  role: text("role").notNull(), // 'user' or 'ai'
+  content: text("content").notNull(),
+  toolType: text("tool_type").notNull(),
+  context: json("context"), // Additional context data
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -131,6 +143,8 @@ export const insertTopicSchema = createInsertSchema(topics);
 export const insertQuizSchema = createInsertSchema(quizzes);
 export const insertFlashcardSchema = createInsertSchema(flashcards);
 export const insertStudyPlanSchema = createInsertSchema(studyPlans);
+export const insertAiSessionSchema = createInsertSchema(aiSessions);
+export const insertAiChatSchema = createInsertSchema(aiChats);
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -141,4 +155,5 @@ export type QuizAttempt = typeof quizAttempts.$inferSelect;
 export type Flashcard = typeof flashcards.$inferSelect;
 export type StudyPlan = typeof studyPlans.$inferSelect;
 export type StudySession = typeof studySessions.$inferSelect;
+export type AiSession = typeof aiSessions.$inferSelect;
 export type AiChat = typeof aiChats.$inferSelect;

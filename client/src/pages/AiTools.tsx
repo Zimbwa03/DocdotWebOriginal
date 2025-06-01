@@ -66,6 +66,8 @@ export default function AiTools() {
   const [newGoal, setNewGoal] = useState('');
   const [timeframe, setTimeframe] = useState('4 weeks');
   const [currentLevel, setCurrentLevel] = useState('intermediate');
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [chatSessions, setChatSessions] = useState<any[]>([]);
   
   // Results states
   const [explanation, setExplanation] = useState('');
