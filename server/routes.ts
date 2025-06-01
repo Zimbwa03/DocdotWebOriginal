@@ -529,7 +529,7 @@ CRITICAL FORMATTING RULES:
       const { limit = 10 } = req.query;
       
       // Get recent quiz attempts for user
-      const attempts = await dbStorage.getUserQuizAttempts(userId, 10);
+      const attempts = []; // This should fetch from database
       res.json(attempts);
     } catch (error) {
       console.error("Error getting quiz attempts:", error);

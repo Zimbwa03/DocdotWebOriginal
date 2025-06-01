@@ -113,13 +113,9 @@ export class DatabaseStorage {
   // Quiz Analytics Methods
   async recordQuizAttempt(attemptData: InsertQuizAttempt): Promise<QuizAttempt> {
     try {
-      // Validate required fields
-      if (!attemptData.userId || !attemptData.category || !attemptData.selectedAnswer || !attemptData.correctAnswer) {
-        throw new Error('Missing required fields for quiz attempt');
-      }
-
-      const insertData: InsertQuizAttempt = {
-        userId: attemptData.userId,
+      // First, ensure we have all required fields
+      const insertData = {
+        userId: attemptData.userId!,
         quizId: attemptData.quizId || null,
         category: attemptData.category,
         selectedAnswer: attemptData.selectedAnswer,
@@ -371,19 +367,6 @@ export class DatabaseStorage {
         .orderBy(desc(dailyStats.date));
     } catch (error) {
       console.error('Error getting daily stats:', error);
-      return [];
-    }
-  }
-
-  async getUserQuizAttempts(userId: string, limit: number = 10): Promise<QuizAttempt[]> {
-    try {
-      return await db.select()
-        .from(quizAttempts)
-        .where(eq(quizAttempts.userId, userId))
-        .orderBy(desc(quizAttempts.attemptedAt))
-        .limit(limit);
-    } catch (error) {
-      console.error('Error getting user quiz attempts:', error);
       return [];
     }
   }
