@@ -8,6 +8,7 @@ import {
   DollarSign, 
   Brain, 
   GraduationCap,
+  Trophy,
   User,
   LogOut
 } from 'lucide-react';
@@ -21,6 +22,7 @@ export function Navigation() {
     { path: '/quiz', label: 'Quiz', icon: GraduationCap },
     { path: '/notes', label: 'Notes', icon: FileText },
     { path: '/study-guide', label: 'Study Guide', icon: BookOpen },
+    { path: '/performance', label: 'Performance', icon: Trophy },
     { path: '/ai-tools', label: 'AI Tools', icon: Brain },
     { path: '/pricing', label: 'Pricing', icon: DollarSign },
   ];
