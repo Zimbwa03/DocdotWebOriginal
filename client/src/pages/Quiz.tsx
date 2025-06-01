@@ -111,12 +111,12 @@ export default function Quiz() {
       const filtered = data.filter((q: any) => q.category === category);
 
       if (filtered.length > 0) {
-        // Transform and shuffle questions
+        // Transform questions to True/False format
         const transformed = filtered.map((q: any) => ({
           ...q,
-          options: typeof q.answer === 'boolean' ? ['True', 'False'] : (q.options || []),
-          correctAnswer: typeof q.answer === 'boolean' ? (q.answer ? 'True' : 'False') : (q.answer || ''),
-          reference_data: q.reference_json ? JSON.stringify(q.reference_json) : q.reference_data || ''
+          options: ['True', 'False'],
+          correctAnswer: q.answer === 1 || q.answer === "True" || q.answer === true ? 'True' : 'False',
+          reference_data: q.reference_json || q.reference_data || ''
         }));
 
         const shuffled = transformed.sort(() => 0.5 - Math.random());

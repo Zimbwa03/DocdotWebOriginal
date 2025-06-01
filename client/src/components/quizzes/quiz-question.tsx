@@ -143,8 +143,8 @@ export default function QuizQuestion({
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <span className="flex-shrink-0 w-6 h-6 rounded-full border border-current flex items-center justify-center text-sm font-medium">
-                        {String.fromCharCode(65 + index)}
+                      <span className="flex-shrink-0 w-8 h-8 rounded-lg border border-current flex items-center justify-center text-sm font-medium bg-white">
+                        {option === 'True' ? '✓' : '✗'}
                       </span>
                       <span>{option}</span>
                     </div>
