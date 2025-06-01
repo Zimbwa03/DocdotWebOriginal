@@ -234,303 +234,281 @@ The head and neck region contains vital structures for sensation, communication,
       name: 'Upper Limb',
       category: 'Anatomy',
       type: 'gross_anatomy',
-      content: `# Upper Limb
+      content: `# Upper Limb - Overview
 
-## Subtopics
-
-### Bones of the Upper Limb
-- **Clavicle**: S-shaped bone connecting upper limb to axial skeleton
-- **Scapula**: Triangular bone providing muscle attachment
-- **Humerus**: Long bone of the arm with head, shaft, and condyles
-- **Radius**: Lateral forearm bone, rotates during pronation/supination
-- **Ulna**: Medial forearm bone, forms main elbow joint
-- **Hand**: Carpals, metacarpals, and phalanges
-
-### Joints of the Upper Limb
-- **Shoulder**: Glenohumeral joint with greatest range of motion
-- **Elbow**: Hinge joint between humerus, radius, and ulna
-- **Wrist**: Complex joint between forearm and hand
-- **Hand**: Metacarpophalangeal and interphalangeal joints
-
-### Pectoral Region
-- **Pectoralis major**: Large fan-shaped muscle
-- **Pectoralis minor**: Smaller muscle beneath pectoralis major
-- **Subclavius**: Small muscle below clavicle
-- **Serratus anterior**: Muscle on lateral chest wall
-
-### Axilla
-- **Boundaries**: Anterior, posterior, medial, lateral walls
-- **Contents**: Axillary vessels, nerves, lymph nodes
-- **Clinical significance**: Lymphatic drainage pathway
-
-### Brachial Plexus
-- **Roots**: C5-T1 nerve roots
-- **Trunks**: Superior, middle, inferior
-- **Divisions**: Anterior and posterior
-- **Cords**: Lateral, posterior, medial
-- **Terminal branches**: Major nerves of upper limb
-
-### Arm (Anterior and Posterior Compartments)
-- **Anterior compartment**: Flexor muscles (biceps, brachialis, coracobrachialis)
-- **Posterior compartment**: Extensor muscles (triceps)
-- **Neurovascular structures**: Brachial artery, median nerve
-
-### Cubital Fossa
-- **Boundaries**: Brachioradialis and pronator teres
-- **Contents**: Brachial artery, median nerve, tendon of biceps
-- **Clinical significance**: Venipuncture site
-
-### Forearm (Anterior and Posterior Compartments)
-- **Anterior compartment**: Flexor muscles in superficial and deep layers
-- **Posterior compartment**: Extensor muscles
-- **Interosseous membrane**: Connects radius and ulna
-
-### Hand (Palmar and Dorsal Aspects)
-- **Palmar aspect**: Thenar, hypothenar, and central compartments
-- **Dorsal aspect**: Extensor tendons and dorsal interossei
-- **Intrinsic muscles**: Fine motor control and precision grip
-
-### Arteries, Veins, and Lymphatics
-- **Arterial supply**: Subclavian, axillary, brachial, radial, ulnar arteries
-- **Venous drainage**: Deep and superficial venous systems
-- **Lymphatic drainage**: Axillary lymph nodes
-
-### Cutaneous Innervation
-- **Dermatomes**: Segmental nerve supply patterns
-- **Peripheral nerves**: Cutaneous branches and territories
-
-### Surface Anatomy of the Upper Limb
-- **Palpable landmarks**: Bony prominences and muscle borders
-- **Clinical examination**: Inspection, palpation, movement testing`,
-      accessTier: 'starter',
-      lastUpdated: '2024-01-10'
+The upper limb is designed for manipulation and interaction with the environment. Select a subtopic below to study specific anatomical regions in detail.`,
+      accessTier: 'free',
+      lastUpdated: '2024-01-10',
+      subtopics: [
+        {
+          id: 'upper-limb-bones',
+          name: 'Bones of the Upper Limb',
+          description: 'Clavicle, scapula, humerus, radius, ulna, hand'
+        },
+        {
+          id: 'upper-limb-joints',
+          name: 'Joints of the Upper Limb',
+          description: 'Shoulder, elbow, wrist, hand joints'
+        },
+        {
+          id: 'pectoral-region',
+          name: 'Pectoral Region',
+          description: 'Chest muscles and structures'
+        },
+        {
+          id: 'axilla',
+          name: 'Axilla',
+          description: 'Armpit region anatomy'
+        },
+        {
+          id: 'brachial-plexus',
+          name: 'Brachial Plexus',
+          description: 'Nerve network supplying upper limb'
+        },
+        {
+          id: 'arm-compartments',
+          name: 'Arm (Anterior and Posterior Compartments)',
+          description: 'Upper arm muscle compartments'
+        },
+        {
+          id: 'cubital-fossa',
+          name: 'Cubital Fossa',
+          description: 'Elbow region anatomy'
+        },
+        {
+          id: 'forearm-compartments',
+          name: 'Forearm (Anterior and Posterior Compartments)',
+          description: 'Forearm muscle compartments'
+        },
+        {
+          id: 'hand-aspects',
+          name: 'Hand (Palmar and Dorsal Aspects)',
+          description: 'Hand anatomy and muscles'
+        },
+        {
+          id: 'upper-limb-vessels',
+          name: 'Arteries, Veins, and Lymphatics',
+          description: 'Upper limb circulation'
+        },
+        {
+          id: 'upper-limb-innervation',
+          name: 'Cutaneous Innervation',
+          description: 'Skin sensation patterns'
+        },
+        {
+          id: 'upper-limb-surface',
+          name: 'Surface Anatomy of the Upper Limb',
+          description: 'Clinical landmarks and examination'
+        }
+      ]
     },
     {
       id: 3,
       name: 'Thorax',
       category: 'Anatomy',
       type: 'gross_anatomy',
-      content: `# Thorax
+      content: `# Thorax - Overview
 
-## Subtopics
-
-### Thoracic Wall and Intercostal Spaces
-- **Ribs**: 12 pairs of ribs with costal cartilages
-- **Intercostal muscles**: External, internal, and innermost layers
-- **Intercostal vessels and nerves**: Neurovascular bundles
-- **Sternum**: Manubrium, body, and xiphoid process
-
-### Diaphragm
-- **Structure**: Central tendon and muscular periphery
-- **Openings**: Caval, esophageal, and aortic hiatuses
-- **Innervation**: Phrenic nerve (C3-C5)
-- **Function**: Primary muscle of respiration
-
-### Pleura and Lungs
-- **Pleural layers**: Visceral and parietal pleura
-- **Pleural cavities**: Potential spaces around each lung
-- **Lung lobes**: Right (3 lobes), Left (2 lobes)
-- **Bronchial tree**: Trachea, bronchi, and bronchioles
-
-### Mediastinum
-- **Superior mediastinum**: Above sternal angle
-- **Anterior mediastinum**: In front of pericardium
-- **Middle mediastinum**: Contains heart and pericardium
-- **Posterior mediastinum**: Behind pericardium
-
-### Pericardium
-- **Fibrous pericardium**: Outer tough layer
-- **Serous pericardium**: Parietal and visceral layers
-- **Pericardial cavity**: Potential space with serous fluid
-
-### Heart (External and Internal Features, Conducting System)
-- **External features**: Surfaces, borders, and sulci
-- **Internal features**: Chambers, valves, and septae
-- **Conducting system**: SA node, AV node, bundle of His, Purkinje fibers
-- **Coronary circulation**: Right and left coronary arteries
-
-### Great Vessels of the Thorax
-- **Aorta**: Ascending, arch, and descending portions
-- **Pulmonary vessels**: Pulmonary trunk and veins
-- **Venae cavae**: Superior and inferior vena cava
-- **Brachiocephalic vessels**: Arteries and veins
-
-### Esophagus and Thoracic Duct
-- **Esophagus**: Course through thorax and relations
-- **Thoracic duct**: Main lymphatic vessel
-- **Lymphatic drainage**: Thoracic and abdominal lymphatics
-
-### Nerves of the Thorax
-- **Vagus nerve**: Left and right vagus nerves
-- **Phrenic nerve**: Motor to diaphragm
-- **Sympathetic trunk**: Thoracic sympathetic ganglia
-- **Intercostal nerves**: Segmental innervation
-
-### Surface Anatomy of the Thorax
-- **Surface markings**: Anatomical landmarks
-- **Clinical examination**: Inspection, palpation, percussion, auscultation`,
-      accessTier: 'starter',
-      lastUpdated: '2024-01-12'
+The thorax contains vital organs for respiration and circulation. Select a subtopic below to study specific thoracic structures in detail.`,
+      accessTier: 'free',
+      lastUpdated: '2024-01-12',
+      subtopics: [
+        {
+          id: 'thoracic-wall',
+          name: 'Thoracic Wall and Intercostal Spaces',
+          description: 'Ribs, intercostal muscles, and neurovascular structures'
+        },
+        {
+          id: 'diaphragm',
+          name: 'Diaphragm',
+          description: 'Primary muscle of respiration and its openings'
+        },
+        {
+          id: 'pleura-lungs',
+          name: 'Pleura and Lungs',
+          description: 'Lung anatomy and pleural spaces'
+        },
+        {
+          id: 'mediastinum',
+          name: 'Mediastinum',
+          description: 'Central chest cavity compartments'
+        },
+        {
+          id: 'pericardium',
+          name: 'Pericardium',
+          description: 'Heart covering and pericardial cavity'
+        },
+        {
+          id: 'heart-features',
+          name: 'Heart (External and Internal Features, Conducting System)',
+          description: 'Heart anatomy and electrical conduction'
+        },
+        {
+          id: 'great-vessels',
+          name: 'Great Vessels of the Thorax',
+          description: 'Major blood vessels in the chest'
+        },
+        {
+          id: 'esophagus-thoracic-duct',
+          name: 'Esophagus and Thoracic Duct',
+          description: 'Digestive tube and main lymphatic vessel'
+        },
+        {
+          id: 'thoracic-nerves',
+          name: 'Nerves of the Thorax',
+          description: 'Vagus, phrenic, sympathetic trunk, intercostal nerves'
+        },
+        {
+          id: 'thorax-surface',
+          name: 'Surface Anatomy of the Thorax',
+          description: 'Clinical landmarks and examination techniques'
+        }
+      ]
     },
     {
       id: 4,
       name: 'Abdomen',
       category: 'Anatomy',
       type: 'gross_anatomy',
-      content: `# Abdomen
+      content: `# Abdomen - Overview
 
-## Subtopics
-
-### Anterior Abdominal Wall
-- **Muscles**: External oblique, internal oblique, transversus abdominis, rectus abdominis
-- **Fasciae**: Superficial and deep fasciae
-- **Linea alba**: Midline tendinous intersection
-- **Rectus sheath**: Aponeurotic covering of rectus abdominis
-
-### Inguinal Region and Inguinal Canal
-- **Inguinal canal**: Oblique passage through abdominal wall
-- **Inguinal ligament**: Lower border of external oblique aponeurosis
-- **Spermatic cord**: Contents in males
-- **Round ligament**: Homologous structure in females
-
-### Peritoneum and Peritoneal Cavity
-- **Parietal peritoneum**: Lines abdominal wall
-- **Visceral peritoneum**: Covers organs
-- **Peritoneal cavity**: Potential space with peritoneal fluid
-- **Mesenteries**: Double layers connecting organs to posterior wall
-
-### Stomach
-- **Parts**: Fundus, body, antrum, pylorus
-- **Curvatures**: Greater and lesser curvatures
-- **Relations**: Surrounding structures
-- **Blood supply**: Celiac trunk branches
-
-### Small and Large Intestines
-- **Small intestine**: Duodenum, jejunum, ileum
-- **Large intestine**: Cecum, colon, rectum
-- **Mesenteries**: Mesentery proper, mesocolon
-- **Blood supply**: Superior and inferior mesenteric arteries
-
-### Liver and Biliary Apparatus
-- **Liver lobes**: Right, left, quadrate, caudate
-- **Biliary tree**: Hepatic ducts, cystic duct, common bile duct
-- **Gallbladder**: Storage and concentration of bile
-- **Portal circulation**: Hepatic portal vein system
-
-### Pancreas
-- **Parts**: Head, neck, body, tail
-- **Ducts**: Main pancreatic duct, accessory duct
-- **Relations**: Surrounding structures
-- **Functions**: Exocrine and endocrine
-
-### Spleen
-- **Location**: Left hypochondrium
-- **Relations**: Diaphragm, stomach, kidney
-- **Functions**: Immune and hematologic
-- **Blood supply**: Splenic artery
-
-### Kidneys and Suprarenal Glands
-- **Kidney structure**: Cortex, medulla, hilum
-- **Renal vessels**: Renal arteries and veins
-- **Suprarenal glands**: Cortex and medulla
-- **Retroperitoneal position**: Behind parietal peritoneum
-
-### Abdominal Aorta and IVC
-- **Abdominal aorta**: Branches and relations
-- **Inferior vena cava**: Formation and tributaries
-- **Major branches**: Celiac, mesenteric, renal arteries
-
-### Lumbar Plexus
-- **Formation**: L1-L4 nerve roots
-- **Major branches**: Femoral, obturator, lateral femoral cutaneous nerves
-- **Relations**: Within psoas major muscle
-
-### Posterior Abdominal Wall
-- **Muscles**: Psoas major, quadratus lumborum, iliacus
-- **Fascia**: Fascia covering posterior wall muscles
-- **Vessels and nerves**: Posterior relations
-
-### Surface Anatomy of the Abdomen
-- **Regions**: Nine regions or four quadrants
-- **Surface markings**: Palpable landmarks
-- **Clinical examination**: Systematic approach`,
-      accessTier: 'premium',
-      lastUpdated: '2024-01-11'
+The abdomen contains digestive organs, kidneys, and major blood vessels. Select a subtopic below to study specific abdominal structures in detail.`,
+      accessTier: 'free',
+      lastUpdated: '2024-01-11',
+      subtopics: [
+        {
+          id: 'anterior-wall',
+          name: 'Anterior Abdominal Wall',
+          description: 'Abdominal muscles and fascial layers'
+        },
+        {
+          id: 'inguinal-region',
+          name: 'Inguinal Region and Inguinal Canal',
+          description: 'Groin anatomy and hernia sites'
+        },
+        {
+          id: 'peritoneum',
+          name: 'Peritoneum and Peritoneal Cavity',
+          description: 'Abdominal lining and cavity'
+        },
+        {
+          id: 'stomach',
+          name: 'Stomach',
+          description: 'Gastric anatomy and relations'
+        },
+        {
+          id: 'intestines',
+          name: 'Small and Large Intestines',
+          description: 'Bowel anatomy and blood supply'
+        },
+        {
+          id: 'liver-biliary',
+          name: 'Liver and Biliary Apparatus',
+          description: 'Liver lobes and bile drainage'
+        },
+        {
+          id: 'pancreas',
+          name: 'Pancreas',
+          description: 'Pancreatic anatomy and ducts'
+        },
+        {
+          id: 'spleen',
+          name: 'Spleen',
+          description: 'Splenic anatomy and functions'
+        },
+        {
+          id: 'kidneys-adrenals',
+          name: 'Kidneys and Suprarenal Glands',
+          description: 'Renal anatomy and adrenal glands'
+        },
+        {
+          id: 'aorta-ivc',
+          name: 'Abdominal Aorta and IVC',
+          description: 'Major abdominal blood vessels'
+        },
+        {
+          id: 'lumbar-plexus',
+          name: 'Lumbar Plexus',
+          description: 'Nerve network in posterior abdomen'
+        },
+        {
+          id: 'posterior-wall',
+          name: 'Posterior Abdominal Wall',
+          description: 'Retroperitoneal muscles and structures'
+        },
+        {
+          id: 'abdomen-surface',
+          name: 'Surface Anatomy of the Abdomen',
+          description: 'Clinical regions and examination'
+        }
+      ]
     },
     {
       id: 5,
       name: 'Pelvis and Perineum',
       category: 'Anatomy',
       type: 'gross_anatomy',
-      content: `# Pelvis and Perineum
+      content: `# Pelvis and Perineum - Overview
 
-## Subtopics
-
-### Bones and Joints of the Pelvis
-- **Hip bone**: Ilium, ischium, and pubis
-- **Sacrum**: Five fused vertebrae
-- **Coccyx**: Tailbone
-- **Sacroiliac joint**: Joint between sacrum and ilium
-- **Pubic symphysis**: Midline cartilaginous joint
-
-### Pelvic Diaphragm and Muscles
-- **Levator ani**: Main muscle of pelvic floor
-- **Coccygeus**: Posterior pelvic floor muscle
-- **Urogenital diaphragm**: Muscles in urogenital triangle
-- **Pelvic fascia**: Supporting connective tissue
-
-### Urinary Bladder and Urethra
-- **Bladder anatomy**: Detrusor muscle, trigone
-- **Male urethra**: Prostatic, membranous, spongy parts
-- **Female urethra**: Shorter, simpler structure
-- **Sphincters**: Internal and external urethral sphincters
-
-### Rectum and Anal Canal
-- **Rectum**: Terminal portion of large intestine
-- **Anal canal**: Final portion of digestive tract
-- **Anal sphincters**: Internal and external
-- **Houston's valves**: Transverse rectal folds
-
-### Male Internal Genital Organs
-- **Prostate gland**: Surrounds prostatic urethra
-- **Seminal vesicles**: Contribute to seminal fluid
-- **Vas deferens**: Sperm transport duct
-- **Ejaculatory ducts**: Final sperm pathway
-
-### Female Internal Genital Organs
-- **Uterus**: Body, fundus, cervix
-- **Uterine tubes**: Fallopian tubes
-- **Ovaries**: Female gonads
-- **Vagina**: Birth canal and copulatory organ
-
-### Perineum and its Subdivisions
-- **Urogenital triangle**: Anterior subdivision
-- **Anal triangle**: Posterior subdivision
-- **Perineal body**: Central tendon
-- **Boundaries**: Defined by bony landmarks
-
-### Urogenital Triangle
-- **External genitalia**: Penis/clitoris, scrotum/labia
-- **Bulbospongiosus muscle**: Surrounds bulb of penis/vestibule
-- **Ischiocavernosus muscle**: Covers crura
-- **Superficial transverse perineal muscle**: Stabilizes perineal body
-
-### Anal Triangle
-- **External anal sphincter**: Voluntary control
-- **Ischioanal fossae**: Fat-filled spaces
-- **Pudendal canal**: Alcock's canal
-- **Anal columns**: Longitudinal mucosal folds
-
-### Blood Vessels and Nerves of the Pelvis
-- **Internal iliac artery**: Main pelvic arterial supply
-- **Pudendal nerve**: Motor and sensory to perineum
-- **Pelvic splanchnic nerves**: Parasympathetic supply
-- **Sacral plexus**: L4-S4 nerve roots
-
-### Surface Anatomy of the Pelvis and Perineum
-- **Palpable landmarks**: Iliac crests, pubic symphysis
-- **Clinical examination**: Bimanual examination techniques`,
-      accessTier: 'premium',
+The pelvis contains reproductive organs, bladder, rectum, and supporting structures. Select a subtopic below to study specific pelvic and perineal anatomy in detail.`,
+      accessTier: 'free',
+      subtopics: [
+        {
+          id: 'pelvic-bones',
+          name: 'Bones and Joints of the Pelvis',
+          description: 'Hip bone, sacrum, coccyx, and pelvic joints'
+        },
+        {
+          id: 'pelvic-diaphragm',
+          name: 'Pelvic Diaphragm and Muscles',
+          description: 'Levator ani and pelvic floor muscles'
+        },
+        {
+          id: 'bladder-urethra',
+          name: 'Urinary Bladder and Urethra',
+          description: 'Urinary system anatomy'
+        },
+        {
+          id: 'rectum-anal',
+          name: 'Rectum and Anal Canal',
+          description: 'Terminal digestive tract structures'
+        },
+        {
+          id: 'male-genitals',
+          name: 'Male Internal Genital Organs',
+          description: 'Prostate, seminal vesicles, vas deferens'
+        },
+        {
+          id: 'female-genitals',
+          name: 'Female Internal Genital Organs',
+          description: 'Uterus, tubes, ovaries, vagina'
+        },
+        {
+          id: 'perineum-subdivisions',
+          name: 'Perineum and its Subdivisions',
+          description: 'Urogenital and anal triangles'
+        },
+        {
+          id: 'urogenital-triangle',
+          name: 'Urogenital Triangle',
+          description: 'Anterior perineal anatomy'
+        },
+        {
+          id: 'anal-triangle',
+          name: 'Anal Triangle',
+          description: 'Posterior perineal anatomy'
+        },
+        {
+          id: 'pelvic-vessels-nerves',
+          name: 'Blood Vessels and Nerves of the Pelvis',
+          description: 'Pelvic circulation and innervation'
+        },
+        {
+          id: 'pelvis-surface',
+          name: 'Surface Anatomy of the Pelvis and Perineum',
+          description: 'Clinical landmarks and examination'
+        }
+      ],
       lastUpdated: '2024-01-09'
     },
     {
@@ -538,66 +516,62 @@ The head and neck region contains vital structures for sensation, communication,
       name: 'Lower Limb',
       category: 'Anatomy',
       type: 'gross_anatomy',
-      content: `# Lower Limb
+      content: `# Lower Limb - Overview
 
-## Subtopics
-
-### Bones of the Lower Limb
-- **Hip bone**: Ilium, ischium, pubis forming acetabulum
-- **Femur**: Longest bone with head, neck, shaft, condyles
-- **Tibia**: Weight-bearing bone of leg
-- **Fibula**: Non-weight-bearing lateral bone
-- **Foot**: Tarsals, metatarsals, phalanges
-
-### Joints of the Lower Limb
-- **Hip**: Ball and socket joint with strong ligaments
-- **Knee**: Complex hinge joint with menisci
-- **Ankle**: Hinge joint between leg and foot
-- **Foot**: Multiple joints for adaptation and propulsion
-
-### Gluteal Region
-- **Gluteus maximus**: Largest muscle, hip extension
-- **Gluteus medius and minimus**: Hip abductors
-- **Deep muscles**: Piriformis, obturator internus, gemelli
-- **Sciatic nerve**: Largest nerve, exits through greater sciatic foramen
-
-### Thigh (Anterior, Medial, and Posterior Compartments)
-- **Anterior compartment**: Quadriceps femoris, knee extension
-- **Medial compartment**: Adductor muscles, hip adduction
-- **Posterior compartment**: Hamstrings, hip extension, knee flexion
-- **Femoral triangle**: Contains femoral vessels and nerve
-
-### Popliteal Fossa
-- **Boundaries**: Biceps femoris, semimembranosus, gastrocnemius
-- **Contents**: Popliteal vessels, tibial and common fibular nerves
-- **Clinical significance**: Pulse palpation, nerve blocks
-
-### Leg (Anterior, Lateral, and Posterior Compartments)
-- **Anterior compartment**: Dorsiflexors of foot
-- **Lateral compartment**: Foot evertors
-- **Posterior compartment**: Plantarflexors, superficial and deep layers
-- **Interosseous membrane**: Connects tibia and fibula
-
-### Foot (Dorsum and Sole)
-- **Dorsum**: Extensor tendons, dorsalis pedis artery
-- **Sole**: Four layers of muscles, plantar arches
-- **Arches**: Longitudinal and transverse arches
-- **Plantar fascia**: Supporting aponeurosis
-
-### Arteries, Veins, and Lymphatics
-- **Arterial supply**: Femoral, popliteal, anterior/posterior tibial arteries
-- **Venous drainage**: Deep and superficial venous systems
-- **Lymphatic drainage**: Inguinal and popliteal lymph nodes
-
-### Cutaneous Innervation
-- **Dermatomes**: L1-S2 segmental supply
-- **Peripheral nerves**: Cutaneous branches and territories
-- **Clinical testing**: Sensory examination techniques
-
-### Surface Anatomy of the Lower Limb
-- **Palpable landmarks**: Bony prominences, muscle borders
-- **Clinical examination**: Gait analysis, joint testing`,
-      accessTier: 'premium',
+The lower limb is designed for weight-bearing, locomotion, and stability. Select a subtopic below to study specific lower limb anatomical structures in detail.`,
+      accessTier: 'free',
+      subtopics: [
+        {
+          id: 'lower-limb-bones',
+          name: 'Bones of the Lower Limb',
+          description: 'Hip bone, femur, tibia, fibula, foot bones'
+        },
+        {
+          id: 'lower-limb-joints',
+          name: 'Joints of the Lower Limb',
+          description: 'Hip, knee, ankle, foot joints'
+        },
+        {
+          id: 'gluteal-region',
+          name: 'Gluteal Region',
+          description: 'Gluteal muscles and sciatic nerve'
+        },
+        {
+          id: 'thigh-compartments',
+          name: 'Thigh (Anterior, Medial, and Posterior Compartments)',
+          description: 'Thigh muscle compartments and femoral triangle'
+        },
+        {
+          id: 'popliteal-fossa',
+          name: 'Popliteal Fossa',
+          description: 'Posterior knee anatomy'
+        },
+        {
+          id: 'leg-compartments',
+          name: 'Leg (Anterior, Lateral, and Posterior Compartments)',
+          description: 'Lower leg muscle compartments'
+        },
+        {
+          id: 'foot-anatomy',
+          name: 'Foot (Dorsum and Sole)',
+          description: 'Foot muscles, arches, and weight-bearing'
+        },
+        {
+          id: 'lower-limb-vessels',
+          name: 'Arteries, Veins, and Lymphatics',
+          description: 'Lower limb circulation and drainage'
+        },
+        {
+          id: 'lower-limb-innervation',
+          name: 'Cutaneous Innervation',
+          description: 'Skin sensation and nerve territories'
+        },
+        {
+          id: 'lower-limb-surface',
+          name: 'Surface Anatomy of the Lower Limb',
+          description: 'Clinical landmarks and examination'
+        }
+      ],
       lastUpdated: '2024-01-08'
     },
     {
@@ -605,95 +579,82 @@ The head and neck region contains vital structures for sensation, communication,
       name: 'Neuroanatomy',
       category: 'Anatomy',
       type: 'gross_anatomy',
-      content: `# Neuroanatomy
+      content: `# Neuroanatomy - Overview
 
-## Subtopics
-
-### Organization of the Nervous System
-- **Central nervous system**: Brain and spinal cord
-- **Peripheral nervous system**: Cranial and spinal nerves
-- **Autonomic nervous system**: Sympathetic and parasympathetic
-- **Somatic nervous system**: Motor and sensory components
-
-### Meninges and Cerebrospinal Fluid
-- **Dura mater**: Tough outer layer
-- **Arachnoid mater**: Middle web-like layer
-- **Pia mater**: Thin inner layer
-- **CSF circulation**: Production, flow, and absorption
-
-### Spinal Cord (Gross Anatomy, Tracts, Blood Supply)
-- **External anatomy**: Enlargements, sulci, roots
-- **Internal anatomy**: Gray and white matter organization
-- **Ascending tracts**: Sensory pathways to brain
-- **Descending tracts**: Motor pathways from brain
-- **Blood supply**: Anterior and posterior spinal arteries
-
-### Brainstem (Medulla, Pons, Midbrain)
-- **Medulla oblongata**: Vital centers, pyramids, olives
-- **Pons**: Relay station, cranial nerve nuclei
-- **Midbrain**: Superior and inferior colliculi, substantia nigra
-- **Reticular formation**: Consciousness and arousal
-
-### Cerebellum
-- **Anatomy**: Vermis, hemispheres, peduncles
-- **Functions**: Balance, coordination, motor learning
-- **Connections**: Input and output pathways
-- **Clinical correlations**: Ataxia, dysmetria
-
-### Diencephalon (Thalamus, Hypothalamus)
-- **Thalamus**: Relay station for sensory information
-- **Hypothalamus**: Homeostasis, hormone regulation
-- **Epithalamus**: Pineal gland, habenula
-- **Subthalamus**: Motor control components
-
-### Cerebral Hemispheres (Lobes, Functional Areas)
-- **Frontal lobe**: Motor, executive, personality functions
-- **Parietal lobe**: Sensory processing, spatial awareness
-- **Temporal lobe**: Auditory, memory, language
-- **Occipital lobe**: Visual processing
-
-### Basal Ganglia
-- **Components**: Caudate, putamen, globus pallidus
-- **Connections**: Cortico-basal ganglia loops
-- **Functions**: Motor control, habit formation
-- **Clinical disorders**: Parkinson's, Huntington's disease
-
-### Limbic System
-- **Components**: Hippocampus, amygdala, cingulate cortex
-- **Functions**: Memory, emotion, behavior
-- **Connections**: Papez circuit
-- **Clinical significance**: Alzheimer's disease, depression
-
-### Cranial Nerves
-- **CN I-XII**: Individual anatomy and functions
-- **Brainstem attachments**: Entry and exit points
-- **Functional components**: Motor, sensory, autonomic
-- **Clinical testing**: Systematic examination
-
-### Autonomic Nervous System
-- **Sympathetic division**: Thoracolumbar outflow
-- **Parasympathetic division**: Craniosacral outflow
-- **Ganglia**: Sympathetic chain, collateral, terminal
-- **Neurotransmitters**: ACh, norepinephrine
-
-### Ventricles of the Brain
-- **Lateral ventricles**: Largest, C-shaped
-- **Third ventricle**: Between thalami
-- **Fourth ventricle**: Between brainstem and cerebellum
-- **CSF flow**: Choroid plexus to subarachnoid space
-
-### Arterial Supply (Circle of Willis)
-- **Internal carotid system**: Anterior circulation
-- **Vertebrobasilar system**: Posterior circulation
-- **Circle of Willis**: Arterial anastomosis
-- **Watershed areas**: Border zones between territories
-
-### Venous Drainage (Dural Sinuses)
-- **Superficial veins**: Cortical drainage
-- **Deep veins**: Internal cerebral veins
-- **Dural sinuses**: Superior sagittal, transverse, sigmoid
-- **Clinical significance**: Thrombosis, hemorrhage`,
-      accessTier: 'premium',
+The nervous system controls and coordinates body functions through complex neural networks. Select a subtopic below to study specific neuroanatomical structures in detail.`,
+      accessTier: 'free',
+      subtopics: [
+        {
+          id: 'nervous-system-organization',
+          name: 'Organization of the Nervous System',
+          description: 'Central, peripheral, autonomic, and somatic divisions'
+        },
+        {
+          id: 'meninges-csf',
+          name: 'Meninges and Cerebrospinal Fluid',
+          description: 'Brain coverings and CSF circulation'
+        },
+        {
+          id: 'spinal-cord',
+          name: 'Spinal Cord (Gross Anatomy, Tracts, Blood Supply)',
+          description: 'Spinal cord structure, pathways, and vascularization'
+        },
+        {
+          id: 'brainstem',
+          name: 'Brainstem (Medulla, Pons, Midbrain)',
+          description: 'Brainstem components and functions'
+        },
+        {
+          id: 'cerebellum',
+          name: 'Cerebellum',
+          description: 'Balance, coordination, and motor learning'
+        },
+        {
+          id: 'diencephalon',
+          name: 'Diencephalon (Thalamus, Hypothalamus)',
+          description: 'Thalamus, hypothalamus, and related structures'
+        },
+        {
+          id: 'cerebral-hemispheres',
+          name: 'Cerebral Hemispheres (Lobes, Functional Areas)',
+          description: 'Cortical lobes and functional regions'
+        },
+        {
+          id: 'basal-ganglia',
+          name: 'Basal Ganglia',
+          description: 'Motor control and movement disorders'
+        },
+        {
+          id: 'limbic-system',
+          name: 'Limbic System',
+          description: 'Memory, emotion, and behavior circuits'
+        },
+        {
+          id: 'cranial-nerves',
+          name: 'Cranial Nerves',
+          description: 'Twelve cranial nerves and their functions'
+        },
+        {
+          id: 'autonomic-nervous-system',
+          name: 'Autonomic Nervous System',
+          description: 'Sympathetic and parasympathetic divisions'
+        },
+        {
+          id: 'brain-ventricles',
+          name: 'Ventricles of the Brain',
+          description: 'CSF-filled spaces and circulation'
+        },
+        {
+          id: 'arterial-supply',
+          name: 'Arterial Supply (Circle of Willis)',
+          description: 'Brain blood supply and vascular territories'
+        },
+        {
+          id: 'venous-drainage',
+          name: 'Venous Drainage (Dural Sinuses)',
+          description: 'Brain venous system and dural sinuses'
+        }
+      ],
       lastUpdated: '2024-01-07'
     },
     {
