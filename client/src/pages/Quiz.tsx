@@ -163,20 +163,21 @@ export default function Quiz() {
     }
 
     // Record quiz attempt with comprehensive analytics following the Python model
-    if (user?.id) {
-      try {
-        // Calculate XP based on correctness and streak (like the Python code)
-        const baseXP = isCorrect ? 10 : 2;
-        const streakBonus = isCorrect ? (score * 2) : 0; // Streak bonus for correct answers
-        const xpEarned = baseXP + streakBonus;
-        
-        const response = await fetch('/api/quiz/attempt', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            userId: user.id,
+    const userId = user?.id || 'demo-user'; // Use demo-user as fallback for consistent tracking
+    
+    try {
+      // Calculate XP based on correctness and streak (like the Python code)
+      const baseXP = isCorrect ? 10 : 2;
+      const streakBonus = isCorrect ? (score * 2) : 0; // Streak bonus for correct answers
+      const xpEarned = baseXP + streakBonus;
+      
+      const response = await fetch('/api/quiz/attempt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: userId,
             category: selectedCategory,
             selectedAnswer,
             correctAnswer: currentQuestion.correct_answer,
@@ -212,7 +213,6 @@ export default function Quiz() {
       } catch (error) {
         console.error('Error recording quiz attempt:', error);
       }
-    }
   };
 
   const handleNextQuestion = async () => {
@@ -224,24 +224,22 @@ export default function Quiz() {
     } else {
       setQuizCompleted(true);
       
-      // Update final quiz completion stats
-      if (user?.id) {
-        try {
-          const finalScore = score + (selectedAnswer === questions[currentQuestionIndex].correct_answer ? 1 : 0);
-          const totalTime = startTime ? Math.round((new Date().getTime() - startTime.getTime()) / 1000) : 0;
-          
-          // Force refresh all stats after quiz completion
-          setTimeout(() => {
-            queryClient.invalidateQueries({ queryKey: ['/api/user-stats'] });
-            queryClient.invalidateQueries({ queryKey: ['/api/quiz-attempts'] });
-            queryClient.invalidateQueries({ queryKey: ['/api/category-stats'] });
-            queryClient.invalidateQueries({ queryKey: ['/api/daily-stats'] });
-            queryClient.invalidateQueries({ queryKey: ['/api/leaderboard'] });
-          }, 1000); // Delay to ensure database has processed all attempts
-          
-        } catch (error) {
-          console.error('Error updating final stats:', error);
-        }
+      // Force refresh all stats after quiz completion
+      try {
+        const finalScore = score + (selectedAnswer === questions[currentQuestionIndex].correct_answer ? 1 : 0);
+        const totalTime = startTime ? Math.round((new Date().getTime() - startTime.getTime()) / 1000) : 0;
+        
+        // Force refresh all stats after quiz completion
+        setTimeout(() => {
+          queryClient.invalidateQueries({ queryKey: ['/api/user-stats'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/quiz-attempts'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/category-stats'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/daily-stats'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/leaderboard'] });
+        }, 1000); // Delay to ensure database has processed all attempts
+        
+      } catch (error) {
+        console.error('Error updating final stats:', error);
       }
     }
   };

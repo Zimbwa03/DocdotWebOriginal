@@ -62,22 +62,25 @@ export default function Analytics() {
   const fetchAnalytics = async () => {
     setLoading(true);
     try {
+      // Use a demo user ID for now - in production this would come from auth context
+      const userId = 'demo-user';
+
       // Fetch user stats
-      const statsResponse = await fetch('/api/user/demo-user/stats');
+      const statsResponse = await fetch(`/api/user/${userId}/stats`);
       if (statsResponse.ok) {
         const stats = await statsResponse.json();
         setUserStats(stats);
       }
 
       // Fetch category stats
-      const categoryResponse = await fetch('/api/user/demo-user/category-stats');
+      const categoryResponse = await fetch(`/api/user/${userId}/category-stats`);
       if (categoryResponse.ok) {
         const categories = await categoryResponse.json();
         setCategoryStats(categories);
       }
 
       // Fetch daily stats
-      const dailyResponse = await fetch('/api/user/demo-user/daily-stats?days=7');
+      const dailyResponse = await fetch(`/api/user/${userId}/daily-stats?days=7`);
       if (dailyResponse.ok) {
         const daily = await dailyResponse.json();
         setDailyStats(daily);
