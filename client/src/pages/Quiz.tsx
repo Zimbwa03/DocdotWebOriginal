@@ -100,7 +100,7 @@ export default function Quiz() {
   const fetchQuestions = async (category: string) => {
     setLoading(true);
     try {
-      const response = await fetch('/attached_assets/Docdot_mcqs database.json');
+      const response = await fetch('/api/questions');
       if (!response.ok) {
         throw new Error('Failed to load questions file');
       }
