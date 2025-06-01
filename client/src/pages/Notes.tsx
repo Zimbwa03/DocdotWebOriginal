@@ -243,7 +243,166 @@ The upper limb is designed for manipulation and interaction with the environment
         {
           id: 'upper-limb-bones',
           name: 'Bones of the Upper Limb',
-          description: 'Clavicle, scapula, humerus, radius, ulna, hand'
+          description: 'Clavicle, scapula, humerus, radius, ulna, hand',
+          content: `
+            <div class="space-y-8">
+              <!-- Clavicle Section -->
+              <div class="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg border-l-4 border-blue-500">
+                <h2 class="text-2xl font-bold text-blue-700 dark:text-blue-300 mb-4">📌 Clavicle Bone</h2>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">1. Overview</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">The clavicle, commonly known as the collarbone, is one of the bones of the upper limb girdle. Together with the scapula, it forms the shoulder girdle.</p>
+                    
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">2. Location & Anatomy</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">The clavicle is a long, thin bone that lies horizontally at the base of the neck. It is located anteriorly and superiorly on the thorax.</p>
+                    
+                    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                      <h4 class="font-semibold text-gray-800 dark:text-gray-200 mb-2">Key Landmarks:</h4>
+                      <ul class="space-y-1 text-sm text-gray-700 dark:text-gray-300">
+                        <li>• <strong>Medial end:</strong> Articulates with the sternum</li>
+                        <li>• <strong>Lateral end:</strong> Articulates with the acromion of the scapula</li>
+                        <li>• <strong>Undersurface:</strong> Site for coracoclavicular ligament attachment</li>
+                        <li>• <strong>Articular surfaces:</strong> For acromion and sternum</li>
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">3. Structure & Relations</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">The clavicle is an S-shaped bone that articulates with the sternum at the sternoclavicular joint and with the acromion of the scapula at the acromioclavicular joint.</p>
+                    
+                    <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg mb-4">
+                      <h4 class="font-semibold text-green-800 dark:text-green-300 mb-2">Muscle Attachments:</h4>
+                      <ul class="text-sm text-green-700 dark:text-green-300 space-y-1">
+                        <li>• Deltoid</li>
+                        <li>• Pectoralis major</li>
+                        <li>• Subclavius</li>
+                        <li>• Sternocleidomastoid</li>
+                        <li>• Trapezius</li>
+                      </ul>
+                    </div>
+                    
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">4. Clinical Relevance</h3>
+                    <div class="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
+                      <ul class="text-sm text-red-700 dark:text-red-300 space-y-1">
+                        <li>• <strong>Fractures:</strong> Common injury site</li>
+                        <li>• <strong>Surface Anatomy:</strong> Easily palpated throughout length</li>
+                        <li>• <strong>Thoracic Outlet:</strong> Forms anterior boundary</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Scapula Section -->
+              <div class="bg-purple-50 dark:bg-purple-900/20 p-6 rounded-lg border-l-4 border-purple-500">
+                <h2 class="text-2xl font-bold text-purple-700 dark:text-purple-300 mb-4">📌 Scapula Bone</h2>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">1. Overview</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">The scapula, commonly known as the shoulder blade, is a key bone of the upper limb girdle. It is a flat, triangular bone that lies on the posterior aspect of the thorax.</p>
+                    
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">2. Location & Anatomy</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">The scapula is situated on the upper part of the posterior surface of the thorax, typically between the 2nd and 7th ribs.</p>
+                    
+                    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                      <h4 class="font-semibold text-gray-800 dark:text-gray-200 mb-2">Key Landmarks:</h4>
+                      <ul class="space-y-1 text-sm text-gray-700 dark:text-gray-300">
+                        <li>• <strong>Superior angle:</strong> Level of T2 vertebra</li>
+                        <li>• <strong>Inferior angle:</strong> Level of T7 vertebra and 7th rib</li>
+                        <li>• <strong>Spine:</strong> Prominent subcutaneous projection</li>
+                        <li>• <strong>Acromion:</strong> Lateral end of spine</li>
+                        <li>• <strong>Coracoid process:</strong> Projects upward and forward</li>
+                        <li>• <strong>Glenoid cavity:</strong> Pear-shaped cavity for humerus</li>
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg mb-4">
+                      <h4 class="font-semibold text-green-800 dark:text-green-300 mb-2">Rotator Cuff Muscles (SITS):</h4>
+                      <ul class="text-sm text-green-700 dark:text-green-300 space-y-1">
+                        <li>• <strong>S</strong>upraspinatus</li>
+                        <li>• <strong>I</strong>nfraspinatus</li>
+                        <li>• <strong>T</strong>eres minor</li>
+                        <li>• <strong>S</strong>ubscapularis</li>
+                      </ul>
+                    </div>
+                    
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">3. Clinical Relevance</h3>
+                    <div class="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
+                      <ul class="text-sm text-red-700 dark:text-red-300 space-y-2">
+                        <li>• <strong>Winged Scapula:</strong> Long thoracic nerve injury</li>
+                        <li>• <strong>Fractures:</strong> Usually from severe trauma</li>
+                        <li>• <strong>Surface Anatomy:</strong> Inferior angle, spine, acromion palpable</li>
+                        <li>• <strong>Rotator Cuff Issues:</strong> Common shoulder problems</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Summary Table -->
+              <div class="bg-gray-50 dark:bg-gray-900/50 p-6 rounded-lg">
+                <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">📊 Quick Reference Table</h2>
+                <div class="overflow-x-auto">
+                  <table class="w-full border-collapse border border-gray-300 dark:border-gray-600">
+                    <thead>
+                      <tr class="bg-gray-200 dark:bg-gray-700">
+                        <th class="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Bone</th>
+                        <th class="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Shape</th>
+                        <th class="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Key Features</th>
+                        <th class="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Articulations</th>
+                        <th class="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Clinical Points</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">Clavicle</td>
+                        <td class="border border-gray-300 dark:border-gray-600 px-4 py-2">S-shaped long bone</td>
+                        <td class="border border-gray-300 dark:border-gray-600 px-4 py-2">Medial/lateral ends</td>
+                        <td class="border border-gray-300 dark:border-gray-600 px-4 py-2">Sternum, Scapula</td>
+                        <td class="border border-gray-300 dark:border-gray-600 px-4 py-2">Common fractures</td>
+                      </tr>
+                      <tr>
+                        <td class="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">Scapula</td>
+                        <td class="border border-gray-300 dark:border-gray-600 px-4 py-2">Flat triangular</td>
+                        <td class="border border-gray-300 dark:border-gray-600 px-4 py-2">Spine, glenoid, angles</td>
+                        <td class="border border-gray-300 dark:border-gray-600 px-4 py-2">Humerus, Clavicle</td>
+                        <td class="border border-gray-300 dark:border-gray-600 px-4 py-2">Rotator cuff, winged scapula</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Study Tips -->
+              <div class="bg-yellow-50 dark:bg-yellow-900/20 p-6 rounded-lg border-l-4 border-yellow-500">
+                <h2 class="text-2xl font-bold text-yellow-700 dark:text-yellow-300 mb-4">💡 Study Tips</h2>
+                <div class="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <h4 class="font-semibold text-yellow-800 dark:text-yellow-300 mb-2">Memory Aids:</h4>
+                    <ul class="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
+                      <li>• <strong>SITS</strong> for rotator cuff muscles</li>
+                      <li>• Clavicle = "Collar" bone (around neck area)</li>
+                      <li>• Scapula = "Shoulder blade" (flat like a blade)</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-yellow-800 dark:text-yellow-300 mb-2">Clinical Correlations:</h4>
+                    <ul class="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
+                      <li>• Feel your own clavicle and scapula</li>
+                      <li>• Practice identifying surface landmarks</li>
+                      <li>• Understand fracture patterns</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `
         },
         {
           id: 'upper-limb-joints',

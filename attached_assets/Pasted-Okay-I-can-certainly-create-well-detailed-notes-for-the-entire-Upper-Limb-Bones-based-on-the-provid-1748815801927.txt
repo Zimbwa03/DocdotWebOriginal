@@ -1,0 +1,429 @@
+Okay, I can certainly create well-detailed notes for the entire Upper Limb Bones based on the provided sources and our conversation history, following the format you specified for the Scapula Bone.
+
+Here are the notes:
+
+---
+
+📌 Topic Title: Clavicle Bone
+
+**1. Overview**
+
+The clavicle, commonly known as the collarbone, is one of the bones of the upper limb girdle. Together with the scapula, it forms the shoulder girdle.
+
+**2. Location & Anatomy**
+
+The clavicle is a long, thin bone that lies horizontally at the base of the neck [Source does not explicitly state it's a long bone, but its shape implies it]. It is located anteriorly and superiorly on the thorax. Its medial end is easily palpated between the prominent medial ends of the clavicles in the midline, a region known as the suprasternal notch.
+
+Key anatomical landmarks mentioned:
+*   **Medial end:** Articulates with the sternum.
+*   **Lateral end:** Articulates with the acromion of the scapula.
+*   **Undersurface:** Site for attachment of the coracoclavicular ligament.
+*   **Superior and Inferior surfaces:** Mentioned in relation to muscular and ligamentous attachments.
+*   **Articular surfaces:** For the acromion laterally and for the sternum and first costal cartilage medially.
+
+**3. Structure & Relations**
+
+The clavicle is an S-shaped bone. It articulates with the sternum at the sternoclavicular joint and with the acromion of the scapula at the acromioclavicular joint.
+
+Important muscles attaching to the clavicle are shown in Figure 9.6. These include the deltoid, pectoralis major, subclavius, sternocleidomastoid, and trapezius muscles.
+
+Ligaments attaching to the clavicle include the strong coracoclavicular ligament, which extends from the coracoid process of the scapula to the undersurface of the clavicle. The costoclavicular ligament attaches from the first rib to the clavicle.
+
+The clavicle forms the anterior boundary of the apex of the axilla. The subclavian artery and vein pass posterior to the clavicle. The brachial plexus also passes in this region.
+
+**4. Function**
+
+The clavicle is part of the shoulder girdle. It provides skeletal support and acts as a leverage point for muscles. The weight of the scapula and the upper limb are largely suspended from the clavicle by the strong coracoclavicular ligament.
+
+**5. Clinical Relevance**
+
+*   **Fractures:** Fractures of the clavicle are common.
+*   **Surface Anatomy:** The clavicle is easily palpated throughout its length [Source does not explicitly state entire length, but its prominence implies this]. The medial ends form the suprasternal notch, which is easily palpated.
+*   **Acromioclavicular Joint Injuries:** Injuries to this joint, where the clavicle articulates with the acromion, are related to the strong coracoclavicular ligament.
+*   **Thoracic Outlet:** The clavicle forms the anterior boundary of the thoracic outlet (or inlet), a region where nerves (brachial plexus) and vessels (subclavian artery and vein) pass into the upper limb.
+
+**6. Mnemonics**
+
+*   No specific mnemonics for the clavicle bone itself were found in the sources.
+
+**7. Summary Table / Cheat Sheet**
+
+| Feature              | Description                                                                                                    | Sources             |
+| :------------------- | :------------------------------------------------------------------------------------------------------------- | :------------------ |
+| **Overview**         | Part of the shoulder girdle, collarbone.                                                                       | |
+| **Location**         | Anterior/superior thorax.                                                                                      |               |
+| **Shape**            | Long bone [Implied], S-shaped [Not explicitly stated, but typical description].                                  |                     |
+| **Key Landmarks**    | Medial end, Lateral end, Articular surfaces, Undersurface.                                                     |       |
+| **Articulations**    | Sternum (Sternoclavicular joint), Scapula (Acromioclavicular joint).                                           |          |
+| **Associated Muscles**| Deltoid, Pectoralis major, Subclavius, Sternocleidomastoid, Trapezius.                                         |                |
+| **Associated Ligaments**| Coracoclavicular, Costoclavicular, Acromioclavicular.                                                           |            |
+| **Associated Nerves/Vessels** | Related to brachial plexus and subclavian vessels as part of thoracic outlet.                              |            |
+| **Function**         | Forms shoulder girdle, provides skeletal support, leverage, suspends upper limb from trunk.                      |         |
+| **Clinical Relevance**| Fractures, surface anatomy/palpation, Acromioclavicular joint injuries, related to thoracic outlet structures. |   |
+
+---
+
+📌 Topic Title: Scapula Bone
+
+**1. Overview**
+
+The scapula, commonly known as the shoulder blade, is a key bone of the upper limb girdle. It is a flat, triangular bone that lies on the posterior aspect of the thorax. Together with the clavicle, it forms the shoulder girdle.
+
+**2. Location & Anatomy**
+
+The scapula is situated on the upper part of the posterior surface of the thorax. It typically lies on the posterior chest wall between the 2nd and 7th ribs [Based on angle levels mentioned]. Its flat and triangular shape is characteristic.
+
+Key anatomical landmarks include:
+*   **Angles:** The superior angle lies approximately opposite the spine of the second thoracic vertebra [Based on inferior angle location and general shape]. The inferior angle can be easily palpated and lies on a level with the spine of the seventh thoracic vertebra and the 7th rib.
+*   **Borders:** The medial border forms a prominent ridge [Implied by palpation]. The lateral border also exists.
+*   **Spine:** The spine of the scapula is a prominent subcutaneous projection on the posterior surface. The crest of the spine can be palpated and traced medially to the medial border at the level of the 3rd thoracic spine.
+*   **Acromion:** The lateral end of the spine is free and forms the acromion. The acromion is subcutaneous and easily located.
+*   **Coracoid Process:** This process projects upward and forward above the glenoid cavity. The tip of the coracoid process can be felt on deep palpation in the lateral part of the deltopectoral triangle.
+*   **Glenoid Cavity (or Fossa):** The superolateral angle of the scapula forms this pear-shaped cavity.
+*   **Fossae:** The anterior surface is concave and forms the subscapular fossa. The posterior surface, divided by the spine, contains the supraspinous fossa above and the infraspinous fossa below.
+*   **Suprascapular Notch:** Located medial to the base of the coracoid process.
+
+**3. Structure & Relations**
+
+The scapula has an anterior (costal) surface and a posterior surface. The spine divides the posterior surface into the supraspinous and infraspinous fossae.
+
+The scapula articulates with two bones:
+*   **Humerus:** The glenoid cavity articulates with the head of the humerus at the shoulder joint (glenohumeral joint).
+*   **Clavicle:** The acromion articulates with the lateral end of the clavicle at the acromioclavicular joint.
+
+Many important muscles and ligaments attach to the scapula. Examples of muscle attachments are shown in Figure 9.7 and described in tables:
+*   **Anterior Surface (Subscapular Fossa):** Subscapularis. Serratus anterior attaches to the medial border and inferior angle on the anterior surface.
+*   **Posterior Surface:** Supraspinatus (supraspinous fossa), Infraspinatus (infraspinous fossa), Teres minor (lateral border). Trapezius inserts on the spine and acromion. Rhomboid minor and major insert on the medial border. Latissimus dorsi attaches to the inferior angle. Deltoid originates from the spine and acromion.
+*   **Lateral Border:** Teres major.
+*   **Superior Border:** Levator scapulae attaches near the superior angle.
+*   **Coracoid Process:** Pectoralis minor inserts here. Coracobrachialis and the short head of biceps also attach here.
+*   **Supraglenoid Tubercle:** Long head of biceps origin.
+*   **Infraglenoid Tubercle:** Long head of triceps origin.
+
+Important ligaments attaching to the scapula include the coracoclavicular ligament (from coracoid process to clavicle), suprascapular ligament (bridges suprascapular notch), coracoacromial ligament, and ligaments reinforcing the acromioclavicular joint. The scapula's weight and the upper limb are suspended from the clavicle largely by the strong coracoclavicular ligament.
+
+The scapula forms part of the boundaries of the axilla (armpit). Its upper border forms part of the apex's posterior boundary, and its posterior surface contributes to the posterior wall along with attached muscles (subscapularis, teres major, latissimus dorsi). The shoulder joint capsule, related to the glenoid cavity, forms part of the superior boundary of the quadrangular space, which is also bounded by teres minor and teres major. The triangular space is bounded by teres minor, teres major, and the long head of triceps, muscles that attach to the scapula.
+
+Several nerves and vessels are closely related to the scapula:
+*   The suprascapular nerve and artery pass near the suprascapular notch.
+*   The axillary nerve and posterior circumflex humeral vessels pass backward through the quadrangular space, which is related to the scapula's glenoid area and surgical neck of the humerus.
+*   The dorsal scapular nerve supplies muscles that attach to the scapula (rhomboid minor, rhomboid major, levator scapulae).
+*   The long thoracic nerve supplies the serratus anterior muscle on the anterior surface of the scapula.
+*   Arteries supplying the scapula region include the suprascapular artery and the circumflex scapular artery (a branch of the subscapular artery). The arterial anastomosis around the shoulder joint involves vessels near the scapula.
+
+**4. Function**
+
+The scapula is integral to the function of the shoulder joint and the entire upper limb. It serves as a stable base for the movements of the arm at the glenohumeral joint. It is the attachment site for numerous muscles that move the arm, forearm, and scapula itself. The scapula's movement on the chest wall (scapulothoracic movement) allows for a greater range of motion at the shoulder, contributing to arm elevation above the head. Rotary movements of the scapula occur relative to the chest wall, with the axis of rotation often considered to pass through the coracoclavicular ligament. The rotator cuff muscles (supraspinatus, infraspinatus, teres minor, subscapularis), originating from the scapula, are crucial for stabilizing the shoulder joint by pressing the humeral head into the glenoid cavity.
+
+**5. Clinical Relevance**
+
+*   **Fractures:** Fractures of the scapula usually result from severe trauma. They often require little specific treatment because the muscles attached to its surfaces provide adequate splinting of the fragments. They are often associated with fractured ribs.
+*   **Surface Anatomy:** Key parts of the scapula are palpable and used as landmarks for anatomical and clinical reference: the inferior angle, spine, acromion, and coracoid process. The inferior angle's position indicates the level of the 7th thoracic spine and 7th rib.
+*   **Nerve Injuries:**
+    *   Injury to the long thoracic nerve paralyzes the serratus anterior muscle, causing the medial border of the scapula to protrude posteriorly, a condition known as "winged scapula".
+    *   The axillary nerve can be injured by downward displacement of the humeral head in shoulder dislocations or fractures of the surgical neck of the humerus due to its passage through the quadrangular space related to the scapula. This results in paralysis of the deltoid and teres minor muscles (which originate from the scapula). Paralysis of the deltoid, along with supraspinatus (also originating from the scapula) being the only other abductor, much impairs shoulder abduction. Paralysis of teres minor is not clinically recognizable.
+    *   The dorsal scapular nerve supplies muscles attached to the scapula (rhomboids, levator scapulae).
+    *   The suprascapular nerve supplies supraspinatus and infraspinatus.
+*   **Rotator Cuff Issues:** The tendons of the rotator cuff muscles, originating from the scapula, are important for stabilizing the shoulder joint. Issues like tendinitis can cause shoulder pain.
+*   **Acromioclavicular Joint Injuries:** Injuries here, involving the articulation between the acromion and clavicle, rely on the strong coracoclavicular ligament for stability.
+
+**6. Mnemonics**
+
+*   **Rotator Cuff Muscles:** The four muscles originating from the scapula whose tendons form the rotator cuff can be remembered with the mnemonic **SITS**:
+    *   **S**upraspinatus
+    *   **I**nfraspinatus
+    *   **T**eres minor
+    *   **S**ubscapularis
+
+**7. Summary Table / Cheat Sheet**
+
+| Feature              | Description                                                                                                | Sources                                   |
+| :------------------- | :--------------------------------------------------------------------------------------------------------- | :---------------------------------------- |
+| **Overview**         | Part of the shoulder girdle, shoulder blade.                                                               |                       |
+| **Location**         | Posterior thorax, typically between 2nd and 7th ribs. Forms part of axilla boundaries.                     |                   |
+| **Shape**            | Flat, triangular bone.                                                                                     |                                     |
+| **Key Landmarks**    | Spine, Acromion, Coracoid Process, Glenoid Cavity/Fossa, Supraspinous Fossa, Infraspinous Fossa, Subscapular Fossa, Inferior Angle, Superior Angle, Suprascapular Notch. | |
+| **Articulations**    | Glenoid Cavity with Humerus (Shoulder Joint). Acromion with Clavicle (Acromioclavicular Joint).              | |
+| **Associated Muscles**| Rotator Cuff (SITS), Deltoid, Trapezius, Serratus Anterior, Rhomboids, Levator Scapulae, Teres Major, Long head of Triceps, Short head of Biceps, Coracobrachialis, Pectoralis Minor. |      |
+| **Associated Nerves**| Suprascapular, Axillary, Long Thoracic, Dorsal Scapular.                                                   |         |
+| **Associated Vessels**| Suprascapular Artery, Circumflex Scapular Artery, Posterior Circumflex Humeral Arteries.                   |                          |
+| **Function**         | Provides muscle attachment, stable base for arm movement, shoulder stability (rotator cuff), contributes to range of motion (scapulothoracic movement), suspended from clavicle. |              |
+| **Clinical Relevance**| Fractures, surface palpation, Winged Scapula (Serratus Ant. paralysis), Axillary nerve injury, Rotator Cuff issues, Acromioclavicular Joint injuries. |         |
+| **Mnemonics**        | SITS (Rotator Cuff muscles).                                                                               |                                |
+
+---
+
+📌 Topic Title: Humerus Bone
+
+**1. Overview**
+
+The humerus is the single bone of the arm. It is a long bone that forms the skeletal framework of the upper arm [Implied].
+
+**2. Location & Anatomy**
+
+The humerus is located in the upper arm, between the shoulder and the elbow.
+
+Key anatomical landmarks include:
+*   **Upper end:** Has a head that forms about one third of a sphere. Below the head are the anatomic neck, greater tuberosity, and lesser tuberosity. The bicipital groove (intertubercular groove) separates the tuberosities. The narrow part joining the shaft is the surgical neck. The greater tuberosity is palpable below the lateral edge of the acromion.
+*   **Shaft:** About halfway down the lateral aspect is the deltoid tuberosity. Behind and below the tuberosity is a spiral groove (radial groove) which accommodates the radial nerve and profunda artery.
+*   **Lower end:** Possesses medial and lateral epicondyles, the rounded capitulum, and the pulley-shaped trochlea. Above the capitulum is the radial fossa, and above the trochlea anteriorly is the coronoid fossa. Posteriorly, above the trochlea, is the olecranon fossa. The medial and lateral epicondyles are palpable.
+
+**3. Structure & Relations**
+
+The humerus is a long bone. It articulates with the scapula at the shoulder joint and with the radius and ulna at the elbow joint. The head articulates with the glenoid cavity of the scapula. The capitulum articulates with the head of the radius, and the trochlea articulates with the trochlear notch of the ulna.
+
+Important muscles and ligaments attach to the humerus, as shown in Figure 9.9 and described in tables:
+*   **Upper end:** Supraspinatus, Infraspinatus, Teres minor attach to the greater tuberosity. Subscapularis attaches to the lesser tuberosity. Pectoralis major, Teres major, and Latissimus dorsi attach in the bicipital groove. The capsule of the shoulder joint attaches to the anatomic neck.
+*   **Shaft:** Deltoid inserts on the deltoid tuberosity. Coracobrachialis inserts on the medial aspect of the shaft. Brachialis originates from the front of the lower half of the humerus. Triceps (lateral and medial heads) originates from the posterior surface. Brachioradialis and Extensor carpi radialis longus originate from the lateral supracondylar ridge. Medial and lateral intermuscular septa attach to the supracondylar ridges.
+*   **Lower end:** Muscles of the anterior forearm compartment (superficial group) often originate from the medial epicondyle via a common tendon (e.g., Pronator teres, Flexor carpi radialis, Palmaris longus, Flexor digitorum superficialis, Flexor carpi ulnaris). Muscles of the posterior forearm compartment (superficial group) and lateral compartment often originate from the lateral epicondyle via a common tendon (e.g., Extensor carpi radialis brevis, Extensor digitorum, Extensor digiti minimi, Extensor carpi ulnaris, Supinator, Anconeus). The capsule of the elbow joint attaches to the margins of the articular surfaces and epicondyles. The medial and lateral ligaments of the elbow attach to the epicondyles.
+
+The humerus forms the lateral wall of the axilla, represented by the coracobrachialis, biceps brachii, and the bicipital groove.
+
+Important nerves and vessels are related to the humerus:
+*   The radial nerve and profunda artery lie in the spiral groove, in direct contact with the shaft.
+*   The axillary nerve and posterior circumflex humeral vessels pass posterior to the surgical neck through the quadrangular space.
+*   The ulnar nerve passes behind the medial epicondyle.
+*   The median nerve lies anterior to the brachial artery in the arm.
+*   The brachial artery is the main supply to the arm and runs anteriorly along the humerus. It gives off branches like the profunda artery and superior/inferior ulnar collateral arteries.
+
+**4. Function**
+
+The humerus provides skeletal support for the arm. It is the site of origin and attachment for many muscles, acting as leverage points for movement. It articulates with the scapula to form the highly mobile shoulder joint and with the radius and ulna to form the elbow joint, allowing flexion, extension, and contributing to pronation and supination of the forearm.
+
+**5. Clinical Relevance**
+
+*   **Fractures:** Fractures of the humerus are common and can occur at the surgical neck, shaft, or lower end (supracondylar fractures). Fractures here are commonly seen.
+*   **Nerve Injuries:** The radial nerve is particularly vulnerable in fractures of the shaft due to its position in the spiral groove. The axillary nerve can be injured by fractures of the surgical neck.
+*   **Surface Anatomy:** The head of the humerus is palpable through the floor of the axilla. The greater tuberosity is covered by the deltoid muscle and contributes to the rounded shoulder contour below the acromion. The medial and lateral epicondyles are easily palpable bony points at the elbow.
+*   **Arterial Injury:** Arteries around the humerus (like the brachial artery) can be damaged. An adequate collateral circulation exists around the elbow joint, which is important if the brachial artery is ligated.
+*   **Radiographic Anatomy:** Radiographs show the head, tuberosities, necks, shaft, spiral groove, epicondyles, capitulum, trochlea, and fossae.
+
+**6. Mnemonics**
+
+*   No specific mnemonics for the humerus bone itself were found in the sources.
+
+**7. Summary Table / Cheat Sheet**
+
+| Feature              | Description                                                                                                                              | Sources                                            |
+| :------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------- |
+| **Overview**         | Single bone of the arm.                                                                                                                  |                               |
+| **Location**         | Upper arm, between shoulder and elbow.                                                                                                   |                                         |
+| **Shape**            | Long bone [Implied].                                                                                                                     |                                                    |
+| **Key Landmarks**    | Head, Anatomic neck, Surgical neck, Greater tuberosity, Lesser tuberosity, Bicipital groove, Deltoid tuberosity, Spiral groove, Medial/Lateral epicondyles, Capitulum, Trochlea, Radial fossa, Coronoid fossa, Olecranon fossa. | |
+| **Articulations**    | Scapula (Shoulder/Glenohumeral joint). Radius and Ulna (Elbow joint).                                                                    | |
+| **Associated Muscles**| Rotator Cuff (excluding long head of biceps/triceps origin), Deltoid, Pectoralis major, Teres major, Latissimus dorsi, Coracobrachialis, Biceps, Brachialis, Triceps, Anconeus, and many forearm muscles via epicondyles. |     |
+| **Associated Nerves**| Radial nerve (spiral groove), Axillary nerve (surgical neck), Ulnar nerve (medial epicondyle), Median nerve (anterior).                 |                          |
+| **Associated Vessels**| Brachial artery, Profunda artery, Ulnar collateral arteries, Circumflex humeral arteries (posterior).                                      |                          |
+| **Function**         | Provides skeletal support, muscle attachment, acts as leverage, articulates for shoulder and elbow movements.                            |                        |
+| **Clinical Relevance**| Fractures (surgical neck, shaft), Radial/Axillary nerve injury with fracture/dislocation, surface anatomy (epicondyles, tuberosity), arterial injury/collateral circulation. |            |
+
+---
+
+📌 Topic Title: Radius Bone
+
+**1. Overview**
+
+The radius is one of the two bones of the forearm. It is a long bone [Implied].
+
+**2. Location & Anatomy**
+
+The radius is located in the forearm. In anatomical position (supination), the radius is the lateral bone of the forearm.
+
+Key anatomical landmarks include:
+*   **Proximal end:** The small circular head articulates with the capitulum of the humerus and the radial notch of the ulna. Below the head is the constricted neck. Below the neck is the bicipital tuberosity for the insertion of the biceps muscle.
+*   **Shaft:** Wider below than above. It has a sharp interosseous border medially for the attachment of the interosseous membrane. The pronator tubercle, for the insertion of the pronator teres muscle, lies halfway down on its lateral side.
+*   **Distal end:** Has a styloid process projecting distally from its lateral margin. On the medial surface is the ulnar notch, which articulates with the head of the ulna. The inferior articular surface articulates with the scaphoid and lunate bones. On the posterior aspect is the dorsal tubercle, grooved by the tendon of the extensor pollicis longus.
+
+**3. Structure & Relations**
+
+The radius is a long bone that articulates with the humerus at the elbow joint and with the ulna at the proximal and distal radioulnar joints. Its distal end articulates with the scaphoid and lunate bones of the hand at the wrist joint.
+
+Important muscles and ligaments attach to the radius, as shown in Figure 9.49 and described in tables:
+*   **Proximal end:** Biceps brachii inserts on the bicipital tuberosity. Supinator originates in part from the neck and shaft. Anular ligament of the proximal radioulnar joint surrounds the head.
+*   **Shaft:** Flexor digitorum superficialis originates in part from the oblique line on the anterior surface. Pronator teres inserts on the pronator tubercle. Flexor pollicis longus originates from the anterior surface. Pronator quadratus inserts on the anterior surface of the distal shaft. Brachioradialis inserts on the base of the styloid process. Abductor pollicis longus and Extensor pollicis brevis originate from the posterior surface. The interosseous membrane attaches to the interosseous border.
+*   **Distal end:** The capsule of the wrist joint attaches.
+
+The radius and ulna are bound together by the interosseous membrane.
+
+Important nerves and vessels are related to the radius:
+*   The radial artery runs along the anterior surface of the radius in the distal forearm, between the tendons of brachioradialis and flexor carpi radialis. The superficial branch of the radial nerve is also lateral in the forearm.
+*   The deep branch of the radial nerve winds around the neck of the radius in the substance of the supinator muscle.
+*   The anterior interosseous nerve and artery run between the shafts of the radius and ulna.
+*   The median nerve is located lateral to the radial artery in the upper forearm.
+*   The distal end forms part of the boundary of the anatomical snuffbox.
+
+**4. Function**
+
+The radius provides skeletal support for the forearm. It acts as a leverage point for muscles. It articulates with the humerus and ulna to form the elbow and radioulnar joints. Its articulation with the ulna, particularly at the proximal and distal radioulnar joints, along with muscle action (Pronator teres, Pronator quadratus, Biceps brachii, Supinator), allows for the movements of pronation and supination of the forearm. It articulates with carpal bones to form the wrist joint, allowing hand movements.
+
+**5. Clinical Relevance**
+
+*   **Fractures:** Fractures of the radius are common, including fractures of the head (from falls on the outstretched hand), shaft fractures, and distal end fractures (like Colles fracture) [Source does not explicitly name Colles, but distal radius fracture is common]. Fractures here are commonly seen. Congenital absence of the radius can occur.
+*   **Surface Anatomy:** The styloid process of the radius is palpable at the wrist, lying about 0.75 in. (1.9 cm) distal to that of the ulna. The dorsal tubercle is palpable on the posterior surface of the distal end.
+*   **Radial Pulse:** The radial artery lies on the anterior surface of the distal radius between the tendons of brachioradialis and flexor carpi radialis, making it a common site for taking the radial pulse.
+
+**6. Mnemonics**
+
+*   No specific mnemonics for the radius bone itself were found in the sources.
+
+**7. Summary Table / Cheat Sheet**
+
+| Feature              | Description                                                                                                        | Sources                                   |
+| :------------------- | :----------------------------------------------------------------------------------------------------------------- | :---------------------------------------- |
+| **Overview**         | One of the two bones of the forearm.                                                                               |                |
+| **Location**         | Forearm; lateral in anatomical position.                                                                           |                            |
+| **Shape**            | Long bone [Implied]; shaft wider distally.                                                                         |                                      |
+| **Key Landmarks**    | Head, Neck, Bicipital tuberosity, Shaft, Interosseous border, Pronator tubercle, Distal end, Styloid process, Ulnar notch, Inferior articular surface, Dorsal tubercle. | |
+| **Articulations**    | Humerus (Elbow joint), Ulna (Proximal/Distal Radioulnar joints), Scaphoid and Lunate (Wrist joint).                | |
+| **Associated Muscles**| Biceps brachii, Pronator teres, Pronator quadratus, Flexor pollicis longus, Abductor pollicis longus, Extensor pollicis brevis, Supinator, Brachioradialis, Flexor digitorum superficialis. |          |
+| **Associated Ligaments**| Interosseous membrane, Oblique cord, Capsule of elbow/wrist joints, Anular ligament.                               |                |
+| **Associated Nerves**| Radial nerve (deep and superficial branches), Anterior interosseous nerve, Median nerve.                         |                         |
+| **Associated Vessels**| Radial artery, Anterior interosseous artery, Arterial anastomosis around wrist.                                      |                    |
+| **Function**         | Provides skeletal support, muscle attachment, acts as leverage, articulates for elbow, radioulnar (pronation/supination), and wrist movements. | |
+| **Clinical Relevance**| Fractures (head, shaft, distal), congenital absence, surface anatomy (styloid process, dorsal tubercle), radial pulse. |               |
+
+---
+
+📌 Topic Title: Ulna Bone
+
+**1. Overview**
+
+The ulna is one of the two bones of the forearm. It is a long bone [Implied].
+
+**2. Location & Anatomy**
+
+The ulna is located in the forearm. In anatomical position (supination), the ulna is the medial bone of the forearm.
+
+Key anatomical landmarks include:
+*   **Proximal end:** Large olecranon process posteriorly. Coronoid process anteriorly. Between them is the trochlear notch, which articulates with the trochlea of the humerus. On the lateral side is the radial notch, which articulates with the head of the radius. The olecranon process is palpable at the elbow.
+*   **Shaft:** Tapers from above down. It has a sharp interosseous border laterally for the attachment of the interosseous membrane. The posterior border is rounded and subcutaneous, easily palpated throughout its length. Below the radial notch is the supinator crest.
+*   **Distal end:** Has a small rounded head and a styloid process projecting from its medial aspect. The head of the ulna is most easily felt with the forearm pronated.
+
+**3. Structure & Relations**
+
+The ulna is a long bone that articulates primarily with the humerus at the elbow joint via the trochlear notch and olecranon process. It also articulates with the radius at the proximal and distal radioulnar joints. Distally, it articulates with the articular disc, not directly with the carpal bones.
+
+Important muscles and ligaments attach to the ulna, as shown in Figure 9.49 and described in tables:
+*   **Proximal end:** Triceps brachii inserts on the olecranon process. Brachialis inserts on the coronoid process. Anconeus inserts on the lateral surface of the olecranon process. Flexor carpi ulnaris originates in part from the olecranon and posterior border. Supinator originates in part from the ulna near the supinator crest. The medial ligament of the elbow attaches to the olecranon and coronoid processes. The lateral ligament of the elbow attaches indirectly via the anular ligament.
+*   **Shaft:** Flexor digitorum profundus originates from the anteromedial surface. Pronator quadratus originates from the anterior surface of the distal shaft. Abductor pollicis longus, Extensor pollicis longus, and Extensor indicis originate from the posterior surface. Extensor carpi ulnaris originates in part from the posterior border via an aponeurosis. The interosseous membrane attaches to the interosseous border.
+*   **Distal end:** The capsule of the wrist joint attaches.
+
+The ulna and radius are bound together by the interosseous membrane.
+
+Important nerves and vessels are related to the ulna:
+*   The ulnar nerve passes posterior to the medial epicondyle of the humerus before entering the forearm between the heads of flexor carpi ulnaris. It runs down the forearm between flexor carpi ulnaris and flexor digitorum profundus.
+*   The ulnar artery is the larger terminal branch of the brachial artery and passes down the forearm with the ulnar nerve.
+*   The anterior interosseous nerve and artery run between the shafts of the radius and ulna.
+*   The posterior interosseous artery runs in the posterior compartment of the forearm, related to the ulna shaft.
+
+**4. Function**
+
+The ulna provides skeletal support for the forearm. It acts as a leverage point for muscles. It forms the main hinge joint at the elbow with the humerus. It articulates with the radius at the proximal and distal radioulnar joints, contributing to the movements of pronation and supination of the forearm.
+
+**5. Clinical Relevance**
+
+*   **Fractures:** Fractures of the ulna can occur, including fractures of the olecranon and shaft. Fractures here are commonly seen.
+*   **Surface Anatomy:** The olecranon process is easily palpable at the point of the elbow. The posterior border is subcutaneous and can be palpated along its entire length. The head and styloid process are palpable at the wrist, with the styloid process lying proximal to that of the radius.
+*   **Ulnar Nerve Vulnerability:** The ulnar nerve is superficial as it passes behind the medial epicondyle of the humerus ("funny bone"), making it susceptible to injury.
+
+**6. Mnemonics**
+
+*   No specific mnemonics for the ulna bone itself were found in the sources.
+
+**7. Summary Table / Cheat Sheet**
+
+| Feature              | Description                                                                                                        | Sources                                   |
+| :------------------- | :----------------------------------------------------------------------------------------------------------------- | :---------------------------------------- |
+| **Overview**         | One of the two bones of the forearm.                                                                               |                |
+| **Location**         | Forearm; medial in anatomical position.                                                                            |                            |
+| **Shape**            | Long bone [Implied]; shaft tapers distally.                                                                        |                                      |
+| **Key Landmarks**    | Olecranon process, Coronoid process, Trochlear notch, Radial notch, Shaft, Interosseous border, Posterior border, Supinator crest, Head, Styloid process. | |
+| **Articulations**    | Humerus (Elbow joint). Radius (Proximal/Distal Radioulnar joints). Articular disc at wrist (not directly with carpals). | |
+| **Associated Muscles**| Triceps brachii, Brachialis, Anconeus, Flexor digitorum profundus, Pronator quadratus, Flexor carpi ulnaris, Abductor pollicis longus, Extensor pollicis longus, Extensor indicis, Extensor carpi ulnaris, Supinator, Flexor digitorum superficialis. |     |
+| **Associated Ligaments**| Interosseous membrane, Capsule of elbow/wrist joints, Medial/Lateral elbow ligaments.                               |               |
+| **Associated Nerves**| Ulnar nerve, Anterior interosseous nerve, Posterior interosseous artery (related).                               |                          |
+| **Associated Vessels**| Ulnar artery, Anterior/Posterior interosseous arteries, Arterial anastomosis around wrist.                           |                 |
+| **Function**         | Provides skeletal support, muscle attachment, acts as leverage, forms main elbow articulation, contributes to radioulnar (pronation/supination) movements. | |
+| **Clinical Relevance**| Fractures (olecranon, shaft), surface anatomy (olecranon, posterior border, head/styloid), Ulnar nerve vulnerability. |                    |
+
+---
+
+📌 Topic Title: Bones of the Hand (Carpals, Metacarpals, Phalanges)
+
+**1. Overview**
+
+The hand is the distal part of the upper limb, enabling specialized tasks such as gripping and fine movements. Its bony framework provides skeletal support and leverage for numerous muscles. The hand includes the wrist (carpus), the metacarpus, and the digits. Much of the importance of the hand depends on the pincer-like action of the thumb.
+
+**2. Location & Anatomy**
+
+The bones of the hand are located distal to the forearm, articulating with the radius and ulna at the wrist.
+
+Key anatomical divisions and bones:
+*   **Carpus (Wrist):** Contains 8 small, irregularly shaped bones. These are arranged in two rows. The names are scaphoid, lunate, triquetrum, pisiform, trapezium, trapezoid, capitate, and hamate. The scaphoid is in the proximal row and is commonly fractured. The ridge of the trapezium and the hook of the hamate are structures to examine.
+*   **Metacarpus:** Comprised of 5 metacarpal bones, named Metacarpal I to V (I for the thumb, V for the pinky finger). They form the palm of the hand.
+*   **Digits (Fingers):** Supported by 14 bones called phalanges. Each finger (index, middle, ring, little) has three phalanges (proximal, middle, distal). The thumb has only two phalanges (proximal, distal). They are named by adding I-V to the type of phalanx (e.g., proximal phalanx I for the thumb).
+
+The bones of the hand are cartilaginous at birth, with ossification beginning in the first year (capitate) and continuing until the 12th year.
+
+**3. Structure & Relations**
+
+The bones of the hand articulate with each other and with the radius and ulna.
+*   **Wrist Joint (Radiocarpal Joint):** Formed by the distal end of the radius articulating with the scaphoid and lunate bones. The ulna articulates with the articular disc.
+*   **Intercarpal Joints:** Articulations between individual bones within the proximal row, within the distal row, and the midcarpal joint between the two rows. These are synovial plane joints with limited gliding movement.
+*   **Carpometacarpal and Intermetacarpal Joints:** Articulations between the distal row of carpals and the metacarpals, and between the metacarpals themselves. These are generally synovial plane joints with limited gliding movement. The carpometacarpal joint of the thumb is more mobile.
+*   **Metacarpophalangeal (MCP) Joints:** Articulations between the heads of the metacarpals and the bases of the proximal phalanges.
+*   **Interphalangeal (IP) Joints:** Articulations between the phalanges (proximal and middle, middle and distal).
+
+Numerous intrinsic and extrinsic muscles attach to the bones of the hand. Examples shown in figures include:
+*   **Carpals:** Flexor carpi ulnaris to the pisiform. Abductor digiti minimi to the pisiform. Pisohamate ligament from pisiform to hook of hamate. Flexor retinaculum attaches to scaphoid, trapezium, hamate, and pisiform. Extensor retinaculum attaches to the distal ends of the radius and ulna, relating to the carpal bones beneath it.
+*   **Metacarpals:** Extensor carpi radialis longus to base of 2nd metacarpal. Extensor carpi radialis brevis to base of 3rd metacarpal. Extensor carpi ulnaris to base of 5th metacarpal. Palmar and dorsal interossei muscles originate from the shafts of metacarpals. Abductor pollicis longus inserts on the base of the 1st metacarpal. Adductor pollicis originates from metacarpals. Palmar ligaments of the joints connect bones. Interosseous metacarpal ligaments connect metacarpals.
+*   **Phalanges:** Long flexor tendons (Flexor digitorum superficialis and profundus, Flexor pollicis longus) insert on phalanges. Long extensor tendons (Extensor digitorum, Extensor indicis, Extensor digiti minimi, Extensor pollicis longus, Extensor pollicis brevis) insert on phalanges, often via extensor expansions. Intrinsic muscles like lumbricals and interossei insert on the bases of proximal phalanges and/or extensor expansions. Fibrous flexor sheaths surround the tendons on the palmar side of the phalanges. Collateral ligaments reinforce the MCP and IP joints.
+
+Important anatomical areas formed or bounded by hand bones:
+*   **Carpal Tunnel:** Formed by the carpal bones posteriorly and the flexor retinaculum anteriorly. Transmits the median nerve and long flexor tendons.
+*   **Ulnar Canal (Guyon's Canal):** Formed near the pisiform and hook of hamate, transmits the ulnar nerve and artery.
+*   **Anatomical Snuffbox:** Bounded by tendons related to the thumb bones (Abductor pollicis longus, Extensor pollicis brevis laterally; Extensor pollicis longus medially), with the scaphoid and trapezium forming the floor.
+*   **Fascial Spaces:** Bones contribute to the boundaries of spaces like the thenar and midpalmar spaces, which lie between the flexor tendons and the metacarpals.
+
+Nerves and vessels related to the bones:
+*   The median nerve passes through the carpal tunnel. Its palmar cutaneous branch crosses anterior to the flexor retinaculum. Digital branches supply the lateral 3 1/2 fingers.
+*   The ulnar nerve and artery pass through the ulnar canal. The ulnar nerve's palmar cutaneous branch crosses anterior to the flexor retinaculum. Its deep branch winds around the hook of the hamate. Digital branches supply the medial 1 1/2 fingers.
+*   The radial artery winds around the lateral side of the wrist, crossing the anatomical snuffbox, and contributes to the deep palmar arch. Its superficial branch supplies skin on the dorsum.
+*   The ulnar artery forms the superficial palmar arch and gives off the deep branch to the deep palmar arch.
+*   Arteries around the wrist joint are related to the distal radius and ulna and carpal bones. Arteries of the palm (superficial and deep palmar arches, palmar digital arteries) are related to the metacarpals and phalanges. Dorsal arteries (dorsal carpal arch, dorsal metacarpal, dorsal digital) are related to the dorsal aspect of these bones.
+*   The dorsal venous network lies on the dorsum of the hand.
+
+**4. Function**
+
+The bones of the hand provide the rigid framework for the wrist, palm, and fingers. They serve as attachment sites and leverage points for the numerous muscles that produce the wide range of hand movements. The specific articulations between the carpal bones, metacarpals, and phalanges allow for complex movements like grasping, manipulation, and the crucial pincer action between the thumb and index finger.
+
+**5. Clinical Relevance**
+
+*   **Injuries:** Wrist and hand injuries are common and require particular attention to preserve function, especially the pincer action of the thumb. Fractures are frequent, with the scaphoid being commonly fractured.
+*   **Surface Anatomy:** The styloid processes of the radius and ulna are palpable at the wrist. The dorsal tubercle of the radius and the head of the ulna are also palpable. Some carpal bones, like the lunate (when the wrist is flexed), and bony prominences like the hook of the hamate are palpable. The metacarpophalangeal and interphalangeal joints can be felt at the finger creases. Tendons on the dorsum related to the metacarpals and phalanges are visible and palpable.
+*   **Nerve Compression:** The carpal tunnel, bounded by carpal bones and the flexor retinaculum, is a common site for median nerve compression (Carpal Tunnel Syndrome). The ulnar nerve can be compressed in the ulnar canal near the pisiform and hamate.
+*   **Congenital Defects:** Various congenital defects affecting the bones of the hand can occur, such as syndactyly (fusion of digits), brachydactyly (short digits due to phalange defects), floating thumb (absent metacarpal), and macrodactyly (large digits).
+*   **Arterial Anastomosis:** An adequate collateral circulation exists around the wrist joint, related to the carpal bones.
+*   **Hand as a Functional Unit:** The unique design and articulation of the hand bones contribute to its complex function.
+
+**6. Mnemonics**
+
+*   **Rotator Cuff Muscles:** (While not directly bones of the hand, this mnemonic relates to muscles acting on the upper limb and originating from the scapula) **SITS**.
+*   No specific mnemonics for the carpal bones themselves were found in the sources.
+
+**7. Summary Table / Cheat Sheet**
+
+| Feature              | Description                                                                                                                                   | Sources                                            |
+| :------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------- |
+| **Overview**         | Distal part of upper limb; enables specialized tasks. Composed of carpus, metacarpus, digits.                                                 |                            |
+| **Location**         | Distal to the forearm, articulating with radius and ulna.                                                                                     |                                               |
+| **Divisions & Bones**| **Carpus (8):** Scaphoid, Lunate, Triquetrum, Pisiform, Trapezium, Trapezoid, Capitate, Hamate. **Metacarpus (5):** I-V. **Digits (14):** Proximal, Middle, Distal Phalanges (except thumb, 2). |                           |
+| **Articulations**    | Wrist Joint (Radius + Scaphoid/Lunate), Intercarpal, Carpometacarpal, Intermetacarpal, Metacarpophalangeal, Interphalangeal joints.           |        |
+| **Associated Muscles**| Intrinsic (Thenar, Hypothenar, Interossei, Lumbricals, Adductor pollicis), Extrinsic (Long flexors/extensors from forearm).                | |
+| **Associated Ligaments**| Flexor retinaculum, Extensor retinaculum, Fibrous/Synovial flexor sheaths, Palmar aponeurosis, Collateral, Interosseous, Palmar.          | |
+| **Associated Nerves**| Median nerve, Ulnar nerve, Radial nerve (superficial branch), Digital nerves.                                                              | |
+| **Associated Vessels**| Radial artery, Ulnar artery, Palmar arches (superficial/deep), Digital arteries, Dorsal venous network, Arterial anastomosis around wrist. | |
+| **Function**         | Provides skeletal framework, muscle attachment/leverage, allows complex movements (grasping, pincer action), maintains hand structure.     |                      |
+| **Clinical Relevance**| Common site of injury, Scaphoid fracture, Carpal tunnel syndrome, Ulnar nerve compression, Congenital defects, Surface anatomy.          |            |
+
+---

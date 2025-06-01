@@ -1,0 +1,192 @@
+Certainly! Here's a structured prompt for Replit AI to add comprehensive subtopics under the "Gross Anatomy" section of your Notes, following the format of Snell's Clinical Anatomy. This prompt includes specific image URLs from reputable sources like Smart Servier and Wikimedia Commons, along with appropriate attribution information.
+
+---
+
+**🧠 Prompt for Replit AI:**
+
+Please update the "Anatomy" section under "Gross Anatomy" by adding the following main topics. Under each main topic, include the specified subtopics, adhering to the structure presented in Snell's Clinical Anatomy. For each subtopic, associate an illustrative image using the provided URLs. Ensure that all images are appropriately attributed.
+
+---
+
+### 1. **Head and Neck**
+
+**Subtopics:**
+
+* Skull
+* Face
+* Scalp
+* Cranial Cavity
+* Brain
+* Meninges
+* Cranial Nerves
+* Orbit and Eye
+* Ear
+* Nasal Cavity
+* Oral Cavity
+* Pharynx
+* Larynx
+* Neck([Kenhub][1], [Kenhub][2], [Kenhub][3])
+
+**Image:**
+
+* **URL:** [https://upload.wikimedia.org/wikipedia/commons/8/8b/Gray1194.png](https://upload.wikimedia.org/wikipedia/commons/8/8b/Gray1194.png)
+* **Attribution:** Public domain image from Gray's Anatomy via Wikimedia Commons.
+
+---
+
+### 2. **Upper Limb**
+
+**Subtopics:**
+
+* Shoulder Region
+* Arm (Brachium)
+* Elbow
+* Forearm (Antebrachium)
+* Wrist
+* Hand
+* Bones of the Upper Limb
+* Muscles of the Upper Limb
+* Nerves of the Upper Limb
+* Vessels of the Upper Limb([Kenhub][4], [Kenhub][5], [Kenhub][2], [Kenhub][6], [Kenhub][7])
+
+**Image:**
+
+* **URL:** [https://smart.servier.com/wp-content/uploads/2016/11/upper\_limb\_muscles-1.png](https://smart.servier.com/wp-content/uploads/2016/11/upper_limb_muscles-1.png)
+* **Attribution:** Image by Servier Medical Art, licensed under CC BY 3.0.
+
+---
+
+### 3. **Thorax**
+
+**Subtopics:**
+
+* Thoracic Wall
+* Pleural Cavities
+* Lungs
+* Mediastinum
+* Heart
+* Great Vessels
+* Esophagus
+* Thoracic Duct
+* Nerves of the Thorax([Kenhub][8], [Kenhub][9], [Kenhub][10], [Kenhub][1])
+
+**Image:**
+
+* **URL:** [https://upload.wikimedia.org/wikipedia/commons/3/3c/Gray964.png](https://upload.wikimedia.org/wikipedia/commons/3/3c/Gray964.png)
+* **Attribution:** Public domain image from Gray's Anatomy via Wikimedia Commons.([Kenhub][8])
+
+---
+
+### 4. **Lower Limb**
+
+**Subtopics:**
+
+* Gluteal Region
+* Thigh
+* Knee
+* Leg
+* Ankle
+* Foot
+* Bones of the Lower Limb
+* Muscles of the Lower Limb
+* Nerves of the Lower Limb
+* Vessels of the Lower Limb([Kenhub][11], [Kenhub][12])
+
+**Image:**
+
+* **URL:** [https://smart.servier.com/wp-content/uploads/2016/11/lower\_limb\_muscles-1.png](https://smart.servier.com/wp-content/uploads/2016/11/lower_limb_muscles-1.png)
+* **Attribution:** Image by Servier Medical Art, licensed under CC BY 3.0.
+
+---
+
+### 5. **Pelvis and Perineum**
+
+**Subtopics:**
+
+* Pelvic Bones
+* Pelvic Cavity
+* Pelvic Organs
+* Perineum
+* Pelvic Floor Muscles
+* Nerves of the Pelvis
+* Vessels of the Pelvis([Kenhub][13])
+
+**Image:**
+
+* **URL:** [https://upload.wikimedia.org/wikipedia/commons/0/0c/Gray1223.png](https://upload.wikimedia.org/wikipedia/commons/0/0c/Gray1223.png)
+* **Attribution:** Public domain image from Gray's Anatomy via Wikimedia Commons.
+
+---
+
+### 6. **Neuroanatomy**
+
+**Subtopics:**
+
+* Brain
+* Spinal Cord
+* Meninges
+* Cranial Nerves
+* Peripheral Nerves
+* Autonomic Nervous System
+* Sensory Pathways
+* Motor Pathways([Kenhub][3], [Kenhub][14])
+
+**Image:**
+
+* **URL:** [https://upload.wikimedia.org/wikipedia/commons/3/3b/Gray728.png](https://upload.wikimedia.org/wikipedia/commons/3/3b/Gray728.png)
+* **Attribution:** Public domain image from Gray's Anatomy via Wikimedia Commons.([Kenhub][8])
+
+---
+
+### 7. **Abdomen**
+
+**Subtopics:**
+
+* Abdominal Wall
+* Peritoneum
+* Abdominal Cavity
+* Gastrointestinal Tract
+* Liver
+* Pancreas
+* Spleen
+* Kidneys
+* Suprarenal Glands
+* Abdominal Aorta
+* Inferior Vena Cava
+* Lymphatics of the Abdomen([Kenhub][10], [Kenhub][9], [Kenhub][15], [Kenhub][16], [Kenhub][17])
+
+**Image:**
+
+* **URL:** [https://upload.wikimedia.org/wikipedia/commons/4/4d/Gray1030.png](https://upload.wikimedia.org/wikipedia/commons/4/4d/Gray1030.png)
+* **Attribution:** Public domain image from Gray's Anatomy via Wikimedia Commons.
+
+---
+
+**Note to Replit AI:**
+
+* Ensure that each subtopic is appropriately nested under its main topic.
+* Use the provided image URLs for visual representation.
+* Include the attribution information as specified.
+* Maintain consistency with the formatting and structure of Snell's Clinical Anatomy.
+
+---
+
+If you need further assistance or additional resources, feel free to ask!
+
+[1]: https://www.kenhub.com/en/library/anatomy/thorax?utm_source=chatgpt.com "Thorax: Anatomy, wall, cavity, organs & neurovasculature | Kenhub"
+[2]: https://www.kenhub.com/en/library/anatomy/perineal-body?utm_source=chatgpt.com "Perineal body: Anatomy and function | Kenhub"
+[3]: https://www.kenhub.com/en/library/anatomy/neuroanatomy?utm_source=chatgpt.com "Brain, spinal cord and peripheral nervous system anatomy | Kenhub"
+[4]: https://www.kenhub.com/en/library/anatomy/regions-of-the-abdomen?utm_source=chatgpt.com "Regions of the abdomen - Kenhub"
+[5]: https://www.kenhub.com/en/library/anatomy/neurovasculature-of-the-upper-limb?utm_source=chatgpt.com "Upper limb: Arteries, veins and nerves - Kenhub"
+[6]: https://www.kenhub.com/en/library/anatomy/lower-extremity-anatomy?utm_source=chatgpt.com "Lower limb anatomy: Bones, muscles, nerves, vessels | Kenhub"
+[7]: https://www.kenhub.com/en/library/anatomy/upper-limb-muscles-and-movements?utm_source=chatgpt.com "Upper limb muscles and movements: Anatomy - Kenhub"
+[8]: https://www.kenhub.com/en/library/anatomy/the-pelvis?utm_source=chatgpt.com "Bony pelvis: Ilium, ischium, pubis | Kenhub"
+[9]: https://www.kenhub.com/en/library/physiology/the-nervous-system?utm_source=chatgpt.com "Overview of the nervous system: Structure and function - Kenhub"
+[10]: https://www.kenhub.com/en/library/anatomy/anterior-abdominal-wall?utm_source=chatgpt.com "Abdominal wall: Layers, muscles and fascia | Kenhub"
+[11]: https://www.kenhub.com/en/library/anatomy/regions-of-the-lower-limb?utm_source=chatgpt.com "Regions of the lower limb: Anatomy and contents | Kenhub"
+[12]: https://www.kenhub.com/en/videos/main-muscles-of-lower-limb?utm_source=chatgpt.com "Video: Main muscles of the lower limb - Kenhub"
+[13]: https://www.kenhub.com/en/library/anatomy/right-upper-quadrant?utm_source=chatgpt.com "Right upper quadrant: Anatomy, organs and causes of pain - Kenhub"
+[14]: https://www.kenhub.com/en/library/anatomy/neural-pathways?utm_source=chatgpt.com "Neural pathways and spinal cord tracts: Anatomy | Kenhub"
+[15]: https://www.kenhub.com/en/library/anatomy/thoracic-cage?utm_source=chatgpt.com "Thoracic cage: Anatomy and clinical notes | Kenhub"
+[16]: https://www.kenhub.com/en/library/anatomy/perineal-region?utm_source=chatgpt.com "Perineal region: Anatomy, definition and supply - Kenhub"
+[17]: https://www.kenhub.com/en/library/anatomy/abdomen-and-pelvis?utm_source=chatgpt.com "Abdomen and pelvis: structure and function | Kenhub"
