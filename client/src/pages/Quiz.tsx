@@ -9,6 +9,8 @@ import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
+import { useQueryClient } from '@tanstack/react-query';
 import { 
   Brain, 
   Microscope, 
@@ -44,6 +46,8 @@ interface Question {
 }
 
 export default function Quiz() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [selectedQuizType, setSelectedQuizType] = useState<string | null>(null);
   const [selectedMCQSubject, setSelectedMCQSubject] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -159,33 +163,47 @@ export default function Quiz() {
     }
 
     // Record quiz attempt with comprehensive analytics
-    try {
-      const response = await fetch('/api/quiz/attempt', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: 'demo-user', // In a real app, this would come from auth context
-          category: selectedCategory,
-          selectedAnswer,
-          correctAnswer: currentQuestion.correct_answer,
-          isCorrect,
-          timeSpent,
-          difficulty: currentQuestion.difficulty || 'medium'
-        })
-      });
+    if (user?.id) {
+      try {
+        const xpEarned = isCorrect ? 15 : 5; // Award XP based on correctness
+        
+        const response = await fetch('/api/quiz-attempts', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: user.id,
+            category: selectedCategory,
+            selectedAnswer,
+            correctAnswer: currentQuestion.correct_answer,
+            isCorrect,
+            timeSpent,
+            xpEarned,
+            difficulty: currentQuestion.difficulty || 'medium'
+          })
+        });
 
-      if (response.ok) {
-        const result = await response.json();
-        console.log('Quiz attempt recorded:', result);
+        if (response.ok) {
+          const result = await response.json();
+          console.log('Quiz attempt recorded:', result);
+          
+          // Invalidate and refetch user stats to update analytics
+          queryClient.invalidateQueries({ queryKey: ['/api/user-stats', user.id] });
+          queryClient.invalidateQueries({ queryKey: ['/api/quiz-attempts', user.id] });
+          queryClient.invalidateQueries({ queryKey: ['/api/category-stats', user.id] });
+          queryClient.invalidateQueries({ queryKey: ['/api/daily-stats', user.id] });
+          queryClient.invalidateQueries({ queryKey: ['/api/leaderboard'] });
+        } else {
+          console.error('Failed to record quiz attempt:', response.status);
+        }
+      } catch (error) {
+        console.error('Error recording quiz attempt:', error);
       }
-    } catch (error) {
-      console.error('Error recording quiz attempt:', error);
     }
   };
 
-  const handleNextQuestion = () => {
+  const handleNextQuestion = async () => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedAnswer('');
@@ -193,6 +211,26 @@ export default function Quiz() {
       setQuestionStartTime(Date.now()); // Start timing for new question
     } else {
       setQuizCompleted(true);
+      
+      // Update final quiz completion stats
+      if (user?.id) {
+        try {
+          const finalScore = score + (selectedAnswer === questions[currentQuestionIndex].correct_answer ? 1 : 0);
+          const totalTime = startTime ? Math.round((new Date().getTime() - startTime.getTime()) / 1000) : 0;
+          
+          // Force refresh all stats after quiz completion
+          setTimeout(() => {
+            queryClient.invalidateQueries({ queryKey: ['/api/user-stats'] });
+            queryClient.invalidateQueries({ queryKey: ['/api/quiz-attempts'] });
+            queryClient.invalidateQueries({ queryKey: ['/api/category-stats'] });
+            queryClient.invalidateQueries({ queryKey: ['/api/daily-stats'] });
+            queryClient.invalidateQueries({ queryKey: ['/api/leaderboard'] });
+          }, 1000); // Delay to ensure database has processed all attempts
+          
+        } catch (error) {
+          console.error('Error updating final stats:', error);
+        }
+      }
     }
   };
 
