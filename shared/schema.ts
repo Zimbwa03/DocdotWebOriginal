@@ -6,7 +6,16 @@ import { z } from "zod";
 export const users = pgTable("users", {
   id: text("id").primaryKey(), // Supabase user ID
   email: text("email").unique().notNull(),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
   fullName: text("full_name"),
+  specialization: text("specialization"),
+  institution: text("institution"),
+  phone: text("phone"),
+  profileCompleted: boolean("profile_completed").notNull().default(false),
+  learningStyle: text("learning_style"), // visual, auditory, kinesthetic
+  goals: json("goals"), // Array of learning goals
+  schedule: json("schedule"), // Study schedule preferences
   subscriptionTier: text("subscription_tier").notNull().default("free"), // free, starter, premium
   xp: integer("xp").notNull().default(0),
   level: integer("level").notNull().default(1),
@@ -106,7 +115,15 @@ export const aiChats = pgTable("ai_chats", {
 // Schema exports
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
+  firstName: true,
+  lastName: true,
   fullName: true,
+  specialization: true,
+  institution: true,
+  phone: true,
+  learningStyle: true,
+  goals: true,
+  schedule: true,
 });
 
 export const insertCategorySchema = createInsertSchema(categories);

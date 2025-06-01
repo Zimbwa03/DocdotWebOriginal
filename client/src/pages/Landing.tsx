@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Link } from 'wouter';
+import { Link, Redirect } from 'wouter';
+import { useAuth } from '@/contexts/AuthContext';
 import { 
   GraduationCap, 
   BookOpen, 
@@ -15,6 +16,20 @@ import {
 } from 'lucide-react';
 
 export default function Landing() {
+  const { user, loading } = useAuth();
+
+  // If user is authenticated, redirect to home
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2" style={{ borderColor: '#3399FF' }}></div>
+      </div>
+    );
+  }
+
+  if (user) {
+    return <Redirect to="/home" />;
+  }
   const features = [
     {
       icon: GraduationCap,

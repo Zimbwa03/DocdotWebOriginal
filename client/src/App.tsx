@@ -38,7 +38,7 @@ function AuthRedirect() {
     return <Redirect to="/home" />;
   }
 
-  return <AuthForm />;
+  return <Redirect to="/" />;
 }
 
 function Router() {
