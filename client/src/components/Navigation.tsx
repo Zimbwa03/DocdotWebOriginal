@@ -131,9 +131,9 @@ export function Navigation() {
   const navItems = [
     { path: '/home', label: 'Home', icon: Home },
     { path: '/quiz', label: 'Quiz', icon: GraduationCap },
+    { path: '/analytics', label: 'Analytics', icon: Trophy },
     { path: '/notes', label: 'Notes', icon: FileText },
     { path: '/study-guide', label: 'Study Guide', icon: BookOpen },
-    { path: '/performance', label: 'Performance', icon: Trophy },
     { path: '/ai-tools', label: 'AI Tools', icon: Brain },
     { path: '/pricing', label: 'Pricing', icon: DollarSign },
   ];

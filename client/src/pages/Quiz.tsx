@@ -557,48 +557,54 @@ export default function Quiz() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <RadioGroup value={selectedAnswer} onValueChange={handleAnswerSelect}>
-              <div className="space-y-4">
-                {['A', 'B', 'C', 'D'].map((option) => {
-                  const optionKey = `option_${option.toLowerCase()}` as keyof Question;
-                  const optionText = currentQuestion[optionKey] as string;
-                  const isSelected = selectedAnswer === option;
-                  const isCorrect = option === currentQuestion.correct_answer;
+            <div className="space-y-4">
+              {['True', 'False'].map((option) => {
+                const isSelected = selectedAnswer === option;
+                const isCorrect = option === currentQuestion.correct_answer;
 
-                  let optionStyle = '';
-                  if (isAnswered) {
-                    if (isCorrect) {
-                      optionStyle = 'border-green-500 bg-green-50';
-                    } else if (isSelected && !isCorrect) {
-                      optionStyle = 'border-red-500 bg-red-50';
-                    }
+                let buttonStyle = 'w-full p-6 border-2 rounded-lg transition-all duration-200 flex items-center justify-between ';
+                
+                if (isAnswered) {
+                  if (isCorrect) {
+                    buttonStyle += 'border-green-500 bg-green-50 text-green-900';
+                  } else if (isSelected && !isCorrect) {
+                    buttonStyle += 'border-red-500 bg-red-50 text-red-900';
+                  } else {
+                    buttonStyle += 'border-gray-200 bg-gray-50 text-gray-700';
                   }
+                } else {
+                  if (isSelected) {
+                    buttonStyle += 'border-blue-500 bg-blue-50 text-blue-900';
+                  } else {
+                    buttonStyle += 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 cursor-pointer';
+                  }
+                }
 
-                  return (
-                    <div key={option} className={`flex items-center space-x-3 p-4 border rounded-lg ${optionStyle}`}>
-                      <RadioGroupItem 
-                        value={option} 
-                        id={option}
-                        disabled={isAnswered}
-                      />
-                      <Label 
-                        htmlFor={option} 
-                        className="flex-1 cursor-pointer text-sm"
-                        style={{ color: '#1C1C1C' }}
-                      >
-                        <span className="font-medium">{option}.</span> {optionText}
-                      </Label>
-                      {isAnswered && isCorrect && (
-                        <CheckCircle className="w-5 h-5 text-green-500" />
-                      )}
-                      {isAnswered && isSelected && !isCorrect && (
-                        <XCircle className="w-5 h-5 text-red-500" />
-                      )}
+                return (
+                  <button
+                    key={option}
+                    className={buttonStyle}
+                    onClick={() => !isAnswered && handleAnswerSelect(option)}
+                    disabled={isAnswered}
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className={`w-10 h-10 rounded-lg border-2 flex items-center justify-center text-lg font-bold ${
+                        option === 'True' ? 'bg-green-100 border-green-300 text-green-700' : 'bg-red-100 border-red-300 text-red-700'
+                      }`}>
+                        {option === 'True' ? '✓' : '✗'}
+                      </div>
+                      <span className="text-lg font-semibold">{option}</span>
                     </div>
-                  );
-                })}
-              </div>
-            </RadioGroup>
+                    {isAnswered && (
+                      <div>
+                        {isCorrect && <CheckCircle className="w-6 h-6 text-green-600" />}
+                        {isSelected && !isCorrect && <XCircle className="w-6 h-6 text-red-600" />}
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
 
             {isAnswered && (
               <div className="mt-6 space-y-4">
