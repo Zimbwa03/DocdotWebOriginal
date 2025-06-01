@@ -27,6 +27,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      
+      // If user is signed in, sync profile data
+      if (session?.user) {
+        syncUserProfile(session.user);
+      }
     });
 
     // Listen for auth changes
@@ -36,12 +41,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
         setLoading(false);
 
-        if (event === 'SIGNED_IN') {
+        if (event === 'SIGNED_IN' && session?.user) {
+          await syncUserProfile(session.user);
           toast({
             title: "Welcome to Docdot!",
             description: "You have successfully signed in.",
           });
         } else if (event === 'SIGNED_OUT') {
+          localStorage.removeItem('profileSetupComplete');
           toast({
             title: "Signed out",
             description: "You have been signed out successfully.",
@@ -52,6 +59,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => subscription.unsubscribe();
   }, [toast]);
+
+  const syncUserProfile = async (user: any) => {
+    try {
+      // Create or update user profile in database
+      const response = await fetch('/api/user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: user.id,
+          email: user.email,
+          firstName: user.user_metadata?.firstName || user.user_metadata?.first_name,
+          lastName: user.user_metadata?.lastName || user.user_metadata?.last_name,
+        }),
+      });
+      
+      if (response.ok) {
+        const userData = await response.json();
+        if (userData.profileCompleted) {
+          localStorage.setItem('profileSetupComplete', 'true');
+        }
+      }
+    } catch (error) {
+      console.error('Error syncing user profile:', error);
+    }
+  };
 
   const signUp = async (email: string, password: string) => {
     try {
