@@ -189,9 +189,23 @@ function QuizSection() {
       setIsLoadingQuestions(true);
       console.log('Fetching questions for category:', category);
       
-      const response = await fetch('/docdot-questions.json');
+      const response = await fetch('/docdot-questions.json', {
+        headers: {
+          'Accept': 'application/json'
+        },
+        cache: 'no-cache'
+      });
+      
       if (!response.ok) {
-        throw new Error('Failed to load questions file');
+        throw new Error(`Failed to load questions file: ${response.status} ${response.statusText}`);
+      }
+      
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Invalid response type. Expected JSON, got:', contentType);
+        console.error('Response preview:', text.substring(0, 200));
+        throw new Error('Server returned HTML instead of JSON - check file path');
       }
       
       const data = await response.json();
@@ -789,9 +803,23 @@ export default function Home() {
   // Start quick quiz
   const startQuickQuiz = async () => {
     try {
-      const response = await fetch('/docdot-questions.json');
+      const response = await fetch('/docdot-questions.json', {
+        headers: {
+          'Accept': 'application/json'
+        },
+        cache: 'no-cache'
+      });
+      
       if (!response.ok) {
-        throw new Error('Failed to load questions file');
+        throw new Error(`Failed to load questions file: ${response.status} ${response.statusText}`);
+      }
+      
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Quick quiz - Invalid response type. Expected JSON, got:', contentType);
+        console.error('Quick quiz - Response preview:', text.substring(0, 200));
+        throw new Error('Server returned HTML instead of JSON - check file path');
       }
       
       const data = await response.json();
