@@ -235,11 +235,11 @@ function QuizSection() {
     const transformedQuestions = questions.map((q: any) => ({
       id: q.id,
       question: q.question || '',
-      options: typeof q.answer === 'boolean' ? ['True', 'False'] : (q.options || []),
-      correctAnswer: typeof q.answer === 'boolean' ? (q.answer ? 'True' : 'False') : (q.answer || ''),
+      options: ['True', 'False'], // All questions are True/False based on your data
+      correctAnswer: q.answer === 1 || q.answer === "True" || q.answer === true ? 'True' : 'False',
       explanation: q.explanation || '',
       ai_explanation: q.ai_explanation || '',
-      reference_data: q.reference_json ? JSON.stringify(q.reference_json) : '',
+      reference_data: q.reference_json || '',
       questionType: 'text' as const,
       difficulty: q.difficulty || 'medium' as const
     }));
@@ -777,11 +777,11 @@ export default function Home() {
         const transformedQuestions = shuffled.map((q: any) => ({
           id: q.id,
           question: q.question || '',
-          options: typeof q.answer === 'boolean' ? ['True', 'False'] : (q.options || []),
-          correctAnswer: typeof q.answer === 'boolean' ? (q.answer ? 'True' : 'False') : (q.answer || ''),
+          options: ['True', 'False'], // All questions are True/False based on your data
+          correctAnswer: q.answer === 1 || q.answer === "True" || q.answer === true ? 'True' : 'False',
           explanation: q.explanation || '',
           ai_explanation: q.ai_explanation || '',
-          reference_data: q.reference_json ? JSON.stringify(q.reference_json) : '',
+          reference_data: q.reference_json || '',
           questionType: 'text' as const,
           difficulty: q.difficulty || 'medium' as const
         }));
