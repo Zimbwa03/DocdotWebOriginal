@@ -173,6 +173,7 @@ function QuizSection() {
   const fetchQuestionsFromJSON = async (category: string) => {
     try {
       setIsLoadingQuestions(true);
+      console.log('Fetching questions for category:', category);
       
       const response = await fetch('/docdot-questions.json');
       if (!response.ok) {
@@ -180,9 +181,18 @@ function QuizSection() {
       }
       
       const data = await response.json();
+      console.log('Total questions loaded:', data.length);
+      console.log('Available categories:', [...new Set(data.map((q: any) => q.category))]);
       
-      // Filter questions by category
-      const filtered = data.filter((q: any) => q.category === category);
+      // Filter questions by category - handle both direct category match and subcategory match
+      const filtered = data.filter((q: any) => 
+        q.category === category || 
+        q.category.toLowerCase() === category.toLowerCase() ||
+        category.toLowerCase().includes(q.category.toLowerCase()) ||
+        q.category.toLowerCase().includes(category.toLowerCase())
+      );
+      
+      console.log('Filtered questions for', category, ':', filtered.length);
       
       if (filtered.length === 0) {
         toast({
