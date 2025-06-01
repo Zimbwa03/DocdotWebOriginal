@@ -174,7 +174,7 @@ function QuizSection() {
     try {
       setIsLoadingQuestions(true);
       
-      const response = await fetch('/attached_assets/Docdot_mcqs database.json');
+      const response = await fetch('/docdot-questions.json');
       if (!response.ok) {
         throw new Error('Failed to load questions file');
       }
@@ -764,7 +764,7 @@ export default function Home() {
   // Start quick quiz
   const startQuickQuiz = async () => {
     try {
-      const response = await fetch('/attached_assets/Docdot_mcqs database.json');
+      const response = await fetch('/docdot-questions.json');
       if (!response.ok) {
         throw new Error('Failed to load questions file');
       }
