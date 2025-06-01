@@ -7,6 +7,10 @@ import { openRouterAI } from "./ai";
 import { v4 as uuidv4 } from "uuid";
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Temporary in-memory storage for user profiles and quiz data
 const userProfiles = new Map<string, any>();
@@ -21,6 +25,7 @@ try {
   console.log(`Loaded ${mcqDatabase.length} MCQ questions`);
 } catch (error) {
   console.error('Failed to load MCQ database:', error);
+  mcqDatabase = [];
 }
 
 // Helper function to normalize answer format
@@ -118,7 +123,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get available categories
   app.get("/api/quiz/categories", (req, res) => {
     try {
-      const categories = [...new Set(mcqDatabase.map(q => q.category))];
+      const categorySet = new Set<string>();
+      mcqDatabase.forEach(q => categorySet.add(q.category));
+      const categories = Array.from(categorySet);
       const categoriesWithCount = categories.map(category => ({
         name: category,
         count: mcqDatabase.filter(q => q.category === category).length
@@ -258,7 +265,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         progress: {
           current: session.currentQuestionIndex,
           total: session.questions.length,
-          accuracy: Math.round((session.answers.filter(a => a.isCorrect).length / session.answers.length) * 100)
+          accuracy: Math.round((session.answers.filter((a: any) => a.isCorrect).length / session.answers.length) * 100)
         }
       });
     } catch (error) {
