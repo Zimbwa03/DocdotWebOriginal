@@ -35,11 +35,20 @@ interface Topic {
   content: string;
   accessTier: 'free' | 'starter' | 'premium';
   lastUpdated: string;
+  subtopics?: Subtopic[];
+}
+
+interface Subtopic {
+  id: string;
+  name: string;
+  description?: string;
+  content?: string;
 }
 
 export default function Notes() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
+  const [selectedSubtopic, setSelectedSubtopic] = useState<Subtopic | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('gross_anatomy');
 
@@ -87,88 +96,138 @@ export default function Notes() {
       name: 'Head and Neck',
       category: 'Anatomy',
       type: 'gross_anatomy',
-      content: `# Head and Neck
+      content: `# Head and Neck - Overview
 
-## Subtopics
-
-### Skull (Bones of the skull, foramina, cranial fossae)
-- **Bones of the skull**: Frontal, parietal, temporal, occipital, sphenoid, ethmoid
-- **Foramina**: Entry and exit points for nerves and vessels
-- **Cranial fossae**: Anterior, middle, and posterior fossae
-
-### Scalp and Face
-- **Layers of scalp**: Skin, connective tissue, aponeurosis, loose tissue, pericranium
-- **Facial muscles**: Muscles of expression and mastication
-- **Facial vessels and nerves**: Trigeminal and facial nerve distributions
-
-### Parotid Region
-- **Parotid gland**: Largest salivary gland
-- **Facial nerve course**: Through parotid gland
-- **Parotid duct**: Stensen's duct opening
-
-### Temporal and Infratemporal Fossae
-- **Boundaries and contents**: Muscles of mastication
-- **Pterygoid muscles**: Medial and lateral pterygoid
-- **Maxillary artery**: Terminal branch of external carotid
-
-### Orbit and Eyeball
-- **Orbital walls**: Seven bones forming the orbit
-- **Extraocular muscles**: Six muscles controlling eye movement
-- **Optic nerve**: CN II pathway and relations
-
-### Nose and Nasal Cavity
-- **External nose**: Cartilaginous and bony framework
-- **Nasal septum**: Dividing the nasal cavity
-- **Paranasal sinuses**: Frontal, maxillary, sphenoid, ethmoid
-
-### Oral Cavity and Palate
-- **Hard palate**: Bony roof of mouth
-- **Soft palate**: Muscular partition
-- **Tongue**: Intrinsic and extrinsic muscles
-
-### Pharynx
-- **Nasopharynx**: Superior portion
-- **Oropharynx**: Middle portion
-- **Laryngopharynx**: Inferior portion
-
-### Larynx
-- **Cartilages**: Thyroid, cricoid, arytenoid
-- **Vocal cords**: True and false vocal folds
-- **Laryngeal muscles**: Intrinsic and extrinsic
-
-### Cervical Fascia
-- **Deep cervical fascia**: Investing, pretracheal, prevertebral layers
-- **Fascial spaces**: Potential spaces for infection spread
-
-### Posterior Triangle of the Neck
-- **Boundaries**: Sternocleidomastoid, trapezius, clavicle
-- **Contents**: Accessory nerve, brachial plexus trunks
-
-### Anterior Triangle of the Neck
-- **Subdivisions**: Submental, submandibular, carotid, muscular
-- **Major vessels**: Carotid arteries, jugular veins
-
-### Thyroid Gland and Trachea
-- **Thyroid anatomy**: Lobes, isthmus, relations
-- **Trachea**: C-shaped cartilages, relations
-
-### Blood Vessels of the Head and Neck
-- **Carotid system**: Common, internal, external carotid arteries
-- **Venous drainage**: Internal and external jugular veins
-
-### Cranial Nerves
-- **CN I-XII**: Detailed anatomy and functions
-- **Clinical testing**: Examination techniques
-
-### Autonomic Ganglia and Pathways
-- **Sympathetic chain**: Cervical ganglia
-- **Parasympathetic**: Cranial nerve ganglia
-
-### Surface Anatomy of the Head and Neck
-- **Palpable landmarks**: Anatomical reference points
-- **Clinical examination**: Inspection and palpation techniques`,
+The head and neck region contains vital structures for sensation, communication, and survival. Select a subtopic below to study specific anatomical regions in detail.`,
       accessTier: 'free',
-      lastUpdated: '2024-01-15'
+      lastUpdated: '2024-01-15',
+      subtopics: [
+        {
+          id: 'skull',
+          name: 'Skull',
+          description: 'Bones of the skull, foramina, cranial fossae',
+          content: `# Skull
+
+## Bones of the Skull
+- **Frontal bone**: Forms forehead and roof of orbits
+- **Parietal bones**: Form sides and roof of skull  
+- **Temporal bones**: House ear structures
+- **Occipital bone**: Forms back of skull
+- **Sphenoid**: Central skull base bone
+- **Ethmoid**: Forms part of nasal cavity
+
+## Foramina
+- **Foramen magnum**: Spinal cord passage
+- **Optic canal**: Optic nerve passage
+- **Superior orbital fissure**: Multiple cranial nerves
+- **Foramen rotundum**: Maxillary nerve
+- **Foramen ovale**: Mandibular nerve
+
+## Cranial Fossae  
+- **Anterior fossa**: Frontal lobes
+- **Middle fossa**: Temporal lobes
+- **Posterior fossa**: Cerebellum and brainstem`
+        },
+        {
+          id: 'scalp-face',
+          name: 'Scalp and Face',
+          description: 'Layers, muscles, vessels, and nerves',
+          content: `# Scalp and Face
+
+## Scalp Layers (SCALP)
+- **S**: Skin
+- **C**: Connective tissue (subcutaneous)
+- **A**: Aponeurosis (galea aponeurotica)
+- **L**: Loose connective tissue
+- **P**: Pericranium
+
+## Facial Muscles
+- **Muscles of expression**: Controlled by facial nerve (CN VII)
+- **Muscles of mastication**: Controlled by trigeminal nerve (CN V)
+- **Orbicularis oculi**: Eye closure
+- **Orbicularis oris**: Lip closure
+
+## Blood Supply
+- **Facial artery**: Main facial blood supply
+- **Superficial temporal artery**: Temple region
+- **Maxillary artery**: Deep facial structures`
+        },
+        {
+          id: 'parotid',
+          name: 'Parotid Region',
+          description: 'Parotid gland and facial nerve course'
+        },
+        {
+          id: 'temporal-infratemporal',
+          name: 'Temporal and Infratemporal Fossae',
+          description: 'Boundaries, contents, muscles of mastication'
+        },
+        {
+          id: 'orbit-eyeball',
+          name: 'Orbit and Eyeball',
+          description: 'Orbital walls, extraocular muscles, optic nerve'
+        },
+        {
+          id: 'nose-nasal',
+          name: 'Nose and Nasal Cavity',
+          description: 'External nose, nasal septum, paranasal sinuses'
+        },
+        {
+          id: 'oral-palate',
+          name: 'Oral Cavity and Palate',
+          description: 'Hard palate, soft palate, tongue'
+        },
+        {
+          id: 'pharynx',
+          name: 'Pharynx',
+          description: 'Nasopharynx, oropharynx, laryngopharynx'
+        },
+        {
+          id: 'larynx',
+          name: 'Larynx',
+          description: 'Cartilages, vocal cords, laryngeal muscles'
+        },
+        {
+          id: 'cervical-fascia',
+          name: 'Cervical Fascia',
+          description: 'Deep cervical fascia layers and fascial spaces'
+        },
+        {
+          id: 'posterior-triangle',
+          name: 'Posterior Triangle of the Neck',
+          description: 'Boundaries, contents, accessory nerve'
+        },
+        {
+          id: 'anterior-triangle',
+          name: 'Anterior Triangle of the Neck',
+          description: 'Subdivisions and major vessels'
+        },
+        {
+          id: 'thyroid-trachea',
+          name: 'Thyroid Gland and Trachea',
+          description: 'Thyroid anatomy and tracheal relations'
+        },
+        {
+          id: 'blood-vessels',
+          name: 'Blood Vessels of the Head and Neck',
+          description: 'Carotid system and venous drainage'
+        },
+        {
+          id: 'cranial-nerves',
+          name: 'Cranial Nerves',
+          description: 'CN I-XII anatomy and clinical testing'
+        },
+        {
+          id: 'autonomic',
+          name: 'Autonomic Ganglia and Pathways',
+          description: 'Sympathetic chain and parasympathetic ganglia'
+        },
+        {
+          id: 'surface-anatomy',
+          name: 'Surface Anatomy of the Head and Neck',
+          description: 'Palpable landmarks and clinical examination'
+        }
+      ]
     },
     {
       id: 2,
@@ -714,6 +773,50 @@ The cardiovascular system consists of the heart and blood vessels, each with dis
     topic.type === activeTab
   );
 
+  // Handle subtopic view
+  if (selectedSubtopic) {
+    return (
+      <div className="min-h-screen bg-docdot-bg">
+        <div className="max-w-4xl mx-auto py-8 px-4">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <Button variant="ghost" onClick={() => setSelectedSubtopic(null)}>
+              <ArrowLeft className="mr-2" size={16} />
+              Back to {selectedTopic?.name}
+            </Button>
+          </div>
+
+          {/* Subtopic Content */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl text-docdot-heading">
+                {selectedSubtopic.name}
+              </CardTitle>
+              {selectedSubtopic.description && (
+                <p className="text-docdot-text">{selectedSubtopic.description}</p>
+              )}
+            </CardHeader>
+            <CardContent className="prose prose-lg max-w-none">
+              {selectedSubtopic.content ? (
+                <div dangerouslySetInnerHTML={{ __html: selectedSubtopic.content.replace(/\n/g, '<br/>') }} />
+              ) : (
+                <div className="text-center py-12">
+                  <BookOpen className="mx-auto mb-4 text-gray-400" size={48} />
+                  <h3 className="text-xl font-semibold text-docdot-heading mb-2">
+                    Content Coming Soon
+                  </h3>
+                  <p className="text-docdot-text">
+                    This subtopic content is being developed. Check back soon for detailed notes.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   if (selectedTopic) {
     return (
       <div className="min-h-screen bg-docdot-bg">
@@ -732,38 +835,88 @@ The cardiovascular system consists of the heart and blood vessels, each with dis
             </div>
           </div>
 
-          {/* Content */}
-          <Card>
+          {/* Topic Overview */}
+          <Card className="mb-6">
             <CardHeader>
               <CardTitle className="text-2xl text-docdot-heading">
                 {selectedTopic.name}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {canAccessContent(selectedTopic.accessTier) ? (
-                <div className="prose prose-lg max-w-none">
-                  <div className="whitespace-pre-wrap text-docdot-text leading-relaxed">
-                    {selectedTopic.content}
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <Lock className="mx-auto mb-4 text-gray-400" size={48} />
-                  <h3 className="text-xl font-semibold text-docdot-heading mb-2">
-                    Premium Content
-                  </h3>
-                  <p className="text-docdot-text mb-6">
-                    This content requires a {selectedTopic.accessTier} subscription to access.
-                  </p>
-                  <Link href="/pricing">
-                    <Button className="bg-docdot-blue">
-                      Upgrade Now
-                    </Button>
-                  </Link>
-                </div>
-              )}
+              <div className="prose prose-lg max-w-none mb-6">
+                <div dangerouslySetInnerHTML={{ __html: selectedTopic.content.replace(/\n/g, '<br/>') }} />
+              </div>
             </CardContent>
           </Card>
+
+          {/* Subtopics Grid */}
+          {selectedTopic.subtopics && (
+            <div>
+              <h3 className="text-xl font-semibold text-docdot-heading mb-4">
+                Study Topics
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {selectedTopic.subtopics.map((subtopic) => (
+                  <Card 
+                    key={subtopic.id} 
+                    className="cursor-pointer hover:shadow-lg transition-shadow"
+                    onClick={() => setSelectedSubtopic(subtopic)}
+                  >
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg text-docdot-heading">
+                        {subtopic.name}
+                      </CardTitle>
+                      {subtopic.description && (
+                        <p className="text-sm text-docdot-text">
+                          {subtopic.description}
+                        </p>
+                      )}
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <Button variant="outline" size="sm" className="w-full">
+                        Study This Topic
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Traditional Content Display for topics without subtopics */}
+          {!selectedTopic.subtopics && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-2xl text-docdot-heading">
+                  {selectedTopic.name}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {canAccessContent(selectedTopic.accessTier) ? (
+                  <div className="prose prose-lg max-w-none">
+                    <div className="whitespace-pre-wrap text-docdot-text leading-relaxed">
+                      {selectedTopic.content}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Lock className="mx-auto mb-4 text-gray-400" size={48} />
+                    <h3 className="text-xl font-semibold text-docdot-heading mb-2">
+                      Premium Content
+                    </h3>
+                    <p className="text-docdot-text mb-6">
+                      This content requires a {selectedTopic.accessTier} subscription to access.
+                    </p>
+                    <Link href="/pricing">
+                      <Button className="bg-docdot-blue">
+                        Upgrade Now
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     );
