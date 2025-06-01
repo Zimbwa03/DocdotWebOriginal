@@ -1,4 +1,4 @@
-import fetch from 'node-fetch';
+// Using Node.js built-in fetch (available in Node 18+)
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const API_URL = 'https://openrouter.ai/api/v1/chat/completions';

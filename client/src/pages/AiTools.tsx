@@ -595,50 +595,43 @@ export default function AiTools() {
   }
 
   return (
-    <div className="min-h-screen bg-docdot-bg">
+    <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
       <div className="max-w-6xl mx-auto py-8 px-4">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-docdot-heading mb-4">AI Study Tools</h1>
-          <p className="text-xl text-docdot-text">Enhance your learning with AI-powered study aids</p>
-          {userTier === 'free' && (
-            <Badge className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white">
-              Premium Feature
-            </Badge>
-          )}
+          <h1 className="text-3xl font-bold mb-4" style={{ color: '#1C1C1C' }}>AI Medical Learning Tools</h1>
+          <p className="text-xl mb-4" style={{ color: '#2E2E2E' }}>Powered by advanced AI to enhance your medical education</p>
+          <Badge className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white">
+            DeepSeek AI Integration
+          </Badge>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {aiTools.map((tool) => {
             const IconComponent = tool.icon;
-            const canAccess = canAccessTool(tool.accessTier);
             
             return (
               <Card 
                 key={tool.id}
-                className={`cursor-pointer transition-all duration-200 ${
-                  canAccess 
-                    ? 'hover:shadow-lg border-2 hover:border-docdot-blue' 
-                    : 'opacity-75 border-gray-200'
-                }`}
+                className="cursor-pointer transition-all duration-200 hover:shadow-lg border-2 hover:border-blue-400"
                 onClick={() => setSelectedTool(tool.id)}
               >
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <div className={`p-3 rounded-lg bg-${tool.color}-100`}>
-                      <IconComponent className={`text-${tool.color}-600`} size={32} />
+                    <div className="p-3 rounded-lg" style={{ backgroundColor: '#D1E8F9' }}>
+                      <IconComponent style={{ color: '#3399FF' }} size={32} />
                     </div>
-                    {!canAccess && <Lock className="text-gray-400" size={16} />}
+                    <ChevronRight className="text-gray-400" size={16} />
                   </div>
-                  <CardTitle className="text-lg text-docdot-heading">{tool.name}</CardTitle>
-                  <p className="text-docdot-text text-sm">{tool.description}</p>
+                  <CardTitle className="text-lg" style={{ color: '#1C1C1C' }}>{tool.name}</CardTitle>
+                  <p style={{ color: '#2E2E2E' }} className="text-sm">{tool.description}</p>
                 </CardHeader>
                 <CardContent>
                   <Button 
-                    variant={canAccess ? "default" : "outline"} 
                     size="sm" 
-                    className={canAccess ? "w-full bg-docdot-blue" : "w-full"}
+                    className="w-full"
+                    style={{ backgroundColor: '#3399FF', color: 'white' }}
                   >
-                    {canAccess ? 'Try Now' : 'Upgrade Required'}
+                    Launch Tool
                   </Button>
                 </CardContent>
               </Card>
@@ -646,36 +639,83 @@ export default function AiTools() {
           })}
         </div>
 
-        <Card className="mt-12 bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
-          <CardContent className="text-center py-8">
-            <Sparkles className="mx-auto mb-4 text-purple-600" size={48} />
-            <h2 className="text-2xl font-bold text-docdot-heading mb-4">
-              Unlock AI-Powered Learning
-            </h2>
-            <p className="text-docdot-text mb-6 max-w-2xl mx-auto">
-              Transform your study experience with advanced AI tools designed specifically for medical education. 
-              Generate personalized flashcards, create memorable mnemonics, and summarize complex medical texts.
-            </p>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto text-left">
-                <div className="bg-white p-4 rounded-lg">
-                  <h4 className="font-semibold text-docdot-heading mb-2">Smart Flashcards</h4>
-                  <p className="text-docdot-text text-sm">AI analyzes your text and creates optimal question-answer pairs</p>
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Brain style={{ color: '#3399FF' }} size={24} />
+                <span style={{ color: '#1C1C1C' }}>AI-Powered Features</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3">
+                  <CheckCircle className="text-green-500" size={16} />
+                  <span style={{ color: '#2E2E2E' }}>Interactive medical tutor chat</span>
                 </div>
-                <div className="bg-white p-4 rounded-lg">
-                  <h4 className="font-semibold text-docdot-heading mb-2">Memory Mnemonics</h4>
-                  <p className="text-docdot-text text-sm">Generate creative memory aids for complex medical concepts</p>
+                <div className="flex items-center space-x-3">
+                  <CheckCircle className="text-green-500" size={16} />
+                  <span style={{ color: '#2E2E2E' }}>Detailed concept explanations</span>
                 </div>
-                <div className="bg-white p-4 rounded-lg">
-                  <h4 className="font-semibold text-docdot-heading mb-2">Intelligent Summaries</h4>
-                  <p className="text-docdot-text text-sm">Condense lengthy medical texts into key learning points</p>
+                <div className="flex items-center space-x-3">
+                  <CheckCircle className="text-green-500" size={16} />
+                  <span style={{ color: '#2E2E2E' }}>Custom question generation</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <CheckCircle className="text-green-500" size={16} />
+                  <span style={{ color: '#2E2E2E' }}>Case study analysis</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <CheckCircle className="text-green-500" size={16} />
+                  <span style={{ color: '#2E2E2E' }}>Personalized study plans</span>
                 </div>
               </div>
-              <Link href="/pricing">
-                <Button className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
-                  Upgrade to Premium
-                </Button>
-              </Link>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Sparkles style={{ color: '#3399FF' }} size={24} />
+                <span style={{ color: '#1C1C1C' }}>Getting Started</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-sm" style={{ backgroundColor: '#3399FF' }}>1</div>
+                  <p style={{ color: '#2E2E2E' }}>Select an AI tool from the grid above</p>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-sm" style={{ backgroundColor: '#3399FF' }}>2</div>
+                  <p style={{ color: '#2E2E2E' }}>Enter your medical topic or question</p>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-sm" style={{ backgroundColor: '#3399FF' }}>3</div>
+                  <p style={{ color: '#2E2E2E' }}>Get instant AI-powered insights and explanations</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="mt-8" style={{ backgroundColor: '#D1E8F9' }}>
+          <CardContent className="text-center py-8">
+            <div className="flex items-center justify-center space-x-2 mb-4">
+              <GraduationCap style={{ color: '#3399FF' }} size={32} />
+              <h3 className="text-xl font-bold" style={{ color: '#1C1C1C' }}>
+                Free AI-Powered Medical Learning
+              </h3>
+            </div>
+            <p style={{ color: '#2E2E2E' }} className="mb-6 max-w-2xl mx-auto">
+              All AI tools are completely free to use. Get instant help with medical concepts, 
+              generate practice questions, analyze case studies, and create personalized study plans.
+            </p>
+            <div className="flex items-center justify-center space-x-2 text-sm" style={{ color: '#2E2E2E' }}>
+              <span>Powered by</span>
+              <Badge variant="outline">DeepSeek R1</Badge>
+              <span>•</span>
+              <Badge variant="outline">OpenRouter</Badge>
             </div>
           </CardContent>
         </Card>
