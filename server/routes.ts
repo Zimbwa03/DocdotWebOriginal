@@ -1,9 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { openRouterAI } from "./ai";
-// import { db } from "./db";
-// import { aiSessions, aiChats } from "../shared/schema";
-// import { eq, desc } from "drizzle-orm";
+import { dbStorage } from "./db";
+import { insertQuizAttemptSchema } from "@shared/schema";
 import { v4 as uuidv4 } from "uuid";
 import { readFileSync } from "fs";
 import { resolve } from "path";
@@ -412,6 +411,100 @@ CRITICAL FORMATTING RULES:
     } catch (error) {
       console.error("Recommendations error:", error);
       res.status(500).json({ error: "Recommendations generation failed" });
+    }
+  });
+
+  // Analytics and User Stats API Routes
+  
+  // Record quiz attempt
+  app.post("/api/quiz/attempt", async (req, res) => {
+    try {
+      const attemptData = req.body;
+      const xpEarned = attemptData.isCorrect ? 10 : 5; // 10 XP for correct, 5 for attempt
+      
+      const quizAttempt = await dbStorage.recordQuizAttempt({
+        userId: attemptData.userId,
+        quizId: attemptData.quizId || null,
+        category: attemptData.category,
+        selectedAnswer: attemptData.selectedAnswer,
+        correctAnswer: attemptData.correctAnswer,
+        isCorrect: attemptData.isCorrect,
+        timeSpent: attemptData.timeSpent || 0,
+        difficulty: attemptData.difficulty || 'medium',
+        xpEarned: xpEarned
+      });
+      
+      res.json({ success: true, attempt: quizAttempt, xpEarned });
+    } catch (error) {
+      console.error("Error recording quiz attempt:", error);
+      res.status(500).json({ error: "Failed to record quiz attempt" });
+    }
+  });
+
+  // Get user statistics
+  app.get("/api/user/:userId/stats", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const stats = await dbStorage.getUserStats(userId);
+      
+      if (!stats) {
+        return res.json({
+          totalQuestions: 0,
+          correctAnswers: 0,
+          averageScore: 0,
+          currentStreak: 0,
+          longestStreak: 0,
+          totalXP: 0,
+          currentLevel: 1,
+          totalStudyTime: 0,
+          rank: 0
+        });
+      }
+      
+      res.json(stats);
+    } catch (error) {
+      console.error("Error getting user stats:", error);
+      res.status(500).json({ error: "Failed to get user stats" });
+    }
+  });
+
+  // Get category performance stats
+  app.get("/api/user/:userId/category-stats", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const categoryStats = await dbStorage.getCategoryStats(userId);
+      res.json(categoryStats);
+    } catch (error) {
+      console.error("Error getting category stats:", error);
+      res.status(500).json({ error: "Failed to get category stats" });
+    }
+  });
+
+  // Get daily performance stats
+  app.get("/api/user/:userId/daily-stats", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { days = 7 } = req.query;
+      const dailyStats = await dbStorage.getDailyStats(userId, parseInt(days as string));
+      res.json(dailyStats);
+    } catch (error) {
+      console.error("Error getting daily stats:", error);
+      res.status(500).json({ error: "Failed to get daily stats" });
+    }
+  });
+
+  // Get leaderboard
+  app.get("/api/leaderboard", async (req, res) => {
+    try {
+      const { category, limit = 10 } = req.query;
+      const leaderboard = await dbStorage.getLeaderboard(
+        parseInt(limit as string), 
+        category as string
+      );
+      res.json(leaderboard);
+    } catch (error) {
+      console.error("Error getting leaderboard:", error);
+      res.status(500).json({ error: "Failed to get leaderboard" });
     }
   });
 

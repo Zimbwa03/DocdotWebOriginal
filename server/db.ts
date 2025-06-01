@@ -1,7 +1,13 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { users, type User, type InsertUser } from '@shared/schema';
-import { eq } from 'drizzle-orm';
+import { 
+  users, userStats, categoryStats, dailyStats, leaderboard, quizAttempts,
+  type User, type InsertUser, type UserStats, type CategoryStats, 
+  type DailyStats, type LeaderboardEntry, type QuizAttempt,
+  type InsertQuizAttempt, type InsertUserStats, type InsertCategoryStats,
+  type InsertDailyStats, type InsertLeaderboard
+} from '@shared/schema';
+import { eq, desc, sql, and, gte } from 'drizzle-orm';
 
 const connectionString = process.env.DATABASE_URL!;
 const client = postgres(connectionString);
@@ -101,6 +107,253 @@ export class DatabaseStorage {
     } catch (error) {
       console.error('Error upserting user:', error);
       throw error;
+    }
+  }
+
+  // Quiz Analytics Methods
+  async recordQuizAttempt(attempt: InsertQuizAttempt): Promise<QuizAttempt> {
+    try {
+      const result = await db.insert(quizAttempts).values(attempt).returning();
+      
+      // Update user stats after recording attempt
+      await this.updateUserStats(attempt.userId!, attempt.isCorrect, attempt.xpEarned || 0, attempt.timeSpent || 0);
+      
+      // Update category stats
+      await this.updateCategoryStats(attempt.userId!, attempt.category, attempt.isCorrect, attempt.timeSpent || 0);
+      
+      // Update daily stats
+      await this.updateDailyStats(attempt.userId!, attempt.category, attempt.isCorrect, attempt.xpEarned || 0);
+      
+      // Update leaderboard
+      await this.updateLeaderboard(attempt.userId!);
+      
+      return result[0];
+    } catch (error) {
+      console.error('Error recording quiz attempt:', error);
+      throw error;
+    }
+  }
+
+  async getUserStats(userId: string): Promise<UserStats | undefined> {
+    try {
+      const result = await db.select().from(userStats).where(eq(userStats.userId, userId)).limit(1);
+      return result[0];
+    } catch (error) {
+      console.error('Error getting user stats:', error);
+      return undefined;
+    }
+  }
+
+  async updateUserStats(userId: string, isCorrect: boolean, xpEarned: number, timeSpent: number): Promise<void> {
+    try {
+      const existing = await this.getUserStats(userId);
+      
+      if (existing) {
+        const newTotalQuestions = existing.totalQuestions + 1;
+        const newCorrectAnswers = existing.correctAnswers + (isCorrect ? 1 : 0);
+        const newAverageScore = Math.round((newCorrectAnswers / newTotalQuestions) * 100);
+        const newStreak = isCorrect ? existing.currentStreak + 1 : 0;
+        const newLongestStreak = Math.max(existing.longestStreak, newStreak);
+        const newTotalXP = existing.totalXP + xpEarned;
+        const newLevel = Math.floor(newTotalXP / 1000) + 1;
+        
+        await db.update(userStats)
+          .set({
+            totalQuestions: newTotalQuestions,
+            correctAnswers: newCorrectAnswers,
+            averageScore: newAverageScore,
+            currentStreak: newStreak,
+            longestStreak: newLongestStreak,
+            totalXP: newTotalXP,
+            currentLevel: newLevel,
+            totalStudyTime: existing.totalStudyTime + Math.round(timeSpent / 60),
+            updatedAt: new Date()
+          })
+          .where(eq(userStats.userId, userId));
+      } else {
+        await db.insert(userStats).values({
+          userId,
+          totalQuestions: 1,
+          correctAnswers: isCorrect ? 1 : 0,
+          averageScore: isCorrect ? 100 : 0,
+          currentStreak: isCorrect ? 1 : 0,
+          longestStreak: isCorrect ? 1 : 0,
+          totalXP: xpEarned,
+          currentLevel: Math.floor(xpEarned / 1000) + 1,
+          totalStudyTime: Math.round(timeSpent / 60),
+          rank: 0
+        });
+      }
+    } catch (error) {
+      console.error('Error updating user stats:', error);
+    }
+  }
+
+  async updateCategoryStats(userId: string, category: string, isCorrect: boolean, timeSpent: number): Promise<void> {
+    try {
+      const existing = await db.select().from(categoryStats)
+        .where(and(eq(categoryStats.userId, userId), eq(categoryStats.category, category)))
+        .limit(1);
+      
+      if (existing.length > 0) {
+        const stats = existing[0];
+        const newQuestionsAttempted = stats.questionsAttempted + 1;
+        const newCorrectAnswers = stats.correctAnswers + (isCorrect ? 1 : 0);
+        const newAverageScore = Math.round((newCorrectAnswers / newQuestionsAttempted) * 100);
+        const newAverageTime = Math.round(((stats.averageTime * stats.questionsAttempted) + timeSpent) / newQuestionsAttempted);
+        const newMastery = Math.min(100, Math.max(0, newAverageScore - (newAverageTime > 30 ? 10 : 0)));
+        
+        await db.update(categoryStats)
+          .set({
+            questionsAttempted: newQuestionsAttempted,
+            correctAnswers: newCorrectAnswers,
+            averageScore: newAverageScore,
+            averageTime: newAverageTime,
+            mastery: newMastery,
+            lastAttempted: new Date()
+          })
+          .where(and(eq(categoryStats.userId, userId), eq(categoryStats.category, category)));
+      } else {
+        await db.insert(categoryStats).values({
+          userId,
+          category,
+          questionsAttempted: 1,
+          correctAnswers: isCorrect ? 1 : 0,
+          averageScore: isCorrect ? 100 : 0,
+          averageTime: timeSpent,
+          mastery: isCorrect ? Math.max(0, 100 - (timeSpent > 30 ? 10 : 0)) : 0,
+          lastAttempted: new Date()
+        });
+      }
+    } catch (error) {
+      console.error('Error updating category stats:', error);
+    }
+  }
+
+  async updateDailyStats(userId: string, category: string, isCorrect: boolean, xpEarned: number): Promise<void> {
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const existing = await db.select().from(dailyStats)
+        .where(and(eq(dailyStats.userId, userId), gte(dailyStats.date, today)))
+        .limit(1);
+      
+      if (existing.length > 0) {
+        const stats = existing[0];
+        const newQuestionsAnswered = stats.questionsAnswered + 1;
+        const newCorrectAnswers = stats.correctAnswers + (isCorrect ? 1 : 0);
+        const categoriesStudied = Array.from(new Set([...(stats.categoriesStudied as string[] || []), category]));
+        
+        await db.update(dailyStats)
+          .set({
+            questionsAnswered: newQuestionsAnswered,
+            correctAnswers: newCorrectAnswers,
+            xpEarned: stats.xpEarned + xpEarned,
+            categoriesStudied: categoriesStudied
+          })
+          .where(eq(dailyStats.id, stats.id));
+      } else {
+        await db.insert(dailyStats).values({
+          userId,
+          date: today,
+          questionsAnswered: 1,
+          correctAnswers: isCorrect ? 1 : 0,
+          studyTime: 0,
+          xpEarned,
+          categoriesStudied: [category]
+        });
+      }
+    } catch (error) {
+      console.error('Error updating daily stats:', error);
+    }
+  }
+
+  async updateLeaderboard(userId: string): Promise<void> {
+    try {
+      const userStatsData = await this.getUserStats(userId);
+      if (!userStatsData) return;
+      
+      // Update overall leaderboard
+      await db.insert(leaderboard).values({
+        userId,
+        category: null,
+        rank: 0,
+        score: userStatsData.totalXP,
+        totalQuestions: userStatsData.totalQuestions,
+        accuracy: userStatsData.averageScore
+      }).onConflictDoUpdate({
+        target: [leaderboard.userId, leaderboard.category],
+        set: {
+          score: userStatsData.totalXP,
+          totalQuestions: userStatsData.totalQuestions,
+          accuracy: userStatsData.averageScore,
+          updatedAt: new Date()
+        }
+      });
+      
+      // Update ranks for all users
+      await this.updateLeaderboardRanks();
+    } catch (error) {
+      console.error('Error updating leaderboard:', error);
+    }
+  }
+
+  async updateLeaderboardRanks(): Promise<void> {
+    try {
+      const entries = await db.select().from(leaderboard)
+        .where(eq(leaderboard.category, null))
+        .orderBy(desc(leaderboard.score));
+      
+      for (let i = 0; i < entries.length; i++) {
+        await db.update(leaderboard)
+          .set({ rank: i + 1 })
+          .where(eq(leaderboard.id, entries[i].id));
+      }
+    } catch (error) {
+      console.error('Error updating leaderboard ranks:', error);
+    }
+  }
+
+  async getLeaderboard(limit: number = 10, category?: string): Promise<LeaderboardEntry[]> {
+    try {
+      const query = db.select().from(leaderboard)
+        .orderBy(desc(leaderboard.score))
+        .limit(limit);
+      
+      if (category) {
+        return await query.where(eq(leaderboard.category, category));
+      } else {
+        return await query.where(sql`${leaderboard.category} IS NULL`);
+      }
+    } catch (error) {
+      console.error('Error getting leaderboard:', error);
+      return [];
+    }
+  }
+
+  async getCategoryStats(userId: string): Promise<CategoryStats[]> {
+    try {
+      return await db.select().from(categoryStats)
+        .where(eq(categoryStats.userId, userId))
+        .orderBy(desc(categoryStats.lastAttempted));
+    } catch (error) {
+      console.error('Error getting category stats:', error);
+      return [];
+    }
+  }
+
+  async getDailyStats(userId: string, days: number = 7): Promise<DailyStats[]> {
+    try {
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+      
+      return await db.select().from(dailyStats)
+        .where(and(eq(dailyStats.userId, userId), gte(dailyStats.date, startDate)))
+        .orderBy(desc(dailyStats.date));
+    } catch (error) {
+      console.error('Error getting daily stats:', error);
+      return [];
     }
   }
 }
