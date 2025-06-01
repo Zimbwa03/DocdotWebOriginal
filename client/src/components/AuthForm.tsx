@@ -29,36 +29,55 @@ export function AuthForm() {
     e.preventDefault();
     setLoading(true);
 
+    // Validation with user feedback
     if (!email || !password) {
+      alert('Please fill in all required fields');
       setLoading(false);
       return;
     }
 
     if (!isLogin) {
       if (password !== confirmPassword) {
+        alert('Passwords do not match');
         setLoading(false);
         return;
       }
       if (password.length < 8) {
+        alert('Password must be at least 8 characters long');
         setLoading(false);
         return;
       }
       if (!agreeToTerms) {
+        alert('Please agree to the Terms of Service and Privacy Policy');
         setLoading(false);
         return;
       }
     }
 
     try {
+      console.log('Attempting authentication...', { isLogin, email });
+      
       if (isLogin) {
         const { error } = await signIn(email, password);
         if (!error) {
+          console.log('Sign in successful, redirecting...');
           setLocation('/home');
+        } else {
+          console.error('Sign in error:', error);
         }
       } else {
+        console.log('Attempting signup...');
         const { error } = await signUp(email, password);
-        // Don't redirect on signup, user needs to verify email first
+        if (!error) {
+          console.log('Signup successful - check email for verification');
+          alert('Account created successfully! Please check your email for a verification link.');
+        } else {
+          console.error('Signup error:', error);
+        }
       }
+    } catch (error) {
+      console.error('Authentication error:', error);
+      alert('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
