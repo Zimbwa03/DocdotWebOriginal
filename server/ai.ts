@@ -9,16 +9,28 @@ interface AIMessage {
 }
 
 class OpenRouterAI {
-  private apiKey: string;
+  private apiKey: string | null;
 
   constructor() {
-    if (!OPENROUTER_API_KEY) {
-      throw new Error('OPENROUTER_API_KEY is not configured');
+    this.apiKey = OPENROUTER_API_KEY || null;
+    if (!this.apiKey) {
+      console.warn('OPENROUTER_API_KEY is not configured - AI features will be disabled');
     }
-    this.apiKey = OPENROUTER_API_KEY;
+  }
+
+  private checkApiKey(): boolean {
+    if (!this.apiKey) {
+      console.error('OpenRouter API key not configured');
+      return false;
+    }
+    return true;
   }
 
   async generateResponse(messages: AIMessage[], temperature = 0.7): Promise<string> {
+    if (!this.checkApiKey()) {
+      throw new Error('AI service not available - API key not configured');
+    }
+
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout

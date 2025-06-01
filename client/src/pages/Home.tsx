@@ -232,7 +232,7 @@ function QuizSection() {
     }
 
     // Transform JSON data to match our question format
-    const transformedQuestions = questions.map(q => ({
+    const transformedQuestions = questions.map((q: any) => ({
       id: q.id,
       question: q.question || '',
       options: typeof q.answer === 'boolean' ? ['True', 'False'] : (q.options || []),
@@ -774,7 +774,7 @@ export default function Home() {
       
       if (shuffled.length > 0) {
         // Transform questions for quick quiz
-        const transformedQuestions = shuffled.map(q => ({
+        const transformedQuestions = shuffled.map((q: any) => ({
           id: q.id,
           question: q.question || '',
           options: typeof q.answer === 'boolean' ? ['True', 'False'] : (q.options || []),
