@@ -15,6 +15,7 @@ import Pricing from "@/pages/Pricing";
 import StudyGuide from "@/pages/StudyGuide";
 import Performance from "@/pages/Performance";
 import Analytics from "@/pages/Analytics";
+import EnhancedAnalytics from "@/pages/EnhancedAnalytics";
 import ProfileSetup from "@/pages/ProfileSetup";
 import AiTools from "@/pages/AiTools";
 import NotFound from "@/pages/not-found";
@@ -87,7 +88,7 @@ function Router() {
       <Route path="/analytics">
         <ProtectedRoute>
           <Navigation />
-          <Analytics />
+          <EnhancedAnalytics />
         </ProtectedRoute>
       </Route>
       <Route path="/ai-tools">

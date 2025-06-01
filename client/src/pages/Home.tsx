@@ -255,77 +255,214 @@ export default function Home() {
           </div>
         </div>
 
-        {/* User Statistics Dashboard - Mobile Responsive */}
+        {/* Enhanced Analytics Dashboard */}
         <div className="mb-8 lg:mb-12">
-          <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-4 lg:mb-6 text-center lg:text-left">
-            Your Progress Dashboard
-          </h2>
+          <div className="flex justify-between items-center mb-4 lg:mb-6">
+            <h2 className="text-xl lg:text-2xl font-bold text-gray-900">
+              Your Progress Dashboard
+            </h2>
+            <Link href="/analytics">
+              <Button variant="outline" size="sm">
+                <BarChart3 className="w-4 h-4 mr-2" />
+                View Detailed Analytics
+              </Button>
+            </Link>
+          </div>
           
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
             {/* XP and Level */}
-            <Card className="col-span-2 lg:col-span-1">
+            <Card className="col-span-2 lg:col-span-1 bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-                  <Zap className="w-4 h-4 mr-1 text-yellow-500" />
+                <CardTitle className="text-sm font-medium text-blue-800 flex items-center">
+                  <Zap className="w-4 h-4 mr-1 text-blue-600" />
                   XP & Level
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl lg:text-3xl font-bold text-blue-600">
+                <div className="text-2xl lg:text-3xl font-bold text-blue-900">
                   {loadingStats ? '...' : stats.totalXp?.toLocaleString() || '0'}
                 </div>
-                <div className="text-sm text-gray-500 mt-1">
+                <div className="text-sm text-blue-600 mt-1">
                   Level {loadingStats ? '...' : stats.level || 1}
                 </div>
-                <Progress value={loadingStats ? 0 : ((stats.totalXp % 1000) / 1000) * 100} className="mt-2" />
+                <Progress 
+                  value={loadingStats ? 0 : ((stats.totalXp % 1000) / 1000) * 100} 
+                  className="mt-2 h-2" 
+                />
+                <div className="text-xs text-blue-600 mt-1">
+                  {loadingStats ? '...' : 1000 - (stats.totalXp % 1000)} XP to next level
+                </div>
               </CardContent>
             </Card>
 
             {/* Current Streak */}
-            <Card>
+            <Card className="bg-gradient-to-r from-orange-50 to-orange-100 border-orange-200">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-                  <Calendar className="w-4 h-4 mr-1 text-orange-500" />
-                  Streak
+                <CardTitle className="text-sm font-medium text-orange-800 flex items-center">
+                  <Calendar className="w-4 h-4 mr-1 text-orange-600" />
+                  Study Streak
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl lg:text-3xl font-bold text-orange-600">
+                <div className="text-2xl lg:text-3xl font-bold text-orange-900">
                   {loadingStats ? '...' : stats.currentStreak || 0}
                 </div>
-                <div className="text-sm text-gray-500">days</div>
+                <div className="text-sm text-orange-600">days active</div>
+                <div className="text-xs text-orange-600 mt-1">
+                  Best: {loadingStats ? '...' : stats.longestStreak || 0} days
+                </div>
               </CardContent>
             </Card>
 
             {/* Accuracy */}
-            <Card>
+            <Card className="bg-gradient-to-r from-green-50 to-green-100 border-green-200">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-                  <Target className="w-4 h-4 mr-1 text-green-500" />
-                  Accuracy
+                <CardTitle className="text-sm font-medium text-green-800 flex items-center">
+                  <Target className="w-4 h-4 mr-1 text-green-600" />
+                  Overall Accuracy
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl lg:text-3xl font-bold text-green-600">
+                <div className="text-2xl lg:text-3xl font-bold text-green-900">
                   {loadingStats ? '...' : Math.round(stats.averageAccuracy || 0)}%
                 </div>
-                <div className="text-sm text-gray-500">average</div>
+                <div className="text-sm text-green-600">
+                  {loadingStats ? '...' : stats.correctAnswers || 0} of {loadingStats ? '...' : stats.totalQuestions || 0} correct
+                </div>
               </CardContent>
             </Card>
 
             {/* Global Rank */}
-            <Card>
+            <Card className="bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-                  <Trophy className="w-4 h-4 mr-1 text-purple-500" />
-                  Rank
+                <CardTitle className="text-sm font-medium text-purple-800 flex items-center">
+                  <Trophy className="w-4 h-4 mr-1 text-purple-600" />
+                  Global Rank
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl lg:text-3xl font-bold text-purple-600">
-                  #{loadingStats ? '...' : stats.rank || 'N/A'}
+                <div className="text-2xl lg:text-3xl font-bold text-purple-900">
+                  #{loadingStats ? '...' : stats.rank || 'Unranked'}
                 </div>
-                <div className="text-sm text-gray-500">global</div>
+                <div className="text-sm text-purple-600">
+                  {stats.rank && stats.rank <= 100 ? 'Top 100!' : 'Keep studying!'}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Recent Performance & Category Breakdown */}
+        <div className="mb-8 lg:mb-12">
+          <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-6">
+            Performance Insights
+          </h2>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Recent Quiz Activity */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-blue-600" />
+                  Recent Quiz Activity
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {recentQuizzes && recentQuizzes.length > 0 ? (
+                    recentQuizzes.slice(0, 5).map((quiz: any, index: number) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            quiz.isCorrect ? 'bg-green-100' : 'bg-red-100'
+                          }`}>
+                            {quiz.isCorrect ? 
+                              <CheckCircle className="w-4 h-4 text-green-600" /> : 
+                              <XCircle className="w-4 h-4 text-red-600" />
+                            }
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm">{quiz.category}</p>
+                            <p className="text-xs text-gray-600">
+                              {new Date(quiz.attemptedAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                        <Badge variant={quiz.isCorrect ? "default" : "destructive"} className="text-xs">
+                          +{quiz.xpEarned} XP
+                        </Badge>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-6 text-gray-500">
+                      <BookOpen className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                      <p>No quiz attempts yet</p>
+                      <p className="text-sm">Start taking quizzes to see your activity here</p>
+                    </div>
+                  )}
+                </div>
+                {recentQuizzes && recentQuizzes.length > 5 && (
+                  <div className="mt-4 text-center">
+                    <Link href="/analytics">
+                      <Button variant="outline" size="sm">
+                        View All Activity
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Study Statistics */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-green-600" />
+                  Study Statistics
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <BookOpen className="w-4 h-4 text-blue-500" />
+                      <span className="text-sm">Total Questions</span>
+                    </div>
+                    <span className="font-semibold">{stats.totalQuestions || 0}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-500" />
+                      <span className="text-sm">Correct Answers</span>
+                    </div>
+                    <span className="font-semibold text-green-600">{stats.correctAnswers || 0}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <XCircle className="w-4 h-4 text-red-500" />
+                      <span className="text-sm">Wrong Answers</span>
+                    </div>
+                    <span className="font-semibold text-red-600">{(stats.totalQuestions || 0) - (stats.correctAnswers || 0)}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-purple-500" />
+                      <span className="text-sm">Study Time</span>
+                    </div>
+                    <span className="font-semibold">{Math.round((stats.totalTimeSpent || 0) / 60)} min</span>
+                  </div>
+
+                  <div className="pt-2 border-t">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Accuracy Progress</span>
+                      <span className="text-sm font-semibold">{Math.round(stats.averageAccuracy || 0)}%</span>
+                    </div>
+                    <Progress value={stats.averageAccuracy || 0} className="mt-2 h-2" />
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>

@@ -370,6 +370,20 @@ export class DatabaseStorage {
       return [];
     }
   }
+
+  async getRecentQuizAttempts(userId: string, limit: number = 10): Promise<QuizAttempt[]> {
+    try {
+      return await db
+        .select()
+        .from(quizAttempts)
+        .where(eq(quizAttempts.userId, userId))
+        .orderBy(desc(quizAttempts.attemptedAt))
+        .limit(limit);
+    } catch (error) {
+      console.error('Error getting recent quiz attempts:', error);
+      return [];
+    }
+  }
 }
 
 export const dbStorage = new DatabaseStorage();
