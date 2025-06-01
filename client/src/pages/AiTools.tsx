@@ -125,22 +125,34 @@ export default function AiTools() {
   // AI API Mutations
   const tutorMutation = useMutation({
     mutationFn: async (message: string) => {
+      if (!user?.id) throw new Error('User not authenticated');
+      
       const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, context: 'medical education' })
+        body: JSON.stringify({ 
+          message, 
+          context: 'medical education',
+          userId: user.id,
+          sessionId: currentSessionId,
+          toolType: 'tutor'
+        })
       });
       if (!response.ok) throw new Error('Failed to get AI response');
       return response.json();
     },
     onSuccess: (data) => {
       setChatMessages(prev => [...prev, { role: 'ai', content: data.response }]);
+      if (data.sessionId && !currentSessionId) {
+        setCurrentSessionId(data.sessionId);
+      }
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('AI Tutor Error:', error);
       toast({
         variant: "destructive",
         title: "AI Tutor Error",
-        description: "Failed to get response from AI tutor"
+        description: "Failed to get response from AI tutor. Please try again."
       });
     }
   });
