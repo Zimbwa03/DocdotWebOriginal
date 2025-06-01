@@ -5,11 +5,27 @@ import { openRouterAI } from "./ai";
 // import { aiSessions, aiChats } from "../shared/schema";
 // import { eq, desc } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
+import { readFileSync } from "fs";
+import { resolve } from "path";
 
 // Temporary in-memory storage for user profiles
 const userProfiles = new Map<string, any>();
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Serve quiz questions from JSON file
+  app.get("/api/questions", async (req, res) => {
+    try {
+      const questionsPath = resolve(process.cwd(), "client", "public", "docdot-questions.json");
+      const questionsData = readFileSync(questionsPath, "utf-8");
+      const questions = JSON.parse(questionsData);
+      
+      res.json(questions);
+    } catch (error) {
+      console.error("Error loading questions:", error);
+      res.status(500).json({ error: "Failed to load questions" });
+    }
+  });
+
   // User profile management API routes
   
   // Get user profile

@@ -189,7 +189,7 @@ function QuizSection() {
       setIsLoadingQuestions(true);
       console.log('Fetching questions for category:', category);
       
-      const response = await fetch('/docdot-questions.json', {
+      const response = await fetch('/api/questions', {
         headers: {
           'Accept': 'application/json'
         },
@@ -803,7 +803,7 @@ export default function Home() {
   // Start quick quiz
   const startQuickQuiz = async () => {
     try {
-      const response = await fetch('/docdot-questions.json', {
+      const response = await fetch('/api/questions', {
         headers: {
           'Accept': 'application/json'
         },
