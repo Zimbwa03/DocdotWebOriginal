@@ -177,6 +177,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const systemPrompt = `You are an expert medical tutor with deep knowledge in anatomy, physiology, pathology, pharmacology, and clinical medicine. 
 Your goal is to help medical students learn effectively through clear explanations, examples, and educational guidance.
 
+CRITICAL FORMATTING RULES:
+- Never use markdown formatting (**, *, _, etc.)
+- Never use emojis or special characters
+- Write in plain text only
+- Use professional medical language
+- Structure responses with clear paragraphs
+- Use numbered lists for steps or multiple points
+
 Guidelines:
 - Provide accurate, evidence-based medical information
 - Use clear, educational language appropriate for medical students
@@ -184,6 +192,7 @@ Guidelines:
 - Encourage critical thinking
 - Always emphasize the importance of clinical correlation
 - If unsure about specific clinical recommendations, advise consulting current medical literature
+- Give direct, comprehensive answers without asking for clarification unless absolutely necessary
 
 ${context ? `Context: ${context}` : ''}`;
 
@@ -226,9 +235,68 @@ ${context ? `Context: ${context}` : ''}`;
   app.post("/api/ai/generate-questions", async (req, res) => {
     try {
       const { topic, difficulty, count = 5 } = req.body;
-      const questions = await openRouterAI.generateMedicalQuestions(topic, difficulty, count);
-      res.json({ questions });
-    } catch (error) {
+      
+      const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+      if (!OPENROUTER_API_KEY) {
+        return res.status(500).json({ error: "OpenRouter API key not configured" });
+      }
+
+      const systemPrompt = `You are an expert medical educator. Generate ${count} multiple-choice questions about ${topic} at ${difficulty} difficulty level. 
+Each question should be medically accurate and educational.
+
+CRITICAL FORMATTING RULES:
+- Return ONLY valid JSON format
+- No markdown formatting or special characters
+- No explanatory text outside the JSON
+
+Return a JSON array with this exact format:
+[
+  {
+    "question": "Question text here",
+    "options": ["A) Option 1", "B) Option 2", "C) Option 3", "D) Option 4"],
+    "correctAnswer": "A) Option 1",
+    "explanation": "Detailed explanation of why this is correct",
+    "category": "${topic}",
+    "difficulty": "${difficulty}"
+  }
+]`;
+
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://docdot.app',
+          'X-Title': 'Docdot Medical Learning Platform'
+        },
+        body: JSON.stringify({
+          model: 'deepseek/deepseek-r1:free',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: `Generate ${count} medical questions about ${topic}` }
+          ],
+          temperature: 0.3,
+          max_tokens: 2000
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('OpenRouter API error:', response.status, errorText);
+        return res.status(500).json({ error: "Question generation failed" });
+      }
+
+      const data = await response.json();
+      const aiResponse = data.choices[0]?.message?.content || '[]';
+      
+      try {
+        const questions = JSON.parse(aiResponse);
+        res.json({ questions });
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError);
+        res.json({ questions: [] });
+      }
+    } catch (error: any) {
       console.error("Question generation error:", error);
       res.status(500).json({ error: "Question generation failed" });
     }
@@ -238,9 +306,58 @@ ${context ? `Context: ${context}` : ''}`;
   app.post("/api/ai/explain", async (req, res) => {
     try {
       const { concept, level = 'intermediate' } = req.body;
-      const explanation = await openRouterAI.explainConcept(concept, level);
+      
+      const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+      if (!OPENROUTER_API_KEY) {
+        return res.status(500).json({ error: "OpenRouter API key not configured" });
+      }
+
+      const systemPrompt = `You are a medical educator explaining complex concepts clearly. 
+Explain the concept at ${level} level with:
+- Clear definition
+- Key points
+- Clinical relevance
+- Memory aids if applicable
+- Related concepts
+
+CRITICAL FORMATTING RULES:
+- Never use markdown formatting (**, *, _, etc.)
+- Never use emojis or special characters
+- Write in plain text only
+- Use professional medical language
+- Structure responses with clear paragraphs
+- Use numbered lists for steps or multiple points`;
+
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://docdot.app',
+          'X-Title': 'Docdot Medical Learning Platform'
+        },
+        body: JSON.stringify({
+          model: 'deepseek/deepseek-r1:free',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: `Explain: ${concept}` }
+          ],
+          temperature: 0.6,
+          max_tokens: 1500
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('OpenRouter API error:', response.status, errorText);
+        return res.status(500).json({ error: "Explanation generation failed" });
+      }
+
+      const data = await response.json();
+      const explanation = data.choices[0]?.message?.content || 'Unable to generate explanation.';
+      
       res.json({ explanation });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Concept explanation error:", error);
       res.status(500).json({ error: "Explanation generation failed" });
     }
