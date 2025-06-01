@@ -115,7 +115,7 @@ export default function Quiz() {
     enabled: showMCQSection
   });
 
-  const { data: userAnalytics, isLoading: loadingAnalytics } = useQuery({
+  const { data: userAnalytics } = useQuery({
     queryKey: ['/api/quiz/analytics', user?.id],
     enabled: !!user && showMCQSection
   });
@@ -204,7 +204,7 @@ export default function Quiz() {
     if (!user || !activeQuiz || !questions) return;
     
     let score = 0;
-    questions.forEach(q => {
+    questions.forEach((q: any) => {
       if (selectedAnswers[q.id] === q.correctAnswer) {
         score++;
       }
@@ -291,17 +291,17 @@ export default function Quiz() {
               ) : (
                 <div className="space-y-4">
                   <h4 className="text-lg font-medium text-gray-900 dark:text-white">
-                    {questions[currentQuestion]?.question}
+                    {(questions as any[])[currentQuestion]?.question}
                   </h4>
                   <div className="space-y-2">
-                    {questions[currentQuestion]?.options?.map((option: string, index: number) => (
+                    {(questions as any[])[currentQuestion]?.options?.map((option: string, index: number) => (
                       <label key={index} className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
                         <input
                           type="radio"
-                          name={`question-${questions[currentQuestion].id}`}
+                          name={`question-${(questions as any[])[currentQuestion].id}`}
                           value={option}
-                          checked={selectedAnswers[questions[currentQuestion].id] === option}
-                          onChange={() => handleAnswerSelect(questions[currentQuestion].id, option)}
+                          checked={selectedAnswers[(questions as any[])[currentQuestion].id] === option}
+                          onChange={() => handleAnswerSelect((questions as any[])[currentQuestion].id, option)}
                           className="text-blue-600"
                         />
                         <span className="text-gray-900 dark:text-white">{option}</span>
