@@ -1298,7 +1298,7 @@ export default function Home() {
               <Brain className="w-12 h-12 mx-auto mb-4" style={{ color: '#3399FF' }} />
               <h3 className="font-semibold mb-2" style={{ color: '#1C1C1C' }}>Quick Quiz</h3>
               <p className="text-sm mb-4" style={{ color: '#2E2E2E' }}>5-minute knowledge check</p>
-              <Button size="sm" style={{ backgroundColor: '#3399FF' }}>
+              <Button size="sm" onClick={startQuickQuiz} style={{ backgroundColor: '#3399FF' }}>
                 Start Now
               </Button>
             </CardContent>
@@ -1309,8 +1309,12 @@ export default function Home() {
               <Timer className="w-12 h-12 mx-auto mb-4" style={{ color: '#3399FF' }} />
               <h3 className="font-semibold mb-2" style={{ color: '#1C1C1C' }}>Study Timer</h3>
               <p className="text-sm mb-4" style={{ color: '#2E2E2E' }}>Focus session tracker</p>
-              <Button size="sm" style={{ backgroundColor: '#3399FF' }}>
-                Start Timer
+              <Button 
+                size="sm" 
+                onClick={isTimerRunning ? stopTimer : startTimer}
+                style={{ backgroundColor: isTimerRunning ? '#ef4444' : '#3399FF' }}
+              >
+                {isTimerRunning ? 'Stop Timer' : 'Start Timer'}
               </Button>
             </CardContent>
           </Card>
@@ -1338,6 +1342,117 @@ export default function Home() {
           </Card>
         </div>
       </div>
+
+      {/* Quick Quiz Dialog */}
+      <Dialog open={isQuickQuizOpen} onOpenChange={setIsQuickQuizOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Quick Quiz - Medical Knowledge Check</DialogTitle>
+          </DialogHeader>
+          {quickQuizQuestions.length > 0 && currentQuizQuestion < quickQuizQuestions.length && (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">
+                  Question {currentQuizQuestion + 1} of {quickQuizQuestions.length}
+                </span>
+                <span className="text-sm text-gray-600">
+                  Score: {quickQuizScore}/{currentQuizQuestion}
+                </span>
+              </div>
+              <QuizQuestion
+                question={quickQuizQuestions[currentQuizQuestion]}
+                onAnswer={(isCorrect) => {
+                  if (isCorrect) setQuickQuizScore(prev => prev + 1);
+                  setTimeout(() => {
+                    if (currentQuizQuestion + 1 < quickQuizQuestions.length) {
+                      setCurrentQuizQuestion(prev => prev + 1);
+                    } else {
+                      toast({
+                        title: "Quiz Complete!",
+                        description: `You scored ${quickQuizScore + (isCorrect ? 1 : 0)}/${quickQuizQuestions.length}`
+                      });
+                      setIsQuickQuizOpen(false);
+                    }
+                  }, 1500);
+                }}
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* AI Tutor Chat Dialog */}
+      <Dialog open={aiChatOpen} onOpenChange={setAiChatOpen}>
+        <DialogContent className="sm:max-w-[700px] h-[600px] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>AI Medical Tutor</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 flex flex-col">
+            <div className="flex-1 overflow-y-auto space-y-4 p-4 bg-gray-50 rounded-lg">
+              {chatMessages.length === 0 && (
+                <div className="text-center text-gray-500 py-8">
+                  <Brain className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                  <p>Ask me anything about medical topics!</p>
+                  <p className="text-sm mt-2">I can help with anatomy, physiology, pathology, and more.</p>
+                </div>
+              )}
+              {chatMessages.map((message, index) => (
+                <div
+                  key={index}
+                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-[80%] p-3 rounded-lg ${
+                      message.role === 'user'
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-white text-gray-800 border'
+                    }`}
+                  >
+                    {message.content}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex space-x-2 mt-4">
+              <Input
+                value={currentMessage}
+                onChange={(e) => setCurrentMessage(e.target.value)}
+                placeholder="Ask your medical question..."
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && currentMessage.trim()) {
+                    setChatMessages(prev => [...prev, { role: 'user', content: currentMessage }]);
+                    // Simulate AI response
+                    setTimeout(() => {
+                      setChatMessages(prev => [...prev, { 
+                        role: 'ai', 
+                        content: `I understand you're asking about "${currentMessage}". This is a complex medical topic that requires detailed explanation. Would you like me to break it down into specific areas or provide study resources?`
+                      }]);
+                    }, 1000);
+                    setCurrentMessage('');
+                  }
+                }}
+              />
+              <Button
+                onClick={() => {
+                  if (currentMessage.trim()) {
+                    setChatMessages(prev => [...prev, { role: 'user', content: currentMessage }]);
+                    setTimeout(() => {
+                      setChatMessages(prev => [...prev, { 
+                        role: 'ai', 
+                        content: `I understand you're asking about "${currentMessage}". This is a complex medical topic that requires detailed explanation. Would you like me to break it down into specific areas or provide study resources?`
+                      }]);
+                    }, 1000);
+                    setCurrentMessage('');
+                  }
+                }}
+                style={{ backgroundColor: '#3399FF' }}
+              >
+                Send
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
