@@ -84,103 +84,561 @@ export default function Notes() {
   const anatomyTopics: Topic[] = [
     {
       id: 1,
-      name: 'Head and Neck Anatomy',
+      name: 'Head and Neck',
       category: 'Anatomy',
       type: 'gross_anatomy',
-      content: `# Head and Neck Anatomy
+      content: `# Head and Neck
 
-## Overview
-The head and neck region contains some of the most complex anatomical structures in the human body, housing vital organs for sensation, communication, and nutrition.
+## Subtopics
 
-## Key Structures
+### Skull (Bones of the skull, foramina, cranial fossae)
+- **Bones of the skull**: Frontal, parietal, temporal, occipital, sphenoid, ethmoid
+- **Foramina**: Entry and exit points for nerves and vessels
+- **Cranial fossae**: Anterior, middle, and posterior fossae
 
-### Skull and Facial Bones
-- **Frontal bone**: Forms the forehead and roof of the orbits
-- **Parietal bones**: Form the sides and roof of the skull
-- **Temporal bones**: House the ear structures and form part of the skull base
-- **Occipital bone**: Forms the back of the skull
-- **Maxilla**: Upper jaw bone, forms part of the orbit and nasal cavity
-- **Mandible**: Lower jaw bone, the only movable bone of the skull
+### Scalp and Face
+- **Layers of scalp**: Skin, connective tissue, aponeurosis, loose tissue, pericranium
+- **Facial muscles**: Muscles of expression and mastication
+- **Facial vessels and nerves**: Trigeminal and facial nerve distributions
 
-### Major Muscles
-- **Temporalis**: Primary muscle for jaw elevation
-- **Masseter**: Powerful muscle for mastication
-- **Pterygoid muscles**: Assist in jaw movement and grinding
-- **Muscles of facial expression**: Controlled by facial nerve (CN VII)
+### Parotid Region
+- **Parotid gland**: Largest salivary gland
+- **Facial nerve course**: Through parotid gland
+- **Parotid duct**: Stensen's duct opening
 
-### Blood Supply
-- **Carotid arteries**: Primary blood supply to the head and neck
-- **Vertebral arteries**: Supply the posterior brain
-- **Facial artery**: Supplies the face
-- **Temporal artery**: Supplies the temporal region
+### Temporal and Infratemporal Fossae
+- **Boundaries and contents**: Muscles of mastication
+- **Pterygoid muscles**: Medial and lateral pterygoid
+- **Maxillary artery**: Terminal branch of external carotid
 
-### Innervation
-- **Trigeminal nerve (CN V)**: Sensation to face, motor to muscles of mastication
-- **Facial nerve (CN VII)**: Motor to muscles of facial expression
-- **Glossopharyngeal nerve (CN IX)**: Sensation and taste to posterior tongue
-- **Vagus nerve (CN X)**: Parasympathetic innervation
+### Orbit and Eyeball
+- **Orbital walls**: Seven bones forming the orbit
+- **Extraocular muscles**: Six muscles controlling eye movement
+- **Optic nerve**: CN II pathway and relations
 
-## Clinical Correlations
-Understanding head and neck anatomy is crucial for:
-- Dental procedures
-- Facial surgery
-- Neurological examinations
-- Emergency airway management`,
+### Nose and Nasal Cavity
+- **External nose**: Cartilaginous and bony framework
+- **Nasal septum**: Dividing the nasal cavity
+- **Paranasal sinuses**: Frontal, maxillary, sphenoid, ethmoid
+
+### Oral Cavity and Palate
+- **Hard palate**: Bony roof of mouth
+- **Soft palate**: Muscular partition
+- **Tongue**: Intrinsic and extrinsic muscles
+
+### Pharynx
+- **Nasopharynx**: Superior portion
+- **Oropharynx**: Middle portion
+- **Laryngopharynx**: Inferior portion
+
+### Larynx
+- **Cartilages**: Thyroid, cricoid, arytenoid
+- **Vocal cords**: True and false vocal folds
+- **Laryngeal muscles**: Intrinsic and extrinsic
+
+### Cervical Fascia
+- **Deep cervical fascia**: Investing, pretracheal, prevertebral layers
+- **Fascial spaces**: Potential spaces for infection spread
+
+### Posterior Triangle of the Neck
+- **Boundaries**: Sternocleidomastoid, trapezius, clavicle
+- **Contents**: Accessory nerve, brachial plexus trunks
+
+### Anterior Triangle of the Neck
+- **Subdivisions**: Submental, submandibular, carotid, muscular
+- **Major vessels**: Carotid arteries, jugular veins
+
+### Thyroid Gland and Trachea
+- **Thyroid anatomy**: Lobes, isthmus, relations
+- **Trachea**: C-shaped cartilages, relations
+
+### Blood Vessels of the Head and Neck
+- **Carotid system**: Common, internal, external carotid arteries
+- **Venous drainage**: Internal and external jugular veins
+
+### Cranial Nerves
+- **CN I-XII**: Detailed anatomy and functions
+- **Clinical testing**: Examination techniques
+
+### Autonomic Ganglia and Pathways
+- **Sympathetic chain**: Cervical ganglia
+- **Parasympathetic**: Cranial nerve ganglia
+
+### Surface Anatomy of the Head and Neck
+- **Palpable landmarks**: Anatomical reference points
+- **Clinical examination**: Inspection and palpation techniques`,
       accessTier: 'free',
       lastUpdated: '2024-01-15'
     },
     {
       id: 2,
-      name: 'Upper Limb Anatomy',
+      name: 'Upper Limb',
       category: 'Anatomy',
       type: 'gross_anatomy',
-      content: `# Upper Limb Anatomy
+      content: `# Upper Limb
 
-## Overview
-The upper limb is designed for manipulation and interaction with the environment, featuring complex joints and precise muscle control.
+## Subtopics
 
-## Regions
+### Bones of the Upper Limb
+- **Clavicle**: S-shaped bone connecting upper limb to axial skeleton
+- **Scapula**: Triangular bone providing muscle attachment
+- **Humerus**: Long bone of the arm with head, shaft, and condyles
+- **Radius**: Lateral forearm bone, rotates during pronation/supination
+- **Ulna**: Medial forearm bone, forms main elbow joint
+- **Hand**: Carpals, metacarpals, and phalanges
 
-### Shoulder Girdle
-- **Clavicle**: Connects upper limb to axial skeleton
-- **Scapula**: Provides muscle attachment and joint articulation
-- **Glenohumeral joint**: Ball and socket joint with greatest range of motion
+### Joints of the Upper Limb
+- **Shoulder**: Glenohumeral joint with greatest range of motion
+- **Elbow**: Hinge joint between humerus, radius, and ulna
+- **Wrist**: Complex joint between forearm and hand
+- **Hand**: Metacarpophalangeal and interphalangeal joints
 
-### Arm (Brachium)
-- **Humerus**: Single bone of the arm
-- **Biceps brachii**: Primary elbow flexor and supinator
-- **Triceps brachii**: Primary elbow extensor
-- **Brachialis**: Pure elbow flexor
+### Pectoral Region
+- **Pectoralis major**: Large fan-shaped muscle
+- **Pectoralis minor**: Smaller muscle beneath pectoralis major
+- **Subclavius**: Small muscle below clavicle
+- **Serratus anterior**: Muscle on lateral chest wall
 
-### Forearm (Antebrachium)
-- **Radius**: Lateral bone, rotates during pronation/supination
-- **Ulna**: Medial bone, forms main elbow joint
-- **Flexor compartment**: Muscles that flex wrist and fingers
-- **Extensor compartment**: Muscles that extend wrist and fingers
+### Axilla
+- **Boundaries**: Anterior, posterior, medial, lateral walls
+- **Contents**: Axillary vessels, nerves, lymph nodes
+- **Clinical significance**: Lymphatic drainage pathway
 
-### Hand
-- **Carpal bones**: Eight bones forming the wrist
-- **Metacarpals**: Five bones of the palm
-- **Phalanges**: Finger bones (3 per finger, 2 for thumb)
-- **Thenar muscles**: Thumb muscles
-- **Hypothenar muscles**: Little finger muscles
-- **Interossei**: Fine motor control muscles
+### Brachial Plexus
+- **Roots**: C5-T1 nerve roots
+- **Trunks**: Superior, middle, inferior
+- **Divisions**: Anterior and posterior
+- **Cords**: Lateral, posterior, medial
+- **Terminal branches**: Major nerves of upper limb
 
-## Blood Supply
-- **Subclavian artery**: Main arterial supply
-- **Axillary artery**: Continues as brachial artery
-- **Radial and ulnar arteries**: Forearm vessels forming hand arches
+### Arm (Anterior and Posterior Compartments)
+- **Anterior compartment**: Flexor muscles (biceps, brachialis, coracobrachialis)
+- **Posterior compartment**: Extensor muscles (triceps)
+- **Neurovascular structures**: Brachial artery, median nerve
 
-## Clinical Applications
-- Fracture patterns and healing
-- Nerve compression syndromes
-- Sports injuries
-- Surgical approaches`,
+### Cubital Fossa
+- **Boundaries**: Brachioradialis and pronator teres
+- **Contents**: Brachial artery, median nerve, tendon of biceps
+- **Clinical significance**: Venipuncture site
+
+### Forearm (Anterior and Posterior Compartments)
+- **Anterior compartment**: Flexor muscles in superficial and deep layers
+- **Posterior compartment**: Extensor muscles
+- **Interosseous membrane**: Connects radius and ulna
+
+### Hand (Palmar and Dorsal Aspects)
+- **Palmar aspect**: Thenar, hypothenar, and central compartments
+- **Dorsal aspect**: Extensor tendons and dorsal interossei
+- **Intrinsic muscles**: Fine motor control and precision grip
+
+### Arteries, Veins, and Lymphatics
+- **Arterial supply**: Subclavian, axillary, brachial, radial, ulnar arteries
+- **Venous drainage**: Deep and superficial venous systems
+- **Lymphatic drainage**: Axillary lymph nodes
+
+### Cutaneous Innervation
+- **Dermatomes**: Segmental nerve supply patterns
+- **Peripheral nerves**: Cutaneous branches and territories
+
+### Surface Anatomy of the Upper Limb
+- **Palpable landmarks**: Bony prominences and muscle borders
+- **Clinical examination**: Inspection, palpation, movement testing`,
       accessTier: 'starter',
       lastUpdated: '2024-01-10'
     },
     {
       id: 3,
+      name: 'Thorax',
+      category: 'Anatomy',
+      type: 'gross_anatomy',
+      content: `# Thorax
+
+## Subtopics
+
+### Thoracic Wall and Intercostal Spaces
+- **Ribs**: 12 pairs of ribs with costal cartilages
+- **Intercostal muscles**: External, internal, and innermost layers
+- **Intercostal vessels and nerves**: Neurovascular bundles
+- **Sternum**: Manubrium, body, and xiphoid process
+
+### Diaphragm
+- **Structure**: Central tendon and muscular periphery
+- **Openings**: Caval, esophageal, and aortic hiatuses
+- **Innervation**: Phrenic nerve (C3-C5)
+- **Function**: Primary muscle of respiration
+
+### Pleura and Lungs
+- **Pleural layers**: Visceral and parietal pleura
+- **Pleural cavities**: Potential spaces around each lung
+- **Lung lobes**: Right (3 lobes), Left (2 lobes)
+- **Bronchial tree**: Trachea, bronchi, and bronchioles
+
+### Mediastinum
+- **Superior mediastinum**: Above sternal angle
+- **Anterior mediastinum**: In front of pericardium
+- **Middle mediastinum**: Contains heart and pericardium
+- **Posterior mediastinum**: Behind pericardium
+
+### Pericardium
+- **Fibrous pericardium**: Outer tough layer
+- **Serous pericardium**: Parietal and visceral layers
+- **Pericardial cavity**: Potential space with serous fluid
+
+### Heart (External and Internal Features, Conducting System)
+- **External features**: Surfaces, borders, and sulci
+- **Internal features**: Chambers, valves, and septae
+- **Conducting system**: SA node, AV node, bundle of His, Purkinje fibers
+- **Coronary circulation**: Right and left coronary arteries
+
+### Great Vessels of the Thorax
+- **Aorta**: Ascending, arch, and descending portions
+- **Pulmonary vessels**: Pulmonary trunk and veins
+- **Venae cavae**: Superior and inferior vena cava
+- **Brachiocephalic vessels**: Arteries and veins
+
+### Esophagus and Thoracic Duct
+- **Esophagus**: Course through thorax and relations
+- **Thoracic duct**: Main lymphatic vessel
+- **Lymphatic drainage**: Thoracic and abdominal lymphatics
+
+### Nerves of the Thorax
+- **Vagus nerve**: Left and right vagus nerves
+- **Phrenic nerve**: Motor to diaphragm
+- **Sympathetic trunk**: Thoracic sympathetic ganglia
+- **Intercostal nerves**: Segmental innervation
+
+### Surface Anatomy of the Thorax
+- **Surface markings**: Anatomical landmarks
+- **Clinical examination**: Inspection, palpation, percussion, auscultation`,
+      accessTier: 'starter',
+      lastUpdated: '2024-01-12'
+    },
+    {
+      id: 4,
+      name: 'Abdomen',
+      category: 'Anatomy',
+      type: 'gross_anatomy',
+      content: `# Abdomen
+
+## Subtopics
+
+### Anterior Abdominal Wall
+- **Muscles**: External oblique, internal oblique, transversus abdominis, rectus abdominis
+- **Fasciae**: Superficial and deep fasciae
+- **Linea alba**: Midline tendinous intersection
+- **Rectus sheath**: Aponeurotic covering of rectus abdominis
+
+### Inguinal Region and Inguinal Canal
+- **Inguinal canal**: Oblique passage through abdominal wall
+- **Inguinal ligament**: Lower border of external oblique aponeurosis
+- **Spermatic cord**: Contents in males
+- **Round ligament**: Homologous structure in females
+
+### Peritoneum and Peritoneal Cavity
+- **Parietal peritoneum**: Lines abdominal wall
+- **Visceral peritoneum**: Covers organs
+- **Peritoneal cavity**: Potential space with peritoneal fluid
+- **Mesenteries**: Double layers connecting organs to posterior wall
+
+### Stomach
+- **Parts**: Fundus, body, antrum, pylorus
+- **Curvatures**: Greater and lesser curvatures
+- **Relations**: Surrounding structures
+- **Blood supply**: Celiac trunk branches
+
+### Small and Large Intestines
+- **Small intestine**: Duodenum, jejunum, ileum
+- **Large intestine**: Cecum, colon, rectum
+- **Mesenteries**: Mesentery proper, mesocolon
+- **Blood supply**: Superior and inferior mesenteric arteries
+
+### Liver and Biliary Apparatus
+- **Liver lobes**: Right, left, quadrate, caudate
+- **Biliary tree**: Hepatic ducts, cystic duct, common bile duct
+- **Gallbladder**: Storage and concentration of bile
+- **Portal circulation**: Hepatic portal vein system
+
+### Pancreas
+- **Parts**: Head, neck, body, tail
+- **Ducts**: Main pancreatic duct, accessory duct
+- **Relations**: Surrounding structures
+- **Functions**: Exocrine and endocrine
+
+### Spleen
+- **Location**: Left hypochondrium
+- **Relations**: Diaphragm, stomach, kidney
+- **Functions**: Immune and hematologic
+- **Blood supply**: Splenic artery
+
+### Kidneys and Suprarenal Glands
+- **Kidney structure**: Cortex, medulla, hilum
+- **Renal vessels**: Renal arteries and veins
+- **Suprarenal glands**: Cortex and medulla
+- **Retroperitoneal position**: Behind parietal peritoneum
+
+### Abdominal Aorta and IVC
+- **Abdominal aorta**: Branches and relations
+- **Inferior vena cava**: Formation and tributaries
+- **Major branches**: Celiac, mesenteric, renal arteries
+
+### Lumbar Plexus
+- **Formation**: L1-L4 nerve roots
+- **Major branches**: Femoral, obturator, lateral femoral cutaneous nerves
+- **Relations**: Within psoas major muscle
+
+### Posterior Abdominal Wall
+- **Muscles**: Psoas major, quadratus lumborum, iliacus
+- **Fascia**: Fascia covering posterior wall muscles
+- **Vessels and nerves**: Posterior relations
+
+### Surface Anatomy of the Abdomen
+- **Regions**: Nine regions or four quadrants
+- **Surface markings**: Palpable landmarks
+- **Clinical examination**: Systematic approach`,
+      accessTier: 'premium',
+      lastUpdated: '2024-01-11'
+    },
+    {
+      id: 5,
+      name: 'Pelvis and Perineum',
+      category: 'Anatomy',
+      type: 'gross_anatomy',
+      content: `# Pelvis and Perineum
+
+## Subtopics
+
+### Bones and Joints of the Pelvis
+- **Hip bone**: Ilium, ischium, and pubis
+- **Sacrum**: Five fused vertebrae
+- **Coccyx**: Tailbone
+- **Sacroiliac joint**: Joint between sacrum and ilium
+- **Pubic symphysis**: Midline cartilaginous joint
+
+### Pelvic Diaphragm and Muscles
+- **Levator ani**: Main muscle of pelvic floor
+- **Coccygeus**: Posterior pelvic floor muscle
+- **Urogenital diaphragm**: Muscles in urogenital triangle
+- **Pelvic fascia**: Supporting connective tissue
+
+### Urinary Bladder and Urethra
+- **Bladder anatomy**: Detrusor muscle, trigone
+- **Male urethra**: Prostatic, membranous, spongy parts
+- **Female urethra**: Shorter, simpler structure
+- **Sphincters**: Internal and external urethral sphincters
+
+### Rectum and Anal Canal
+- **Rectum**: Terminal portion of large intestine
+- **Anal canal**: Final portion of digestive tract
+- **Anal sphincters**: Internal and external
+- **Houston's valves**: Transverse rectal folds
+
+### Male Internal Genital Organs
+- **Prostate gland**: Surrounds prostatic urethra
+- **Seminal vesicles**: Contribute to seminal fluid
+- **Vas deferens**: Sperm transport duct
+- **Ejaculatory ducts**: Final sperm pathway
+
+### Female Internal Genital Organs
+- **Uterus**: Body, fundus, cervix
+- **Uterine tubes**: Fallopian tubes
+- **Ovaries**: Female gonads
+- **Vagina**: Birth canal and copulatory organ
+
+### Perineum and its Subdivisions
+- **Urogenital triangle**: Anterior subdivision
+- **Anal triangle**: Posterior subdivision
+- **Perineal body**: Central tendon
+- **Boundaries**: Defined by bony landmarks
+
+### Urogenital Triangle
+- **External genitalia**: Penis/clitoris, scrotum/labia
+- **Bulbospongiosus muscle**: Surrounds bulb of penis/vestibule
+- **Ischiocavernosus muscle**: Covers crura
+- **Superficial transverse perineal muscle**: Stabilizes perineal body
+
+### Anal Triangle
+- **External anal sphincter**: Voluntary control
+- **Ischioanal fossae**: Fat-filled spaces
+- **Pudendal canal**: Alcock's canal
+- **Anal columns**: Longitudinal mucosal folds
+
+### Blood Vessels and Nerves of the Pelvis
+- **Internal iliac artery**: Main pelvic arterial supply
+- **Pudendal nerve**: Motor and sensory to perineum
+- **Pelvic splanchnic nerves**: Parasympathetic supply
+- **Sacral plexus**: L4-S4 nerve roots
+
+### Surface Anatomy of the Pelvis and Perineum
+- **Palpable landmarks**: Iliac crests, pubic symphysis
+- **Clinical examination**: Bimanual examination techniques`,
+      accessTier: 'premium',
+      lastUpdated: '2024-01-09'
+    },
+    {
+      id: 6,
+      name: 'Lower Limb',
+      category: 'Anatomy',
+      type: 'gross_anatomy',
+      content: `# Lower Limb
+
+## Subtopics
+
+### Bones of the Lower Limb
+- **Hip bone**: Ilium, ischium, pubis forming acetabulum
+- **Femur**: Longest bone with head, neck, shaft, condyles
+- **Tibia**: Weight-bearing bone of leg
+- **Fibula**: Non-weight-bearing lateral bone
+- **Foot**: Tarsals, metatarsals, phalanges
+
+### Joints of the Lower Limb
+- **Hip**: Ball and socket joint with strong ligaments
+- **Knee**: Complex hinge joint with menisci
+- **Ankle**: Hinge joint between leg and foot
+- **Foot**: Multiple joints for adaptation and propulsion
+
+### Gluteal Region
+- **Gluteus maximus**: Largest muscle, hip extension
+- **Gluteus medius and minimus**: Hip abductors
+- **Deep muscles**: Piriformis, obturator internus, gemelli
+- **Sciatic nerve**: Largest nerve, exits through greater sciatic foramen
+
+### Thigh (Anterior, Medial, and Posterior Compartments)
+- **Anterior compartment**: Quadriceps femoris, knee extension
+- **Medial compartment**: Adductor muscles, hip adduction
+- **Posterior compartment**: Hamstrings, hip extension, knee flexion
+- **Femoral triangle**: Contains femoral vessels and nerve
+
+### Popliteal Fossa
+- **Boundaries**: Biceps femoris, semimembranosus, gastrocnemius
+- **Contents**: Popliteal vessels, tibial and common fibular nerves
+- **Clinical significance**: Pulse palpation, nerve blocks
+
+### Leg (Anterior, Lateral, and Posterior Compartments)
+- **Anterior compartment**: Dorsiflexors of foot
+- **Lateral compartment**: Foot evertors
+- **Posterior compartment**: Plantarflexors, superficial and deep layers
+- **Interosseous membrane**: Connects tibia and fibula
+
+### Foot (Dorsum and Sole)
+- **Dorsum**: Extensor tendons, dorsalis pedis artery
+- **Sole**: Four layers of muscles, plantar arches
+- **Arches**: Longitudinal and transverse arches
+- **Plantar fascia**: Supporting aponeurosis
+
+### Arteries, Veins, and Lymphatics
+- **Arterial supply**: Femoral, popliteal, anterior/posterior tibial arteries
+- **Venous drainage**: Deep and superficial venous systems
+- **Lymphatic drainage**: Inguinal and popliteal lymph nodes
+
+### Cutaneous Innervation
+- **Dermatomes**: L1-S2 segmental supply
+- **Peripheral nerves**: Cutaneous branches and territories
+- **Clinical testing**: Sensory examination techniques
+
+### Surface Anatomy of the Lower Limb
+- **Palpable landmarks**: Bony prominences, muscle borders
+- **Clinical examination**: Gait analysis, joint testing`,
+      accessTier: 'premium',
+      lastUpdated: '2024-01-08'
+    },
+    {
+      id: 7,
+      name: 'Neuroanatomy',
+      category: 'Anatomy',
+      type: 'gross_anatomy',
+      content: `# Neuroanatomy
+
+## Subtopics
+
+### Organization of the Nervous System
+- **Central nervous system**: Brain and spinal cord
+- **Peripheral nervous system**: Cranial and spinal nerves
+- **Autonomic nervous system**: Sympathetic and parasympathetic
+- **Somatic nervous system**: Motor and sensory components
+
+### Meninges and Cerebrospinal Fluid
+- **Dura mater**: Tough outer layer
+- **Arachnoid mater**: Middle web-like layer
+- **Pia mater**: Thin inner layer
+- **CSF circulation**: Production, flow, and absorption
+
+### Spinal Cord (Gross Anatomy, Tracts, Blood Supply)
+- **External anatomy**: Enlargements, sulci, roots
+- **Internal anatomy**: Gray and white matter organization
+- **Ascending tracts**: Sensory pathways to brain
+- **Descending tracts**: Motor pathways from brain
+- **Blood supply**: Anterior and posterior spinal arteries
+
+### Brainstem (Medulla, Pons, Midbrain)
+- **Medulla oblongata**: Vital centers, pyramids, olives
+- **Pons**: Relay station, cranial nerve nuclei
+- **Midbrain**: Superior and inferior colliculi, substantia nigra
+- **Reticular formation**: Consciousness and arousal
+
+### Cerebellum
+- **Anatomy**: Vermis, hemispheres, peduncles
+- **Functions**: Balance, coordination, motor learning
+- **Connections**: Input and output pathways
+- **Clinical correlations**: Ataxia, dysmetria
+
+### Diencephalon (Thalamus, Hypothalamus)
+- **Thalamus**: Relay station for sensory information
+- **Hypothalamus**: Homeostasis, hormone regulation
+- **Epithalamus**: Pineal gland, habenula
+- **Subthalamus**: Motor control components
+
+### Cerebral Hemispheres (Lobes, Functional Areas)
+- **Frontal lobe**: Motor, executive, personality functions
+- **Parietal lobe**: Sensory processing, spatial awareness
+- **Temporal lobe**: Auditory, memory, language
+- **Occipital lobe**: Visual processing
+
+### Basal Ganglia
+- **Components**: Caudate, putamen, globus pallidus
+- **Connections**: Cortico-basal ganglia loops
+- **Functions**: Motor control, habit formation
+- **Clinical disorders**: Parkinson's, Huntington's disease
+
+### Limbic System
+- **Components**: Hippocampus, amygdala, cingulate cortex
+- **Functions**: Memory, emotion, behavior
+- **Connections**: Papez circuit
+- **Clinical significance**: Alzheimer's disease, depression
+
+### Cranial Nerves
+- **CN I-XII**: Individual anatomy and functions
+- **Brainstem attachments**: Entry and exit points
+- **Functional components**: Motor, sensory, autonomic
+- **Clinical testing**: Systematic examination
+
+### Autonomic Nervous System
+- **Sympathetic division**: Thoracolumbar outflow
+- **Parasympathetic division**: Craniosacral outflow
+- **Ganglia**: Sympathetic chain, collateral, terminal
+- **Neurotransmitters**: ACh, norepinephrine
+
+### Ventricles of the Brain
+- **Lateral ventricles**: Largest, C-shaped
+- **Third ventricle**: Between thalami
+- **Fourth ventricle**: Between brainstem and cerebellum
+- **CSF flow**: Choroid plexus to subarachnoid space
+
+### Arterial Supply (Circle of Willis)
+- **Internal carotid system**: Anterior circulation
+- **Vertebrobasilar system**: Posterior circulation
+- **Circle of Willis**: Arterial anastomosis
+- **Watershed areas**: Border zones between territories
+
+### Venous Drainage (Dural Sinuses)
+- **Superficial veins**: Cortical drainage
+- **Deep veins**: Internal cerebral veins
+- **Dural sinuses**: Superior sagittal, transverse, sigmoid
+- **Clinical significance**: Thrombosis, hemorrhage`,
+      accessTier: 'premium',
+      lastUpdated: '2024-01-07'
+    },
+    {
+      id: 8,
       name: 'Cardiovascular Histology',
       category: 'Anatomy',
       type: 'histology',
