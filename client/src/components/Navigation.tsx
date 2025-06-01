@@ -47,14 +47,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export function Navigation() {
   const [location] = useLocation();
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   // State for profile management
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -72,6 +74,59 @@ export function Navigation() {
     phone: ''
   });
   const [loading, setLoading] = useState(false);
+
+  // Fetch user profile data
+  const { data: userProfile } = useQuery({
+    queryKey: ['/api/user', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const response = await fetch(`/api/user/${user.id}`);
+      if (!response.ok) return null;
+      return response.json();
+    },
+    enabled: !!user?.id,
+  });
+
+  // Update profile mutation
+  const updateProfileMutation = useMutation({
+    mutationFn: async (updates: any) => {
+      const response = await fetch(`/api/user/${user?.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      });
+      if (!response.ok) throw new Error('Failed to update profile');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/user', user?.id] });
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been successfully updated"
+      });
+      setIsProfileOpen(false);
+    },
+    onError: () => {
+      toast({
+        variant: "destructive",
+        title: "Update Failed",
+        description: "Failed to update profile"
+      });
+    }
+  });
+
+  // Load current profile data when modal opens
+  useEffect(() => {
+    if (isProfileOpen && userProfile) {
+      setProfileData({
+        firstName: userProfile.firstName || '',
+        lastName: userProfile.lastName || '',
+        specialization: userProfile.specialization || '',
+        institution: userProfile.institution || '',
+        phone: userProfile.phone || ''
+      });
+    }
+  }, [isProfileOpen, userProfile]);
 
   const navItems = [
     { path: '/home', label: 'Home', icon: Home },
@@ -149,7 +204,8 @@ export function Navigation() {
   const handleProfileUpdate = async () => {
     setLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({
+      // Update both Supabase auth metadata and our database
+      await supabase.auth.updateUser({
         data: {
           firstName: profileData.firstName,
           lastName: profileData.lastName,
@@ -159,19 +215,8 @@ export function Navigation() {
         }
       });
 
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Profile Update Failed",
-          description: error.message
-        });
-      } else {
-        toast({
-          title: "Profile Updated",
-          description: "Your profile has been successfully updated"
-        });
-        setIsProfileOpen(false);
-      }
+      // Update our database
+      await updateProfileMutation.mutateAsync(profileData);
     } catch (error) {
       toast({
         variant: "destructive",
@@ -184,10 +229,29 @@ export function Navigation() {
   };
 
   const getUserInitials = () => {
+    if (userProfile?.firstName && userProfile?.lastName) {
+      return `${userProfile.firstName[0]}${userProfile.lastName[0]}`.toUpperCase();
+    }
+    if (userProfile?.firstName) {
+      return userProfile.firstName.substring(0, 2).toUpperCase();
+    }
     if (user?.email) {
       return user.email.substring(0, 2).toUpperCase();
     }
     return 'U';
+  };
+
+  const getDisplayName = () => {
+    if (userProfile?.firstName && userProfile?.lastName) {
+      return `${userProfile.firstName} ${userProfile.lastName}`;
+    }
+    if (userProfile?.firstName) {
+      return userProfile.firstName;
+    }
+    if (userProfile?.fullName) {
+      return userProfile.fullName;
+    }
+    return user?.email?.split('@')[0] || 'User';
   };
 
   return (
@@ -246,7 +310,7 @@ export function Navigation() {
                   </Avatar>
                   <div className="hidden md:flex flex-col items-start">
                     <span className="text-sm font-medium" style={{ color: '#1C1C1C' }}>
-                      {user?.user_metadata?.firstName || 'Dr. User'}
+                      {getDisplayName()}
                     </span>
                     <span className="text-xs" style={{ color: '#2E2E2E' }}>
                       {user?.email}
@@ -260,15 +324,17 @@ export function Navigation() {
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">
-                      {user?.user_metadata?.firstName || 'Dr. User'} {user?.user_metadata?.lastName || ''}
+                      {getDisplayName()}
                     </p>
                     <p className="text-xs leading-none text-muted-foreground">
                       {user?.email}
                     </p>
                     <div className="flex items-center space-x-2 mt-2">
-                      <Badge variant="outline" className="text-xs">Pro Plan</Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {userProfile?.subscriptionTier || 'Free'} Plan
+                      </Badge>
                       <Badge variant="outline" className="text-xs" style={{ backgroundColor: '#3399FF', color: 'white' }}>
-                        Level 25
+                        Level {userProfile?.level || 1}
                       </Badge>
                     </div>
                   </div>
