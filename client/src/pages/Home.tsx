@@ -1,6 +1,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+
+import { Textarea } from '@/components/ui/textarea';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   GraduationCap, 
   BookOpen, 
@@ -41,14 +45,30 @@ import {
   Share2,
   Bell,
   Image as ImageIcon,
-  AlertCircle as Alert
+  AlertCircle as Alert,
+  Eye,
+  Timer,
+  Bookmark,
+  ArrowRight,
+  Mic,
+  Video,
+  Headphones,
+  Coffee,
+  Moon,
+  Sun,
+  Flame,
+  LineChart,
+  PieChart,
+  Newspaper,
+  Rss,
+  Wifi,
+  WifiOff
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import QuizQuestion from '@/components/quizzes/quiz-question';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert as AlertComponent, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { supabase } from '@/lib/supabase';
@@ -672,97 +692,522 @@ export default function Home() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-8 py-12">
-        {/* Performance Highlights */}
-        <div className="mb-12">
-          <h2 className="text-3xl font-bold mb-6" style={{ color: '#1C1C1C' }}>Your Progress at a Glance</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card style={{ backgroundColor: '#F7FAFC' }}>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm" style={{ color: '#2E2E2E' }}>Level</p>
-                    <p className="text-3xl font-bold" style={{ color: '#1C1C1C' }}>25</p>
-                  </div>
-                  <Trophy className="w-8 h-8" style={{ color: '#3399FF' }} />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card style={{ backgroundColor: '#F7FAFC' }}>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm" style={{ color: '#2E2E2E' }}>Accuracy</p>
-                    <p className="text-3xl font-bold" style={{ color: '#1C1C1C' }}>81.5%</p>
-                  </div>
-                  <Target className="w-8 h-8" style={{ color: '#3399FF' }} />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card style={{ backgroundColor: '#F7FAFC' }}>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm" style={{ color: '#2E2E2E' }}>Streak</p>
-                    <p className="text-3xl font-bold" style={{ color: '#1C1C1C' }}>8</p>
-                  </div>
-                  <Zap className="w-8 h-8" style={{ color: '#3399FF' }} />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card style={{ backgroundColor: '#F7FAFC' }}>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm" style={{ color: '#2E2E2E' }}>XP Points</p>
-                    <p className="text-3xl font-bold" style={{ color: '#1C1C1C' }}>2,450</p>
-                  </div>
-                  <Star className="w-8 h-8" style={{ color: '#3399FF' }} />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" style={{ backgroundColor: '#F7FAFC' }}>
-              <CardContent className="p-6 text-center">
-                <BarChart3 className="w-12 h-12 mx-auto mb-4" style={{ color: '#3399FF' }} />
-                <h3 className="text-lg font-semibold mb-2" style={{ color: '#1C1C1C' }}>View Analytics</h3>
-                <p className="text-sm mb-4" style={{ color: '#2E2E2E' }}>Deep dive into your learning patterns</p>
-                <Button style={{ backgroundColor: '#3399FF' }}>
-                  <a href="/performance" className="text-white">View Performance</a>
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" style={{ backgroundColor: '#F7FAFC' }}>
-              <CardContent className="p-6 text-center">
-                <Users className="w-12 h-12 mx-auto mb-4" style={{ color: '#3399FF' }} />
-                <h3 className="text-lg font-semibold mb-2" style={{ color: '#1C1C1C' }}>Leaderboard</h3>
-                <p className="text-sm mb-4" style={{ color: '#2E2E2E' }}>See your ranking among peers</p>
-                <Button style={{ backgroundColor: '#3399FF' }}>
-                  <a href="/performance?tab=leaderboard" className="text-white">View Rankings</a>
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" style={{ backgroundColor: '#F7FAFC' }}>
-              <CardContent className="p-6 text-center">
-                <Award className="w-12 h-12 mx-auto mb-4" style={{ color: '#3399FF' }} />
-                <h3 className="text-lg font-semibold mb-2" style={{ color: '#1C1C1C' }}>Achievements</h3>
-                <p className="text-sm mb-4" style={{ color: '#2E2E2E' }}>Unlock badges and rewards</p>
-                <Button style={{ backgroundColor: '#3399FF' }}>
-                  <a href="/performance?tab=gamification" className="text-white">View Badges</a>
-                </Button>
-              </CardContent>
-            </Card>
+        {/* Welcome Section with Personalization */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold mb-2" style={{ color: '#1C1C1C' }}>
+                Good morning, Dr. Smith! 👨‍⚕️
+              </h1>
+              <p className="text-lg" style={{ color: '#2E2E2E' }}>
+                Ready to advance your medical knowledge today?
+              </p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-sm" style={{ color: '#2E2E2E' }}>Study streak: 12 days</span>
+              </div>
+              <Button variant="outline" size="sm">
+                <Settings className="w-4 h-4 mr-2" />
+                Customize
+              </Button>
+            </div>
           </div>
         </div>
 
+        {/* Advanced Dashboard Tabs */}
+        <Tabs defaultValue="overview" className="mb-8">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="today">Today's Plan</TabsTrigger>
+            <TabsTrigger value="progress">Progress</TabsTrigger>
+            <TabsTrigger value="insights">AI Insights</TabsTrigger>
+          </TabsList>
 
+          <TabsContent value="overview" className="space-y-8">
+            {/* Performance Highlights */}
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold" style={{ color: '#1C1C1C' }}>Performance Dashboard</h2>
+                <div className="flex items-center space-x-2">
+                  <Badge variant="outline">Last 7 days</Badge>
+                  <Button variant="ghost" size="sm">
+                    <Filter className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <Card style={{ backgroundColor: '#F7FAFC' }} className="relative overflow-hidden">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm" style={{ color: '#2E2E2E' }}>Current Level</p>
+                        <p className="text-3xl font-bold" style={{ color: '#1C1C1C' }}>25</p>
+                        <div className="flex items-center mt-2">
+                          <Progress value={75} className="w-16 h-2 mr-2" />
+                          <span className="text-xs" style={{ color: '#2E2E2E' }}>75% to 26</span>
+                        </div>
+                      </div>
+                      <Trophy className="w-8 h-8" style={{ color: '#3399FF' }} />
+                    </div>
+                    <div className="absolute top-2 right-2">
+                      <Badge variant="secondary" className="text-xs">+2 this week</Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card style={{ backgroundColor: '#F7FAFC' }} className="relative overflow-hidden">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm" style={{ color: '#2E2E2E' }}>Overall Accuracy</p>
+                        <p className="text-3xl font-bold" style={{ color: '#1C1C1C' }}>84.7%</p>
+                        <div className="flex items-center mt-2">
+                          <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
+                          <span className="text-xs text-green-500">+3.2% improvement</span>
+                        </div>
+                      </div>
+                      <Target className="w-8 h-8" style={{ color: '#3399FF' }} />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card style={{ backgroundColor: '#F7FAFC' }} className="relative overflow-hidden">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm" style={{ color: '#2E2E2E' }}>Study Streak</p>
+                        <p className="text-3xl font-bold" style={{ color: '#1C1C1C' }}>12</p>
+                        <div className="flex items-center mt-2">
+                          <Flame className="w-4 h-4 text-orange-500 mr-1" />
+                          <span className="text-xs" style={{ color: '#2E2E2E' }}>days in a row</span>
+                        </div>
+                      </div>
+                      <Zap className="w-8 h-8" style={{ color: '#3399FF' }} />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card style={{ backgroundColor: '#F7FAFC' }} className="relative overflow-hidden">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm" style={{ color: '#2E2E2E' }}>Total XP</p>
+                        <p className="text-3xl font-bold" style={{ color: '#1C1C1C' }}>3,847</p>
+                        <div className="flex items-center mt-2">
+                          <Star className="w-4 h-4 text-yellow-500 mr-1" />
+                          <span className="text-xs" style={{ color: '#2E2E2E' }}>+240 today</span>
+                        </div>
+                      </div>
+                      <Award className="w-8 h-8" style={{ color: '#3399FF' }} />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Recent Activity & Learning Path */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <Card style={{ backgroundColor: '#F7FAFC' }}>
+                  <CardHeader>
+                    <CardTitle className="flex items-center" style={{ color: '#1C1C1C' }}>
+                      <Activity className="w-5 h-5 mr-2" style={{ color: '#3399FF' }} />
+                      Recent Activity
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                        <div className="flex items-center">
+                          <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                          <div>
+                            <p className="font-medium text-sm">Anatomy Quiz Completed</p>
+                            <p className="text-xs text-gray-600">Cardiovascular System - 9/10 correct</p>
+                          </div>
+                        </div>
+                        <span className="text-xs text-gray-500">2h ago</span>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                        <div className="flex items-center">
+                          <BookOpen className="w-5 h-5 text-blue-500 mr-3" />
+                          <div>
+                            <p className="font-medium text-sm">Study Session</p>
+                            <p className="text-xs text-gray-600">Pharmacology - 45 minutes</p>
+                          </div>
+                        </div>
+                        <span className="text-xs text-gray-500">4h ago</span>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+                        <div className="flex items-center">
+                          <Award className="w-5 h-5 text-purple-500 mr-3" />
+                          <div>
+                            <p className="font-medium text-sm">Achievement Unlocked</p>
+                            <p className="text-xs text-gray-600">Anatomy Expert Badge earned</p>
+                          </div>
+                        </div>
+                        <span className="text-xs text-gray-500">1d ago</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card style={{ backgroundColor: '#F7FAFC' }}>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between" style={{ color: '#1C1C1C' }}>
+                      <div className="flex items-center">
+                        <Lightbulb className="w-5 h-5 mr-2" style={{ color: '#3399FF' }} />
+                        Personalized Learning Path
+                      </div>
+                      <Button variant="ghost" size="sm">
+                        <Settings className="w-4 h-4" />
+                      </Button>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                            <span className="text-sm font-bold text-blue-600">1</span>
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm">Review Weak Areas</p>
+                            <p className="text-xs text-gray-600">Focus on Neuroanatomy</p>
+                          </div>
+                        </div>
+                        <Badge variant="outline">30 min</Badge>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                            <span className="text-sm font-bold text-green-600">2</span>
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm">New Topic Introduction</p>
+                            <p className="text-xs text-gray-600">Histology Basics</p>
+                          </div>
+                        </div>
+                        <Badge variant="outline">45 min</Badge>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                            <span className="text-sm font-bold text-purple-600">3</span>
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm">Practice Quiz</p>
+                            <p className="text-xs text-gray-600">Mixed Topics Assessment</p>
+                          </div>
+                        </div>
+                        <Badge variant="outline">20 min</Badge>
+                      </div>
+
+                      <Button className="w-full mt-4" style={{ backgroundColor: '#3399FF' }}>
+                        <Play className="w-4 h-4 mr-2" />
+                        Start Learning Path
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="today" className="space-y-6">
+            {/* Today's Schedule */}
+            <Card style={{ backgroundColor: '#F7FAFC' }}>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between" style={{ color: '#1C1C1C' }}>
+                  <div className="flex items-center">
+                    <Calendar className="w-5 h-5 mr-2" style={{ color: '#3399FF' }} />
+                    Today's Study Schedule
+                  </div>
+                  <Button variant="outline" size="sm">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Session
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h4 className="font-medium" style={{ color: '#1C1C1C' }}>Scheduled Sessions</h4>
+                    
+                    <div className="space-y-3">
+                      <div className="flex items-center p-4 border-l-4 border-blue-500 bg-blue-50 rounded-r-lg">
+                        <Clock className="w-5 h-5 text-blue-500 mr-3" />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <p className="font-medium">Anatomy Review</p>
+                            <Badge variant="secondary">9:00 - 10:30 AM</Badge>
+                          </div>
+                          <p className="text-sm text-gray-600">Cardiovascular System Deep Dive</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center p-4 border-l-4 border-green-500 bg-green-50 rounded-r-lg">
+                        <Brain className="w-5 h-5 text-green-500 mr-3" />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <p className="font-medium">Quiz Practice</p>
+                            <Badge variant="secondary">2:00 - 2:30 PM</Badge>
+                          </div>
+                          <p className="text-sm text-gray-600">Physiology Mixed Questions</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center p-4 border-l-4 border-purple-500 bg-purple-50 rounded-r-lg">
+                        <Users className="w-5 h-5 text-purple-500 mr-3" />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <p className="font-medium">Study Group</p>
+                            <Badge variant="secondary">7:00 - 8:30 PM</Badge>
+                          </div>
+                          <p className="text-sm text-gray-600">Case Study Discussion</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h4 className="font-medium" style={{ color: '#1C1C1C' }}>Study Goals Today</h4>
+                    
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center">
+                          <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                          <span className="text-sm">Complete 20 quiz questions</span>
+                        </div>
+                        <Badge variant="secondary">15/20</Badge>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center">
+                          <Target className="w-5 h-5 text-gray-400 mr-3" />
+                          <span className="text-sm">Study for 2 hours</span>
+                        </div>
+                        <Badge variant="outline">1.3/2.0h</Badge>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center">
+                          <BookOpen className="w-5 h-5 text-gray-400 mr-3" />
+                          <span className="text-sm">Review 3 topics</span>
+                        </div>
+                        <Badge variant="outline">1/3</Badge>
+                      </div>
+                    </div>
+
+                    <Button className="w-full" style={{ backgroundColor: '#3399FF' }}>
+                      <Timer className="w-4 h-4 mr-2" />
+                      Start Study Timer
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="progress" className="space-y-6">
+            {/* Progress Analytics */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <Card style={{ backgroundColor: '#F7FAFC' }}>
+                <CardHeader>
+                  <CardTitle className="flex items-center" style={{ color: '#1C1C1C' }}>
+                    <LineChart className="w-5 h-5 mr-2" style={{ color: '#3399FF' }} />
+                    Weekly Progress
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <TrendingUp className="w-16 h-16 mx-auto mb-4" style={{ color: '#3399FF' }} />
+                    <p style={{ color: '#2E2E2E' }}>Interactive progress charts will appear here</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card style={{ backgroundColor: '#F7FAFC' }}>
+                <CardHeader>
+                  <CardTitle className="flex items-center" style={{ color: '#1C1C1C' }}>
+                    <PieChart className="w-5 h-5 mr-2" style={{ color: '#3399FF' }} />
+                    Subject Distribution
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Anatomy</span>
+                      <div className="flex items-center">
+                        <Progress value={75} className="w-20 h-2 mr-2" />
+                        <span className="text-sm">75%</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Physiology</span>
+                      <div className="flex items-center">
+                        <Progress value={60} className="w-20 h-2 mr-2" />
+                        <span className="text-sm">60%</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Pharmacology</span>
+                      <div className="flex items-center">
+                        <Progress value={45} className="w-20 h-2 mr-2" />
+                        <span className="text-sm">45%</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Pathology</span>
+                      <div className="flex items-center">
+                        <Progress value={30} className="w-20 h-2 mr-2" />
+                        <span className="text-sm">30%</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="insights" className="space-y-6">
+            {/* AI-Powered Insights */}
+            <Card style={{ backgroundColor: '#F7FAFC' }}>
+              <CardHeader>
+                <CardTitle className="flex items-center" style={{ color: '#1C1C1C' }}>
+                  <Sparkles className="w-5 h-5 mr-2" style={{ color: '#3399FF' }} />
+                  AI Learning Insights
+                </CardTitle>
+                <CardDescription>
+                  Personalized recommendations based on your learning patterns
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h4 className="font-medium" style={{ color: '#1C1C1C' }}>Strengths & Opportunities</h4>
+                    
+                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center mb-2">
+                        <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                        <span className="font-medium text-green-800">Strong Performance</span>
+                      </div>
+                      <p className="text-sm text-green-700">
+                        Excellent grasp of cardiovascular anatomy. Your quiz scores in this area consistently exceed 90%.
+                      </p>
+                    </div>
+
+                    <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <div className="flex items-center mb-2">
+                        <AlertCircle className="w-5 h-5 text-yellow-500 mr-2" />
+                        <span className="font-medium text-yellow-800">Focus Area</span>
+                      </div>
+                      <p className="text-sm text-yellow-700">
+                        Neuroanatomy concepts need attention. Consider reviewing cranial nerves and brain regions.
+                      </p>
+                    </div>
+
+                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-center mb-2">
+                        <Lightbulb className="w-5 h-5 text-blue-500 mr-2" />
+                        <span className="font-medium text-blue-800">Study Tip</span>
+                      </div>
+                      <p className="text-sm text-blue-700">
+                        Your performance peaks between 9-11 AM. Schedule challenging topics during this time.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h4 className="font-medium" style={{ color: '#1C1C1C' }}>Recommended Actions</h4>
+                    
+                    <div className="space-y-3">
+                      <Button variant="outline" className="w-full justify-start">
+                        <Brain className="w-4 h-4 mr-2" />
+                        Take Neuroanatomy Focus Quiz
+                      </Button>
+                      
+                      <Button variant="outline" className="w-full justify-start">
+                        <Video className="w-4 h-4 mr-2" />
+                        Watch Cranial Nerves Video
+                      </Button>
+                      
+                      <Button variant="outline" className="w-full justify-start">
+                        <BookOpen className="w-4 h-4 mr-2" />
+                        Review Brain Atlas
+                      </Button>
+                      
+                      <Button variant="outline" className="w-full justify-start">
+                        <Users className="w-4 h-4 mr-2" />
+                        Join Anatomy Study Group
+                      </Button>
+                    </div>
+
+                    <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
+                      <h5 className="font-medium mb-2" style={{ color: '#1C1C1C' }}>Weekly Challenge</h5>
+                      <p className="text-sm mb-3" style={{ color: '#2E2E2E' }}>
+                        Complete 50 questions on your weak topics to earn the "Improvement Expert" badge.
+                      </p>
+                      <Progress value={32} className="h-2" />
+                      <p className="text-xs mt-1 text-gray-600">16/50 questions completed</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        {/* Quick Access Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="hover:shadow-lg transition-all cursor-pointer" style={{ backgroundColor: '#F7FAFC' }}>
+            <CardContent className="p-6 text-center">
+              <Brain className="w-12 h-12 mx-auto mb-4" style={{ color: '#3399FF' }} />
+              <h3 className="font-semibold mb-2" style={{ color: '#1C1C1C' }}>Quick Quiz</h3>
+              <p className="text-sm mb-4" style={{ color: '#2E2E2E' }}>5-minute knowledge check</p>
+              <Button size="sm" style={{ backgroundColor: '#3399FF' }}>
+                Start Now
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-all cursor-pointer" style={{ backgroundColor: '#F7FAFC' }}>
+            <CardContent className="p-6 text-center">
+              <Timer className="w-12 h-12 mx-auto mb-4" style={{ color: '#3399FF' }} />
+              <h3 className="font-semibold mb-2" style={{ color: '#1C1C1C' }}>Study Timer</h3>
+              <p className="text-sm mb-4" style={{ color: '#2E2E2E' }}>Focus session tracker</p>
+              <Button size="sm" style={{ backgroundColor: '#3399FF' }}>
+                Start Timer
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-all cursor-pointer" style={{ backgroundColor: '#F7FAFC' }}>
+            <CardContent className="p-6 text-center">
+              <Bookmark className="w-12 h-12 mx-auto mb-4" style={{ color: '#3399FF' }} />
+              <h3 className="font-semibold mb-2" style={{ color: '#1C1C1C' }}>Saved Resources</h3>
+              <p className="text-sm mb-4" style={{ color: '#2E2E2E' }}>Your bookmarked content</p>
+              <Button size="sm" style={{ backgroundColor: '#3399FF' }}>
+                View All
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-all cursor-pointer" style={{ backgroundColor: '#F7FAFC' }}>
+            <CardContent className="p-6 text-center">
+              <MessageSquare className="w-12 h-12 mx-auto mb-4" style={{ color: '#3399FF' }} />
+              <h3 className="font-semibold mb-2" style={{ color: '#1C1C1C' }}>AI Tutor</h3>
+              <p className="text-sm mb-4" style={{ color: '#2E2E2E' }}>Get instant help</p>
+              <Button size="sm" style={{ backgroundColor: '#3399FF' }}>
+                Ask Question
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
