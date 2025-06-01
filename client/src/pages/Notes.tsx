@@ -245,163 +245,277 @@ The upper limb is designed for manipulation and interaction with the environment
           name: 'Bones of the Upper Limb',
           description: 'Clavicle, scapula, humerus, radius, ulna, hand',
           content: `
-            <div class="space-y-8">
-              <!-- Clavicle Section -->
-              <div class="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg border-l-4 border-blue-500">
-                <h2 class="text-2xl font-bold text-blue-700 dark:text-blue-300 mb-4">📌 Clavicle Bone</h2>
-                
-                <div class="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">1. Overview</h3>
-                    <p class="text-gray-700 dark:text-gray-300 mb-4">The clavicle, commonly known as the collarbone, is one of the bones of the upper limb girdle. Together with the scapula, it forms the shoulder girdle.</p>
-                    
-                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">2. Location & Anatomy</h3>
-                    <p class="text-gray-700 dark:text-gray-300 mb-4">The clavicle is a long, thin bone that lies horizontally at the base of the neck. It is located anteriorly and superiorly on the thorax.</p>
-                    
-                    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
-                      <h4 class="font-semibold text-gray-800 dark:text-gray-200 mb-2">Key Landmarks:</h4>
-                      <ul class="space-y-1 text-sm text-gray-700 dark:text-gray-300">
-                        <li>• <strong>Medial end:</strong> Articulates with the sternum</li>
-                        <li>• <strong>Lateral end:</strong> Articulates with the acromion of the scapula</li>
-                        <li>• <strong>Undersurface:</strong> Site for coracoclavicular ligament attachment</li>
-                        <li>• <strong>Articular surfaces:</strong> For acromion and sternum</li>
-                      </ul>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">3. Structure & Relations</h3>
-                    <p class="text-gray-700 dark:text-gray-300 mb-4">The clavicle is an S-shaped bone that articulates with the sternum at the sternoclavicular joint and with the acromion of the scapula at the acromioclavicular joint.</p>
-                    
-                    <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg mb-4">
-                      <h4 class="font-semibold text-green-800 dark:text-green-300 mb-2">Muscle Attachments:</h4>
-                      <ul class="text-sm text-green-700 dark:text-green-300 space-y-1">
-                        <li>• Deltoid</li>
-                        <li>• Pectoralis major</li>
-                        <li>• Subclavius</li>
-                        <li>• Sternocleidomastoid</li>
-                        <li>• Trapezius</li>
-                      </ul>
-                    </div>
-                    
-                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">4. Clinical Relevance</h3>
-                    <div class="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
-                      <ul class="text-sm text-red-700 dark:text-red-300 space-y-1">
-                        <li>• <strong>Fractures:</strong> Common injury site</li>
-                        <li>• <strong>Surface Anatomy:</strong> Easily palpated throughout length</li>
-                        <li>• <strong>Thoracic Outlet:</strong> Forms anterior boundary</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
+<div class="prose prose-lg max-w-none">
 
-              <!-- Scapula Section -->
-              <div class="bg-purple-50 dark:bg-purple-900/20 p-6 rounded-lg border-l-4 border-purple-500">
-                <h2 class="text-2xl font-bold text-purple-700 dark:text-purple-300 mb-4">📌 Scapula Bone</h2>
-                
-                <div class="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">1. Overview</h3>
-                    <p class="text-gray-700 dark:text-gray-300 mb-4">The scapula, commonly known as the shoulder blade, is a key bone of the upper limb girdle. It is a flat, triangular bone that lies on the posterior aspect of the thorax.</p>
-                    
-                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">2. Location & Anatomy</h3>
-                    <p class="text-gray-700 dark:text-gray-300 mb-4">The scapula is situated on the upper part of the posterior surface of the thorax, typically between the 2nd and 7th ribs.</p>
-                    
-                    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
-                      <h4 class="font-semibold text-gray-800 dark:text-gray-200 mb-2">Key Landmarks:</h4>
-                      <ul class="space-y-1 text-sm text-gray-700 dark:text-gray-300">
-                        <li>• <strong>Superior angle:</strong> Level of T2 vertebra</li>
-                        <li>• <strong>Inferior angle:</strong> Level of T7 vertebra and 7th rib</li>
-                        <li>• <strong>Spine:</strong> Prominent subcutaneous projection</li>
-                        <li>• <strong>Acromion:</strong> Lateral end of spine</li>
-                        <li>• <strong>Coracoid process:</strong> Projects upward and forward</li>
-                        <li>• <strong>Glenoid cavity:</strong> Pear-shaped cavity for humerus</li>
-                      </ul>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg mb-4">
-                      <h4 class="font-semibold text-green-800 dark:text-green-300 mb-2">Rotator Cuff Muscles (SITS):</h4>
-                      <ul class="text-sm text-green-700 dark:text-green-300 space-y-1">
-                        <li>• <strong>S</strong>upraspinatus</li>
-                        <li>• <strong>I</strong>nfraspinatus</li>
-                        <li>• <strong>T</strong>eres minor</li>
-                        <li>• <strong>S</strong>ubscapularis</li>
-                      </ul>
-                    </div>
-                    
-                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">3. Clinical Relevance</h3>
-                    <div class="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
-                      <ul class="text-sm text-red-700 dark:text-red-300 space-y-2">
-                        <li>• <strong>Winged Scapula:</strong> Long thoracic nerve injury</li>
-                        <li>• <strong>Fractures:</strong> Usually from severe trauma</li>
-                        <li>• <strong>Surface Anatomy:</strong> Inferior angle, spine, acromion palpable</li>
-                        <li>• <strong>Rotator Cuff Issues:</strong> Common shoulder problems</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
+<h2>📌 Topic Title: Clavicle Bone</h2>
 
-              <!-- Summary Table -->
-              <div class="bg-gray-50 dark:bg-gray-900/50 p-6 rounded-lg">
-                <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">📊 Quick Reference Table</h2>
-                <div class="overflow-x-auto">
-                  <table class="w-full border-collapse border border-gray-300 dark:border-gray-600">
-                    <thead>
-                      <tr class="bg-gray-200 dark:bg-gray-700">
-                        <th class="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Bone</th>
-                        <th class="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Shape</th>
-                        <th class="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Key Features</th>
-                        <th class="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Articulations</th>
-                        <th class="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Clinical Points</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td class="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">Clavicle</td>
-                        <td class="border border-gray-300 dark:border-gray-600 px-4 py-2">S-shaped long bone</td>
-                        <td class="border border-gray-300 dark:border-gray-600 px-4 py-2">Medial/lateral ends</td>
-                        <td class="border border-gray-300 dark:border-gray-600 px-4 py-2">Sternum, Scapula</td>
-                        <td class="border border-gray-300 dark:border-gray-600 px-4 py-2">Common fractures</td>
-                      </tr>
-                      <tr>
-                        <td class="border border-gray-300 dark:border-gray-600 px-4 py-2 font-semibold">Scapula</td>
-                        <td class="border border-gray-300 dark:border-gray-600 px-4 py-2">Flat triangular</td>
-                        <td class="border border-gray-300 dark:border-gray-600 px-4 py-2">Spine, glenoid, angles</td>
-                        <td class="border border-gray-300 dark:border-gray-600 px-4 py-2">Humerus, Clavicle</td>
-                        <td class="border border-gray-300 dark:border-gray-600 px-4 py-2">Rotator cuff, winged scapula</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+<h3><strong>1. Overview</strong></h3>
 
-              <!-- Study Tips -->
-              <div class="bg-yellow-50 dark:bg-yellow-900/20 p-6 rounded-lg border-l-4 border-yellow-500">
-                <h2 class="text-2xl font-bold text-yellow-700 dark:text-yellow-300 mb-4">💡 Study Tips</h2>
-                <div class="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <h4 class="font-semibold text-yellow-800 dark:text-yellow-300 mb-2">Memory Aids:</h4>
-                    <ul class="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
-                      <li>• <strong>SITS</strong> for rotator cuff muscles</li>
-                      <li>• Clavicle = "Collar" bone (around neck area)</li>
-                      <li>• Scapula = "Shoulder blade" (flat like a blade)</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <h4 class="font-semibold text-yellow-800 dark:text-yellow-300 mb-2">Clinical Correlations:</h4>
-                    <ul class="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
-                      <li>• Feel your own clavicle and scapula</li>
-                      <li>• Practice identifying surface landmarks</li>
-                      <li>• Understand fracture patterns</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
+<p>The clavicle, commonly known as the collarbone, is one of the bones of the upper limb girdle. Together with the scapula, it forms the shoulder girdle.</p>
+
+<h3><strong>2. Location & Anatomy</strong></h3>
+
+<p>The clavicle is a long, thin bone that lies horizontally at the base of the neck [Source does not explicitly state it's a long bone, but its shape implies it]. It is located anteriorly and superiorly on the thorax. Its medial end is easily palpated between the prominent medial ends of the clavicles in the midline, a region known as the suprasternal notch.</p>
+
+<p>Key anatomical landmarks mentioned:</p>
+<ul>
+<li><strong>Medial end:</strong> Articulates with the sternum.</li>
+<li><strong>Lateral end:</strong> Articulates with the acromion of the scapula.</li>
+<li><strong>Undersurface:</strong> Site for attachment of the coracoclavicular ligament.</li>
+<li><strong>Superior and Inferior surfaces:</strong> Mentioned in relation to muscular and ligamentous attachments.</li>
+<li><strong>Articular surfaces:</strong> For the acromion laterally and for the sternum and first costal cartilage medially.</li>
+</ul>
+
+<h3><strong>3. Structure & Relations</strong></h3>
+
+<p>The clavicle is an S-shaped bone. It articulates with the sternum at the sternoclavicular joint and with the acromion of the scapula at the acromioclavicular joint.</p>
+
+<p>Important muscles attaching to the clavicle are shown in Figure 9.6. These include the deltoid, pectoralis major, subclavius, sternocleidomastoid, and trapezius muscles.</p>
+
+<p>Ligaments attaching to the clavicle include the strong coracoclavicular ligament, which extends from the coracoid process of the scapula to the undersurface of the clavicle. The costoclavicular ligament attaches from the first rib to the clavicle.</p>
+
+<p>The clavicle forms the anterior boundary of the apex of the axilla. The subclavian artery and vein pass posterior to the clavicle. The brachial plexus also passes in this region.</p>
+
+<h3><strong>4. Function</strong></h3>
+
+<p>The clavicle is part of the shoulder girdle. It provides skeletal support and acts as a leverage point for muscles. The weight of the scapula and the upper limb are largely suspended from the clavicle by the strong coracoclavicular ligament.</p>
+
+<h3><strong>5. Clinical Relevance</strong></h3>
+
+<ul>
+<li><strong>Fractures:</strong> Fractures of the clavicle are common.</li>
+<li><strong>Surface Anatomy:</strong> The clavicle is easily palpated throughout its length [Source does not explicitly state entire length, but its prominence implies this]. The medial ends form the suprasternal notch, which is easily palpated.</li>
+<li><strong>Acromioclavicular Joint Injuries:</strong> Injuries to this joint, where the clavicle articulates with the acromion, are related to the strong coracoclavicular ligament.</li>
+<li><strong>Thoracic Outlet:</strong> The clavicle forms the anterior boundary of the thoracic outlet (or inlet), a region where nerves (brachial plexus) and vessels (subclavian artery and vein) pass into the upper limb.</li>
+</ul>
+
+<h3><strong>6. Mnemonics</strong></h3>
+
+<ul>
+<li>No specific mnemonics for the clavicle bone itself were found in the sources.</li>
+</ul>
+
+<h3><strong>7. Summary Table / Cheat Sheet</strong></h3>
+
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Description</th>
+<th>Sources</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Overview</strong></td>
+<td>Part of the shoulder girdle, collarbone.</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Location</strong></td>
+<td>Anterior/superior thorax.</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Shape</strong></td>
+<td>Long bone [Implied], S-shaped [Not explicitly stated, but typical description].</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Key Landmarks</strong></td>
+<td>Medial end, Lateral end, Articular surfaces, Undersurface.</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Articulations</strong></td>
+<td>Sternum (Sternoclavicular joint), Scapula (Acromioclavicular joint).</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Associated Muscles</strong></td>
+<td>Deltoid, Pectoralis major, Subclavius, Sternocleidomastoid, Trapezius.</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Associated Ligaments</strong></td>
+<td>Coracoclavicular, Costoclavicular, Acromioclavicular.</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Associated Nerves/Vessels</strong></td>
+<td>Related to brachial plexus and subclavian vessels as part of thoracic outlet.</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Function</strong></td>
+<td>Forms shoulder girdle, provides skeletal support, leverage, suspends upper limb from trunk.</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Clinical Relevance</strong></td>
+<td>Fractures, surface anatomy/palpation, Acromioclavicular joint injuries, related to thoracic outlet structures.</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+<hr>
+
+<h2>📌 Topic Title: Scapula Bone</h2>
+
+<h3><strong>1. Overview</strong></h3>
+
+<p>The scapula, commonly known as the shoulder blade, is a key bone of the upper limb girdle. It is a flat, triangular bone that lies on the posterior aspect of the thorax. Together with the clavicle, it forms the shoulder girdle.</p>
+
+<h3><strong>2. Location & Anatomy</strong></h3>
+
+<p>The scapula is situated on the upper part of the posterior surface of the thorax. It typically lies on the posterior chest wall between the 2nd and 7th ribs [Based on angle levels mentioned]. Its flat and triangular shape is characteristic.</p>
+
+<p>Key anatomical landmarks include:</p>
+<ul>
+<li><strong>Angles:</strong> The superior angle lies approximately opposite the spine of the second thoracic vertebra [Based on inferior angle location and general shape]. The inferior angle can be easily palpated and lies on a level with the spine of the seventh thoracic vertebra and the 7th rib.</li>
+<li><strong>Borders:</strong> The medial border forms a prominent ridge [Implied by palpation]. The lateral border also exists.</li>
+<li><strong>Spine:</strong> The spine of the scapula is a prominent subcutaneous projection on the posterior surface. The crest of the spine can be palpated and traced medially to the medial border at the level of the 3rd thoracic spine.</li>
+<li><strong>Acromion:</strong> The lateral end of the spine is free and forms the acromion. The acromion is subcutaneous and easily located.</li>
+<li><strong>Coracoid Process:</strong> This process projects upward and forward above the glenoid cavity. The tip of the coracoid process can be felt on deep palpation in the lateral part of the deltopectoral triangle.</li>
+<li><strong>Glenoid Cavity (or Fossa):</strong> The superolateral angle of the scapula forms this pear-shaped cavity.</li>
+<li><strong>Fossae:</strong> The anterior surface is concave and forms the subscapular fossa. The posterior surface, divided by the spine, contains the supraspinous fossa above and the infraspinous fossa below.</li>
+<li><strong>Suprascapular Notch:</strong> Located medial to the base of the coracoid process.</li>
+</ul>
+
+<h3><strong>3. Structure & Relations</strong></h3>
+
+<p>The scapula has an anterior (costal) surface and a posterior surface. The spine divides the posterior surface into the supraspinous and infraspinous fossae.</p>
+
+<p>The scapula articulates with two bones:</p>
+<ul>
+<li><strong>Humerus:</strong> The glenoid cavity articulates with the head of the humerus at the shoulder joint (glenohumeral joint).</li>
+<li><strong>Clavicle:</strong> The acromion articulates with the lateral end of the clavicle at the acromioclavicular joint.</li>
+</ul>
+
+<p>Many important muscles and ligaments attach to the scapula. Examples of muscle attachments are shown in Figure 9.7 and described in tables:</p>
+<ul>
+<li><strong>Anterior Surface (Subscapular Fossa):</strong> Subscapularis. Serratus anterior attaches to the medial border and inferior angle on the anterior surface.</li>
+<li><strong>Posterior Surface:</strong> Supraspinatus (supraspinous fossa), Infraspinatus (infraspinous fossa), Teres minor (lateral border). Trapezius inserts on the spine and acromion. Rhomboid minor and major insert on the medial border. Latissimus dorsi attaches to the inferior angle. Deltoid originates from the spine and acromion.</li>
+<li><strong>Lateral Border:</strong> Teres major.</li>
+<li><strong>Superior Border:</strong> Levator scapulae attaches near the superior angle.</li>
+<li><strong>Coracoid Process:</strong> Pectoralis minor inserts here. Coracobrachialis and the short head of biceps also attach here.</li>
+<li><strong>Supraglenoid Tubercle:</strong> Long head of biceps origin.</li>
+<li><strong>Infraglenoid Tubercle:</strong> Long head of triceps origin.</li>
+</ul>
+
+<p>Important ligaments attaching to the scapula include the coracoclavicular ligament (from coracoid process to clavicle), suprascapular ligament (bridges suprascapular notch), coracoacromial ligament, and ligaments reinforcing the acromioclavicular joint. The scapula's weight and the upper limb are suspended from the clavicle largely by the strong coracoclavicular ligament.</p>
+
+<p>The scapula forms part of the boundaries of the axilla (armpit). Its upper border forms part of the apex's posterior boundary, and its posterior surface contributes to the posterior wall along with attached muscles (subscapularis, teres major, latissimus dorsi). The shoulder joint capsule, related to the glenoid cavity, forms part of the superior boundary of the quadrangular space, which is also bounded by teres minor and teres major. The triangular space is bounded by teres minor, teres major, and the long head of triceps, muscles that attach to the scapula.</p>
+
+<p>Several nerves and vessels are closely related to the scapula:</p>
+<ul>
+<li>The suprascapular nerve and artery pass near the suprascapular notch.</li>
+<li>The axillary nerve and posterior circumflex humeral vessels pass backward through the quadrangular space, which is related to the scapula's glenoid area and surgical neck of the humerus.</li>
+<li>The dorsal scapular nerve supplies muscles that attach to the scapula (rhomboid minor, rhomboid major, levator scapulae).</li>
+<li>The long thoracic nerve supplies the serratus anterior muscle on the anterior surface of the scapula.</li>
+<li>Arteries supplying the scapula region include the suprascapular artery and the circumflex scapular artery (a branch of the subscapular artery). The arterial anastomosis around the shoulder joint involves vessels near the scapula.</li>
+</ul>
+
+<h3><strong>4. Function</strong></h3>
+
+<p>The scapula is integral to the function of the shoulder joint and the entire upper limb. It serves as a stable base for the movements of the arm at the glenohumeral joint. It is the attachment site for numerous muscles that move the arm, forearm, and scapula itself. The scapula's movement on the chest wall (scapulothoracic movement) allows for a greater range of motion at the shoulder, contributing to arm elevation above the head. Rotary movements of the scapula occur relative to the chest wall, with the axis of rotation often considered to pass through the coracoclavicular ligament. The rotator cuff muscles (supraspinatus, infraspinatus, teres minor, subscapularis), originating from the scapula, are crucial for stabilizing the shoulder joint by pressing the humeral head into the glenoid cavity.</p>
+
+<h3><strong>5. Clinical Relevance</strong></h3>
+
+<ul>
+<li><strong>Fractures:</strong> Fractures of the scapula usually result from severe trauma. They often require little specific treatment because the muscles attached to its surfaces provide adequate splinting of the fragments. They are often associated with fractured ribs.</li>
+<li><strong>Surface Anatomy:</strong> Key parts of the scapula are palpable and used as landmarks for anatomical and clinical reference: the inferior angle, spine, acromion, and coracoid process. The inferior angle's position indicates the level of the 7th thoracic spine and 7th rib.</li>
+<li><strong>Nerve Injuries:</strong>
+<ul>
+<li>Injury to the long thoracic nerve paralyzes the serratus anterior muscle, causing the medial border of the scapula to protrude posteriorly, a condition known as "winged scapula".</li>
+<li>The axillary nerve can be injured by downward displacement of the humeral head in shoulder dislocations or fractures of the surgical neck of the humerus due to its passage through the quadrangular space related to the scapula. This results in paralysis of the deltoid and teres minor muscles (which originate from the scapula). Paralysis of the deltoid, along with supraspinatus (also originating from the scapula) being the only other abductor, much impairs shoulder abduction. Paralysis of teres minor is not clinically recognizable.</li>
+<li>The dorsal scapular nerve supplies muscles attached to the scapula (rhomboids, levator scapulae).</li>
+<li>The suprascapular nerve supplies supraspinatus and infraspinatus.</li>
+</ul>
+</li>
+<li><strong>Rotator Cuff Issues:</strong> The tendons of the rotator cuff muscles, originating from the scapula, are important for stabilizing the shoulder joint. Issues like tendinitis can cause shoulder pain.</li>
+<li><strong>Acromioclavicular Joint Injuries:</strong> Injuries here, involving the articulation between the acromion and clavicle, rely on the strong coracoclavicular ligament for stability.</li>
+</ul>
+
+<h3><strong>6. Mnemonics</strong></h3>
+
+<ul>
+<li><strong>Rotator Cuff Muscles:</strong> The four muscles originating from the scapula whose tendons form the rotator cuff can be remembered with the mnemonic <strong>SITS</strong>:
+<ul>
+<li><strong>S</strong>upraspinatus</li>
+<li><strong>I</strong>nfraspinatus</li>
+<li><strong>T</strong>eres minor</li>
+<li><strong>S</strong>ubscapularis</li>
+</ul>
+</li>
+</ul>
+
+<h3><strong>7. Summary Table / Cheat Sheet</strong></h3>
+
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Description</th>
+<th>Sources</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Overview</strong></td>
+<td>Part of the shoulder girdle, shoulder blade.</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Location</strong></td>
+<td>Posterior thorax, typically between 2nd and 7th ribs. Forms part of axilla boundaries.</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Shape</strong></td>
+<td>Flat, triangular bone.</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Key Landmarks</strong></td>
+<td>Spine, Acromion, Coracoid Process, Glenoid Cavity/Fossa, Supraspinous Fossa, Infraspinous Fossa, Subscapular Fossa, Inferior Angle, Superior Angle, Suprascapular Notch.</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Articulations</strong></td>
+<td>Glenoid Cavity with Humerus (Shoulder Joint). Acromion with Clavicle (Acromioclavicular Joint).</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Associated Muscles</strong></td>
+<td>Rotator Cuff (SITS), Deltoid, Trapezius, Serratus Anterior, Rhomboids, Levator Scapulae, Teres Major, Long head of Triceps, Short head of Biceps, Coracobrachialis, Pectoralis Minor.</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Associated Nerves</strong></td>
+<td>Suprascapular, Axillary, Long Thoracic, Dorsal Scapular.</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Associated Vessels</strong></td>
+<td>Suprascapular Artery, Circumflex Scapular Artery, Posterior Circumflex Humeral Arteries.</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Function</strong></td>
+<td>Provides muscle attachment, stable base for arm movement, shoulder stability (rotator cuff), contributes to range of motion (scapulothoracic movement), suspended from clavicle.</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Clinical Relevance</strong></td>
+<td>Fractures require little treatment (muscle splinting), Surface anatomy landmarks (inferior angle = T7/7th rib), Nerve injuries (long thoracic → winged scapula, axillary → deltoid paralysis), Rotator cuff pathology, AC joint injuries.</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+</div>
           `
         },
         {
