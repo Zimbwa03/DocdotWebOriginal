@@ -256,7 +256,7 @@ export function Navigation() {
 
   return (
     <nav className="border-b" style={{ backgroundColor: '#D1E8F9' }}>
-      <div className="max-w-7xl mx-auto px-8">
+      <div className="max-w-7xl mx-auto px-4 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/home">
@@ -264,14 +264,14 @@ export function Navigation() {
               <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#3399FF' }}>
                 <GraduationCap className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold" style={{ color: '#1C1C1C' }}>
+              <span className="text-lg lg:text-xl font-bold" style={{ color: '#1C1C1C' }}>
                 Docdot
               </span>
             </div>
           </Link>
 
-          {/* Navigation Links */}
-          <div className="hidden md:flex items-center space-x-1">
+          {/* Navigation Links - Hidden on mobile, visible on larger screens */}
+          <div className="hidden lg:flex items-center space-x-1">
             {navItems.map(({ path, label, icon: Icon }) => (
               <Link key={path} href={path}>
                 <Button
@@ -286,6 +286,26 @@ export function Navigation() {
                 >
                   <Icon className="w-4 h-4" />
                   <span>{label}</span>
+                </Button>
+              </Link>
+            ))}
+          </div>
+
+          {/* Mobile Navigation - Show icons only */}
+          <div className="flex lg:hidden items-center space-x-1">
+            {navItems.slice(0, 3).map(({ path, label, icon: Icon }) => (
+              <Link key={path} href={path}>
+                <Button
+                  variant={location === path ? "default" : "ghost"}
+                  size="sm"
+                  className={`${
+                    location === path 
+                      ? 'text-white' 
+                      : 'text-gray-700 hover:text-gray-900'
+                  }`}
+                  style={location === path ? { backgroundColor: '#3399FF' } : {}}
+                >
+                  <Icon className="w-4 h-4" />
                 </Button>
               </Link>
             ))}

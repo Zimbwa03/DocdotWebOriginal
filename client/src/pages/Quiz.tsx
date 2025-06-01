@@ -116,6 +116,7 @@ export default function Quiz() {
         const transformed = filtered.map((q: any) => ({
           ...q,
           options: ['True', 'False'],
+          correct_answer: q.answer === 1 || q.answer === "True" || q.answer === true ? 'True' : 'False',
           correctAnswer: q.answer === 1 || q.answer === "True" || q.answer === true ? 'True' : 'False',
           reference_data: q.reference_json || q.reference_data || ''
         }));
