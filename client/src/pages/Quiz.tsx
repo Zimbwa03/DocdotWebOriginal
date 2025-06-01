@@ -171,7 +171,7 @@ export default function Quiz() {
       const streakBonus = isCorrect ? (score * 2) : 0; // Streak bonus for correct answers
       const xpEarned = baseXP + streakBonus;
       
-      const response = await fetch('/api/quiz/attempt', {
+      const response = await fetch('/api/quiz/record-attempt', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

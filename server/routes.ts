@@ -530,11 +530,62 @@ CRITICAL FORMATTING RULES:
   // Enhanced quiz attempt recording with detailed analytics
   app.post("/api/quiz/record-attempt", async (req, res) => {
     try {
-      const { userId } = req.params;
-      const stats = await dbStorage.getUserStats(userId);
+      const attemptData = req.body;
+      console.log('Recording detailed quiz attempt:', attemptData);
       
-      if (!stats) {
-        return res.json({
+      // Enhanced analytics recording similar to Python implementation
+      const userId = attemptData.userId;
+      const category = attemptData.category;
+      const isCorrect = attemptData.isCorrect;
+      const timeSpent = attemptData.timeSpent || 0;
+      const xpEarned = attemptData.xpEarned || (isCorrect ? 10 : 2);
+      
+      // Record the quiz attempt
+      const quizAttempt = await dbStorage.recordQuizAttempt({
+        userId,
+        quizId: attemptData.questionId || null,
+        category,
+        selectedAnswer: attemptData.selectedAnswer,
+        correctAnswer: attemptData.correctAnswer,
+        isCorrect,
+        timeSpent,
+        difficulty: attemptData.difficulty || 'medium',
+        xpEarned
+      });
+      
+      console.log('Quiz attempt recorded with enhanced analytics:', quizAttempt.id);
+      res.json({ 
+        success: true, 
+        attempt: quizAttempt, 
+        xpEarned,
+        message: 'Quiz attempt recorded with comprehensive analytics'
+      });
+    } catch (error: any) {
+      console.error("Error recording enhanced quiz attempt:", error);
+      res.status(500).json({ 
+        error: "Failed to record quiz attempt with analytics", 
+        details: error.message 
+      });
+    }
+  });
+
+  // Get comprehensive analytics dashboard data
+  app.get("/api/analytics-dashboard/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      
+      // Fetch all analytics data in parallel
+      const [userStats, categoryStats, dailyStats, recentAttempts, leaderboard] = await Promise.all([
+        dbStorage.getUserStats(userId),
+        dbStorage.getCategoryStats(userId),
+        dbStorage.getDailyStats(userId, 30),
+        dbStorage.getRecentQuizAttempts(userId, 20),
+        dbStorage.getLeaderboard(10)
+      ]);
+      
+      // Calculate additional metrics
+      const analytics = {
+        userStats: userStats || {
           totalQuestions: 0,
           correctAnswers: 0,
           averageScore: 0,
@@ -544,13 +595,25 @@ CRITICAL FORMATTING RULES:
           currentLevel: 1,
           totalStudyTime: 0,
           rank: 0
-        });
-      }
+        },
+        categoryBreakdown: categoryStats,
+        performanceTrends: dailyStats,
+        recentActivity: recentAttempts,
+        leaderboardPosition: leaderboard,
+        weakestAreas: categoryStats
+          .filter((cat: any) => cat.questionsAttempted >= 3)
+          .sort((a: any, b: any) => a.averageScore - b.averageScore)
+          .slice(0, 3),
+        strongestAreas: categoryStats
+          .filter((cat: any) => cat.questionsAttempted >= 3)
+          .sort((a: any, b: any) => b.averageScore - a.averageScore)
+          .slice(0, 3)
+      };
       
-      res.json(stats);
-    } catch (error) {
-      console.error("Error getting user stats:", error);
-      res.status(500).json({ error: "Failed to get user stats" });
+      res.json(analytics);
+    } catch (error: any) {
+      console.error("Error fetching analytics dashboard:", error);
+      res.status(500).json({ error: "Failed to fetch analytics dashboard" });
     }
   });
 
