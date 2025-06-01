@@ -480,7 +480,7 @@ export default function Performance() {
                 <CardContent className="space-y-4">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-2">
-                      <Fire className="w-5 h-5" style={{ color: '#EF4444' }} />
+                      <Zap className="w-5 h-5" style={{ color: '#EF4444' }} />
                       <span style={{ color: '#1C1C1C' }}>Current Streak</span>
                     </div>
                     <span className="font-bold" style={{ color: '#EF4444' }}>{stats.streak} days</span>
@@ -547,7 +547,7 @@ export default function Performance() {
                   </div>
                   <div className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: '#FFFFFF' }}>
                     <div className="flex items-center space-x-3">
-                      <Fire className="w-5 h-5" style={{ color: '#EF4444' }} />
+                      <Zap className="w-5 h-5" style={{ color: '#EF4444' }} />
                       <span style={{ color: '#1C1C1C' }}>Achieve 20-day streak</span>
                     </div>
                     <span className="text-sm" style={{ color: '#2E2E2E' }}>{stats.streak}/20</span>

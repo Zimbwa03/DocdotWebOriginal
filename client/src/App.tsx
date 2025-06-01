@@ -13,6 +13,7 @@ import Quiz from "@/pages/Quiz";
 import Notes from "@/pages/Notes";
 import Pricing from "@/pages/Pricing";
 import StudyGuide from "@/pages/StudyGuide";
+import Performance from "@/pages/Performance";
 import AiTools from "@/pages/AiTools";
 import NotFound from "@/pages/not-found";
 
@@ -67,6 +68,12 @@ function Router() {
         <ProtectedRoute>
           <Navigation />
           <StudyGuide />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/performance">
+        <ProtectedRoute>
+          <Navigation />
+          <Performance />
         </ProtectedRoute>
       </Route>
       <Route path="/ai-tools">

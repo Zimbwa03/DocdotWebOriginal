@@ -672,6 +672,96 @@ export default function Home() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-8 py-12">
+        {/* Performance Highlights */}
+        <div className="mb-12">
+          <h2 className="text-3xl font-bold mb-6" style={{ color: '#1C1C1C' }}>Your Progress at a Glance</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card style={{ backgroundColor: '#F7FAFC' }}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm" style={{ color: '#2E2E2E' }}>Level</p>
+                    <p className="text-3xl font-bold" style={{ color: '#1C1C1C' }}>25</p>
+                  </div>
+                  <Trophy className="w-8 h-8" style={{ color: '#3399FF' }} />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card style={{ backgroundColor: '#F7FAFC' }}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm" style={{ color: '#2E2E2E' }}>Accuracy</p>
+                    <p className="text-3xl font-bold" style={{ color: '#1C1C1C' }}>81.5%</p>
+                  </div>
+                  <Target className="w-8 h-8" style={{ color: '#3399FF' }} />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card style={{ backgroundColor: '#F7FAFC' }}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm" style={{ color: '#2E2E2E' }}>Streak</p>
+                    <p className="text-3xl font-bold" style={{ color: '#1C1C1C' }}>8</p>
+                  </div>
+                  <Zap className="w-8 h-8" style={{ color: '#3399FF' }} />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card style={{ backgroundColor: '#F7FAFC' }}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm" style={{ color: '#2E2E2E' }}>XP Points</p>
+                    <p className="text-3xl font-bold" style={{ color: '#1C1C1C' }}>2,450</p>
+                  </div>
+                  <Star className="w-8 h-8" style={{ color: '#3399FF' }} />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" style={{ backgroundColor: '#F7FAFC' }}>
+              <CardContent className="p-6 text-center">
+                <BarChart3 className="w-12 h-12 mx-auto mb-4" style={{ color: '#3399FF' }} />
+                <h3 className="text-lg font-semibold mb-2" style={{ color: '#1C1C1C' }}>View Analytics</h3>
+                <p className="text-sm mb-4" style={{ color: '#2E2E2E' }}>Deep dive into your learning patterns</p>
+                <Button style={{ backgroundColor: '#3399FF' }}>
+                  <a href="/performance" className="text-white">View Performance</a>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" style={{ backgroundColor: '#F7FAFC' }}>
+              <CardContent className="p-6 text-center">
+                <Users className="w-12 h-12 mx-auto mb-4" style={{ color: '#3399FF' }} />
+                <h3 className="text-lg font-semibold mb-2" style={{ color: '#1C1C1C' }}>Leaderboard</h3>
+                <p className="text-sm mb-4" style={{ color: '#2E2E2E' }}>See your ranking among peers</p>
+                <Button style={{ backgroundColor: '#3399FF' }}>
+                  <a href="/performance?tab=leaderboard" className="text-white">View Rankings</a>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" style={{ backgroundColor: '#F7FAFC' }}>
+              <CardContent className="p-6 text-center">
+                <Award className="w-12 h-12 mx-auto mb-4" style={{ color: '#3399FF' }} />
+                <h3 className="text-lg font-semibold mb-2" style={{ color: '#1C1C1C' }}>Achievements</h3>
+                <p className="text-sm mb-4" style={{ color: '#2E2E2E' }}>Unlock badges and rewards</p>
+                <Button style={{ backgroundColor: '#3399FF' }}>
+                  <a href="/performance?tab=gamification" className="text-white">View Badges</a>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
         <QuizSection />
       </div>
     </div>
