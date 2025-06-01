@@ -792,8 +792,7 @@ export default function Quiz() {
   if (selectedQuizType === 'mcq' && !selectedMCQSubject) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
-        <div```python
- className="max-w-6xl mx-auto px-8 py-12">
+        <div className="max-w-6xl mx-auto px-8 py-12">
           {renderMCQSubjects()}
         </div>
       </div>
