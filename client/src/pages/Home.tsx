@@ -72,6 +72,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Alert as AlertComponent, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Input } from '@/components/ui/input';
 
 // QuizSection Component
 function QuizSection() {
@@ -664,6 +667,130 @@ function QuizSection() {
 }
 
 export default function Home() {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Fetch user profile data
+  const { data: userProfile, isLoading: profileLoading } = useQuery({
+    queryKey: ['/api/user', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const response = await fetch(`/api/user/${user.id}`);
+      if (!response.ok) return null;
+      return response.json();
+    },
+    enabled: !!user?.id,
+  });
+
+  // Study timer state
+  const [studyTimer, setStudyTimer] = useState(0);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(null);
+
+  // Quick quiz state
+  const [isQuickQuizOpen, setIsQuickQuizOpen] = useState(false);
+  const [quickQuizQuestions, setQuickQuizQuestions] = useState<any[]>([]);
+  const [currentQuizQuestion, setCurrentQuizQuestion] = useState(0);
+  const [quickQuizScore, setQuickQuizScore] = useState(0);
+
+  // AI chat state
+  const [aiChatOpen, setAiChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<Array<{role: 'user' | 'ai', content: string}>>([]);
+  const [currentMessage, setCurrentMessage] = useState('');
+
+  // Get display name for user
+  const getDisplayName = () => {
+    if (userProfile?.firstName && userProfile?.lastName) {
+      return `Dr. ${userProfile.firstName} ${userProfile.lastName}`;
+    }
+    if (userProfile?.firstName) {
+      return `Dr. ${userProfile.firstName}`;
+    }
+    if (userProfile?.fullName) {
+      return `Dr. ${userProfile.fullName}`;
+    }
+    return `Dr. ${user?.email?.split('@')[0] || 'User'}`;
+  };
+
+  // Timer functions
+  const startTimer = () => {
+    if (!isTimerRunning) {
+      setIsTimerRunning(true);
+      const interval = setInterval(() => {
+        setStudyTimer(prev => prev + 1);
+      }, 1000);
+      setTimerInterval(interval);
+      toast({
+        title: "Study Timer Started",
+        description: "Focus mode activated. Good luck with your studies!"
+      });
+    }
+  };
+
+  const stopTimer = () => {
+    if (isTimerRunning && timerInterval) {
+      setIsTimerRunning(false);
+      clearInterval(timerInterval);
+      setTimerInterval(null);
+      toast({
+        title: "Study Session Complete",
+        description: `Great work! You studied for ${Math.floor(studyTimer / 60)} minutes.`
+      });
+    }
+  };
+
+  const resetTimer = () => {
+    if (timerInterval) clearInterval(timerInterval);
+    setIsTimerRunning(false);
+    setStudyTimer(0);
+    setTimerInterval(null);
+  };
+
+  // Format timer display
+  const formatTime = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    return `${minutes}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Start quick quiz
+  const startQuickQuiz = async () => {
+    try {
+      const { data: questions, error } = await supabase
+        .from('docdot_mcqs')
+        .select('*')
+        .limit(5)
+        .order('id', { ascending: false });
+      
+      if (error) throw error;
+      
+      if (questions && questions.length > 0) {
+        setQuickQuizQuestions(questions);
+        setCurrentQuizQuestion(0);
+        setQuickQuizScore(0);
+        setIsQuickQuizOpen(true);
+      } else {
+        toast({
+          variant: "destructive",
+          title: "No Questions Available",
+          description: "Please try again later."
+        });
+      }
+    } catch (error) {
+      console.error('Error loading quiz questions:', error);
+      toast({
+        variant: "destructive",
+        title: "Quiz Load Failed",
+        description: "Unable to load quiz questions."
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
       {/* Header Section */}
@@ -697,7 +824,7 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-4xl font-bold mb-2" style={{ color: '#1C1C1C' }}>
-                Good morning, Dr. Smith! 👨‍⚕️
+                Good morning, {getDisplayName()}! 👨‍⚕️
               </h1>
               <p className="text-lg" style={{ color: '#2E2E2E' }}>
                 Ready to advance your medical knowledge today?
@@ -706,7 +833,9 @@ export default function Home() {
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm" style={{ color: '#2E2E2E' }}>Study streak: 12 days</span>
+                <span className="text-sm" style={{ color: '#2E2E2E' }}>
+                  Study streak: {userProfile?.streak || 0} days
+                </span>
               </div>
               <Button variant="outline" size="sm">
                 <Settings className="w-4 h-4 mr-2" />
