@@ -166,12 +166,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { message, context, userId, sessionId, toolType = 'tutor' } = req.body;
       
-      // For now, bypass database operations and focus on AI response
       console.log("Received AI chat request:", { message, context, userId, toolType });
       
-      const response = await openRouterAI.tutorResponse(message, context);
+      // Direct OpenRouter API call (bypassing the ai.ts service for now)
+      const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+      if (!OPENROUTER_API_KEY) {
+        return res.status(500).json({ error: "OpenRouter API key not configured" });
+      }
+
+      const systemPrompt = `You are an expert medical tutor with deep knowledge in anatomy, physiology, pathology, pharmacology, and clinical medicine. 
+Your goal is to help medical students learn effectively through clear explanations, examples, and educational guidance.
+
+Guidelines:
+- Provide accurate, evidence-based medical information
+- Use clear, educational language appropriate for medical students
+- Include relevant examples and mnemonics when helpful
+- Encourage critical thinking
+- Always emphasize the importance of clinical correlation
+- If unsure about specific clinical recommendations, advise consulting current medical literature
+
+${context ? `Context: ${context}` : ''}`;
+
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://docdot.app',
+          'X-Title': 'Docdot Medical Learning Platform'
+        },
+        body: JSON.stringify({
+          model: 'deepseek/deepseek-r1:free',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: message }
+          ],
+          temperature: 0.7,
+          max_tokens: 1500
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('OpenRouter API error:', response.status, errorText);
+        return res.status(500).json({ error: `AI service error: ${response.status}` });
+      }
+
+      const data = await response.json();
+      const aiResponse = data.choices[0]?.message?.content || 'I apologize, but I could not generate a response.';
       
-      res.json({ response, sessionId: sessionId || uuidv4() });
+      res.json({ response: aiResponse, sessionId: sessionId || uuidv4() });
     } catch (error: any) {
       console.error("AI Chat error:", error);
       res.status(500).json({ error: error.message || "AI service unavailable" });
