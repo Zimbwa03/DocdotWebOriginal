@@ -14,6 +14,7 @@ import Notes from "@/pages/Notes";
 import Pricing from "@/pages/Pricing";
 import StudyGuide from "@/pages/StudyGuide";
 import Performance from "@/pages/Performance";
+import ProfileSetup from "@/pages/ProfileSetup";
 import AiTools from "@/pages/AiTools";
 import NotFound from "@/pages/not-found";
 
@@ -23,12 +24,17 @@ function AuthRedirect() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-docdot-blue"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2" style={{ borderColor: '#3399FF' }}></div>
       </div>
     );
   }
 
   if (user) {
+    // Check if profile setup is complete
+    const profileSetupComplete = localStorage.getItem('profileSetupComplete');
+    if (!profileSetupComplete) {
+      return <Redirect to="/profile-setup" />;
+    }
     return <Redirect to="/home" />;
   }
 
@@ -40,6 +46,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Landing} />
       <Route path="/auth" component={AuthForm} />
+      <Route path="/profile-setup" component={ProfileSetup} />
       <Route path="/home">
         <ProtectedRoute>
           <Navigation />

@@ -762,7 +762,7 @@ export default function Home() {
           </div>
         </div>
 
-        <QuizSection />
+
       </div>
     </div>
   );

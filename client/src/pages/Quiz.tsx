@@ -1,428 +1,393 @@
 import { useState } from 'react';
-import { Link } from 'wouter';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { 
-  ArrowLeft, 
   Brain, 
-  Heart, 
-  Eye, 
-  Bone, 
-  Microscope,
-  Baby,
-  CheckCircle,
-  XCircle,
+  Microscope, 
+  BookOpen, 
+  Image as ImageIcon,
+  Bot,
+  Send,
+  Sparkles,
+  Target,
   Clock,
-  Trophy
+  TrendingUp,
+  MessageCircle,
+  Heart,
+  Eye,
+  Hand,
+  Zap,
+  Activity
 } from 'lucide-react';
 
-interface Category {
-  id: number;
-  name: string;
-  description: string;
-  icon: any;
-  topicCount: number;
-  color: string;
-}
-
-interface Topic {
-  id: number;
-  name: string;
-  type: 'gross_anatomy' | 'histology' | 'embryology';
-  questionCount: number;
-  difficulty: 'easy' | 'medium' | 'hard';
-}
-
-interface QuizQuestion {
-  id: number;
-  question: string;
-  options: string[];
-  correctAnswer: number;
-  explanation: string;
-  difficulty: string;
-  xpReward: number;
-}
-
 export default function Quiz() {
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
-  const [currentQuiz, setCurrentQuiz] = useState<QuizQuestion[]>([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
-  const [showExplanation, setShowExplanation] = useState(false);
-  const [score, setScore] = useState(0);
-  const [quizCompleted, setQuizCompleted] = useState(false);
+  const [selectedQuizType, setSelectedQuizType] = useState<string | null>(null);
+  const [selectedCadaverTopic, setSelectedCadaverTopic] = useState<string | null>(null);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiMessages, setAiMessages] = useState<Array<{role: 'user' | 'assistant', content: string}>>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const categories: Category[] = [
-    {
-      id: 1,
-      name: 'Anatomy',
-      description: 'Human body structure and organization',
-      icon: Bone,
-      topicCount: 12,
-      color: 'blue'
-    },
-    {
-      id: 2,
-      name: 'Physiology',
-      description: 'Body functions and processes',
-      icon: Heart,
-      topicCount: 8,
-      color: 'red'
-    },
-    {
-      id: 3,
-      name: 'Histology',
-      description: 'Microscopic tissue structure',
-      icon: Microscope,
-      topicCount: 6,
-      color: 'purple'
-    },
-    {
-      id: 4,
-      name: 'Embryology',
-      description: 'Development and formation',
-      icon: Baby,
-      topicCount: 4,
-      color: 'green'
-    }
+  const cadaverTopics = [
+    { id: 'head-neck', name: 'Head and Neck', icon: Eye, description: 'Cranial anatomy, facial structures, cervical region' },
+    { id: 'upper-limb', name: 'Upper Limb', icon: Hand, description: 'Shoulder, arm, forearm, hand anatomy' },
+    { id: 'thorax', name: 'Thorax', icon: Heart, description: 'Chest cavity, heart, lungs, mediastinum' },
+    { id: 'lower-limb', name: 'Lower Limb', icon: Activity, description: 'Hip, thigh, leg, foot anatomy' },
+    { id: 'pelvis-perineum', name: 'Pelvis and Perineum', icon: Target, description: 'Pelvic cavity, reproductive organs, perineal structures' },
+    { id: 'neuroanatomy', name: 'Neuroanatomy', icon: Brain, description: 'Central and peripheral nervous system' },
+    { id: 'abdomen', name: 'Abdomen', icon: Activity, description: 'Abdominal cavity, digestive organs, retroperitoneum' }
   ];
 
-  const anatomyTopics: Topic[] = [
-    { id: 1, name: 'Head and Neck', type: 'gross_anatomy', questionCount: 25, difficulty: 'medium' },
-    { id: 2, name: 'Upper Limb', type: 'gross_anatomy', questionCount: 30, difficulty: 'medium' },
-    { id: 3, name: 'Thorax', type: 'gross_anatomy', questionCount: 28, difficulty: 'hard' },
-    { id: 4, name: 'Abdomen', type: 'gross_anatomy', questionCount: 35, difficulty: 'hard' },
-    { id: 5, name: 'Pelvis', type: 'gross_anatomy', questionCount: 20, difficulty: 'medium' },
-    { id: 6, name: 'Lower Limb', type: 'gross_anatomy', questionCount: 32, difficulty: 'medium' }
-  ];
-
-  const sampleQuestions: QuizQuestion[] = [
-    {
-      id: 1,
-      question: "Which muscle is responsible for elevating the mandible during mastication?",
-      options: [
-        "Temporalis",
-        "Masseter", 
-        "Medial pterygoid",
-        "All of the above"
-      ],
-      correctAnswer: 3,
-      explanation: "All three muscles (temporalis, masseter, and medial pterygoid) work together to elevate the mandible during chewing. The temporalis provides the main lifting force, while the masseter and medial pterygoid assist in this action.",
-      difficulty: "medium",
-      xpReward: 15
-    },
-    {
-      id: 2,
-      question: "The facial nerve (CN VII) provides motor innervation to which group of muscles?",
-      options: [
-        "Muscles of mastication",
-        "Muscles of facial expression",
-        "Extraocular muscles",
-        "Muscles of the tongue"
-      ],
-      correctAnswer: 1,
-      explanation: "The facial nerve (cranial nerve VII) provides motor innervation to the muscles of facial expression, including the orbicularis oculi, orbicularis oris, and other muscles that control facial movements and expressions.",
-      difficulty: "easy",
-      xpReward: 10
-    }
-  ];
-
-  const startQuiz = (topic: Topic) => {
-    setSelectedTopic(topic);
-    setCurrentQuiz(sampleQuestions);
-    setCurrentQuestionIndex(0);
-    setSelectedAnswer(null);
-    setShowExplanation(false);
-    setScore(0);
-    setQuizCompleted(false);
-  };
-
-  const handleAnswerSelect = (answerIndex: number) => {
-    if (showExplanation) return;
-    setSelectedAnswer(answerIndex);
-  };
-
-  const handleSubmitAnswer = () => {
-    if (selectedAnswer === null) return;
+  const handleAiSubmit = async () => {
+    if (!aiPrompt.trim()) return;
     
-    const currentQuestion = currentQuiz[currentQuestionIndex];
-    const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
+    setIsGenerating(true);
+    const userMessage = { role: 'user' as const, content: aiPrompt };
+    setAiMessages(prev => [...prev, userMessage]);
     
-    if (isCorrect) {
-      setScore(score + currentQuestion.xpReward);
-    }
+    // Simulate AI response (replace with actual AI integration)
+    setTimeout(() => {
+      const aiResponse = { 
+        role: 'assistant' as const, 
+        content: `Based on your request "${aiPrompt}", I'll generate medical questions focused on this topic. Here are some practice questions I've created for you:\n\n1. **Question**: What is the primary function of the structure you mentioned?\n\n2. **Clinical Scenario**: A patient presents with symptoms related to this area. What would be your differential diagnosis?\n\n3. **Anatomy Question**: Identify the key anatomical landmarks in this region.\n\nWould you like me to generate more specific questions or focus on a particular difficulty level?`
+      };
+      setAiMessages(prev => [...prev, aiResponse]);
+      setIsGenerating(false);
+    }, 2000);
     
-    setShowExplanation(true);
+    setAiPrompt('');
   };
 
-  const handleNextQuestion = () => {
-    if (currentQuestionIndex < currentQuiz.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setSelectedAnswer(null);
-      setShowExplanation(false);
-    } else {
-      setQuizCompleted(true);
-    }
-  };
-
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'easy': return 'text-green-600 bg-green-100';
-      case 'medium': return 'text-yellow-600 bg-yellow-100';
-      case 'hard': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
-    }
-  };
-
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'gross_anatomy': return 'Gross Anatomy';
-      case 'histology': return 'Histology';
-      case 'embryology': return 'Embryology';
-      default: return type;
-    }
-  };
-
-  if (quizCompleted) {
-    const percentage = Math.round((score / (currentQuiz.length * 15)) * 100);
-    return (
-      <div className="min-h-screen bg-docdot-bg">
-        <div className="max-w-4xl mx-auto py-8 px-4">
-          <Card className="text-center">
-            <CardHeader>
-              <Trophy className="text-yellow-500 mx-auto mb-4" size={64} />
-              <CardTitle className="text-2xl text-docdot-heading">Quiz Completed!</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <p className="text-3xl font-bold text-docdot-blue">{score} XP</p>
-                <p className="text-docdot-text">Total Points Earned</p>
-              </div>
-              
-              <div>
-                <p className="text-2xl font-bold text-docdot-heading">{percentage}%</p>
-                <p className="text-docdot-text">Accuracy Score</p>
-              </div>
-              
-              <div className="flex gap-4 justify-center">
-                <Button onClick={() => window.location.reload()} className="bg-docdot-blue">
-                  Try Again
-                </Button>
-                <Link href="/home">
-                  <Button variant="outline">
-                    Back to Dashboard
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+  const renderQuizTypeSelection = () => (
+    <div className="space-y-8">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold mb-4" style={{ color: '#1C1C1C' }}>Medical Quizzes</h1>
+        <p className="text-lg" style={{ color: '#2E2E2E' }}>Choose your learning path and start practicing</p>
       </div>
-    );
-  }
 
-  if (currentQuiz.length > 0) {
-    const currentQuestion = currentQuiz[currentQuestionIndex];
-    const progress = ((currentQuestionIndex + 1) / currentQuiz.length) * 100;
-
-    return (
-      <div className="min-h-screen bg-docdot-bg">
-        <div className="max-w-4xl mx-auto py-8 px-4">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <Button variant="ghost" onClick={() => setCurrentQuiz([])}>
-              <ArrowLeft className="mr-2" size={16} />
-              Back to Topics
-            </Button>
-            <div className="text-center">
-              <p className="text-docdot-text">Question {currentQuestionIndex + 1} of {currentQuiz.length}</p>
-              <Progress value={progress} className="w-64 mt-2" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* MCQ Questions */}
+        <Card 
+          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300"
+          style={{ backgroundColor: '#F7FAFC' }}
+          onClick={() => setSelectedQuizType('mcq')}
+        >
+          <CardHeader className="text-center">
+            <BookOpen className="w-12 h-12 mx-auto mb-4" style={{ color: '#3399FF' }} />
+            <CardTitle style={{ color: '#1C1C1C' }}>MCQ Questions</CardTitle>
+            <CardDescription style={{ color: '#2E2E2E' }}>
+              Multiple choice questions from our comprehensive question bank
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Badge variant="secondary">5,000+ Questions</Badge>
+              <Badge variant="secondary">All Subjects</Badge>
+              <Badge variant="secondary">Instant Feedback</Badge>
             </div>
-            <div className="text-right">
-              <p className="text-docdot-text">Score: {score} XP</p>
-            </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          {/* Question Card */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <Badge className={getDifficultyColor(currentQuestion.difficulty)}>
-                  {currentQuestion.difficulty}
-                </Badge>
-                <div className="flex items-center text-docdot-text">
-                  <Clock size={16} className="mr-1" />
-                  <span>{currentQuestion.xpReward} XP</span>
+        {/* Generate AI Questions */}
+        <Card 
+          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300"
+          style={{ backgroundColor: '#F7FAFC' }}
+          onClick={() => setSelectedQuizType('ai-generator')}
+        >
+          <CardHeader className="text-center">
+            <Bot className="w-12 h-12 mx-auto mb-4" style={{ color: '#3399FF' }} />
+            <CardTitle style={{ color: '#1C1C1C' }}>Generate AI Questions</CardTitle>
+            <CardDescription style={{ color: '#2E2E2E' }}>
+              Create personalized questions using advanced AI technology
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Badge variant="secondary">AI-Powered</Badge>
+              <Badge variant="secondary">Personalized</Badge>
+              <Badge variant="secondary">Adaptive</Badge>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Cadaver Quiz */}
+        <Card 
+          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300"
+          style={{ backgroundColor: '#F7FAFC' }}
+          onClick={() => setSelectedQuizType('cadaver')}
+        >
+          <CardHeader className="text-center">
+            <ImageIcon className="w-12 h-12 mx-auto mb-4" style={{ color: '#3399FF' }} />
+            <CardTitle style={{ color: '#1C1C1C' }}>Cadaver Quiz</CardTitle>
+            <CardDescription style={{ color: '#2E2E2E' }}>
+              Visual anatomy with real cadaver images and structures
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Badge variant="secondary">Real Images</Badge>
+              <Badge variant="secondary">7 Topics</Badge>
+              <Badge variant="secondary">Interactive</Badge>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Histology & Embryology */}
+        <Card 
+          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300"
+          style={{ backgroundColor: '#F7FAFC' }}
+          onClick={() => setSelectedQuizType('histology')}
+        >
+          <CardHeader className="text-center">
+            <Microscope className="w-12 h-12 mx-auto mb-4" style={{ color: '#3399FF' }} />
+            <CardTitle style={{ color: '#1C1C1C' }}>Histology & Embryology</CardTitle>
+            <CardDescription style={{ color: '#2E2E2E' }}>
+              Microscopic anatomy and developmental biology
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Badge variant="secondary">Microscopic Images</Badge>
+              <Badge variant="secondary">Development</Badge>
+              <Badge variant="secondary">Detailed</Badge>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Case Studies */}
+        <Card 
+          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300"
+          style={{ backgroundColor: '#F7FAFC' }}
+          onClick={() => setSelectedQuizType('cases')}
+        >
+          <CardHeader className="text-center">
+            <TrendingUp className="w-12 h-12 mx-auto mb-4" style={{ color: '#3399FF' }} />
+            <CardTitle style={{ color: '#1C1C1C' }}>Clinical Cases</CardTitle>
+            <CardDescription style={{ color: '#2E2E2E' }}>
+              Real patient scenarios and clinical reasoning
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Badge variant="secondary">Patient Cases</Badge>
+              <Badge variant="secondary">Clinical Reasoning</Badge>
+              <Badge variant="secondary">Problem Solving</Badge>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Rapid Fire */}
+        <Card 
+          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300"
+          style={{ backgroundColor: '#F7FAFC' }}
+          onClick={() => setSelectedQuizType('rapid')}
+        >
+          <CardHeader className="text-center">
+            <Zap className="w-12 h-12 mx-auto mb-4" style={{ color: '#3399FF' }} />
+            <CardTitle style={{ color: '#1C1C1C' }}>Rapid Fire</CardTitle>
+            <CardDescription style={{ color: '#2E2E2E' }}>
+              Quick questions to test your knowledge under time pressure
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Badge variant="secondary">Timed</Badge>
+              <Badge variant="secondary">Quick Questions</Badge>
+              <Badge variant="secondary">Speed Test</Badge>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+
+  const renderAiGenerator = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold" style={{ color: '#1C1C1C' }}>AI Question Generator</h2>
+          <p style={{ color: '#2E2E2E' }}>Create personalized medical questions using advanced AI</p>
+        </div>
+        <Button 
+          variant="outline" 
+          onClick={() => setSelectedQuizType(null)}
+        >
+          Back to Quiz Types
+        </Button>
+      </div>
+
+      <Card style={{ backgroundColor: '#F7FAFC' }}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2" style={{ color: '#1C1C1C' }}>
+            <Sparkles className="w-5 h-5" style={{ color: '#3399FF' }} />
+            Professional AI Medical Tutor
+          </CardTitle>
+          <CardDescription>
+            Ask me to generate questions on any medical topic, specify difficulty level, or request explanations
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* Chat Messages */}
+            <div className="h-96 overflow-y-auto border rounded-lg p-4 space-y-4" style={{ backgroundColor: '#FFFFFF' }}>
+              {aiMessages.length === 0 ? (
+                <div className="text-center text-gray-500 mt-20">
+                  <Bot className="w-12 h-12 mx-auto mb-4" style={{ color: '#3399FF' }} />
+                  <p>Start a conversation! Ask me to generate questions on any medical topic.</p>
+                  <div className="mt-4 space-y-2 text-sm">
+                    <p><strong>Example prompts:</strong></p>
+                    <p>"Generate 5 cardiology questions about arrhythmias"</p>
+                    <p>"Create anatomy questions on the nervous system"</p>
+                    <p>"I need pharmacology questions, intermediate level"</p>
+                  </div>
                 </div>
-              </div>
-              <CardTitle className="text-xl text-docdot-heading mt-4">
-                {currentQuestion.question}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3 mb-6">
-                {currentQuestion.options.map((option, index) => (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    className={`w-full text-left justify-start h-auto py-4 px-4 ${
-                      selectedAnswer === index 
-                        ? showExplanation
-                          ? index === currentQuestion.correctAnswer
-                            ? 'border-green-500 bg-green-50'
-                            : 'border-red-500 bg-red-50'
-                          : 'border-docdot-blue bg-docdot-blue-light'
-                        : showExplanation && index === currentQuestion.correctAnswer
-                          ? 'border-green-500 bg-green-50'
-                          : ''
-                    }`}
-                    onClick={() => handleAnswerSelect(index)}
-                    disabled={showExplanation}
-                  >
-                    <div className="flex items-center">
-                      {showExplanation && (
-                        <div className="mr-3">
-                          {index === currentQuestion.correctAnswer ? (
-                            <CheckCircle className="text-green-600" size={20} />
-                          ) : selectedAnswer === index ? (
-                            <XCircle className="text-red-600" size={20} />
-                          ) : null}
-                        </div>
-                      )}
-                      <span>{option}</span>
+              ) : (
+                aiMessages.map((message, index) => (
+                  <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div 
+                      className={`max-w-[80%] p-3 rounded-lg ${
+                        message.role === 'user' 
+                          ? 'bg-blue-500 text-white' 
+                          : 'bg-gray-100 text-gray-800'
+                      }`}
+                    >
+                      <p className="whitespace-pre-wrap">{message.content}</p>
                     </div>
-                  </Button>
-                ))}
-              </div>
-
-              {showExplanation && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                  <h4 className="font-medium text-docdot-heading mb-2">Explanation:</h4>
-                  <p className="text-docdot-text">{currentQuestion.explanation}</p>
+                  </div>
+                ))
+              )}
+              {isGenerating && (
+                <div className="flex justify-start">
+                  <div className="bg-gray-100 p-3 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2" style={{ borderColor: '#3399FF' }}></div>
+                      <span>Generating questions...</span>
+                    </div>
+                  </div>
                 </div>
               )}
+            </div>
 
-              <div className="flex justify-center">
-                {!showExplanation ? (
-                  <Button 
-                    onClick={handleSubmitAnswer}
-                    disabled={selectedAnswer === null}
-                    className="bg-docdot-blue"
-                  >
-                    Submit Answer
-                  </Button>
-                ) : (
-                  <Button 
-                    onClick={handleNextQuestion}
-                    className="bg-docdot-blue"
-                  >
-                    {currentQuestionIndex < currentQuiz.length - 1 ? 'Next Question' : 'Finish Quiz'}
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+            {/* Input Area */}
+            <div className="flex space-x-2">
+              <Textarea
+                placeholder="Ask me to generate questions on any medical topic..."
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleAiSubmit();
+                  }
+                }}
+                className="flex-1"
+              />
+              <Button 
+                onClick={handleAiSubmit}
+                disabled={!aiPrompt.trim() || isGenerating}
+                style={{ backgroundColor: '#3399FF' }}
+              >
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
+
+            {/* Quick Suggestions */}
+            <div className="flex flex-wrap gap-2">
+              <span className="text-sm font-medium" style={{ color: '#2E2E2E' }}>Quick suggestions:</span>
+              {[
+                "Cardiology questions",
+                "Anatomy quiz",
+                "Pharmacology MCQs",
+                "Clinical scenarios",
+                "Pathology cases"
+              ].map((suggestion) => (
+                <Badge 
+                  key={suggestion}
+                  variant="outline" 
+                  className="cursor-pointer hover:bg-blue-50"
+                  onClick={() => setAiPrompt(`Generate ${suggestion}`)}
+                >
+                  {suggestion}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  const renderCadaverTopics = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold" style={{ color: '#1C1C1C' }}>Cadaver Anatomy Quiz</h2>
+          <p style={{ color: '#2E2E2E' }}>Select a topic to practice with real cadaver images</p>
+        </div>
+        <Button 
+          variant="outline" 
+          onClick={() => setSelectedQuizType(null)}
+        >
+          Back to Quiz Types
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {cadaverTopics.map((topic) => {
+          const IconComponent = topic.icon;
+          return (
+            <Card 
+              key={topic.id}
+              className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300"
+              style={{ backgroundColor: '#F7FAFC' }}
+              onClick={() => setSelectedCadaverTopic(topic.id)}
+            >
+              <CardHeader className="text-center">
+                <IconComponent className="w-12 h-12 mx-auto mb-4" style={{ color: '#3399FF' }} />
+                <CardTitle style={{ color: '#1C1C1C' }}>{topic.name}</CardTitle>
+                <CardDescription style={{ color: '#2E2E2E' }}>
+                  {topic.description}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center">
+                  <Badge variant="secondary">Real Cadaver Images</Badge>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  if (selectedQuizType === 'ai-generator') {
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
+        <div className="max-w-6xl mx-auto px-8 py-12">
+          {renderAiGenerator()}
         </div>
       </div>
     );
   }
 
-  if (selectedCategory) {
-    const topics = selectedCategory.name === 'Anatomy' ? anatomyTopics : [];
-    
+  if (selectedQuizType === 'cadaver') {
     return (
-      <div className="min-h-screen bg-docdot-bg">
-        <div className="max-w-6xl mx-auto py-8 px-4">
-          {/* Header */}
-          <div className="flex items-center mb-6">
-            <Button variant="ghost" onClick={() => setSelectedCategory(null)}>
-              <ArrowLeft className="mr-2" size={16} />
-              Back to Categories
-            </Button>
-            <div className="ml-4">
-              <h1 className="text-2xl font-bold text-docdot-heading">{selectedCategory.name} Topics</h1>
-              <p className="text-docdot-text">{selectedCategory.description}</p>
-            </div>
-          </div>
-
-          {/* Topics Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {topics.map((topic) => (
-              <Card key={topic.id} className="cursor-pointer hover:shadow-lg transition-shadow duration-200">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg text-docdot-heading">{topic.name}</CardTitle>
-                    <Badge className={getDifficultyColor(topic.difficulty)}>
-                      {topic.difficulty}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-docdot-text">{getTypeLabel(topic.type)}</p>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-docdot-text">{topic.questionCount} questions</span>
-                    <Brain className="text-docdot-blue" size={20} />
-                  </div>
-                  <Button 
-                    onClick={() => startQuiz(topic)}
-                    className="w-full bg-docdot-blue"
-                  >
-                    Start Quiz
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+      <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
+        <div className="max-w-6xl mx-auto px-8 py-12">
+          {renderCadaverTopics()}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-docdot-bg">
-      <div className="max-w-6xl mx-auto py-8 px-4">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-docdot-heading mb-4">Medical Quizzes</h1>
-          <p className="text-xl text-docdot-text">Test your knowledge and earn XP points</p>
-        </div>
-
-        {/* Categories Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {categories.map((category) => {
-            const IconComponent = category.icon;
-            return (
-              <Card 
-                key={category.id}
-                className="cursor-pointer hover:shadow-lg transition-shadow duration-200 border-2 hover:border-docdot-blue"
-                onClick={() => setSelectedCategory(category)}
-              >
-                <CardHeader>
-                  <div className="flex items-center space-x-4">
-                    <div className={`p-3 rounded-lg bg-${category.color}-100`}>
-                      <IconComponent className={`text-${category.color}-600`} size={32} />
-                    </div>
-                    <div>
-                      <CardTitle className="text-xl text-docdot-heading">{category.name}</CardTitle>
-                      <p className="text-docdot-text">{category.description}</p>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <span className="text-docdot-text">{category.topicCount} topics available</span>
-                    <Button variant="outline" size="sm">
-                      Explore
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+    <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
+      <div className="max-w-6xl mx-auto px-8 py-12">
+        {renderQuizTypeSelection()}
       </div>
     </div>
   );
