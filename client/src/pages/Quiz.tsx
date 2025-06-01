@@ -51,7 +51,7 @@ export default function Quiz() {
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiMessages, setAiMessages] = useState<Array<{role: 'user' | 'assistant', content: string}>>([]);
   const [isGenerating, setIsGenerating] = useState(false);
-  
+
   // MCQ Quiz states
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -98,32 +98,39 @@ export default function Quiz() {
 
   // Fetch questions from Supabase based on category
   const fetchQuestions = async (category: string) => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('docdot_mcqs')
-        .select('*')
-        .eq('category', category)
-        .limit(10);
-
-      if (error) {
-        console.error('Error fetching questions:', error);
-        return;
+      const response = await fetch('/attached_assets/Docdot_mcqs database.json');
+      if (!response.ok) {
+        throw new Error('Failed to load questions file');
       }
 
-      if (data && data.length > 0) {
-        // Randomize questions
-        const shuffled = data.sort(() => 0.5 - Math.random());
+      const data = await response.json();
+
+      // Filter questions by category
+      const filtered = data.filter((q: any) => q.category === category);
+
+      if (filtered.length > 0) {
+        // Transform and shuffle questions
+        const transformed = filtered.map((q: any) => ({
+          ...q,
+          options: typeof q.answer === 'boolean' ? ['True', 'False'] : (q.options || []),
+          correctAnswer: typeof q.answer === 'boolean' ? (q.answer ? 'True' : 'False') : (q.answer || ''),
+          reference_data: q.reference_json ? JSON.stringify(q.reference_json) : q.reference_data || ''
+        }));
+
+        const shuffled = transformed.sort(() => 0.5 - Math.random());
         setQuestions(shuffled);
-        setStartTime(new Date());
         setCurrentQuestionIndex(0);
         setScore(0);
         setQuizCompleted(false);
         setSelectedAnswer('');
         setIsAnswered(false);
+      } else {
+        console.error('No questions available for this category.');
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error fetching questions:', error);
     } finally {
       setLoading(false);
     }
@@ -140,7 +147,7 @@ export default function Quiz() {
 
     setIsAnswered(true);
     const isCorrect = selectedAnswer === questions[currentQuestionIndex].correct_answer;
-    
+
     if (isCorrect) {
       setScore(score + 1);
     }
@@ -180,11 +187,11 @@ export default function Quiz() {
 
   const handleAiSubmit = async () => {
     if (!aiPrompt.trim()) return;
-    
+
     setIsGenerating(true);
     const userMessage = { role: 'user' as const, content: aiPrompt };
     setAiMessages(prev => [...prev, userMessage]);
-    
+
     // Simulate AI response (replace with actual AI integration)
     setTimeout(() => {
       const aiResponse = { 
@@ -194,7 +201,7 @@ export default function Quiz() {
       setAiMessages(prev => [...prev, aiResponse]);
       setIsGenerating(false);
     }, 2000);
-    
+
     setAiPrompt('');
   };
 
@@ -444,7 +451,7 @@ export default function Quiz() {
             <CardContent className="p-8 text-center">
               <Award className="w-16 h-16 mx-auto mb-6" style={{ color: '#3399FF' }} />
               <h2 className="text-3xl font-bold mb-4" style={{ color: '#1C1C1C' }}>Quiz Complete!</h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="text-center">
                   <div className="text-3xl font-bold mb-2" style={{ color: '#3399FF' }}>
@@ -467,7 +474,7 @@ export default function Quiz() {
               </div>
 
               <p className="text-lg mb-6" style={{ color: '#1C1C1C' }}>{getScoreMessage()}</p>
-              
+
               <div className="space-x-4">
                 <Button 
                   onClick={() => fetchQuestions(selectedCategory!)}
@@ -525,7 +532,7 @@ export default function Quiz() {
                   const optionText = currentQuestion[optionKey] as string;
                   const isSelected = selectedAnswer === option;
                   const isCorrect = option === currentQuestion.correct_answer;
-                  
+
                   let optionStyle = '';
                   if (isAnswered) {
                     if (isCorrect) {
@@ -785,7 +792,8 @@ export default function Quiz() {
   if (selectedQuizType === 'mcq' && !selectedMCQSubject) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
-        <div className="max-w-6xl mx-auto px-8 py-12">
+        <div```python
+ className="max-w-6xl mx-auto px-8 py-12">
           {renderMCQSubjects()}
         </div>
       </div>

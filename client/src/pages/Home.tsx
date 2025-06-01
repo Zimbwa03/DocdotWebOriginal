@@ -169,35 +169,38 @@ function QuizSection() {
     }
   ];
 
-  // Fetch questions from Supabase docdot_mcqs table
-  const fetchQuestionsFromSupabase = async (category: string) => {
+  // Fetch questions from local JSON file
+  const fetchQuestionsFromJSON = async (category: string) => {
     try {
       setIsLoadingQuestions(true);
       
-      const { data, error } = await supabase
-        .from('docdot_mcqs')
-        .select('*')
-        .eq('category', category)
-        .order('id');
-
-      if (error) {
-        console.error('Error fetching questions:', error);
+      const response = await fetch('/attached_assets/Docdot_mcqs database.json');
+      if (!response.ok) {
+        throw new Error('Failed to load questions file');
+      }
+      
+      const data = await response.json();
+      
+      // Filter questions by category
+      const filtered = data.filter((q: any) => q.category === category);
+      
+      if (filtered.length === 0) {
         toast({
-          title: "Error",
-          description: "Failed to load questions from database.",
+          title: "No questions found",
+          description: `No questions available for ${category} category.`,
           variant: "destructive",
         });
         return [];
       }
 
       // Randomize the questions
-      const shuffledQuestions = data?.sort(() => Math.random() - 0.5) || [];
+      const shuffledQuestions = filtered.sort(() => Math.random() - 0.5);
       return shuffledQuestions.slice(0, 20); // Limit to 20 questions
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error loading questions:', error);
       toast({
         title: "Error",
-        description: "Failed to connect to database.",
+        description: "Failed to load questions from local file.",
         variant: "destructive",
       });
       return [];
@@ -215,8 +218,8 @@ function QuizSection() {
     setScore(0);
     setTotalAnswered(0);
 
-    // Fetch questions from Supabase
-    const questions = await fetchQuestionsFromSupabase(subcategory);
+    // Fetch questions from local JSON file
+    const questions = await fetchQuestionsFromJSON(subcategory);
     
     if (questions.length === 0) {
       toast({
@@ -228,15 +231,15 @@ function QuizSection() {
       return;
     }
 
-    // Transform Supabase data to match our question format
+    // Transform JSON data to match our question format
     const transformedQuestions = questions.map(q => ({
       id: q.id,
-      question: q.question || q.text || '',
-      options: q.options || [],
-      correctAnswer: q.correct_answer || q.answer || '',
+      question: q.question || '',
+      options: typeof q.answer === 'boolean' ? ['True', 'False'] : (q.options || []),
+      correctAnswer: typeof q.answer === 'boolean' ? (q.answer ? 'True' : 'False') : (q.answer || ''),
       explanation: q.explanation || '',
       ai_explanation: q.ai_explanation || '',
-      reference_data: q.reference_data || '',
+      reference_data: q.reference_json ? JSON.stringify(q.reference_json) : '',
       questionType: 'text' as const,
       difficulty: q.difficulty || 'medium' as const
     }));
@@ -411,7 +414,7 @@ function QuizSection() {
             <div className="p-6 flex items-center justify-center">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-                <p style={{ color: '#2E2E2E' }}>Loading questions from database...</p>
+                <p style={{ color: '#2E2E2E' }}>Loading questions from local database...</p>
               </div>
             </div>
           ) : (
@@ -761,16 +764,29 @@ export default function Home() {
   // Start quick quiz
   const startQuickQuiz = async () => {
     try {
-      const { data: questions, error } = await supabase
-        .from('docdot_mcqs')
-        .select('*')
-        .limit(5)
-        .order('id', { ascending: false });
+      const response = await fetch('/attached_assets/Docdot_mcqs database.json');
+      if (!response.ok) {
+        throw new Error('Failed to load questions file');
+      }
       
-      if (error) throw error;
+      const data = await response.json();
+      const shuffled = data.sort(() => Math.random() - 0.5).slice(0, 5);
       
-      if (questions && questions.length > 0) {
-        setQuickQuizQuestions(questions);
+      if (shuffled.length > 0) {
+        // Transform questions for quick quiz
+        const transformedQuestions = shuffled.map(q => ({
+          id: q.id,
+          question: q.question || '',
+          options: typeof q.answer === 'boolean' ? ['True', 'False'] : (q.options || []),
+          correctAnswer: typeof q.answer === 'boolean' ? (q.answer ? 'True' : 'False') : (q.answer || ''),
+          explanation: q.explanation || '',
+          ai_explanation: q.ai_explanation || '',
+          reference_data: q.reference_json ? JSON.stringify(q.reference_json) : '',
+          questionType: 'text' as const,
+          difficulty: q.difficulty || 'medium' as const
+        }));
+        
+        setQuickQuizQuestions(transformedQuestions);
         setCurrentQuizQuestion(0);
         setQuickQuizScore(0);
         setIsQuickQuizOpen(true);
@@ -786,7 +802,7 @@ export default function Home() {
       toast({
         variant: "destructive",
         title: "Quiz Load Failed",
-        description: "Unable to load quiz questions."
+        description: "Unable to load quiz questions from local file."
       });
     }
   };
