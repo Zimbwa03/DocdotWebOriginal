@@ -99,11 +99,11 @@ function QuizSection() {
   const [showQuizResult, setShowQuizResult] = useState(false);
   const [currentAnswer, setCurrentAnswer] = useState<any>(null);
 
-  // Categories and subcategories as specified
+  // Categories and subcategories matching the actual JSON data
   const categories = {
     "Anatomy": [
       "Head and Neck",
-      "Upper Limb",
+      "Upper Limb", 
       "Thorax",
       "Lower Limb",
       "Pelvis and Perineum",
@@ -117,11 +117,25 @@ function QuizSection() {
       "Endocrine",
       "Reproductive",
       "Gastrointestinal Tract",
+      "Gastrointestinal Physiology",
+      "Gastric Physiology",
+      "Gastrointestinal Motility",
+      "Gastrointestinal Reflexes",
+      "Gastrointestinal Pathophysiology",
+      "Gastrointestinal Pharmacology",
+      "Gastrointestinal Immunology",
+      "Pancreatic Physiology",
       "Renal",
       "Cardiovascular System",
       "Respiration",
+      "Respiratory",
+      "Respiratory System",
       "Medical Genetics",
       "Neurophysiology"
+    ],
+    "Other Subjects": [
+      "Biostatistics",
+      "Histology and Embryology"
     ]
   };
 
@@ -182,7 +196,8 @@ function QuizSection() {
       
       const data = await response.json();
       console.log('Total questions loaded:', data.length);
-      console.log('Available categories:', [...new Set(data.map((q: any) => q.category))]);
+      const uniqueCategories = data.map((q: any) => q.category).filter((value: any, index: number, self: any[]) => self.indexOf(value) === index);
+      console.log('Available categories:', uniqueCategories);
       
       // Filter questions by category - handle both direct category match and subcategory match
       const filtered = data.filter((q: any) => 
