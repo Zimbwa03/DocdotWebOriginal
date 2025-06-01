@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { openRouterAI } from "./ai";
 
 // Temporary in-memory storage for user profiles
 const userProfiles = new Map<string, any>();
@@ -72,6 +73,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedUser);
     } catch (error) {
       res.status(500).json({ error: "Failed to update user" });
+    }
+  });
+
+  // AI-powered endpoints
+  
+  // AI Tutor Chat
+  app.post("/api/ai/chat", async (req, res) => {
+    try {
+      const { message, context } = req.body;
+      const response = await openRouterAI.tutorResponse(message, context);
+      res.json({ response });
+    } catch (error) {
+      console.error("AI Chat error:", error);
+      res.status(500).json({ error: "AI service unavailable" });
+    }
+  });
+
+  // Generate Medical Questions
+  app.post("/api/ai/generate-questions", async (req, res) => {
+    try {
+      const { topic, difficulty, count = 5 } = req.body;
+      const questions = await openRouterAI.generateMedicalQuestions(topic, difficulty, count);
+      res.json({ questions });
+    } catch (error) {
+      console.error("Question generation error:", error);
+      res.status(500).json({ error: "Question generation failed" });
+    }
+  });
+
+  // Explain Medical Concept
+  app.post("/api/ai/explain", async (req, res) => {
+    try {
+      const { concept, level = 'intermediate' } = req.body;
+      const explanation = await openRouterAI.explainConcept(concept, level);
+      res.json({ explanation });
+    } catch (error) {
+      console.error("Concept explanation error:", error);
+      res.status(500).json({ error: "Explanation generation failed" });
+    }
+  });
+
+  // Generate Study Plan
+  app.post("/api/ai/study-plan", async (req, res) => {
+    try {
+      const { goals, timeframe, currentLevel } = req.body;
+      const studyPlan = await openRouterAI.generateStudyPlan(goals, timeframe, currentLevel);
+      res.json({ studyPlan });
+    } catch (error) {
+      console.error("Study plan generation error:", error);
+      res.status(500).json({ error: "Study plan generation failed" });
+    }
+  });
+
+  // Case Study Analysis
+  app.post("/api/ai/analyze-case", async (req, res) => {
+    try {
+      const { caseDetails } = req.body;
+      const analysis = await openRouterAI.analyzeCaseStudy(caseDetails);
+      res.json({ analysis });
+    } catch (error) {
+      console.error("Case analysis error:", error);
+      res.status(500).json({ error: "Case analysis failed" });
+    }
+  });
+
+  // Personalized Learning Recommendations
+  app.post("/api/ai/recommendations", async (req, res) => {
+    try {
+      const { weakAreas, strengths, learningStyle } = req.body;
+      const recommendations = await openRouterAI.getPersonalizedRecommendations(weakAreas, strengths, learningStyle);
+      res.json({ recommendations });
+    } catch (error) {
+      console.error("Recommendations error:", error);
+      res.status(500).json({ error: "Recommendations generation failed" });
     }
   });
 
