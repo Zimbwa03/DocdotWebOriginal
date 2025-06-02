@@ -908,7 +908,7 @@ export default function StudyGuide() {
               <Card className="lg:col-span-1">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Calendar className="w-5 h-5" />
+                    <CalendarIcon className="w-5 h-5" />
                     Study Calendar
                   </CardTitle>
                 </CardHeader>
@@ -1032,7 +1032,7 @@ export default function StudyGuide() {
                   <div className="space-y-4">
                     {getSessionsForDate(selectedDate).length === 0 ? (
                       <div className="text-center py-8 text-gray-500">
-                        <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                        <CalendarIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                         <p>No study sessions scheduled for this date</p>
                         <p className="text-sm">Click "Add Study Session" to get started</p>
                       </div>
