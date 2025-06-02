@@ -189,24 +189,22 @@ export default function Home() {
     enabled: !!user?.id,
   });
 
-  // Fetch user rank
-  const { data: userRankData } = useQuery({
+  // Fetch user rank - using simple values to avoid React Error #31
+  const { data: userRankResponse } = useQuery({
     queryKey: ['/api/user-rank', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
       const response = await fetch(`/api/user-rank?userId=${user.id}`);
       if (!response.ok) return null;
-      const data = await response.json();
-      // Ensure we return safe values that won't cause React errors
-      return {
-        rank: data?.rank || 'Unranked',
-        totalXP: data?.totalXP || 0,
-        averageAccuracy: data?.averageAccuracy || 0,
-        currentLevel: data?.currentLevel || 1
-      };
+      return response.json();
     },
     enabled: !!user?.id,
   });
+
+  // Safe extraction of rank data
+  const userRank = userRankResponse?.rank || userStats?.rank || 'Unranked';
+  const userTotalXP = userRankResponse?.totalXP || 0;
+  const userAccuracy = userRankResponse?.averageAccuracy || 0;
 
   // Refresh data when returning to Home page
   useEffect(() => {
@@ -218,17 +216,7 @@ export default function Home() {
     }
   }, [user?.id, refetchStats, refetchQuizzes, queryClient]);
 
-  const defaultStats = {
-    totalXp: 0,
-    level: 1,
-    currentStreak: 0,
-    averageAccuracy: 0,
-    totalQuizzes: 0,
-    totalTimeSpent: 0,
-    rank: 0
-  };
 
-  const stats = userStats || defaultStats;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -379,10 +367,10 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl lg:text-3xl font-bold text-purple-900">
-                  #{userRankData?.rank || stats.rank || 'Unranked'}
+                  #{String(userRank)}
                 </div>
                 <div className="text-sm text-purple-600">
-                  {((userRankData?.rank || stats.rank) && (userRankData?.rank || stats.rank) <= 100) ? 'Top 100!' : 'Keep studying!'}
+                  {(userRank !== 'Unranked' && Number(userRank) <= 100) ? 'Top 100!' : 'Keep studying!'}
                 </div>
                 <Link href="/leaderboard">
                   <Button variant="ghost" size="sm" className="mt-2 text-xs">
@@ -483,7 +471,7 @@ export default function Home() {
               <CardContent>
                 <div className="text-center mb-4">
                   <div className="text-3xl font-bold text-purple-600">
-                    #{userRankData?.rank || 'N/A'}
+                    #{String(userRank)}
                   </div>
                   <div className="text-sm text-purple-700">
                     Global Rank
@@ -492,11 +480,11 @@ export default function Home() {
                 <div className="flex items-center justify-center gap-2 mb-4">
                   <div className="flex items-center gap-1">
                     <Zap className="w-4 h-4 text-purple-500" />
-                    <span className="text-sm font-medium">{userRankData?.totalXP ? String(userRankData.totalXP) : '0'} XP</span>
+                    <span className="text-sm font-medium">{String(userTotalXP)} XP</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Target className="w-4 h-4 text-purple-500" />
-                    <span className="text-sm font-medium">{userRankData?.averageAccuracy ? String(Math.round(userRankData.averageAccuracy)) : '0'}%</span>
+                    <span className="text-sm font-medium">{String(Math.round(userAccuracy))}%</span>
                   </div>
                 </div>
                 <div className="space-y-2">
