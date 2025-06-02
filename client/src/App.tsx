@@ -18,6 +18,8 @@ import Analytics from "@/pages/Analytics";
 import EnhancedAnalytics from "@/pages/EnhancedAnalytics";
 import ProfileSetup from "@/pages/ProfileSetup";
 import AiTools from "@/pages/AiTools";
+import Badges from "@/pages/Badges";
+import Leaderboard from "@/pages/Leaderboard";
 import NotFound from "@/pages/not-found";
 
 function AuthRedirect() {
@@ -89,6 +91,18 @@ function Router() {
         <ProtectedRoute>
           <Navigation />
           <EnhancedAnalytics />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/badges">
+        <ProtectedRoute>
+          <Navigation />
+          <Badges />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/leaderboard">
+        <ProtectedRoute>
+          <Navigation />
+          <Leaderboard />
         </ProtectedRoute>
       </Route>
       <Route path="/ai-tools">

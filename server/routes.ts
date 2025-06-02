@@ -724,18 +724,77 @@ CRITICAL FORMATTING RULES:
     }
   });
 
-  // Get leaderboard
+  // Get leaderboard with enhanced features
   app.get("/api/leaderboard", async (req, res) => {
     try {
-      const { category, limit = 10 } = req.query;
-      const leaderboard = await dbStorage.getLeaderboard(
+      const { category, timeFrame = 'all-time', limit = 50 } = req.query;
+      const leaderboard = await dbStorage.getEnhancedLeaderboard(
         parseInt(limit as string), 
-        category as string
+        category as string,
+        timeFrame as string
       );
       res.json(leaderboard);
     } catch (error) {
       console.error("Error getting leaderboard:", error);
       res.status(500).json({ error: "Failed to get leaderboard" });
+    }
+  });
+
+  // Get user rank
+  app.get("/api/user-rank", async (req, res) => {
+    try {
+      const { userId, category, timeFrame = 'all-time' } = req.query;
+      if (!userId) {
+        return res.status(400).json({ error: "User ID is required" });
+      }
+      
+      const userRank = await dbStorage.getUserRank(
+        userId as string,
+        category as string,
+        timeFrame as string
+      );
+      res.json(userRank);
+    } catch (error) {
+      console.error("Error getting user rank:", error);
+      res.status(500).json({ error: "Failed to get user rank" });
+    }
+  });
+
+  // Get badges for user
+  app.get("/api/badges/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const badges = await dbStorage.getUserBadges(userId);
+      res.json(badges);
+    } catch (error) {
+      console.error("Error getting user badges:", error);
+      res.status(500).json({ error: "Failed to get user badges" });
+    }
+  });
+
+  // Award badge to user
+  app.post("/api/badges/:userId/award", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { badgeId, progress } = req.body;
+      
+      const result = await dbStorage.awardBadge(userId, badgeId, progress);
+      res.json(result);
+    } catch (error) {
+      console.error("Error awarding badge:", error);
+      res.status(500).json({ error: "Failed to award badge" });
+    }
+  });
+
+  // Check and update badge progress
+  app.post("/api/badges/:userId/check-progress", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const newBadges = await dbStorage.checkBadgeProgress(userId);
+      res.json({ newBadges });
+    } catch (error) {
+      console.error("Error checking badge progress:", error);
+      res.status(500).json({ error: "Failed to check badge progress" });
     }
   });
 

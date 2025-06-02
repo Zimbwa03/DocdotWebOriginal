@@ -9,7 +9,7 @@ import {
   Crown, 
   Target, 
   Zap, 
-  Fire, 
+  Flame, 
   Clock, 
   Brain, 
   Heart,
@@ -23,6 +23,7 @@ import {
   Lock,
   CheckCircle
 } from 'lucide-react';
+import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 
@@ -53,7 +54,7 @@ const tierColors = {
 
 const categoryIcons = {
   performance: Trophy,
-  streak: Fire,
+  streak: Flame,
   mastery: Brain,
   time: Clock,
   special: Star

@@ -132,6 +132,8 @@ export function Navigation() {
     { path: '/home', label: 'Home', icon: Home },
     { path: '/quiz', label: 'Quiz', icon: GraduationCap },
     { path: '/analytics', label: 'Analytics', icon: Trophy },
+    { path: '/badges', label: 'Badges', icon: Shield },
+    { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
     { path: '/notes', label: 'Notes', icon: FileText },
     { path: '/study-guide', label: 'Study Guide', icon: BookOpen },
     { path: '/ai-tools', label: 'AI Tools', icon: Brain },
