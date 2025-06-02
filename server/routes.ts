@@ -533,12 +533,28 @@ CRITICAL FORMATTING RULES:
       const attemptData = req.body;
       console.log('Recording detailed quiz attempt:', attemptData);
       
-      // Enhanced analytics recording similar to Python implementation
       const userId = attemptData.userId;
       const category = attemptData.category;
       const isCorrect = attemptData.isCorrect;
       const timeSpent = attemptData.timeSpent || 0;
       const xpEarned = attemptData.xpEarned || (isCorrect ? 10 : 2);
+      
+      // Ensure user exists in database before recording attempt
+      try {
+        const existingUser = await dbStorage.getUser(userId);
+        if (!existingUser) {
+          // Create user with minimal data if they don't exist
+          await dbStorage.createUser({
+            id: userId,
+            email: `user_${userId}@temp.com`, // Temporary email
+            firstName: 'User',
+            lastName: 'Student'
+          });
+          console.log('Created user record for:', userId);
+        }
+      } catch (userError) {
+        console.log('User creation error (may already exist):', userError);
+      }
       
       // Record the quiz attempt
       const quizAttempt = await dbStorage.recordQuizAttempt({

@@ -1,0 +1,29 @@
+Failed to load resource: the server responded with a status of 500 ()Understand this error
+index-E_fFZ2VO.js:473 Failed to record quiz attempt: 500
+ee @ index-E_fFZ2VO.js:473Understand this error
+index-E_fFZ2VO.js:473 Error details: {"error":"Failed to record quiz attempt with analytics","details":"insert or update on table \"quiz_attempts\" violates foreign key constraint \"quiz_attempts_user_id_users_id_fk\""}
+ee @ index-E_fFZ2VO.js:473Understand this error
+api/quiz/record-attempt:1 
+            
+            
+           Failed to load resource: the server responded with a status of 500 ()Understand this error
+index-E_fFZ2VO.js:473 Failed to record quiz attempt: 500
+ee @ index-E_fFZ2VO.js:473Understand this error
+index-E_fFZ2VO.js:473 Error details: {"error":"Failed to record quiz attempt with analytics","details":"insert or update on table \"quiz_attempts\" violates foreign key constraint \"quiz_attempts_user_id_users_id_fk\""}
+ee @ index-E_fFZ2VO.js:473Understand this error
+api/quiz/record-attempt:1 
+            
+            
+           Failed to load resource: the server responded with a status of 500 ()Understand this error
+index-E_fFZ2VO.js:473 Failed to record quiz attempt: 500
+ee @ index-E_fFZ2VO.js:473Understand this error
+index-E_fFZ2VO.js:473 Error details: {"error":"Failed to record quiz attempt with analytics","details":"insert or update on table \"quiz_attempts\" violates foreign key constraint \"quiz_attempts_user_id_users_id_fk\""}
+ee @ index-E_fFZ2VO.js:473Understand this error
+api/quiz/record-attempt:1 
+            
+            
+           Failed to load resource: the server responded with a status of 500 ()Understand this error
+index-E_fFZ2VO.js:473 Failed to record quiz attempt: 500
+ee @ index-E_fFZ2VO.js:473Understand this error
+index-E_fFZ2VO.js:473 Error details: {"error":"Failed to record quiz attempt with analytics","details":"insert or update on table \"quiz_attempts\" violates foreign key constraint \"quiz_attempts_user_id_users_id_fk\""}
+ee @ index-E_fFZ2VO.js:473Understand this error
