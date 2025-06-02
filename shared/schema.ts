@@ -225,6 +225,46 @@ export const aiChats = pgTable("ai_chats", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Study groups
+export const studyGroups = pgTable("study_groups", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  creatorId: text("creator_id").references(() => users.id),
+  title: text("title").notNull(),
+  description: text("description"),
+  meetingLink: text("meeting_link").notNull(), // Zoom or Google Meet link
+  meetingType: text("meeting_type").notNull(), // 'zoom' or 'meet'
+  scheduledTime: timestamp("scheduled_time").notNull(),
+  duration: integer("duration").notNull().default(60), // in minutes
+  maxMembers: integer("max_members").notNull().default(10),
+  currentMembers: integer("current_members").notNull().default(1),
+  isActive: boolean("is_active").notNull().default(false),
+  category: text("category"), // study topic category
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Study group members
+export const studyGroupMembers = pgTable("study_group_members", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  groupId: integer("group_id").references(() => studyGroups.id),
+  userId: text("user_id").references(() => users.id),
+  joinedAt: timestamp("joined_at").defaultNow(),
+  hasJoinedMeeting: boolean("has_joined_meeting").notNull().default(false),
+}, (table) => ({
+  memberUnique: unique().on(table.groupId, table.userId),
+}));
+
+// Meeting reminders
+export const meetingReminders = pgTable("meeting_reminders", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  groupId: integer("group_id").references(() => studyGroups.id),
+  userId: text("user_id").references(() => users.id),
+  reminderTime: timestamp("reminder_time").notNull(),
+  emailSent: boolean("email_sent").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  reminderUnique: unique().on(table.groupId, table.userId),
+}));
+
 // Schema exports
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
@@ -256,6 +296,9 @@ export const insertFlashcardSchema = createInsertSchema(flashcards);
 export const insertStudyPlanSchema = createInsertSchema(studyPlans);
 export const insertAiSessionSchema = createInsertSchema(aiSessions);
 export const insertAiChatSchema = createInsertSchema(aiChats);
+export const insertStudyGroupSchema = createInsertSchema(studyGroups).omit({ id: true, createdAt: true, currentMembers: true, isActive: true });
+export const insertStudyGroupMemberSchema = createInsertSchema(studyGroupMembers).omit({ id: true, joinedAt: true, hasJoinedMeeting: true });
+export const insertMeetingReminderSchema = createInsertSchema(meetingReminders).omit({ id: true, createdAt: true, emailSent: true });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertQuizAttempt = z.infer<typeof insertQuizAttemptSchema>;
@@ -278,3 +321,6 @@ export type StudyPlan = typeof studyPlans.$inferSelect;
 export type StudySession = typeof studySessions.$inferSelect;
 export type AiSession = typeof aiSessions.$inferSelect;
 export type AiChat = typeof aiChats.$inferSelect;
+export type StudyGroup = typeof studyGroups.$inferSelect;
+export type StudyGroupMember = typeof studyGroupMembers.$inferSelect;
+export type MeetingReminder = typeof meetingReminders.$inferSelect;

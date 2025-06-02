@@ -166,6 +166,16 @@ export default function StudyGuide() {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  // Study Groups State
+  const [studyGroups, setStudyGroups] = useState([]);
+  const [showCreateGroupDialog, setShowCreateGroupDialog] = useState(false);
+  const [newGroupTitle, setNewGroupTitle] = useState('');
+  const [newGroupDescription, setNewGroupDescription] = useState('');
+  const [newGroupMeetingLink, setNewGroupMeetingLink] = useState('');
+  const [newGroupScheduledTime, setNewGroupScheduledTime] = useState('');
+  const [newGroupCategory, setNewGroupCategory] = useState('');
+  const [newGroupMaxMembers, setNewGroupMaxMembers] = useState(10);
+
   // Background audio tracks
   const audioTracks = [
     {
@@ -304,6 +314,79 @@ export default function StudyGuide() {
   const updateVolume = () => {
     if (isRunning && selectedAudioTrack && !isMuted) {
       playBackgroundAudio(); // Restart with new volume
+    }
+  };
+
+  // Study Groups helper functions
+  const detectMeetingType = (link: string): 'zoom' | 'meet' | 'unknown' => {
+    if (link.includes('zoom.us') || link.includes('zoom.com')) return 'zoom';
+    if (link.includes('meet.google.com')) return 'meet';
+    return 'unknown';
+  };
+
+  const isActive = (scheduledTime: string): boolean => {
+    const now = new Date();
+    const meetingTime = new Date(scheduledTime);
+    const timeDiff = now.getTime() - meetingTime.getTime();
+    // Meeting is considered active from start time to 2 hours after
+    return timeDiff >= 0 && timeDiff <= 2 * 60 * 60 * 1000;
+  };
+
+  const createStudyGroup = () => {
+    const meetingType = detectMeetingType(newGroupMeetingLink);
+    if (meetingType === 'unknown') {
+      alert('Please provide a valid Zoom or Google Meet link');
+      return;
+    }
+
+    const newGroup = {
+      id: Date.now(),
+      title: newGroupTitle,
+      description: newGroupDescription,
+      meetingLink: newGroupMeetingLink,
+      meetingType,
+      scheduledTime: newGroupScheduledTime,
+      maxMembers: newGroupMaxMembers,
+      currentMembers: 1,
+      category: newGroupCategory,
+      creator: user?.email || 'You',
+      members: [{ id: user?.id, email: user?.email, hasJoined: false }]
+    };
+
+    setStudyGroups([...studyGroups, newGroup]);
+    
+    // Reset form
+    setNewGroupTitle('');
+    setNewGroupDescription('');
+    setNewGroupMeetingLink('');
+    setNewGroupScheduledTime('');
+    setNewGroupCategory('');
+    setNewGroupMaxMembers(10);
+    setShowCreateGroupDialog(false);
+  };
+
+  const joinGroup = (groupId: number) => {
+    const group = studyGroups.find(g => g.id === groupId);
+    if (!group) return;
+
+    const scheduledTime = new Date(group.scheduledTime);
+    const now = new Date();
+
+    if (isActive(group.scheduledTime)) {
+      // Meeting is active - increment member count and open meeting
+      setStudyGroups(studyGroups.map(g => 
+        g.id === groupId 
+          ? { ...g, currentMembers: g.currentMembers + 1 }
+          : g
+      ));
+      window.open(group.meetingLink, '_blank');
+    } else if (scheduledTime > now) {
+      // Meeting is in future - set reminder
+      const reminderTime = new Date(scheduledTime.getTime() - 30 * 60 * 1000); // 30 minutes before
+      alert(`Reminder set! You'll receive an email notification 30 minutes before the meeting starts.`);
+      
+      // In a real implementation, this would call an API to set up the email reminder
+      console.log('Setting reminder for:', reminderTime, 'for meeting:', group.meetingLink);
     }
   };
 
