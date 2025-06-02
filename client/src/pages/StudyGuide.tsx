@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -6,8 +6,20 @@ import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Calendar } from '@/components/ui/calendar';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useToast } from '@/hooks/use-toast';
+import { format, isToday } from 'date-fns';
 import { 
   BookOpen, 
   Clock, 
@@ -25,7 +37,7 @@ import {
   ChevronRight,
   User,
   Trophy,
-  Calendar,
+  Calendar as CalendarIcon,
   PlayCircle,
   Search,
   Download,
@@ -35,7 +47,19 @@ import {
   Library,
   GraduationCap,
   Lightbulb,
-  MapPin
+  MapPin,
+  Plus,
+  Edit,
+  Trash2,
+  Play,
+  Pause,
+  SkipForward,
+  Volume2,
+  Music,
+  Users,
+  MessageCircle,
+  Settings,
+  Flame
 } from 'lucide-react';
 
 interface StudySection {
@@ -91,15 +115,153 @@ interface StudyResource {
   estimatedTime?: number;
 }
 
+// Schema for study session form
+const sessionSchema = z.object({
+  title: z.string().min(3, "Title must be at least 3 characters"),
+  description: z.string().optional(),
+  category: z.string().min(1, "Category is required"),
+  subcategory: z.string().optional(),
+  startTime: z.string().min(1, "Start time is required"),
+  endTime: z.string().min(1, "End time is required"),
+  status: z.enum(["scheduled", "completed", "cancelled"]).default("scheduled"),
+  isRecurring: z.boolean().default(false),
+  recurringPattern: z.string().optional(),
+});
+
+type SessionFormData = z.infer<typeof sessionSchema>;
+
 export default function StudyGuide() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
+  
+  // Study Guide State
   const [selectedSection, setSelectedSection] = useState<number | null>(null);
   const [selectedTopic, setSelectedTopic] = useState<StudyTopic | null>(null);
   const [userNotes, setUserNotes] = useState('');
   const [readingProgress, setReadingProgress] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('sections');
+
+  // Study Planner State
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedSession, setSelectedSession] = useState<any>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // Study Timer State
+  const [studyGoal, setStudyGoal] = useState(25);
+  const [isRunning, setIsRunning] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(studyGoal * 60);
+  const [isPomodoroMode, setIsPomodoroMode] = useState(false);
+  const [isBreak, setIsBreak] = useState(false);
+  const [breakTime, setBreakTime] = useState(5);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [timerNotes, setTimerNotes] = useState("");
+  const [totalTimeStudied, setTotalTimeStudied] = useState(0);
+  const [isBackgroundMusicOn, setIsBackgroundMusicOn] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Study session form
+  const form = useForm<SessionFormData>({
+    resolver: zodResolver(sessionSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      category: "",
+      subcategory: "",
+      startTime: "",
+      endTime: "",
+      status: "scheduled",
+      isRecurring: false,
+      recurringPattern: "",
+    },
+  });
+
+  // Timer effects
+  useEffect(() => {
+    setTimeLeft(studyGoal * 60);
+  }, [studyGoal]);
+
+  useEffect(() => {
+    if (isRunning && timeLeft > 0) {
+      timerRef.current = setTimeout(() => {
+        setTimeLeft(timeLeft - 1);
+      }, 1000);
+    } else if (timeLeft === 0) {
+      setIsRunning(false);
+      if (isPomodoroMode) {
+        if (!isBreak) {
+          setIsBreak(true);
+          setTimeLeft(breakTime * 60);
+        } else {
+          setIsBreak(false);
+          setTimeLeft(studyGoal * 60);
+        }
+      }
+    }
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [isRunning, timeLeft, studyGoal, breakTime, isPomodoroMode, isBreak]);
+
+  // Timer functions
+  const startTimer = () => {
+    setIsRunning(true);
+  };
+
+  const pauseTimer = () => {
+    setIsRunning(false);
+  };
+
+  const resetTimer = () => {
+    setIsRunning(false);
+    setTimeLeft(studyGoal * 60);
+    setIsBreak(false);
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Study session functions
+  const onSubmit = (data: SessionFormData) => {
+    console.log('Session data:', data);
+    toast({
+      title: "Study Session Created",
+      description: `Session "${data.title}" has been scheduled successfully.`,
+    });
+    setIsDialogOpen(false);
+    form.reset();
+  };
+
+  const getSessionsForDate = (date: Date) => {
+    // Mock sessions for demonstration
+    const sessions = [
+      {
+        id: 1,
+        title: "Anatomy Review",
+        startTime: "09:00",
+        endTime: "10:30",
+        category: "Anatomy",
+        status: "scheduled"
+      },
+      {
+        id: 2,
+        title: "Physiology Practice",
+        startTime: "14:00",
+        endTime: "15:30",
+        category: "Physiology",
+        status: "completed"
+      }
+    ];
+    
+    return isToday(date) ? sessions : [];
+  };
 
   // Fetch study guide sections
   const { data: sections = [], isLoading: loadingSections } = useQuery({
@@ -623,7 +785,7 @@ export default function StudyGuide() {
 
         {/* Tabs Navigation */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8">
+          <TabsList className="grid w-full grid-cols-6 mb-8">
             <TabsTrigger value="sections" className="flex items-center gap-2">
               <BookOpen className="w-4 h-4" />
               Study Sections
@@ -632,13 +794,21 @@ export default function StudyGuide() {
               <Library className="w-4 h-4" />
               Books & Resources
             </TabsTrigger>
+            <TabsTrigger value="planner" className="flex items-center gap-2">
+              <CalendarIcon className="w-4 h-4" />
+              Study Planner
+            </TabsTrigger>
+            <TabsTrigger value="timer" className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              Study Timer
+            </TabsTrigger>
+            <TabsTrigger value="groups" className="flex items-center gap-2">
+              <User className="w-4 h-4" />
+              Study Groups
+            </TabsTrigger>
             <TabsTrigger value="tips" className="flex items-center gap-2">
               <Lightbulb className="w-4 h-4" />
               Study Tips
-            </TabsTrigger>
-            <TabsTrigger value="online" className="flex items-center gap-2">
-              <ExternalLink className="w-4 h-4" />
-              Online Resources
             </TabsTrigger>
           </TabsList>
 
@@ -729,6 +899,488 @@ export default function StudyGuide() {
                 );
               })}
             </div>
+          </TabsContent>
+
+          {/* Study Planner Tab */}
+          <TabsContent value="planner" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Calendar */}
+              <Card className="lg:col-span-1">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5" />
+                    Study Calendar
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => date && setSelectedDate(date)}
+                    className="rounded-md border"
+                  />
+                  <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="w-full mt-4">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Study Session
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                      <DialogHeader>
+                        <DialogTitle>Schedule Study Session</DialogTitle>
+                        <DialogDescription>
+                          Create a new study session for {format(selectedDate, 'MMMM d, yyyy')}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                          <FormField
+                            control={form.control}
+                            name="title"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Session Title</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Enter session title" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="category"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Category</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select category" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="anatomy">Anatomy</SelectItem>
+                                    <SelectItem value="physiology">Physiology</SelectItem>
+                                    <SelectItem value="pathology">Pathology</SelectItem>
+                                    <SelectItem value="pharmacology">Pharmacology</SelectItem>
+                                    <SelectItem value="biochemistry">Biochemistry</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name="startTime"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Start Time</FormLabel>
+                                  <FormControl>
+                                    <Input type="time" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="endTime"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>End Time</FormLabel>
+                                  <FormControl>
+                                    <Input type="time" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <FormField
+                            control={form.control}
+                            name="description"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Description (Optional)</FormLabel>
+                                <FormControl>
+                                  <Textarea placeholder="Add session details..." {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <DialogFooter>
+                            <Button type="submit">Create Session</Button>
+                          </DialogFooter>
+                        </form>
+                      </Form>
+                    </DialogContent>
+                  </Dialog>
+                </CardContent>
+              </Card>
+
+              {/* Daily Schedule */}
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle>Schedule for {format(selectedDate, 'MMMM d, yyyy')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {getSessionsForDate(selectedDate).length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                        <p>No study sessions scheduled for this date</p>
+                        <p className="text-sm">Click "Add Study Session" to get started</p>
+                      </div>
+                    ) : (
+                      getSessionsForDate(selectedDate).map((session: any) => (
+                        <Card key={session.id} className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-4">
+                              <div className="flex flex-col">
+                                <span className="text-sm text-gray-500">
+                                  {session.startTime} - {session.endTime}
+                                </span>
+                                <h4 className="font-medium">{session.title}</h4>
+                                <Badge variant="secondary" className="w-fit mt-1">
+                                  {session.category}
+                                </Badge>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Badge variant={session.status === "completed" ? "default" : "outline"}>
+                                {session.status}
+                              </Badge>
+                              <Button variant="ghost" size="sm">
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </Card>
+                      ))
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Study Timer Tab */}
+          <TabsContent value="timer" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Timer */}
+              <Card className="lg:col-span-1">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Clock className="w-5 h-5" />
+                    Study Timer
+                  </CardTitle>
+                  <CardDescription>
+                    {isBreak ? "Break Time!" : "Focus on your studies"}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Timer Display */}
+                  <div className="text-center">
+                    <div className="text-6xl font-bold text-primary mb-4">
+                      {formatTime(timeLeft)}
+                    </div>
+                    {isPomodoroMode && (
+                      <Badge variant={isBreak ? "destructive" : "default"} className="text-sm">
+                        {isBreak ? "Break Time" : "Study Time"}
+                      </Badge>
+                    )}
+                  </div>
+
+                  {/* Timer Controls */}
+                  <div className="flex justify-center space-x-4">
+                    {!isRunning ? (
+                      <Button onClick={startTimer} size="lg">
+                        <Play className="w-4 h-4 mr-2" />
+                        Start
+                      </Button>
+                    ) : (
+                      <Button onClick={pauseTimer} size="lg" variant="secondary">
+                        <Pause className="w-4 h-4 mr-2" />
+                        Pause
+                      </Button>
+                    )}
+                    <Button onClick={resetTimer} size="lg" variant="outline">
+                      <SkipForward className="w-4 h-4 mr-2" />
+                      Reset
+                    </Button>
+                  </div>
+
+                  {/* Timer Settings */}
+                  <div className="space-y-4 pt-4 border-t">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="study-duration">Study Duration (minutes)</Label>
+                        <span className="text-sm text-gray-500">{studyGoal}min</span>
+                      </div>
+                      <Slider
+                        id="study-duration"
+                        min={5}
+                        max={120}
+                        step={5}
+                        value={[studyGoal]}
+                        onValueChange={(value) => setStudyGoal(value[0])}
+                        disabled={isRunning}
+                      />
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="pomodoro-mode"
+                        checked={isPomodoroMode}
+                        onCheckedChange={setIsPomodoroMode}
+                        disabled={isRunning}
+                      />
+                      <Label htmlFor="pomodoro-mode">Pomodoro Mode</Label>
+                    </div>
+
+                    {isPomodoroMode && (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="break-duration">Break Duration (minutes)</Label>
+                          <span className="text-sm text-gray-500">{breakTime}min</span>
+                        </div>
+                        <Slider
+                          id="break-duration"
+                          min={5}
+                          max={30}
+                          step={5}
+                          value={[breakTime]}
+                          onValueChange={(value) => setBreakTime(value[0])}
+                          disabled={isRunning}
+                        />
+                      </div>
+                    )}
+
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="background-music"
+                        checked={isBackgroundMusicOn}
+                        onCheckedChange={setIsBackgroundMusicOn}
+                      />
+                      <Label htmlFor="background-music">Background Music</Label>
+                      <Music className="w-4 h-4 text-gray-400" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Study Session Notes */}
+              <Card className="lg:col-span-1">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="w-5 h-5" />
+                    Session Notes
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="study-category">Study Category</Label>
+                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="anatomy">Anatomy</SelectItem>
+                        <SelectItem value="physiology">Physiology</SelectItem>
+                        <SelectItem value="pathology">Pathology</SelectItem>
+                        <SelectItem value="pharmacology">Pharmacology</SelectItem>
+                        <SelectItem value="biochemistry">Biochemistry</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="session-notes">Notes</Label>
+                    <Textarea
+                      id="session-notes"
+                      placeholder="What are you studying today?"
+                      value={timerNotes}
+                      onChange={(e) => setTimerNotes(e.target.value)}
+                      className="min-h-[200px]"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                    <Card className="p-3">
+                      <div className="flex items-center space-x-2">
+                        <Clock className="w-4 h-4 text-primary" />
+                        <div>
+                          <p className="text-sm text-gray-500">Today</p>
+                          <p className="font-medium">{Math.floor(totalTimeStudied / 60)}m</p>
+                        </div>
+                      </div>
+                    </Card>
+                    <Card className="p-3">
+                      <div className="flex items-center space-x-2">
+                        <Flame className="w-4 h-4 text-orange-500" />
+                        <div>
+                          <p className="text-sm text-gray-500">Streak</p>
+                          <p className="font-medium">5 days</p>
+                        </div>
+                      </div>
+                    </Card>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Study Groups Tab */}
+          <TabsContent value="groups" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* My Groups */}
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="w-5 h-5" />
+                    My Study Groups
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {[
+                      {
+                        id: 1,
+                        name: "Anatomy Study Group",
+                        members: 8,
+                        category: "Anatomy",
+                        nextSession: "Today 2:00 PM",
+                        isActive: true
+                      },
+                      {
+                        id: 2,
+                        name: "USMLE Step 1 Prep",
+                        members: 15,
+                        category: "General",
+                        nextSession: "Tomorrow 10:00 AM",
+                        isActive: true
+                      },
+                      {
+                        id: 3,
+                        name: "Physiology Discussion",
+                        members: 6,
+                        category: "Physiology",
+                        nextSession: "Friday 3:00 PM",
+                        isActive: false
+                      }
+                    ].map((group) => (
+                      <Card key={group.id} className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-1">
+                            <div className="flex items-center space-x-2">
+                              <h4 className="font-medium">{group.name}</h4>
+                              <Badge variant="secondary">{group.category}</Badge>
+                              {group.isActive && (
+                                <Badge variant="default" className="bg-green-500">Live</Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center space-x-4 text-sm text-gray-500">
+                              <span className="flex items-center gap-1">
+                                <Users className="w-3 h-3" />
+                                {group.members} members
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {group.nextSession}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Button variant="outline" size="sm">
+                              <MessageCircle className="w-4 h-4 mr-1" />
+                              Chat
+                            </Button>
+                            <Button size="sm">
+                              Join Session
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Group Actions */}
+              <Card className="lg:col-span-1">
+                <CardHeader>
+                  <CardTitle>Quick Actions</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Button className="w-full">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create New Group
+                  </Button>
+                  <Button variant="outline" className="w-full">
+                    <Search className="w-4 h-4 mr-2" />
+                    Find Groups
+                  </Button>
+                  <Button variant="outline" className="w-full">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Group Settings
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Active Sessions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Active Study Sessions</CardTitle>
+                <CardDescription>Join ongoing study sessions in your groups</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[
+                    {
+                      id: 1,
+                      group: "Anatomy Study Group",
+                      topic: "Cardiovascular System",
+                      participants: 5,
+                      duration: "45 minutes",
+                      isLive: true
+                    },
+                    {
+                      id: 2,
+                      group: "USMLE Step 1 Prep",
+                      topic: "Practice Questions",
+                      participants: 12,
+                      duration: "2 hours",
+                      isLive: true
+                    }
+                  ].map((session) => (
+                    <Card key={session.id} className="p-4 border-green-200 bg-green-50">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <Badge variant="default" className="bg-green-500">LIVE</Badge>
+                          <span className="text-xs text-gray-500">{session.duration}</span>
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-sm">{session.group}</h4>
+                          <p className="text-sm text-gray-600">{session.topic}</p>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-500">
+                            {session.participants} participants
+                          </span>
+                          <Button size="sm">Join Now</Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Books & Resources Tab */}
