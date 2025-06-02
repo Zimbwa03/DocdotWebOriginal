@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
@@ -24,7 +26,16 @@ import {
   User,
   Trophy,
   Calendar,
-  PlayCircle
+  PlayCircle,
+  Search,
+  Download,
+  ExternalLink,
+  FileText,
+  Video,
+  Library,
+  GraduationCap,
+  Lightbulb,
+  MapPin
 } from 'lucide-react';
 
 interface StudySection {
@@ -59,6 +70,27 @@ interface UserProgress {
   average_progress: number;
 }
 
+interface DriveFile {
+  id: string;
+  name: string;
+  mimeType: string;
+  createdTime: string;
+  modifiedTime: string;
+  size: string;
+}
+
+interface StudyResource {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  type: 'textbook' | 'video' | 'article' | 'practice';
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  url?: string;
+  downloadUrl?: string;
+  estimatedTime?: number;
+}
+
 export default function StudyGuide() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -66,6 +98,8 @@ export default function StudyGuide() {
   const [selectedTopic, setSelectedTopic] = useState<StudyTopic | null>(null);
   const [userNotes, setUserNotes] = useState('');
   const [readingProgress, setReadingProgress] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('sections');
 
   // Fetch study guide sections
   const { data: sections = [], isLoading: loadingSections } = useQuery({
@@ -100,6 +134,82 @@ export default function StudyGuide() {
     },
     enabled: !!user?.id,
   }) as { data: UserProgress | undefined };
+
+  // Fetch resources/books from drive
+  const { data: books = [], isLoading: loadingBooks } = useQuery({
+    queryKey: ['books'],
+    queryFn: async () => {
+      const res = await fetch('/api/resources/books');
+      if (!res.ok) {
+        throw new Error('Failed to fetch books');
+      }
+      return res.json() as Promise<DriveFile[]>;
+    }
+  });
+
+  // Static study resources and tips
+  const studyTips = [
+    {
+      id: '1',
+      title: 'Active Recall Technique',
+      description: 'Test yourself frequently rather than just re-reading notes',
+      category: 'Study Methods',
+      type: 'article' as const,
+      difficulty: 'beginner' as const,
+      estimatedTime: 10
+    },
+    {
+      id: '2', 
+      title: 'Spaced Repetition',
+      description: 'Review material at increasing intervals for better retention',
+      category: 'Memory',
+      type: 'practice' as const,
+      difficulty: 'intermediate' as const,
+      estimatedTime: 15
+    },
+    {
+      id: '3',
+      title: 'Medical Mnemonics',
+      description: 'Memory aids for complex medical terminology and processes',
+      category: 'Memory',
+      type: 'article' as const,
+      difficulty: 'beginner' as const,
+      estimatedTime: 20
+    },
+    {
+      id: '4',
+      title: 'Gray\'s Anatomy Guide',
+      description: 'Essential anatomical structures and clinical correlations',
+      category: 'Anatomy',
+      type: 'textbook' as const,
+      difficulty: 'advanced' as const,
+      estimatedTime: 120
+    }
+  ];
+
+  const onlineResources = [
+    {
+      id: 'osmosis',
+      title: 'Osmosis.org',
+      description: 'Interactive medical education platform with videos and practice questions',
+      url: 'https://www.osmosis.org',
+      category: 'Online Platform'
+    },
+    {
+      id: 'kenhub',
+      title: 'Kenhub.com', 
+      description: 'Comprehensive anatomy learning platform with 3D models',
+      url: 'https://www.kenhub.com',
+      category: 'Anatomy'
+    },
+    {
+      id: 'teachme',
+      title: 'TeachMeAnatomy.info',
+      description: 'Free anatomy education resource with detailed explanations',
+      url: 'https://teachmeanatomy.info',
+      category: 'Anatomy'
+    }
+  ];
 
   // Update progress mutation
   const updateProgressMutation = useMutation({
@@ -463,6 +573,42 @@ export default function StudyGuide() {
     );
   }
 
+  // Helper functions
+  const filteredBooks = books?.filter(book => 
+    book.name.toLowerCase().includes(searchQuery.toLowerCase())
+  ) || [];
+
+  const handleDownload = async (fileId: string) => {
+    try {
+      const res = await fetch(`/api/resources/books/${fileId}/download`);
+      if (!res.ok) {
+        throw new Error('Failed to generate download URL');
+      }
+      const { downloadUrl } = await res.json();
+      window.open(downloadUrl, '_blank');
+    } catch (error) {
+      console.error('Download error:', error);
+    }
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'textbook': return BookOpen;
+      case 'video': return Video;
+      case 'article': return FileText;
+      case 'practice': return Target;
+      default: return FileText;
+    }
+  };
+
   // Main Sections View
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -471,97 +617,320 @@ export default function StudyGuide() {
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Medical Study Guide</h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Comprehensive study materials covering essential medical topics with progress tracking
+            Comprehensive study materials, resources, and interactive content for medical education
           </p>
         </div>
 
-        {/* User Progress Overview */}
-        {userProgress && (
-          <div className="mb-8">
+        {/* Tabs Navigation */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-4 mb-8">
+            <TabsTrigger value="sections" className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4" />
+              Study Sections
+            </TabsTrigger>
+            <TabsTrigger value="resources" className="flex items-center gap-2">
+              <Library className="w-4 h-4" />
+              Books & Resources
+            </TabsTrigger>
+            <TabsTrigger value="tips" className="flex items-center gap-2">
+              <Lightbulb className="w-4 h-4" />
+              Study Tips
+            </TabsTrigger>
+            <TabsTrigger value="online" className="flex items-center gap-2">
+              <ExternalLink className="w-4 h-4" />
+              Online Resources
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Study Sections Tab */}
+          <TabsContent value="sections" className="space-y-6">
+            {/* User Progress Overview */}
+            {userProgress && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Trophy className="w-5 h-5 text-yellow-500" />
+                    Your Study Progress
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-600">
+                        {userProgress.topics_started}
+                      </div>
+                      <div className="text-sm text-gray-600">Topics Started</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-600">
+                        {userProgress.topics_completed}
+                      </div>
+                      <div className="text-sm text-gray-600">Completed</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-yellow-600">
+                        {userProgress.bookmarked_topics}
+                      </div>
+                      <div className="text-sm text-gray-600">Bookmarked</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-purple-600">
+                        {Math.round(userProgress.average_progress || 0)}%
+                      </div>
+                      <div className="text-sm text-gray-600">Avg Progress</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Study Sections */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {sections.map((section: StudySection) => {
+                const IconComponent = getCategoryIcon(section.category);
+                return (
+                  <Card 
+                    key={section.id} 
+                    className="hover:shadow-lg transition-all cursor-pointer group"
+                    onClick={() => setSelectedSection(section.id)}
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                          <IconComponent className="w-6 h-6 text-blue-600" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            {section.title}
+                          </h3>
+                          <Badge variant="outline" className="text-xs">
+                            {section.category}
+                          </Badge>
+                        </div>
+                      </div>
+                      
+                      <p className="text-gray-600 mb-4 text-sm">
+                        {section.description}
+                      </p>
+                      
+                      <div className="flex items-center justify-between">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="group-hover:bg-blue-50 group-hover:border-blue-300"
+                        >
+                          <PlayCircle className="w-4 h-4 mr-2" />
+                          Start Learning
+                        </Button>
+                        <ChevronRight className="w-4 h-4 text-gray-400" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </TabsContent>
+
+          {/* Books & Resources Tab */}
+          <TabsContent value="resources" className="space-y-6">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search books and resources..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+
+            {loadingBooks ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <Card key={i} className="animate-pulse">
+                    <CardContent className="p-6">
+                      <div className="h-4 bg-gray-200 rounded mb-4"></div>
+                      <div className="h-3 bg-gray-200 rounded mb-2"></div>
+                      <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredBooks.map((book) => (
+                  <Card key={book.id} className="hover:shadow-lg transition-shadow">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                          <BookOpen className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <CardTitle className="text-lg leading-tight line-clamp-2">
+                            {book.name}
+                          </CardTitle>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2 text-sm text-gray-600 mb-4">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4" />
+                          <span>Updated: {new Date(book.modifiedTime).toLocaleDateString()}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <FileText className="w-4 h-4" />
+                          <span>Size: {formatFileSize(parseInt(book.size))}</span>
+                        </div>
+                      </div>
+                      <Button 
+                        onClick={() => handleDownload(book.id)}
+                        className="w-full"
+                        size="sm"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Download
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Study Tips Tab */}
+          <TabsContent value="tips" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {studyTips.map((tip) => {
+                const IconComponent = getTypeIcon(tip.type);
+                return (
+                  <Card key={tip.id} className="hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                          <IconComponent className="w-5 h-5 text-green-600" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-lg">{tip.title}</CardTitle>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge className={getDifficultyColor(tip.difficulty)}>
+                              {tip.difficulty}
+                            </Badge>
+                            <span className="text-sm text-gray-500">
+                              {tip.estimatedTime} min
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-600 mb-4">{tip.description}</p>
+                      <Badge variant="outline">{tip.category}</Badge>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+
+            {/* Additional Study Tips */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Trophy className="w-5 h-5 text-yellow-500" />
-                  Your Study Progress
+                  <GraduationCap className="w-5 h-5" />
+                  Essential Study Strategies
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600">
-                      {userProgress.topics_started}
-                    </div>
-                    <div className="text-sm text-gray-600">Topics Started</div>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-gray-900">Memory Techniques</h4>
+                    <ul className="text-sm text-gray-600 space-y-1">
+                      <li>• Use active recall and spaced repetition</li>
+                      <li>• Create mind maps for complex topics</li>
+                      <li>• Use mnemonics for difficult lists</li>
+                      <li>• Practice retrieval before reviewing</li>
+                    </ul>
                   </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">
-                      {userProgress.topics_completed}
-                    </div>
-                    <div className="text-sm text-gray-600">Completed</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-yellow-600">
-                      {userProgress.bookmarked_topics}
-                    </div>
-                    <div className="text-sm text-gray-600">Bookmarked</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-purple-600">
-                      {Math.round(userProgress.average_progress || 0)}%
-                    </div>
-                    <div className="text-sm text-gray-600">Avg Progress</div>
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-gray-900">Study Organization</h4>
+                    <ul className="text-sm text-gray-600 space-y-1">
+                      <li>• Break study sessions into 25-50 min blocks</li>
+                      <li>• Take regular breaks to avoid burnout</li>
+                      <li>• Review material multiple times</li>
+                      <li>• Test yourself frequently</li>
+                    </ul>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          </div>
-        )}
+          </TabsContent>
 
-        {/* Study Sections */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sections.map((section: StudySection) => {
-            const IconComponent = getCategoryIcon(section.category);
-            return (
-              <Card 
-                key={section.id} 
-                className="hover:shadow-lg transition-all cursor-pointer group"
-                onClick={() => setSelectedSection(section.id)}
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                      <IconComponent className="w-6 h-6 text-blue-600" />
+          {/* Online Resources Tab */}
+          <TabsContent value="online" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {onlineResources.map((resource) => (
+                <Card key={resource.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                        <ExternalLink className="w-5 h-5 text-purple-600" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg">{resource.title}</CardTitle>
+                        <Badge variant="outline" className="mt-1">
+                          {resource.category}
+                        </Badge>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {section.title}
-                      </h3>
-                      <Badge variant="outline" className="text-xs">
-                        {section.category}
-                      </Badge>
-                    </div>
-                  </div>
-                  
-                  <p className="text-gray-600 mb-4 text-sm">
-                    {section.description}
-                  </p>
-                  
-                  <div className="flex items-center justify-between">
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600 mb-4">{resource.description}</p>
                     <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="group-hover:bg-blue-50 group-hover:border-blue-300"
+                      onClick={() => window.open(resource.url, '_blank')}
+                      variant="outline"
+                      className="w-full"
                     >
-                      <PlayCircle className="w-4 h-4 mr-2" />
-                      Start Learning
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Visit Website
                     </Button>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="w-5 h-5" />
+                  Recommended Study Resources
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-3">Textbooks</h4>
+                    <ul className="space-y-2 text-sm text-gray-600">
+                      <li>• Gray's Anatomy for Students</li>
+                      <li>• Guyton and Hall Textbook of Medical Physiology</li>
+                      <li>• Netter's Atlas of Human Anatomy</li>
+                      <li>• BRS Physiology</li>
+                    </ul>
                   </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-3">Online Platforms</h4>
+                    <ul className="space-y-2 text-sm text-gray-600">
+                      <li>• Osmosis.org - Interactive medical education</li>
+                      <li>• Kenhub.com - Anatomy learning platform</li>
+                      <li>• TeachMeAnatomy.info - Free anatomy resource</li>
+                      <li>• Anki - Spaced repetition flashcards</li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
