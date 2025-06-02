@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { openRouterAI } from "./ai";
 import { dbStorage, db } from "./db";
 import { sql } from 'drizzle-orm';
-import { insertQuizAttemptSchema } from "@shared/schema";
+import { insertQuizAttemptSchema, badges } from "@shared/schema";
 import { v4 as uuidv4 } from "uuid";
 import { readFileSync } from "fs";
 import { resolve } from "path";
@@ -215,7 +215,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Initialize user gamification data
+  // Initialize user gamification data with sample analytics
   app.post("/api/initialize-user/:userId", async (req, res) => {
     try {
       const { userId } = req.params;
@@ -224,19 +224,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let userStats = await dbStorage.getUserStats(userId);
       
       if (!userStats) {
-        // Create initial user stats with some sample data to activate the system
-        await dbStorage.updateUserStats(userId, true, 50, 300); // 50 XP, 5 minutes
-        await dbStorage.updateUserStats(userId, true, 30, 180); // 30 XP, 3 minutes
-        await dbStorage.updateUserStats(userId, false, 0, 120); // 0 XP, 2 minutes
+        // Create comprehensive initial user stats to demonstrate the system
+        await dbStorage.updateUserStats(userId, true, 100, 600); // Correct answer, 100 XP, 10 minutes
+        await dbStorage.updateUserStats(userId, true, 75, 450); // Correct answer, 75 XP, 7.5 minutes
+        await dbStorage.updateUserStats(userId, false, 0, 300); // Wrong answer, 0 XP, 5 minutes
+        await dbStorage.updateUserStats(userId, true, 120, 720); // Correct answer, 120 XP, 12 minutes
+        await dbStorage.updateUserStats(userId, true, 90, 540); // Correct answer, 90 XP, 9 minutes
+        
+        // Update category stats for different subjects
+        await dbStorage.updateCategoryStats(userId, 'Anatomy', true, 360);
+        await dbStorage.updateCategoryStats(userId, 'Physiology', true, 300);
+        await dbStorage.updateCategoryStats(userId, 'Pathology', false, 240);
+        await dbStorage.updateCategoryStats(userId, 'Pharmacology', true, 420);
+        
+        // Update daily stats for the past few days
+        const today = new Date();
+        for (let i = 0; i < 7; i++) {
+          const date = new Date(today);
+          date.setDate(date.getDate() - i);
+          await dbStorage.updateDailyStats(userId, 'General', i % 2 === 0, 80, date.toISOString());
+        }
         
         userStats = await dbStorage.getUserStats(userId);
       }
       
-      // Initialize badges
+      // Initialize badges system
       await dbStorage.initializeBadges();
       await dbStorage.checkBadgeProgress(userId);
       
-      // Update leaderboard
+      // Update leaderboard position
       await dbStorage.updateLeaderboard(userId);
       
       const badges = await dbStorage.getUserBadges(userId);
@@ -244,9 +260,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({
         stats: userStats,
-        badges,
-        rank,
-        initialized: true
+        badges: badges || [],
+        rank: rank || { rank: 1, totalXP: userStats?.totalXp || 0, averageAccuracy: userStats?.averageAccuracy || 0 },
+        initialized: true,
+        message: "User data initialized with sample analytics"
       });
     } catch (error) {
       console.error("Error initializing user:", error);
@@ -818,30 +835,7 @@ CRITICAL FORMATTING RULES:
     }
   });
 
-  // Alternative user stats route to match frontend expectations
-  app.get("/api/user-stats/:userId", async (req, res) => {
-    try {
-      const { userId } = req.params;
-      const stats = await dbStorage.getUserStats(userId);
-      
-      if (!stats) {
-        return res.json({
-          totalXp: 0,
-          level: 1,
-          currentStreak: 0,
-          averageAccuracy: 0,
-          totalQuizzes: 0,
-          totalTimeSpent: 0,
-          rank: 0
-        });
-      }
-      
-      res.json(stats);
-    } catch (error) {
-      console.error("Error getting user stats:", error);
-      res.status(500).json({ error: "Failed to get user stats" });
-    }
-  });
+
 
   // Quiz attempts route to match frontend expectations
   app.get("/api/quiz-attempts/:userId", async (req, res) => {
@@ -1058,6 +1052,55 @@ CRITICAL FORMATTING RULES:
     } catch (error) {
       console.error("Error getting user badges:", error);
       res.status(500).json({ error: "Failed to get user badges" });
+    }
+  });
+
+  // Get user badges
+  app.get("/api/badges/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      
+      // Initialize badges if they don't exist
+      await dbStorage.initializeBadges();
+      
+      // Get user's earned badges
+      const earnedBadges = await dbStorage.getUserBadges(userId);
+      
+      // Get all available badges
+      const allBadges = await db.select().from(badges);
+      
+      // Calculate progress for each badge
+      const availableBadges = [];
+      for (const badge of allBadges) {
+        const isEarned = Array.isArray(earnedBadges) && earnedBadges.some((eb: any) => eb.badgeId === badge.id);
+        if (!isEarned) {
+          const progress = await dbStorage.calculateBadgeProgress(userId, badge);
+          availableBadges.push({
+            ...badge,
+            progress,
+            earned: false
+          });
+        }
+      }
+      
+      // Add earned status to earned badges
+      const earnedWithDetails = Array.isArray(earnedBadges) ? earnedBadges.map((earned: any) => {
+        const badge = allBadges.find(b => b.id === earned.badgeId);
+        return {
+          ...badge,
+          ...earned,
+          earned: true,
+          progress: badge?.requirement || 0
+        };
+      }) : [];
+      
+      res.json({
+        earned: earnedWithDetails,
+        available: availableBadges
+      });
+    } catch (error) {
+      console.error("Error fetching badges:", error);
+      res.status(500).json({ error: "Failed to fetch badges" });
     }
   });
 
