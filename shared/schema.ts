@@ -1,4 +1,4 @@
-import { pgTable, text, integer, timestamp, boolean, json } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, timestamp, boolean, json, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -85,6 +85,49 @@ export const userStats = pgTable("user_stats", {
   currentLevel: integer("current_level").notNull().default(1),
   totalStudyTime: integer("total_study_time").notNull().default(0), // in minutes
   rank: integer("rank").notNull().default(0),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Advanced Achievement and Badge System
+export const badges = pgTable("badges", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  name: text("name").notNull().unique(),
+  description: text("description").notNull(),
+  icon: text("icon").notNull(), // Lucide icon name
+  category: text("category").notNull(), // "performance", "streak", "mastery", "time", "special"
+  tier: text("tier").notNull(), // "bronze", "silver", "gold", "platinum", "diamond"
+  requirement: integer("requirement").notNull(), // Numeric requirement value
+  requirementType: text("requirement_type").notNull(), // "streak", "questions", "accuracy", "time", "xp"
+  xpReward: integer("xp_reward").notNull().default(0),
+  color: text("color").notNull(), // Hex color for badge styling
+  isSecret: boolean("is_secret").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// User Badge Achievements
+export const userBadges = pgTable("user_badges", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: text("user_id").references(() => users.id),
+  badgeId: integer("badge_id").references(() => badges.id),
+  earnedAt: timestamp("earned_at").defaultNow(),
+  progress: integer("progress").default(0), // Current progress towards badge
+}, (table) => ({
+  userBadgeUnique: unique().on(table.userId, table.badgeId),
+}));
+
+// Enhanced Global Leaderboard System
+export const globalLeaderboard = pgTable("global_leaderboard", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: text("user_id").references(() => users.id).unique(),
+  totalXP: integer("total_xp").notNull().default(0),
+  currentLevel: integer("current_level").notNull().default(1),
+  rank: integer("rank").notNull().default(0),
+  weeklyXP: integer("weekly_xp").notNull().default(0),
+  monthlyXP: integer("monthly_xp").notNull().default(0),
+  averageAccuracy: integer("average_accuracy").notNull().default(0),
+  totalBadges: integer("total_badges").notNull().default(0),
+  category: text("category"), // For category-specific leaderboards
+  lastActive: timestamp("last_active").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
@@ -207,6 +250,8 @@ export const insertUserStatsSchema = createInsertSchema(userStats).omit({ id: tr
 export const insertCategoryStatsSchema = createInsertSchema(categoryStats).omit({ id: true });
 export const insertDailyStatsSchema = createInsertSchema(dailyStats).omit({ id: true });
 export const insertLeaderboardSchema = createInsertSchema(leaderboard).omit({ id: true, updatedAt: true });
+export const insertBadgeSchema = createInsertSchema(badges).omit({ id: true, createdAt: true });
+export const insertUserBadgeSchema = createInsertSchema(userBadges).omit({ id: true, earnedAt: true });
 export const insertFlashcardSchema = createInsertSchema(flashcards);
 export const insertStudyPlanSchema = createInsertSchema(studyPlans);
 export const insertAiSessionSchema = createInsertSchema(aiSessions);
