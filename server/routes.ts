@@ -556,10 +556,11 @@ CRITICAL FORMATTING RULES:
         console.log('User creation error (may already exist):', userError);
       }
       
-      // Record the quiz attempt
+      // Record the quiz attempt (quizId set to null since we're using JSON questions)
       const quizAttempt = await dbStorage.recordQuizAttempt({
         userId,
-        quizId: attemptData.questionId || null,
+        quizId: null, // Set to null since questions come from JSON files, not quizzes table
+        questionIdentifier: attemptData.questionIdentifier || attemptData.questionId,
         category,
         selectedAnswer: attemptData.selectedAnswer,
         correctAnswer: attemptData.correctAnswer,

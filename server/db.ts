@@ -117,6 +117,7 @@ export class DatabaseStorage {
       const insertData = {
         userId: attemptData.userId!,
         quizId: attemptData.quizId || null,
+        questionIdentifier: attemptData.questionIdentifier || null,
         category: attemptData.category,
         selectedAnswer: attemptData.selectedAnswer,
         correctAnswer: attemptData.correctAnswer,
