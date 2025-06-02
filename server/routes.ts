@@ -748,15 +748,145 @@ CRITICAL FORMATTING RULES:
         return res.status(400).json({ error: "User ID is required" });
       }
       
-      const userRank = await dbStorage.getUserRank(
-        userId as string,
-        category as string,
-        timeFrame as string
-      );
-      res.json(userRank);
+      const rank = await dbStorage.getUserRank(userId as string, category as string, timeFrame as string);
+      res.json(rank);
     } catch (error) {
       console.error("Error getting user rank:", error);
       res.status(500).json({ error: "Failed to get user rank" });
+    }
+  });
+
+  // Study Guide API Routes
+  app.get('/api/study-guide/sections', async (req, res) => {
+    try {
+      const result = await db.execute(sql`
+        SELECT * FROM study_guide_sections 
+        WHERE is_active = true 
+        ORDER BY order_index, title
+      `);
+      res.json(result.rows);
+    } catch (error) {
+      console.error('Error fetching study guide sections:', error);
+      res.status(500).json({ error: 'Failed to fetch study guide sections' });
+    }
+  });
+
+  app.get('/api/study-guide/topics/:sectionId', async (req, res) => {
+    try {
+      const { sectionId } = req.params;
+      const { userId } = req.query;
+      
+      const result = await db.execute(sql`
+        SELECT 
+          t.*,
+          COALESCE(p.completion_percentage, 0) as completion_percentage,
+          COALESCE(p.is_bookmarked, false) as is_bookmarked,
+          p.notes,
+          p.last_accessed
+        FROM study_guide_topics t
+        LEFT JOIN study_guide_progress p ON t.id = p.topic_id AND p.user_id = ${userId}
+        WHERE t.section_id = ${sectionId}
+        ORDER BY t.order_index, t.title
+      `);
+      
+      res.json(result.rows);
+    } catch (error) {
+      console.error('Error fetching study guide topics:', error);
+      res.status(500).json({ error: 'Failed to fetch study guide topics' });
+    }
+  });
+
+  app.get('/api/study-guide/topic/:topicId', async (req, res) => {
+    try {
+      const { topicId } = req.params;
+      const { userId } = req.query;
+      
+      const result = await db.execute(sql`
+        SELECT 
+          t.*,
+          s.title as section_title,
+          COALESCE(p.completion_percentage, 0) as completion_percentage,
+          COALESCE(p.is_bookmarked, false) as is_bookmarked,
+          p.notes,
+          p.last_accessed
+        FROM study_guide_topics t
+        JOIN study_guide_sections s ON t.section_id = s.id
+        LEFT JOIN study_guide_progress p ON t.id = p.topic_id AND p.user_id = ${userId}
+        WHERE t.id = ${topicId}
+      `);
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Topic not found' });
+      }
+
+      // Update last accessed time
+      if (userId) {
+        await db.execute(sql`
+          INSERT INTO study_guide_progress (user_id, topic_id, last_accessed)
+          VALUES (${userId}, ${topicId}, NOW())
+          ON CONFLICT (user_id, topic_id)
+          DO UPDATE SET last_accessed = NOW()
+        `);
+      }
+      
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error('Error fetching study guide topic:', error);
+      res.status(500).json({ error: 'Failed to fetch study guide topic' });
+    }
+  });
+
+  app.post('/api/study-guide/progress', async (req, res) => {
+    try {
+      const { userId, topicId, completionPercentage, notes, isBookmarked } = req.body;
+      
+      if (!userId || !topicId) {
+        return res.status(400).json({ error: 'User ID and topic ID required' });
+      }
+
+      await db.execute(sql`
+        INSERT INTO study_guide_progress (
+          user_id, topic_id, completion_percentage, notes, is_bookmarked, last_accessed
+        )
+        VALUES (${userId}, ${topicId}, ${completionPercentage || 0}, ${notes || ''}, ${isBookmarked || false}, NOW())
+        ON CONFLICT (user_id, topic_id)
+        DO UPDATE SET 
+          completion_percentage = ${completionPercentage || 0},
+          notes = ${notes || ''},
+          is_bookmarked = ${isBookmarked || false},
+          last_accessed = NOW()
+      `);
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error updating study guide progress:', error);
+      res.status(500).json({ error: 'Failed to update progress' });
+    }
+  });
+
+  app.get('/api/study-guide/user-progress/:userId', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      
+      const result = await db.execute(sql`
+        SELECT 
+          COUNT(DISTINCT p.topic_id) as topics_started,
+          COUNT(DISTINCT CASE WHEN p.completion_percentage >= 100 THEN p.topic_id END) as topics_completed,
+          COUNT(DISTINCT CASE WHEN p.is_bookmarked THEN p.topic_id END) as bookmarked_topics,
+          AVG(p.completion_percentage) as average_progress
+        FROM study_guide_progress p
+        WHERE p.user_id = ${userId}
+      `);
+      
+      res.json(result.rows[0] || {
+        topics_started: 0,
+        topics_completed: 0,
+        bookmarked_topics: 0,
+        average_progress: 0
+      });
+    } catch (error) {
+      console.error('Error fetching user study progress:', error);
+      res.status(500).json({ error: 'Failed to fetch user progress' });
     }
   });
 
