@@ -283,12 +283,9 @@ export function Navigation() {
           <Link href="/home">
             <div className="flex items-center space-x-2 cursor-pointer">
               <img 
-                src="https://imgur.com/a/h2LXtHi" 
+                src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview.png" 
                 alt="DocDot Medical Student Logo" 
                 className="w-12 h-12 object-contain rounded-lg"
-                onError={(e) => {
-                  e.currentTarget.src = "/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview.png";
-                }}
               />
               <span className="text-lg lg:text-xl font-bold" style={{ color: '#1C1C1C' }}>
                 DocDot

@@ -145,29 +145,6 @@ export default function StudyGuide() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('timer');
 
-  // Reset component state when navigating back to StudyGuide
-  useEffect(() => {
-    if (location === '/study-guide') {
-      // Reset all state variables to default values
-      setSelectedSection(null);
-      setSelectedTopic(null);
-      setUserNotes('');
-      setReadingProgress(0);
-      setSearchQuery('');
-      setActiveTab('timer');
-      // Reset timer state
-      setIsRunning(false);
-      setTimeLeft(studyGoal * 60);
-      setIsBreak(false);
-      setTimerNotes('');
-      // Clear any running timers
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-    }
-  }, [location, studyGoal]);
-
   // Study Planner State
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedSession, setSelectedSession] = useState<any>(null);
@@ -176,7 +153,7 @@ export default function StudyGuide() {
   // Study Timer State
   const [studyGoal, setStudyGoal] = useState(25);
   const [isRunning, setIsRunning] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(studyGoal * 60);
+  const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isPomodoroMode, setIsPomodoroMode] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
   const [breakTime, setBreakTime] = useState(5);
@@ -191,8 +168,31 @@ export default function StudyGuide() {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  // Reset component state when navigating back to StudyGuide
+  useEffect(() => {
+    if (location === '/study-guide') {
+      // Reset all state variables to default values
+      setSelectedSection(null);
+      setSelectedTopic(null);
+      setUserNotes('');
+      setReadingProgress(0);
+      setSearchQuery('');
+      setActiveTab('timer');
+      // Reset timer state
+      setIsRunning(false);
+      setTimeLeft(25 * 60);
+      setIsBreak(false);
+      setTimerNotes('');
+      // Clear any running timers
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+  }, [location]);
+
   // Study Groups State
-  const [studyGroups, setStudyGroups] = useState([]);
+  const [studyGroups, setStudyGroups] = useState<any[]>([]);
   const [showCreateGroupDialog, setShowCreateGroupDialog] = useState(false);
   const [newGroupTitle, setNewGroupTitle] = useState('');
   const [newGroupDescription, setNewGroupDescription] = useState('');
