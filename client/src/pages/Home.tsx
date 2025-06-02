@@ -357,7 +357,7 @@ export default function Home() {
                   {loadingStats ? '...' : Math.round(stats.averageAccuracy || 0)}%
                 </div>
                 <div className="text-sm text-green-600">
-                  {loadingStats ? '...' : stats.correctAnswers || 0} of {loadingStats ? '...' : stats.totalQuestions || 0} correct
+                  {loadingStats ? '...' : String(stats.correctAnswers || 0)} of {loadingStats ? '...' : String(stats.totalQuestions || 0)} correct
                 </div>
               </CardContent>
             </Card>
@@ -375,7 +375,7 @@ export default function Home() {
                   #{userRankData?.rank || stats.rank || 'Unranked'}
                 </div>
                 <div className="text-sm text-purple-600">
-                  {(userRankData?.rank || stats.rank) && (userRankData?.rank || stats.rank) <= 100 ? 'Top 100!' : 'Keep studying!'}
+                  {((userRankData?.rank || stats.rank) && (userRankData?.rank || stats.rank) <= 100) ? 'Top 100!' : 'Keep studying!'}
                 </div>
                 <Link href="/leaderboard">
                   <Button variant="ghost" size="sm" className="mt-2 text-xs">
