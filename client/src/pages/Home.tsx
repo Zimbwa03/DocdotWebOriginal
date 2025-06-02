@@ -2,7 +2,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   GraduationCap, 
   BookOpen, 
@@ -25,7 +24,13 @@ import {
   Users,
   Plus,
   CheckCircle,
-  XCircle
+  XCircle,
+  Shield,
+  Crown,
+  Flame,
+  ArrowRight,
+  Medal,
+  Sparkles
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -170,6 +175,30 @@ export default function Home() {
     enabled: !!user?.id,
     refetchOnWindowFocus: true,
     refetchInterval: 30000,
+  });
+
+  // Fetch user badges
+  const { data: badgeData } = useQuery({
+    queryKey: ['/api/badges', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return { earned: [], available: [] };
+      const response = await fetch(`/api/badges/${user.id}`);
+      if (!response.ok) return { earned: [], available: [] };
+      return response.json();
+    },
+    enabled: !!user?.id,
+  });
+
+  // Fetch user rank
+  const { data: userRank } = useQuery({
+    queryKey: ['/api/user-rank', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const response = await fetch(`/api/user-rank?userId=${user.id}`);
+      if (!response.ok) return null;
+      return response.json();
+    },
+    enabled: !!user?.id,
   });
 
   // Refresh data when returning to Home page
@@ -344,333 +373,213 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl lg:text-3xl font-bold text-purple-900">
-                  #{loadingStats ? '...' : stats.rank || 'Unranked'}
+                  #{userRank?.rank || stats.rank || 'Unranked'}
                 </div>
                 <div className="text-sm text-purple-600">
-                  {stats.rank && stats.rank <= 100 ? 'Top 100!' : 'Keep studying!'}
+                  {(userRank?.rank || stats.rank) && (userRank?.rank || stats.rank) <= 100 ? 'Top 100!' : 'Keep studying!'}
                 </div>
+                <Link href="/leaderboard">
+                  <Button variant="ghost" size="sm" className="mt-2 text-xs">
+                    View Leaderboard <ArrowRight className="w-3 h-3 ml-1" />
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </div>
         </div>
 
-        {/* Recent Performance & Category Breakdown */}
+        {/* Gamification Features */}
         <div className="mb-8 lg:mb-12">
           <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-6">
-            Performance Insights
+            Gamification Hub
           </h2>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Recent Quiz Activity */}
-            <Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Badge Collection */}
+            <Card className="bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200 hover:shadow-lg transition-shadow">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-blue-600" />
-                  Recent Quiz Activity
+                <CardTitle className="flex items-center gap-2 text-yellow-800">
+                  <Award className="w-5 h-5 text-yellow-600" />
+                  Badge Collection
                 </CardTitle>
+                <CardDescription>
+                  Earn achievements for your study milestones
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {recentQuizzes && recentQuizzes.length > 0 ? (
-                    recentQuizzes.slice(0, 5).map((quiz: any, index: number) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                            quiz.isCorrect ? 'bg-green-100' : 'bg-red-100'
-                          }`}>
-                            {quiz.isCorrect ? 
-                              <CheckCircle className="w-4 h-4 text-green-600" /> : 
-                              <XCircle className="w-4 h-4 text-red-600" />
-                            }
-                          </div>
-                          <div>
-                            <p className="font-medium text-sm">{quiz.category}</p>
-                            <p className="text-xs text-gray-600">
-                              {new Date(quiz.attemptedAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                        <Badge variant={quiz.isCorrect ? "default" : "destructive"} className="text-xs">
-                          +{quiz.xpEarned} XP
-                        </Badge>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-6 text-gray-500">
-                      <BookOpen className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                      <p>No quiz attempts yet</p>
-                      <p className="text-sm">Start taking quizzes to see your activity here</p>
+                <div className="text-center mb-4">
+                  <div className="text-3xl font-bold text-yellow-600">
+                    {badgeData?.earned?.length || 0}
+                  </div>
+                  <div className="text-sm text-yellow-700">
+                    Badges Earned
+                  </div>
+                </div>
+                <div className="flex justify-center gap-1 mb-4">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div 
+                      key={i} 
+                      className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                        i < (badgeData?.earned?.length || 0) 
+                          ? 'bg-yellow-400' 
+                          : 'bg-yellow-200'
+                      }`}
+                    >
+                      <Star className={`w-3 h-3 ${
+                        i < (badgeData?.earned?.length || 0) 
+                          ? 'text-white' 
+                          : 'text-yellow-400'
+                      }`} />
                     </div>
-                  )}
+                  ))}
                 </div>
-                {recentQuizzes && recentQuizzes.length > 5 && (
-                  <div className="mt-4 text-center">
-                    <Link href="/analytics">
-                      <Button variant="outline" size="sm">
-                        View All Activity
-                      </Button>
-                    </Link>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Study Statistics */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5 text-green-600" />
-                  Study Statistics
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <BookOpen className="w-4 h-4 text-blue-500" />
-                      <span className="text-sm">Total Questions</span>
-                    </div>
-                    <span className="font-semibold">{stats.totalQuestions || 0}</span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      <span className="text-sm">Correct Answers</span>
-                    </div>
-                    <span className="font-semibold text-green-600">{stats.correctAnswers || 0}</span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <XCircle className="w-4 h-4 text-red-500" />
-                      <span className="text-sm">Wrong Answers</span>
-                    </div>
-                    <span className="font-semibold text-red-600">{(stats.totalQuestions || 0) - (stats.correctAnswers || 0)}</span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-purple-500" />
-                      <span className="text-sm">Study Time</span>
-                    </div>
-                    <span className="font-semibold">{Math.round((stats.totalTimeSpent || 0) / 60)} min</span>
-                  </div>
-
-                  <div className="pt-2 border-t">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Accuracy Progress</span>
-                      <span className="text-sm font-semibold">{Math.round(stats.averageAccuracy || 0)}%</span>
-                    </div>
-                    <Progress value={stats.averageAccuracy || 0} className="mt-2 h-2" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Quick Stats Row - Mobile Responsive */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 mb-8 lg:mb-12">
-          <Card>
-            <CardContent className="p-4 lg:p-6">
-              <div className="flex items-center">
-                <div className="p-2 lg:p-3 rounded-full bg-blue-100">
-                  <BarChart3 className="w-5 h-5 lg:w-6 lg:h-6 text-blue-600" />
-                </div>
-                <div className="ml-4">
-                  <div className="text-lg lg:text-xl font-bold text-gray-900">
-                    {loadingStats ? '...' : stats.totalQuizzes || 0}
-                  </div>
-                  <div className="text-sm text-gray-600">Total Quizzes</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4 lg:p-6">
-              <div className="flex items-center">
-                <div className="p-2 lg:p-3 rounded-full bg-green-100">
-                  <Timer className="w-5 h-5 lg:w-6 lg:h-6 text-green-600" />
-                </div>
-                <div className="ml-4">
-                  <div className="text-lg lg:text-xl font-bold text-gray-900">
-                    {loadingStats ? '...' : Math.round((stats.totalTimeSpent || 0) / 60)}
-                  </div>
-                  <div className="text-sm text-gray-600">Minutes Studied</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4 lg:p-6">
-              <div className="flex items-center">
-                <div className="p-2 lg:p-3 rounded-full bg-purple-100">
-                  <Users className="w-5 h-5 lg:w-6 lg:h-6 text-purple-600" />
-                </div>
-                <div className="ml-4">
-                  <div className="text-lg lg:text-xl font-bold text-gray-900">
-                    {loadingStats ? '...' : stats.rank ? `Top ${Math.round(((stats.rank || 1) / 100) * 100)}%` : 'Unranked'}
-                  </div>
-                  <div className="text-sm text-gray-600">Percentile</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Advanced Study Features - Professional Layout */}
-        <div className="mb-8 lg:mb-12">
-          <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-6 text-center lg:text-left">
-            Study Tools & Resources
-          </h2>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            {/* Today's Study Plan */}
-            <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
-              <CardHeader>
-                <CardTitle className="flex items-center text-blue-800">
-                  <Calendar className="w-5 h-5 mr-2" />
-                  Today's Study Plan
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-700">Anatomy Review</span>
-                    <Badge variant="outline" className="text-blue-600">30 min</Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-700">Physiology Quiz</span>
-                    <Badge variant="outline" className="text-green-600">20 min</Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-700">Case Studies</span>
-                    <Badge variant="outline" className="text-purple-600">25 min</Badge>
-                  </div>
-                </div>
-                <Progress value={45} className="mt-4" />
-                <p className="text-xs text-gray-600 mt-2">3 of 7 tasks completed today</p>
-              </CardContent>
-            </Card>
-
-            {/* Recent Notes */}
-            <Card className="bg-gradient-to-r from-green-50 to-green-100 border-green-200">
-              <CardHeader>
-                <CardTitle className="flex items-center text-green-800">
-                  <FileText className="w-5 h-5 mr-2" />
-                  Recent Study Notes
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-700">Cardiovascular System</span>
-                    <span className="text-xs text-gray-500">2 hours ago</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-700">Respiratory Physiology</span>
-                    <span className="text-xs text-gray-500">Yesterday</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-700">Nervous System</span>
-                    <span className="text-xs text-gray-500">2 days ago</span>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm" className="w-full mt-4">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add New Note
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Action Cards - Mobile Responsive */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6">
-            <Link href="/quiz">
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-                <CardContent className="p-4 lg:p-6 text-center">
-                  <GraduationCap className="w-8 h-8 lg:w-10 lg:h-10 mx-auto mb-3 text-blue-600" />
-                  <h3 className="text-base lg:text-lg font-bold text-gray-900 mb-2">Take Quiz</h3>
-                  <p className="text-gray-600 text-xs lg:text-sm mb-3">Test your knowledge</p>
-                  <Button size="sm" className="w-full" style={{ backgroundColor: '#3399FF' }}>
-                    Start <ChevronRight className="w-3 h-3 ml-1" />
+                <Link href="/badges">
+                  <Button className="w-full bg-yellow-500 hover:bg-yellow-600">
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Explore Badges
                   </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Leaderboard Position */}
+            <Card className="bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200 hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-purple-800">
+                  <Trophy className="w-5 h-5 text-purple-600" />
+                  Leaderboard
+                </CardTitle>
+                <CardDescription>
+                  Compete with fellow medical students
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center mb-4">
+                  <div className="text-3xl font-bold text-purple-600">
+                    #{userRank?.rank || 'N/A'}
+                  </div>
+                  <div className="text-sm text-purple-700">
+                    Global Rank
+                  </div>
+                </div>
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <div className="flex items-center gap-1">
+                    <Zap className="w-4 h-4 text-purple-500" />
+                    <span className="text-sm font-medium">{userRank?.totalXP || 0} XP</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Target className="w-4 h-4 text-purple-500" />
+                    <span className="text-sm font-medium">{userRank?.averageAccuracy || 0}%</span>
+                  </div>
+                </div>
+                <Link href="/leaderboard">
+                  <Button className="w-full bg-purple-500 hover:bg-purple-600">
+                    <Crown className="w-4 h-4 mr-2" />
+                    View Rankings
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Study Motivation */}
+            <Card className="bg-gradient-to-br from-green-50 to-blue-50 border-green-200 hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-green-800">
+                  <Flame className="w-5 h-5 text-green-600" />
+                  Study Motivation
+                </CardTitle>
+                <CardDescription>
+                  Keep your learning streak alive
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center mb-4">
+                  <div className="text-3xl font-bold text-green-600">
+                    {stats.currentStreak || 0}
+                  </div>
+                  <div className="text-sm text-green-700">
+                    Day Streak
+                  </div>
+                </div>
+                <div className="space-y-2 mb-4">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">This Week</span>
+                    <span className="font-medium">{Math.round((stats.totalTimeSpent || 0) / 60)} min</span>
+                  </div>
+                  <Progress value={Math.min(((stats.totalTimeSpent || 0) / 60) / 120 * 100, 100)} className="h-2" />
+                  <div className="text-xs text-gray-500 text-center">
+                    Goal: 120 minutes/week
+                  </div>
+                </div>
+                <Link href="/quiz">
+                  <Button className="w-full bg-green-500 hover:bg-green-600">
+                    <Play className="w-4 h-4 mr-2" />
+                    Continue Learning
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Quick Action Cards */}
+        <div className="mb-8 lg:mb-12">
+          <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-6">
+            Quick Actions
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Link href="/quiz">
+              <Card className="hover:shadow-lg transition-all cursor-pointer bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
+                <CardContent className="p-6 text-center">
+                  <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Play className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-blue-900 mb-1">Start Quiz</h3>
+                  <p className="text-sm text-blue-600">Test your knowledge</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/badges">
+              <Card className="hover:shadow-lg transition-all cursor-pointer bg-gradient-to-r from-yellow-50 to-yellow-100 border-yellow-200">
+                <CardContent className="p-6 text-center">
+                  <div className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Award className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-yellow-900 mb-1">Achievements</h3>
+                  <p className="text-sm text-yellow-600">View your badges</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/leaderboard">
+              <Card className="hover:shadow-lg transition-all cursor-pointer bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200">
+                <CardContent className="p-6 text-center">
+                  <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Trophy className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-purple-900 mb-1">Leaderboard</h3>
+                  <p className="text-sm text-purple-600">See rankings</p>
                 </CardContent>
               </Card>
             </Link>
 
             <Link href="/analytics">
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-                <CardContent className="p-4 lg:p-6 text-center">
-                  <BarChart3 className="w-8 h-8 lg:w-10 lg:h-10 mx-auto mb-3 text-green-600" />
-                  <h3 className="text-base lg:text-lg font-bold text-gray-900 mb-2">Analytics</h3>
-                  <p className="text-gray-600 text-xs lg:text-sm mb-3">Track progress</p>
-                  <Button size="sm" variant="outline" className="w-full">
-                    View <ChevronRight className="w-3 h-3 ml-1" />
-                  </Button>
+              <Card className="hover:shadow-lg transition-all cursor-pointer bg-gradient-to-r from-green-50 to-green-100 border-green-200">
+                <CardContent className="p-6 text-center">
+                  <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <BarChart3 className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-green-900 mb-1">Analytics</h3>
+                  <p className="text-sm text-green-600">Track progress</p>
                 </CardContent>
               </Card>
             </Link>
-
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-              <CardContent className="p-4 lg:p-6 text-center">
-                <Brain className="w-8 h-8 lg:w-10 lg:h-10 mx-auto mb-3 text-purple-600" />
-                <h3 className="text-base lg:text-lg font-bold text-gray-900 mb-2">AI Tutor</h3>
-                <p className="text-gray-600 text-xs lg:text-sm mb-3">Get help</p>
-                <Button size="sm" variant="outline" className="w-full">
-                  Chat <ChevronRight className="w-3 h-3 ml-1" />
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-              <CardContent className="p-4 lg:p-6 text-center">
-                <Trophy className="w-8 h-8 lg:w-10 lg:h-10 mx-auto mb-3 text-orange-600" />
-                <h3 className="text-base lg:text-lg font-bold text-gray-900 mb-2">Achievements</h3>
-                <p className="text-gray-600 text-xs lg:text-sm mb-3">View badges</p>
-                <Button size="sm" variant="outline" className="w-full">
-                  Explore <ChevronRight className="w-3 h-3 ml-1" />
-                </Button>
-              </CardContent>
-            </Card>
           </div>
         </div>
 
-        {/* Recent Activity - Mobile Responsive */}
-        {recentQuizzes && recentQuizzes.length > 0 && (
-          <div className="mb-8 lg:mb-12">
-            <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-4 lg:mb-6">Recent Activity</h2>
-            <div className="space-y-3">
-              {recentQuizzes.slice(0, 5).map((quiz: any, index: number) => (
-                <Card key={index}>
-                  <CardContent className="p-4 lg:p-6">
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-                      <div className="flex items-center mb-2 lg:mb-0">
-                        <div className={`w-3 h-3 rounded-full mr-3 ${quiz.isCorrect ? 'bg-green-500' : 'bg-red-500'}`} />
-                        <div>
-                          <div className="font-medium text-gray-900 text-sm lg:text-base">
-                            {quiz.category || 'Medical Quiz'}
-                          </div>
-                          <div className="text-xs lg:text-sm text-gray-500">
-                            {quiz.isCorrect ? 'Correct' : 'Incorrect'} • {quiz.xpEarned || 0} XP earned
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-xs lg:text-sm text-gray-500 self-start lg:self-center">
-                        {new Date(quiz.attemptedAt).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Quiz Categories */}
+        {/* Main Quiz Section */}
         <QuizSection />
       </div>
     </div>
