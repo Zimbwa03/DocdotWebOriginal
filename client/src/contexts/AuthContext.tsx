@@ -155,9 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: provider === 'google' 
-          ? 'https://docdotwp.firebaseapp.com/__/auth/handler'
-          : `${window.location.origin}/home`
+        redirectTo: `${window.location.origin}/home`
       }
     });
 
