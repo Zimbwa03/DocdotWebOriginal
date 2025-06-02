@@ -13,7 +13,7 @@ import {
   Calendar,
   Users,
   Star,
-  Fire,
+  Flame,
   Award,
   ChevronUp,
   ChevronDown,
@@ -137,7 +137,7 @@ export default function Leaderboard() {
                 {entry.rank <= 3 ? (
                   <IconComponent className="w-6 h-6" style={{ color: rankConfig.color }} />
                 ) : (
-                  <span className="font-bold text-gray-600">#{entry.rank}</span>
+                  <span className="font-bold text-gray-600">#{String(entry.rank)}</span>
                 )}
               </div>
 
@@ -160,9 +160,9 @@ export default function Leaderboard() {
                     )}
                   </div>
                   <div className="text-sm text-gray-500 flex items-center space-x-2">
-                    <span>Level {entry.currentLevel}</span>
+                    <span>Level {String(entry.currentLevel)}</span>
                     <span>•</span>
-                    <span>{entry.averageAccuracy}% accuracy</span>
+                    <span>{String(Math.round(entry.averageAccuracy))}% accuracy</span>
                   </div>
                 </div>
               </div>
@@ -239,15 +239,15 @@ export default function Leaderboard() {
             <CardContent>
               <div className="flex items-center justify-between">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">#{userRank.rank}</div>
+                  <div className="text-2xl font-bold text-blue-600">#{String(userRank.rank || 'N/A')}</div>
                   <div className="text-sm text-blue-700">Rank</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-600">{userRank.totalXP}</div>
+                  <div className="text-2xl font-bold text-purple-600">{String(userRank.totalXP || 0)}</div>
                   <div className="text-sm text-purple-700">Total XP</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">{userRank.averageAccuracy}%</div>
+                  <div className="text-2xl font-bold text-green-600">{String(Math.round(userRank.averageAccuracy || 0))}%</div>
                   <div className="text-sm text-green-700">Accuracy</div>
                 </div>
               </div>
@@ -275,7 +275,7 @@ export default function Leaderboard() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
-            {categories.map((category) => (
+            {categories.map((category: string) => (
               <SelectItem key={category} value={category}>
                 {category}
               </SelectItem>
@@ -287,7 +287,7 @@ export default function Leaderboard() {
       {/* Leaderboard */}
       <div className="space-y-4">
         {entries.length > 0 ? (
-          entries.map((entry, index) => renderLeaderboardEntry(entry, index))
+          entries.map((entry: LeaderboardEntry, index: number) => renderLeaderboardEntry(entry, index))
         ) : (
           <Card>
             <CardContent className="text-center py-12">
@@ -336,8 +336,8 @@ export default function Leaderboard() {
           <CardContent className="text-center">
             <p className="text-2xl font-bold text-green-600">
               {entries.length > 0 
-                ? Math.round(entries.reduce((sum, e) => sum + e.averageAccuracy, 0) / entries.length)
-                : 0}%
+                ? String(Math.round(entries.reduce((sum: number, e: LeaderboardEntry) => sum + e.averageAccuracy, 0) / entries.length))
+                : '0'}%
             </p>
           </CardContent>
         </Card>
