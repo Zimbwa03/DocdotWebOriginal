@@ -95,7 +95,7 @@ export function AuthForm() {
         <div className="text-center">
           <div className="mx-auto mb-6">
             <img 
-              src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview.png" 
+              src="/attached_assets/logo.png" 
               alt="DocDot Medical Student Logo" 
               className="w-24 h-24 mx-auto object-contain rounded-xl shadow-sm"
             />

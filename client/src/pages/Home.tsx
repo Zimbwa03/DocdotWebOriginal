@@ -201,29 +201,13 @@ export default function Home() {
     enabled: !!user?.id,
   });
 
-  // Initialize user data and refresh when returning to Home page
+  // Refresh data when returning to Home page
   useEffect(() => {
     if (user?.id) {
-      // Initialize user gamification data if not already done
-      const initializeUser = async () => {
-        try {
-          await fetch(`/api/initialize-user/${user.id}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-          });
-          // Refresh all data after initialization
-          refetchStats();
-          refetchQuizzes();
-          queryClient.invalidateQueries({ queryKey: ['/api/user-stats'] });
-          queryClient.invalidateQueries({ queryKey: ['/api/quiz-attempts'] });
-          queryClient.invalidateQueries({ queryKey: ['/api/badges'] });
-          queryClient.invalidateQueries({ queryKey: ['/api/user-rank'] });
-        } catch (error) {
-          console.error('Error initializing user data:', error);
-        }
-      };
-      
-      initializeUser();
+      refetchStats();
+      refetchQuizzes();
+      queryClient.invalidateQueries({ queryKey: ['/api/user-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/quiz-attempts'] });
     }
   }, [user?.id, refetchStats, refetchQuizzes, queryClient]);
 
@@ -461,12 +445,18 @@ export default function Home() {
                     className="w-full"
                     onClick={async () => {
                       if (user?.id) {
-                        await fetch(`/api/badges/${user.id}/check`, { method: 'POST' });
-                        queryClient.invalidateQueries({ queryKey: ['/api/badges'] });
+                        try {
+                          await fetch(`/api/initialize-user/${user.id}`, { method: 'POST' });
+                          await fetch(`/api/badges/${user.id}/check`, { method: 'POST' });
+                          queryClient.invalidateQueries({ queryKey: ['/api/badges'] });
+                          queryClient.invalidateQueries({ queryKey: ['/api/user-stats'] });
+                        } catch (error) {
+                          console.error('Error updating badges:', error);
+                        }
                       }
                     }}
                   >
-                    Check for New Badges
+                    Activate Badge System
                   </Button>
                 </div>
               </CardContent>
@@ -486,7 +476,7 @@ export default function Home() {
               <CardContent>
                 <div className="text-center mb-4">
                   <div className="text-3xl font-bold text-purple-600">
-                    #{userRank?.rank || 'N/A'}
+                    #{typeof userRank?.rank === 'number' ? userRank.rank : 'N/A'}
                   </div>
                   <div className="text-sm text-purple-700">
                     Global Rank
@@ -495,11 +485,11 @@ export default function Home() {
                 <div className="flex items-center justify-center gap-2 mb-4">
                   <div className="flex items-center gap-1">
                     <Zap className="w-4 h-4 text-purple-500" />
-                    <span className="text-sm font-medium">{userRank?.totalXP || 0} XP</span>
+                    <span className="text-sm font-medium">{typeof userRank?.totalXP === 'number' ? userRank.totalXP : 0} XP</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Target className="w-4 h-4 text-purple-500" />
-                    <span className="text-sm font-medium">{userRank?.averageAccuracy || 0}%</span>
+                    <span className="text-sm font-medium">{typeof userRank?.averageAccuracy === 'number' ? Math.round(userRank.averageAccuracy) : 0}%</span>
                   </div>
                 </div>
                 <div className="space-y-2">
