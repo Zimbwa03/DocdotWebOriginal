@@ -28,7 +28,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User profile management API routes
   
   // Get user profile
-  app.geheret("/api/user/:id", async (req, res) => {
+  app.get("/api/user/:id", async (req, res) => {
     try {
       const user = userProfiles.get(req.params.id);
       if (!user) {
