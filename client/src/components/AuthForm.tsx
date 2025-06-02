@@ -298,7 +298,7 @@ export function AuthForm() {
                 </div>
               </div>
 
-              <div className="mt-6 grid grid-cols-2 gap-3">
+              <div className="mt-6">
                 <Button
                   type="button"
                   variant="outline"
@@ -306,17 +306,7 @@ export function AuthForm() {
                   className="w-full inline-flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200"
                 >
                   <FaGoogle className="text-red-500 text-lg" />
-                  <span className="ml-2">Google</span>
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => handleOAuthSignIn('apple')}
-                  className="w-full inline-flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200"
-                >
-                  <FaApple className="text-gray-900 text-lg" />
-                  <span className="ml-2">Apple</span>
+                  <span className="ml-2">Continue with Google</span>
                 </Button>
               </div>
             </div>
