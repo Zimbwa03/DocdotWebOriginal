@@ -25,7 +25,17 @@ import {
   Download,
   Trash2,
   Edit,
-  Key
+  Key,
+  Menu,
+  X,
+  Search,
+  Star,
+  Clock,
+  Zap,
+  Target,
+  BarChart3,
+  Users,
+  BookOpenCheck
 } from 'lucide-react';
 import { 
   DropdownMenu,
@@ -58,7 +68,8 @@ export function Navigation() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  // State for profile management
+  // State for mobile menu and profile management
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isPasswordChangeOpen, setIsPasswordChangeOpen] = useState(false);
   const [passwordForm, setPasswordForm] = useState({
@@ -130,12 +141,22 @@ export function Navigation() {
 
   const navItems = [
     { path: '/home', label: 'Home', icon: Home },
-    { path: '/quiz', label: 'Quiz', icon: GraduationCap },
-    { path: '/analytics', label: 'Analytics', icon: Trophy },
-    { path: '/notes', label: 'Notes', icon: FileText },
-    { path: '/study-guide', label: 'Study Guide', icon: BookOpen },
+    { path: '/quiz', label: 'Quiz', icon: Brain },
+    { path: '/notes', label: 'Notes', icon: BookOpen },
+    { path: '/study-guide', label: 'Study Guide', icon: GraduationCap },
     { path: '/ai-tools', label: 'AI Tools', icon: Brain },
+    { path: '/performance', label: 'Performance', icon: BarChart3 },
+    { path: '/analytics', label: 'Analytics', icon: Target },
+    { path: '/badges', label: 'Badges', icon: Star },
+    { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
     { path: '/pricing', label: 'Pricing', icon: DollarSign },
+  ];
+
+  const quickActions = [
+    { label: 'Start Quiz', icon: Zap, action: () => window.location.href = '/quiz' },
+    { label: 'Study Timer', icon: Clock, action: () => window.location.href = '/study-guide' },
+    { label: 'AI Tutor', icon: Brain, action: () => window.location.href = '/ai-tools' },
+    { label: 'View Progress', icon: BarChart3, action: () => window.location.href = '/performance' },
   ];
 
   const handleSignOut = async () => {
