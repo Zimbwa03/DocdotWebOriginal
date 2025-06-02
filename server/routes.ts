@@ -7,8 +7,7 @@ import { v4 as uuidv4 } from "uuid";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 
-// Temporary in-memory storage for user profiles
-const userProfiles = new Map<string, any>();
+// Using database storage for persistent user data
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Serve quiz questions from JSON file
@@ -30,7 +29,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get user profile
   app.get("/api/user/:id", async (req, res) => {
     try {
-      const user = userProfiles.get(req.params.id);
+      const user = await dbStorage.getUser(req.params.id);
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
@@ -44,24 +43,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/user", async (req, res) => {
     try {
       const userData = req.body;
-      const existingUser = userProfiles.get(userData.id);
-      
-      const user = {
-        ...existingUser,
-        ...userData,
-        updatedAt: new Date(),
-        createdAt: existingUser?.createdAt || new Date(),
-        profileCompleted: existingUser?.profileCompleted || false,
-        xp: existingUser?.xp || 0,
-        level: existingUser?.level || 1,
-        streak: existingUser?.streak || 0,
-        subscriptionTier: existingUser?.subscriptionTier || 'free',
-        fullName: userData.firstName && userData.lastName 
-          ? `${userData.firstName} ${userData.lastName}` 
-          : userData.firstName || userData.lastName || existingUser?.fullName
-      };
-      
-      userProfiles.set(userData.id, user);
+      const user = await dbStorage.upsertUser(userData);
       res.json(user);
     } catch (error) {
       console.error("Error upserting user:", error);
@@ -73,22 +55,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/user/:id", async (req, res) => {
     try {
       const updates = req.body;
-      const existingUser = userProfiles.get(req.params.id);
+      const updatedUser = await dbStorage.updateUser(req.params.id, updates);
       
-      if (!existingUser) {
+      if (!updatedUser) {
         return res.status(404).json({ error: "User not found" });
       }
       
-      const updatedUser = {
-        ...existingUser,
-        ...updates,
-        updatedAt: new Date(),
-        fullName: updates.firstName && updates.lastName 
-          ? `${updates.firstName} ${updates.lastName}` 
-          : updates.firstName || updates.lastName || existingUser.fullName
-      };
-      
-      userProfiles.set(req.params.id, updatedUser);
       res.json(updatedUser);
     } catch (error) {
       res.status(500).json({ error: "Failed to update user" });
