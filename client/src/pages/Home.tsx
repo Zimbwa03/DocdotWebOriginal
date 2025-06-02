@@ -201,14 +201,29 @@ export default function Home() {
     enabled: !!user?.id,
   });
 
-  // Refresh data when returning to Home page
+  // Initialize user data and refresh when returning to Home page
   useEffect(() => {
     if (user?.id) {
-      refetchStats();
-      refetchQuizzes();
-      // Invalidate all related queries to force refresh
-      queryClient.invalidateQueries({ queryKey: ['/api/user-stats'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/quiz-attempts'] });
+      // Initialize user gamification data if not already done
+      const initializeUser = async () => {
+        try {
+          await fetch(`/api/initialize-user/${user.id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          // Refresh all data after initialization
+          refetchStats();
+          refetchQuizzes();
+          queryClient.invalidateQueries({ queryKey: ['/api/user-stats'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/quiz-attempts'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/badges'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/user-rank'] });
+        } catch (error) {
+          console.error('Error initializing user data:', error);
+        }
+      };
+      
+      initializeUser();
     }
   }, [user?.id, refetchStats, refetchQuizzes, queryClient]);
 
@@ -433,12 +448,27 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-                <Link href="/badges">
-                  <Button className="w-full bg-yellow-500 hover:bg-yellow-600">
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Explore Badges
+                <div className="space-y-2">
+                  <Link href="/badges">
+                    <Button className="w-full bg-yellow-500 hover:bg-yellow-600">
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Explore Badges
+                    </Button>
+                  </Link>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={async () => {
+                      if (user?.id) {
+                        await fetch(`/api/badges/${user.id}/check`, { method: 'POST' });
+                        queryClient.invalidateQueries({ queryKey: ['/api/badges'] });
+                      }
+                    }}
+                  >
+                    Check for New Badges
                   </Button>
-                </Link>
+                </div>
               </CardContent>
             </Card>
 
@@ -472,12 +502,28 @@ export default function Home() {
                     <span className="text-sm font-medium">{userRank?.averageAccuracy || 0}%</span>
                   </div>
                 </div>
-                <Link href="/leaderboard">
-                  <Button className="w-full bg-purple-500 hover:bg-purple-600">
-                    <Crown className="w-4 h-4 mr-2" />
-                    View Rankings
+                <div className="space-y-2">
+                  <Link href="/leaderboard">
+                    <Button className="w-full bg-purple-500 hover:bg-purple-600">
+                      <Crown className="w-4 h-4 mr-2" />
+                      View Rankings
+                    </Button>
+                  </Link>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={async () => {
+                      if (user?.id) {
+                        await fetch(`/api/leaderboard/${user.id}/update`, { method: 'POST' });
+                        queryClient.invalidateQueries({ queryKey: ['/api/user-rank'] });
+                        queryClient.invalidateQueries({ queryKey: ['/api/leaderboard'] });
+                      }
+                    }}
+                  >
+                    Update My Rank
                   </Button>
-                </Link>
+                </div>
               </CardContent>
             </Card>
 

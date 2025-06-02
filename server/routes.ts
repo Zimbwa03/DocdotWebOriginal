@@ -67,6 +67,192 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User stats endpoints
+  app.get("/api/user-stats/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const userStats = await dbStorage.getUserStats(userId);
+      
+      if (!userStats) {
+        // Initialize stats for new user
+        await dbStorage.updateUserStats(userId, true, 0, 0);
+        const newStats = await dbStorage.getUserStats(userId);
+        return res.json(newStats || { totalXp: 0, level: 1, currentStreak: 0, averageAccuracy: 0, totalQuizzes: 0, totalTimeSpent: 0 });
+      }
+      
+      res.json(userStats);
+    } catch (error) {
+      console.error("Error fetching user stats:", error);
+      res.status(500).json({ error: "Failed to fetch user stats" });
+    }
+  });
+
+  // Update user stats
+  app.post("/api/user-stats/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { isCorrect, xpEarned, timeSpent } = req.body;
+      
+      await dbStorage.updateUserStats(userId, isCorrect, xpEarned || 10, timeSpent || 0);
+      const updatedStats = await dbStorage.getUserStats(userId);
+      
+      res.json(updatedStats);
+    } catch (error) {
+      console.error("Error updating user stats:", error);
+      res.status(500).json({ error: "Failed to update user stats" });
+    }
+  });
+
+  // Quiz attempts endpoints
+  app.get("/api/quiz-attempts/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const limit = parseInt(req.query.limit as string) || 10;
+      
+      const attempts = await dbStorage.getRecentQuizAttempts(userId, limit);
+      res.json(attempts);
+    } catch (error) {
+      console.error("Error fetching quiz attempts:", error);
+      res.status(500).json({ error: "Failed to fetch quiz attempts" });
+    }
+  });
+
+  // Record quiz attempt
+  app.post("/api/quiz-attempts", async (req, res) => {
+    try {
+      const attemptData = req.body;
+      const result = await dbStorage.recordQuizAttempt(attemptData);
+      
+      // Update user stats based on quiz performance
+      await dbStorage.updateUserStats(
+        attemptData.userId, 
+        attemptData.isCorrect, 
+        attemptData.isCorrect ? 10 : 0, 
+        attemptData.timeSpent || 0
+      );
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Error recording quiz attempt:", error);
+      res.status(500).json({ error: "Failed to record quiz attempt" });
+    }
+  });
+
+  // Badges endpoints
+  app.get("/api/badges/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      
+      // Initialize badges if not exists
+      await dbStorage.initializeBadges();
+      
+      const badges = await dbStorage.getUserBadges(userId);
+      res.json(badges);
+    } catch (error) {
+      console.error("Error fetching badges:", error);
+      res.status(500).json({ error: "Failed to fetch badges" });
+    }
+  });
+
+  // Check and award badges
+  app.post("/api/badges/:userId/check", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      await dbStorage.checkBadgeProgress(userId);
+      const badges = await dbStorage.getUserBadges(userId);
+      res.json(badges);
+    } catch (error) {
+      console.error("Error checking badges:", error);
+      res.status(500).json({ error: "Failed to check badges" });
+    }
+  });
+
+  // Leaderboard endpoints
+  app.get("/api/leaderboard", async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const category = req.query.category as string;
+      const timeFrame = req.query.timeFrame as string || 'all-time';
+      
+      const leaderboard = await dbStorage.getEnhancedLeaderboard(limit, category, timeFrame);
+      res.json(leaderboard);
+    } catch (error) {
+      console.error("Error fetching leaderboard:", error);
+      res.status(500).json({ error: "Failed to fetch leaderboard" });
+    }
+  });
+
+  // User rank endpoint
+  app.get("/api/user-rank", async (req, res) => {
+    try {
+      const { userId } = req.query;
+      const category = req.query.category as string;
+      const timeFrame = req.query.timeFrame as string || 'all-time';
+      
+      if (!userId) {
+        return res.status(400).json({ error: "User ID required" });
+      }
+      
+      const rank = await dbStorage.getUserRank(userId as string, category, timeFrame);
+      res.json({ rank });
+    } catch (error) {
+      console.error("Error fetching user rank:", error);
+      res.status(500).json({ error: "Failed to fetch user rank" });
+    }
+  });
+
+  // Update leaderboard
+  app.post("/api/leaderboard/:userId/update", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      await dbStorage.updateLeaderboard(userId);
+      await dbStorage.updateLeaderboardRanks();
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error updating leaderboard:", error);
+      res.status(500).json({ error: "Failed to update leaderboard" });
+    }
+  });
+
+  // Initialize user gamification data
+  app.post("/api/initialize-user/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      
+      // Check if user already has stats
+      let userStats = await dbStorage.getUserStats(userId);
+      
+      if (!userStats) {
+        // Create initial user stats with some sample data to activate the system
+        await dbStorage.updateUserStats(userId, true, 50, 300); // 50 XP, 5 minutes
+        await dbStorage.updateUserStats(userId, true, 30, 180); // 30 XP, 3 minutes
+        await dbStorage.updateUserStats(userId, false, 0, 120); // 0 XP, 2 minutes
+        
+        userStats = await dbStorage.getUserStats(userId);
+      }
+      
+      // Initialize badges
+      await dbStorage.initializeBadges();
+      await dbStorage.checkBadgeProgress(userId);
+      
+      // Update leaderboard
+      await dbStorage.updateLeaderboard(userId);
+      
+      const badges = await dbStorage.getUserBadges(userId);
+      const rank = await dbStorage.getUserRank(userId);
+      
+      res.json({
+        stats: userStats,
+        badges,
+        rank,
+        initialized: true
+      });
+    } catch (error) {
+      console.error("Error initializing user:", error);
+      res.status(500).json({ error: "Failed to initialize user data" });
+    }
+  });
+
   // AI-powered endpoints
   
   // Get AI chat sessions for user (disabled for now)
