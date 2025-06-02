@@ -283,9 +283,12 @@ export function Navigation() {
           <Link href="/home">
             <div className="flex items-center space-x-2 cursor-pointer">
               <img 
-                src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview.png" 
+                src="https://imgur.com/a/h2LXtHi" 
                 alt="DocDot Medical Student Logo" 
                 className="w-12 h-12 object-contain rounded-lg"
+                onError={(e) => {
+                  e.currentTarget.src = "/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview.png";
+                }}
               />
               <span className="text-lg lg:text-xl font-bold" style={{ color: '#1C1C1C' }}>
                 DocDot
@@ -343,21 +346,12 @@ export function Navigation() {
             {/* User Account Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center space-x-2 hover:bg-blue-50">
+                <Button variant="ghost" className="p-2 hover:bg-blue-50 rounded-full">
                   <Avatar className="w-8 h-8">
                     <AvatarFallback style={{ backgroundColor: '#3399FF', color: 'white' }}>
                       {getUserInitials()}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="hidden md:flex flex-col items-start">
-                    <span className="text-sm font-medium" style={{ color: '#1C1C1C' }}>
-                      {getDisplayName()}
-                    </span>
-                    <span className="text-xs" style={{ color: '#2E2E2E' }}>
-                      {user?.email}
-                    </span>
-                  </div>
-                  <ChevronDown className="w-4 h-4" style={{ color: '#2E2E2E' }} />
                 </Button>
               </DropdownMenuTrigger>
               

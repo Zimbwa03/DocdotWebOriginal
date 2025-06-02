@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'wouter';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -136,12 +137,36 @@ export default function StudyGuide() {
   const { toast } = useToast();
   
   // Study Guide State
+  const [location] = useLocation();
   const [selectedSection, setSelectedSection] = useState<number | null>(null);
   const [selectedTopic, setSelectedTopic] = useState<StudyTopic | null>(null);
   const [userNotes, setUserNotes] = useState('');
   const [readingProgress, setReadingProgress] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('timer');
+
+  // Reset component state when navigating back to StudyGuide
+  useEffect(() => {
+    if (location === '/study-guide') {
+      // Reset all state variables to default values
+      setSelectedSection(null);
+      setSelectedTopic(null);
+      setUserNotes('');
+      setReadingProgress(0);
+      setSearchQuery('');
+      setActiveTab('timer');
+      // Reset timer state
+      setIsRunning(false);
+      setTimeLeft(studyGoal * 60);
+      setIsBreak(false);
+      setTimerNotes('');
+      // Clear any running timers
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+  }, [location, studyGoal]);
 
   // Study Planner State
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
