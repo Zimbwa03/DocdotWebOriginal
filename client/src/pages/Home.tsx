@@ -290,12 +290,12 @@ export default function Home() {
         <div className="mb-8 lg:mb-12">
           <div className="flex justify-between items-center mb-4 lg:mb-6">
             <h2 className="text-xl lg:text-2xl font-bold text-gray-900">
-              Your Progress Dashboard
+              Analytics Dashboard
             </h2>
             <Link href="/analytics">
               <Button variant="outline" size="sm">
                 <BarChart3 className="w-4 h-4 mr-2" />
-                View Detailed Analytics
+                Detailed Analytics
               </Button>
             </Link>
           </div>

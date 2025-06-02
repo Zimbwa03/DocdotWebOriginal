@@ -93,10 +93,14 @@ export function AuthForm() {
         
         {/* Header */}
         <div className="text-center">
-          <div className="mx-auto h-16 w-16 rounded-full flex items-center justify-center mb-6" style={{ backgroundColor: '#3399FF' }}>
-            <Stethoscope className="text-white text-2xl" size={24} />
+          <div className="mx-auto mb-6">
+            <img 
+              src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview.png" 
+              alt="DocDot Logo" 
+              className="w-20 h-20 mx-auto object-contain"
+            />
           </div>
-          <h1 className="text-3xl font-bold mb-2" style={{ color: '#1C1C1C' }}>Docdot</h1>
+          <h1 className="text-3xl font-bold mb-2" style={{ color: '#1C1C1C' }}>DocDot</h1>
           <p className="text-sm" style={{ color: '#2E2E2E' }}>Your Medical Education Platform</p>
         </div>
 
