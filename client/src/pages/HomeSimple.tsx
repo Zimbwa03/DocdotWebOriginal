@@ -20,23 +20,18 @@ import {
   Award,
   BarChart3,
   ChevronRight,
-  Timer,
   Users,
   Plus,
-  CheckCircle,
-  XCircle,
-  Shield,
-  Crown,
-  Flame,
   ArrowRight,
   Medal,
-  Sparkles
+  Sparkles,
+  Crown,
+  Flame
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { Link } from 'wouter';
 import { useAuth } from '@/contexts/AuthContext';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 function QuizSection() {
   const categories = {
@@ -120,7 +115,7 @@ function QuizSection() {
   );
 }
 
-export default function Home() {
+export default function HomeSimple() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -149,8 +144,8 @@ export default function Home() {
     }
   };
 
-  // Fetch real user statistics with refetch on focus
-  const { data: userStats, isLoading: loadingStats, refetch: refetchStats } = useQuery({
+  // Fetch real user statistics
+  const { data: userStats, isLoading: loadingStats } = useQuery({
     queryKey: ['/api/user-stats', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
@@ -159,59 +154,9 @@ export default function Home() {
       return response.json();
     },
     enabled: !!user?.id,
-    refetchOnWindowFocus: true,
-    refetchInterval: 30000, // Refetch every 30 seconds
   });
 
-  // Fetch recent quiz attempts
-  const { data: recentQuizzes, refetch: refetchQuizzes } = useQuery({
-    queryKey: ['/api/quiz-attempts', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      const response = await fetch(`/api/quiz-attempts/${user.id}?limit=5`);
-      if (!response.ok) return [];
-      return response.json();
-    },
-    enabled: !!user?.id,
-    refetchOnWindowFocus: true,
-    refetchInterval: 30000,
-  });
-
-  // Fetch user badges
-  const { data: badgeData } = useQuery({
-    queryKey: ['/api/badges', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return { earned: [], available: [] };
-      const response = await fetch(`/api/badges/${user.id}`);
-      if (!response.ok) return { earned: [], available: [] };
-      return response.json();
-    },
-    enabled: !!user?.id,
-  });
-
-  // Fetch user rank
-  const { data: userRankData } = useQuery({
-    queryKey: ['/api/user-rank', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-      const response = await fetch(`/api/user-rank?userId=${user.id}`);
-      if (!response.ok) return null;
-      return response.json();
-    },
-    enabled: !!user?.id,
-  });
-
-  // Refresh data when returning to Home page
-  useEffect(() => {
-    if (user?.id) {
-      refetchStats();
-      refetchQuizzes();
-      queryClient.invalidateQueries({ queryKey: ['/api/user-stats'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/quiz-attempts'] });
-    }
-  }, [user?.id, refetchStats, refetchQuizzes, queryClient]);
-
-  const defaultStats = {
+  const stats = userStats || {
     totalXp: 0,
     level: 1,
     currentStreak: 0,
@@ -220,8 +165,6 @@ export default function Home() {
     totalTimeSpent: 0,
     rank: 0
   };
-
-  const stats = userStats || defaultStats;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -265,19 +208,19 @@ export default function Home() {
               </div>
               <div>
                 <div className="text-xl lg:text-2xl font-bold text-green-600">
-                  {loadingStats ? '...' : stats.currentStreak || 0}
+                  {loadingStats ? '...' : (stats.currentStreak || 0)}
                 </div>
                 <div className="text-xs lg:text-sm text-gray-600">Day Streak</div>
               </div>
               <div>
                 <div className="text-xl lg:text-2xl font-bold text-purple-600">
-                  {loadingStats ? '...' : stats.totalXp || 0}
+                  {loadingStats ? '...' : (stats.totalXp || 0)}
                 </div>
                 <div className="text-xs lg:text-sm text-gray-600">Total XP</div>
               </div>
               <div>
                 <div className="text-xl lg:text-2xl font-bold text-orange-600">
-                  Level {loadingStats ? '...' : stats.level || 1}
+                  Level {loadingStats ? '...' : (stats.level || 1)}
                 </div>
                 <div className="text-xs lg:text-sm text-gray-600">Your Level</div>
               </div>
@@ -285,7 +228,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Enhanced Analytics Dashboard */}
+        {/* Analytics Dashboard */}
         <div className="mb-8 lg:mb-12">
           <div className="flex justify-between items-center mb-4 lg:mb-6">
             <h2 className="text-xl lg:text-2xl font-bold text-gray-900">
@@ -310,17 +253,17 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl lg:text-3xl font-bold text-blue-900">
-                  {loadingStats ? '...' : (stats.totalXp ? stats.totalXp.toLocaleString() : '0')}
+                  {loadingStats ? '...' : String(stats.totalXp || 0)}
                 </div>
                 <div className="text-sm text-blue-600 mt-1">
-                  Level {loadingStats ? '...' : stats.level || 1}
+                  Level {loadingStats ? '...' : String(stats.level || 1)}
                 </div>
                 <Progress 
                   value={loadingStats ? 0 : ((stats.totalXp % 1000) / 1000) * 100} 
                   className="mt-2 h-2" 
                 />
                 <div className="text-xs text-blue-600 mt-1">
-                  {loadingStats ? '...' : String(1000 - ((stats.totalXp || 0) % 1000))} XP to next level
+                  {loadingStats ? '...' : String(1000 - (stats.totalXp % 1000))} XP to next level
                 </div>
               </CardContent>
             </Card>
@@ -335,7 +278,7 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl lg:text-3xl font-bold text-orange-900">
-                  {loadingStats ? '...' : stats.currentStreak || 0}
+                  {loadingStats ? '...' : String(stats.currentStreak || 0)}
                 </div>
                 <div className="text-sm text-orange-600">days active</div>
                 <div className="text-xs text-orange-600 mt-1">
@@ -354,10 +297,10 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl lg:text-3xl font-bold text-green-900">
-                  {loadingStats ? '...' : Math.round(stats.averageAccuracy || 0)}%
+                  {loadingStats ? '...' : String(Math.round(stats.averageAccuracy || 0))}%
                 </div>
                 <div className="text-sm text-green-600">
-                  {loadingStats ? '...' : stats.correctAnswers || 0} of {loadingStats ? '...' : stats.totalQuestions || 0} correct
+                  {loadingStats ? '...' : String(stats.correctAnswers || 0)} of {loadingStats ? '...' : String(stats.totalQuestions || 0)} correct
                 </div>
               </CardContent>
             </Card>
@@ -372,10 +315,10 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl lg:text-3xl font-bold text-purple-900">
-                  #{userRankData?.rank || stats.rank || 'Unranked'}
+                  #{stats.rank || 'Unranked'}
                 </div>
                 <div className="text-sm text-purple-600">
-                  {(userRankData?.rank || stats.rank) && (userRankData?.rank || stats.rank) <= 100 ? 'Top 100!' : 'Keep studying!'}
+                  Keep studying!
                 </div>
                 <Link href="/leaderboard">
                   <Button variant="ghost" size="sm" className="mt-2 text-xs">
@@ -387,7 +330,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Gamification Features */}
+        {/* Gamification Hub with Manual Initialization */}
         <div className="mb-8 lg:mb-12">
           <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-6">
             Gamification Hub
@@ -408,29 +351,11 @@ export default function Home() {
               <CardContent>
                 <div className="text-center mb-4">
                   <div className="text-3xl font-bold text-yellow-600">
-                    {badgeData?.earned?.length || 0}
+                    0
                   </div>
                   <div className="text-sm text-yellow-700">
                     Badges Earned
                   </div>
-                </div>
-                <div className="flex justify-center gap-1 mb-4">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <div 
-                      key={i} 
-                      className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                        i < (badgeData?.earned?.length || 0) 
-                          ? 'bg-yellow-400' 
-                          : 'bg-yellow-200'
-                      }`}
-                    >
-                      <Star className={`w-3 h-3 ${
-                        i < (badgeData?.earned?.length || 0) 
-                          ? 'text-white' 
-                          : 'text-yellow-400'
-                      }`} />
-                    </div>
-                  ))}
                 </div>
                 <div className="space-y-2">
                   <Link href="/badges">
@@ -447,16 +372,14 @@ export default function Home() {
                       if (user?.id) {
                         try {
                           await fetch(`/api/initialize-user/${user.id}`, { method: 'POST' });
-                          await fetch(`/api/badges/${user.id}/check`, { method: 'POST' });
-                          queryClient.invalidateQueries({ queryKey: ['/api/badges'] });
                           queryClient.invalidateQueries({ queryKey: ['/api/user-stats'] });
                         } catch (error) {
-                          console.error('Error updating badges:', error);
+                          console.error('Error initializing:', error);
                         }
                       }
                     }}
                   >
-                    Activate Badge System
+                    Initialize Gamification
                   </Button>
                 </div>
               </CardContent>
@@ -476,49 +399,23 @@ export default function Home() {
               <CardContent>
                 <div className="text-center mb-4">
                   <div className="text-3xl font-bold text-purple-600">
-                    #{userRankData?.rank || 'N/A'}
+                    #N/A
                   </div>
                   <div className="text-sm text-purple-700">
                     Global Rank
                   </div>
                 </div>
-                <div className="flex items-center justify-center gap-2 mb-4">
-                  <div className="flex items-center gap-1">
-                    <Zap className="w-4 h-4 text-purple-500" />
-                    <span className="text-sm font-medium">{userRankData?.totalXP || 0} XP</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Target className="w-4 h-4 text-purple-500" />
-                    <span className="text-sm font-medium">{userRankData?.averageAccuracy ? Math.round(userRankData.averageAccuracy) : 0}%</span>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Link href="/leaderboard">
-                    <Button className="w-full bg-purple-500 hover:bg-purple-600">
-                      <Crown className="w-4 h-4 mr-2" />
-                      View Rankings
-                    </Button>
-                  </Link>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full"
-                    onClick={async () => {
-                      if (user?.id) {
-                        await fetch(`/api/leaderboard/${user.id}/update`, { method: 'POST' });
-                        queryClient.invalidateQueries({ queryKey: ['/api/user-rank'] });
-                        queryClient.invalidateQueries({ queryKey: ['/api/leaderboard'] });
-                      }
-                    }}
-                  >
-                    Update My Rank
+                <Link href="/leaderboard">
+                  <Button className="w-full bg-purple-500 hover:bg-purple-600">
+                    <Crown className="w-4 h-4 mr-2" />
+                    View Rankings
                   </Button>
-                </div>
+                </Link>
               </CardContent>
             </Card>
 
             {/* Study Motivation */}
-            <Card className="bg-gradient-to-br from-green-50 to-blue-50 border-green-200 hover:shadow-lg transition-shadow">
+            <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 hover:shadow-lg transition-shadow">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-green-800">
                   <Flame className="w-5 h-5 text-green-600" />
@@ -537,17 +434,14 @@ export default function Home() {
                     Day Streak
                   </div>
                 </div>
-                <div className="space-y-2 mb-4">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">This Week</span>
-                    <span className="font-medium">{Math.round((stats.totalTimeSpent || 0) / 60)} min</span>
-                  </div>
-                  <Progress value={Math.min(((stats.totalTimeSpent || 0) / 60) / 120 * 100, 100)} className="h-2" />
-                  <div className="text-xs text-gray-500 text-center">
-                    Goal: 120 minutes/week
-                  </div>
+                <div className="flex justify-between text-sm text-green-600 mb-4">
+                  <span>This Week</span>
+                  <span>0 min</span>
                 </div>
-                <Link href="/quiz">
+                <div className="text-xs text-green-600 mb-4">
+                  Goal: 120 minutes/week
+                </div>
+                <Link href="/study-guide">
                   <Button className="w-full bg-green-500 hover:bg-green-600">
                     <Play className="w-4 h-4 mr-2" />
                     Continue Learning
@@ -558,64 +452,52 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Quick Action Cards */}
+        {/* Quick Actions */}
         <div className="mb-8 lg:mb-12">
           <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-6">
             Quick Actions
           </h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <Link href="/quiz">
-              <Card className="hover:shadow-lg transition-all cursor-pointer bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Play className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-blue-900 mb-1">Start Quiz</h3>
-                  <p className="text-sm text-blue-600">Test your knowledge</p>
+              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <CardContent className="p-4 text-center">
+                  <Brain className="w-8 h-8 mx-auto mb-2 text-blue-500" />
+                  <div className="font-medium">Take Quiz</div>
                 </CardContent>
               </Card>
             </Link>
-
-            <Link href="/badges">
-              <Card className="hover:shadow-lg transition-all cursor-pointer bg-gradient-to-r from-yellow-50 to-yellow-100 border-yellow-200">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Award className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-yellow-900 mb-1">Achievements</h3>
-                  <p className="text-sm text-yellow-600">View your badges</p>
+            
+            <Link href="/study-guide">
+              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <CardContent className="p-4 text-center">
+                  <BookOpen className="w-8 h-8 mx-auto mb-2 text-green-500" />
+                  <div className="font-medium">Study Guide</div>
                 </CardContent>
               </Card>
             </Link>
-
-            <Link href="/leaderboard">
-              <Card className="hover:shadow-lg transition-all cursor-pointer bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Trophy className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-purple-900 mb-1">Leaderboard</h3>
-                  <p className="text-sm text-purple-600">See rankings</p>
+            
+            <Link href="/ai-tools">
+              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <CardContent className="p-4 text-center">
+                  <Zap className="w-8 h-8 mx-auto mb-2 text-purple-500" />
+                  <div className="font-medium">AI Tutor</div>
                 </CardContent>
               </Card>
             </Link>
-
-            <Link href="/analytics">
-              <Card className="hover:shadow-lg transition-all cursor-pointer bg-gradient-to-r from-green-50 to-green-100 border-green-200">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <BarChart3 className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-green-900 mb-1">Analytics</h3>
-                  <p className="text-sm text-green-600">Track progress</p>
+            
+            <Link href="/notes">
+              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <CardContent className="p-4 text-center">
+                  <FileText className="w-8 h-8 mx-auto mb-2 text-orange-500" />
+                  <div className="font-medium">My Notes</div>
                 </CardContent>
               </Card>
             </Link>
           </div>
         </div>
 
-        {/* Main Quiz Section */}
+        {/* Quiz Categories */}
         <QuizSection />
       </div>
     </div>
