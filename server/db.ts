@@ -385,6 +385,343 @@ export class DatabaseStorage {
       return [];
     }
   }
+
+  // Enhanced leaderboard with time frame support
+  async getEnhancedLeaderboard(limit: number = 50, category?: string, timeFrame: string = 'all-time') {
+    try {
+      let timeFilter;
+      const now = new Date();
+      
+      switch (timeFrame) {
+        case 'weekly':
+          timeFilter = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case 'monthly':
+          timeFilter = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          break;
+        default:
+          timeFilter = null;
+      }
+
+      const query = db
+        .select({
+          id: leaderboard.id,
+          userId: leaderboard.userId,
+          rank: leaderboard.rank,
+          totalXP: leaderboard.totalXP,
+          currentLevel: leaderboard.currentLevel,
+          weeklyXP: leaderboard.weeklyXP,
+          monthlyXP: leaderboard.monthlyXP,
+          averageAccuracy: leaderboard.averageAccuracy,
+          totalBadges: leaderboard.totalBadges,
+          category: leaderboard.category,
+          lastActive: leaderboard.lastActive,
+          user: {
+            firstName: users.firstName,
+            lastName: users.lastName,
+            email: users.email
+          }
+        })
+        .from(leaderboard)
+        .leftJoin(users, eq(leaderboard.userId, users.id))
+        .orderBy(desc(leaderboard.totalXP))
+        .limit(limit);
+
+      if (category && category !== 'all') {
+        query.where(eq(leaderboard.category, category));
+      }
+
+      const entries = await query;
+      
+      // Add rank numbers and category list
+      const rankedEntries = entries.map((entry, index) => ({
+        ...entry,
+        rank: index + 1
+      }));
+
+      const categories = await db
+        .selectDistinct({ category: leaderboard.category })
+        .from(leaderboard)
+        .where(isNotNull(leaderboard.category));
+
+      return {
+        entries: rankedEntries,
+        categories: categories.map(c => c.category).filter(Boolean)
+      };
+    } catch (error) {
+      console.error('Error getting enhanced leaderboard:', error);
+      return { entries: [], categories: [] };
+    }
+  }
+
+  // Get user rank and position
+  async getUserRank(userId: string, category?: string, timeFrame: string = 'all-time') {
+    try {
+      const userEntry = await db
+        .select({
+          rank: leaderboard.rank,
+          totalXP: leaderboard.totalXP,
+          averageAccuracy: leaderboard.averageAccuracy,
+          currentLevel: leaderboard.currentLevel
+        })
+        .from(leaderboard)
+        .where(eq(leaderboard.userId, userId))
+        .limit(1);
+
+      if (userEntry.length === 0) {
+        return { rank: 0, totalXP: 0, averageAccuracy: 0, currentLevel: 1 };
+      }
+
+      return userEntry[0];
+    } catch (error) {
+      console.error('Error getting user rank:', error);
+      return { rank: 0, totalXP: 0, averageAccuracy: 0, currentLevel: 1 };
+    }
+  }
+
+  // Get user badges with progress
+  async getUserBadges(userId: string) {
+    try {
+      // Get all available badges
+      const allBadges = await this.initializeBadges();
+      
+      // Get user's earned badges
+      const earnedBadges = await db
+        .select({
+          badgeId: userBadges.badgeId,
+          earnedAt: userBadges.earnedAt,
+          progress: userBadges.progress
+        })
+        .from(userBadges)
+        .where(eq(userBadges.userId, userId));
+
+      const earnedBadgeIds = new Set(earnedBadges.map(b => b.badgeId));
+
+      // Calculate progress for available badges
+      const badgesWithProgress = await Promise.all(
+        allBadges.map(async (badge) => {
+          const isEarned = earnedBadgeIds.has(badge.id);
+          const earnedBadge = earnedBadges.find(b => b.badgeId === badge.id);
+          
+          let progress = 0;
+          if (!isEarned) {
+            progress = await this.calculateBadgeProgress(userId, badge);
+          }
+
+          return {
+            ...badge,
+            earned: isEarned,
+            progress: isEarned ? badge.requirement : progress,
+            earnedAt: earnedBadge?.earnedAt?.toISOString()
+          };
+        })
+      );
+
+      const earned = badgesWithProgress.filter(b => b.earned);
+      const available = badgesWithProgress.filter(b => !b.earned);
+
+      return { earned, available };
+    } catch (error) {
+      console.error('Error getting user badges:', error);
+      return { earned: [], available: [] };
+    }
+  }
+
+  // Initialize badges if they don't exist
+  async initializeBadges() {
+    try {
+      const existingBadges = await db.select().from(badges);
+      
+      if (existingBadges.length === 0) {
+        const defaultBadges = [
+          {
+            name: "First Steps",
+            description: "Complete your first quiz",
+            icon: "Trophy",
+            category: "performance",
+            tier: "bronze",
+            requirement: 1,
+            requirementType: "quizzes_completed",
+            xpReward: 50,
+            color: "#CD7F32",
+            isSecret: false
+          },
+          {
+            name: "Quiz Master",
+            description: "Complete 10 quizzes",
+            icon: "Crown",
+            category: "performance", 
+            tier: "silver",
+            requirement: 10,
+            requirementType: "quizzes_completed",
+            xpReward: 200,
+            color: "#C0C0C0",
+            isSecret: false
+          },
+          {
+            name: "Accuracy Expert",
+            description: "Achieve 90% accuracy on 5 quizzes",
+            icon: "Target",
+            category: "performance",
+            tier: "gold",
+            requirement: 5,
+            requirementType: "high_accuracy_quizzes",
+            xpReward: 300,
+            color: "#FFD700",
+            isSecret: false
+          },
+          {
+            name: "Study Streak",
+            description: "Study for 7 consecutive days",
+            icon: "Flame",
+            category: "streak",
+            tier: "bronze",
+            requirement: 7,
+            requirementType: "consecutive_days",
+            xpReward: 150,
+            color: "#FF4500",
+            isSecret: false
+          },
+          {
+            name: "Speed Demon",
+            description: "Complete a quiz in under 2 minutes",
+            icon: "Zap",
+            category: "time",
+            tier: "silver",
+            requirement: 1,
+            requirementType: "fast_completion",
+            xpReward: 100,
+            color: "#FFD700",
+            isSecret: false
+          },
+          {
+            name: "Perfectionist",
+            description: "Get 100% on any quiz",
+            icon: "Star",
+            category: "performance",
+            tier: "gold",
+            requirement: 1,
+            requirementType: "perfect_score",
+            xpReward: 250,
+            color: "#FFD700",
+            isSecret: false
+          }
+        ];
+
+        await db.insert(badges).values(defaultBadges);
+        return await db.select().from(badges);
+      }
+      
+      return existingBadges;
+    } catch (error) {
+      console.error('Error initializing badges:', error);
+      return [];
+    }
+  }
+
+  // Calculate badge progress for a user
+  async calculateBadgeProgress(userId: string, badge: any): Promise<number> {
+    try {
+      switch (badge.requirementType) {
+        case 'quizzes_completed':
+          const quizCount = await db
+            .select({ count: sql`count(*)`.as('count') })
+            .from(quizAttempts)
+            .where(eq(quizAttempts.userId, userId));
+          return parseInt(quizCount[0]?.count as string) || 0;
+
+        case 'high_accuracy_quizzes':
+          const highAccuracyCount = await db
+            .select({ count: sql`count(*)`.as('count') })
+            .from(quizAttempts)
+            .where(and(
+              eq(quizAttempts.userId, userId),
+              gte(quizAttempts.score, 90)
+            ));
+          return parseInt(highAccuracyCount[0]?.count as string) || 0;
+
+        case 'perfect_score':
+          const perfectCount = await db
+            .select({ count: sql`count(*)`.as('count') })
+            .from(quizAttempts)
+            .where(and(
+              eq(quizAttempts.userId, userId),
+              eq(quizAttempts.score, 100)
+            ));
+          return parseInt(perfectCount[0]?.count as string) || 0;
+
+        case 'consecutive_days':
+          // This would require more complex logic to track consecutive days
+          return 0;
+
+        case 'fast_completion':
+          const fastCount = await db
+            .select({ count: sql`count(*)`.as('count') })
+            .from(quizAttempts)
+            .where(and(
+              eq(quizAttempts.userId, userId),
+              lte(quizAttempts.timeSpent, 120) // 2 minutes in seconds
+            ));
+          return parseInt(fastCount[0]?.count as string) || 0;
+
+        default:
+          return 0;
+      }
+    } catch (error) {
+      console.error('Error calculating badge progress:', error);
+      return 0;
+    }
+  }
+
+  // Award badge to user
+  async awardBadge(userId: string, badgeId: number, progress?: number) {
+    try {
+      const existing = await db
+        .select()
+        .from(userBadges)
+        .where(and(eq(userBadges.userId, userId), eq(userBadges.badgeId, badgeId)))
+        .limit(1);
+
+      if (existing.length > 0) {
+        return { success: false, message: "Badge already earned" };
+      }
+
+      await db.insert(userBadges).values({
+        userId,
+        badgeId,
+        progress: progress || 0
+      });
+
+      return { success: true, message: "Badge awarded successfully" };
+    } catch (error) {
+      console.error('Error awarding badge:', error);
+      return { success: false, message: "Failed to award badge" };
+    }
+  }
+
+  // Check and award new badges based on progress
+  async checkBadgeProgress(userId: string) {
+    try {
+      const allBadges = await this.initializeBadges();
+      const newBadges = [];
+
+      for (const badge of allBadges) {
+        const progress = await this.calculateBadgeProgress(userId, badge);
+        
+        if (progress >= badge.requirement) {
+          const result = await this.awardBadge(userId, badge.id, progress);
+          if (result.success) {
+            newBadges.push(badge);
+          }
+        }
+      }
+
+      return newBadges;
+    } catch (error) {
+      console.error('Error checking badge progress:', error);
+      return [];
+    }
+  }
 }
 
 export const dbStorage = new DatabaseStorage();
