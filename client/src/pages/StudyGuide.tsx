@@ -159,8 +159,25 @@ export default function StudyGuide() {
   const [timerNotes, setTimerNotes] = useState("");
   const [totalTimeStudied, setTotalTimeStudied] = useState(0);
   const [isBackgroundMusicOn, setIsBackgroundMusicOn] = useState(false);
+  const [selectedAudioTrack, setSelectedAudioTrack] = useState("");
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Background audio tracks
+  const audioTracks = [
+    {
+      id: "focus1",
+      name: "Deep Focus Music",
+      description: "Calming instrumental music for concentration",
+      youtubeId: "qQzf-xzZO7M"
+    },
+    {
+      id: "nature1", 
+      name: "Nature Sounds",
+      description: "Relaxing nature sounds for study",
+      youtubeId: "lkkGlVWvkLk"
+    }
+  ];
 
   // Study session form
   const form = useForm<SessionFormData>({
@@ -207,19 +224,59 @@ export default function StudyGuide() {
     };
   }, [isRunning, timeLeft, studyGoal, breakTime, isPomodoroMode, isBreak]);
 
+  // Audio control functions
+  const playBackgroundAudio = () => {
+    if (selectedAudioTrack && audioRef.current) {
+      const track = audioTracks.find(t => t.id === selectedAudioTrack);
+      if (track) {
+        // Convert YouTube URL to audio-only format
+        const audioUrl = `https://www.youtube.com/embed/${track.youtubeId}?autoplay=1&loop=1&playlist=${track.youtubeId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1`;
+        
+        // Create an iframe for YouTube audio
+        const existingFrame = document.getElementById('background-audio-frame');
+        if (existingFrame) {
+          existingFrame.remove();
+        }
+        
+        const iframe = document.createElement('iframe');
+        iframe.id = 'background-audio-frame';
+        iframe.src = audioUrl;
+        iframe.style.display = 'none';
+        iframe.allow = 'autoplay';
+        document.body.appendChild(iframe);
+      }
+    }
+  };
+
+  const stopBackgroundAudio = () => {
+    const existingFrame = document.getElementById('background-audio-frame');
+    if (existingFrame) {
+      existingFrame.remove();
+    }
+  };
+
   // Timer functions
   const startTimer = () => {
     setIsRunning(true);
+    if (isBackgroundMusicOn && selectedAudioTrack) {
+      playBackgroundAudio();
+    }
   };
 
   const pauseTimer = () => {
     setIsRunning(false);
+    if (isBackgroundMusicOn) {
+      stopBackgroundAudio();
+    }
   };
 
   const resetTimer = () => {
     setIsRunning(false);
     setTimeLeft(studyGoal * 60);
     setIsBreak(false);
+    if (isBackgroundMusicOn) {
+      stopBackgroundAudio();
+    }
   };
 
   const formatTime = (seconds: number) => {
@@ -1161,14 +1218,42 @@ export default function StudyGuide() {
                       </div>
                     )}
 
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id="background-music"
-                        checked={isBackgroundMusicOn}
-                        onCheckedChange={setIsBackgroundMusicOn}
-                      />
-                      <Label htmlFor="background-music">Background Music</Label>
-                      <Music className="w-4 h-4 text-gray-400" />
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="background-music"
+                          checked={isBackgroundMusicOn}
+                          onCheckedChange={setIsBackgroundMusicOn}
+                        />
+                        <Label htmlFor="background-music">Background Music</Label>
+                        <Music className="w-4 h-4 text-gray-400" />
+                      </div>
+
+                      {isBackgroundMusicOn && (
+                        <div className="space-y-2 ml-6">
+                          <Label htmlFor="audio-track">Select Audio Track</Label>
+                          <Select value={selectedAudioTrack} onValueChange={setSelectedAudioTrack}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Choose background audio" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {audioTracks.map((track) => (
+                                <SelectItem key={track.id} value={track.id}>
+                                  <div className="flex flex-col">
+                                    <span className="font-medium">{track.name}</span>
+                                    <span className="text-xs text-gray-500">{track.description}</span>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {selectedAudioTrack && (
+                            <div className="text-xs text-gray-500 mt-1">
+                              Audio will play when timer starts
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </CardContent>
