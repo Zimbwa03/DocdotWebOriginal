@@ -160,6 +160,9 @@ export default function StudyGuide() {
   const [totalTimeStudied, setTotalTimeStudied] = useState(0);
   const [isBackgroundMusicOn, setIsBackgroundMusicOn] = useState(false);
   const [selectedAudioTrack, setSelectedAudioTrack] = useState("");
+  const [masterVolume, setMasterVolume] = useState(50);
+  const [audioVolume, setAudioVolume] = useState(30);
+  const [isMuted, setIsMuted] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -226,11 +229,14 @@ export default function StudyGuide() {
 
   // Audio control functions
   const playBackgroundAudio = () => {
-    if (selectedAudioTrack && audioRef.current) {
+    if (selectedAudioTrack && !isMuted) {
       const track = audioTracks.find(t => t.id === selectedAudioTrack);
       if (track) {
-        // Convert YouTube URL to audio-only format
-        const audioUrl = `https://www.youtube.com/embed/${track.youtubeId}?autoplay=1&loop=1&playlist=${track.youtubeId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1`;
+        // Calculate final volume (master volume * audio volume / 100)
+        const finalVolume = (masterVolume * audioVolume) / 10000;
+        
+        // Convert YouTube URL to audio-only format with volume control
+        const audioUrl = `https://www.youtube.com/embed/${track.youtubeId}?autoplay=1&loop=1&playlist=${track.youtubeId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&volume=${Math.round(finalVolume * 100)}`;
         
         // Create an iframe for YouTube audio
         const existingFrame = document.getElementById('background-audio-frame');
@@ -243,8 +249,25 @@ export default function StudyGuide() {
         iframe.src = audioUrl;
         iframe.style.display = 'none';
         iframe.allow = 'autoplay';
+        iframe.style.opacity = finalVolume.toString();
         document.body.appendChild(iframe);
       }
+    }
+  };
+
+  // Volume control functions
+  const toggleMute = () => {
+    setIsMuted(!isMuted);
+    if (!isMuted) {
+      stopBackgroundAudio();
+    } else if (isRunning && selectedAudioTrack) {
+      playBackgroundAudio();
+    }
+  };
+
+  const updateVolume = () => {
+    if (isRunning && selectedAudioTrack && !isMuted) {
+      playBackgroundAudio(); // Restart with new volume
     }
   };
 
@@ -1252,6 +1275,122 @@ export default function StudyGuide() {
                               Audio will play when timer starts
                             </div>
                           )}
+                        </div>
+                      )}
+
+                      {/* Volume Control Section */}
+                      {isBackgroundMusicOn && (
+                        <div className="space-y-4 mt-6 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-medium text-sm">Volume Control & Mixing</h4>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={toggleMute}
+                              className="h-8 w-8 p-0"
+                            >
+                              {isMuted ? <Volume2 className="w-4 h-4 text-gray-400" /> : <Volume2 className="w-4 h-4" />}
+                            </Button>
+                          </div>
+
+                          {/* Master Volume */}
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <Label htmlFor="master-volume" className="text-sm">Master Volume</Label>
+                              <span className="text-xs text-gray-500">{masterVolume}%</span>
+                            </div>
+                            <Slider
+                              id="master-volume"
+                              min={0}
+                              max={100}
+                              step={5}
+                              value={[masterVolume]}
+                              onValueChange={(value) => {
+                                setMasterVolume(value[0]);
+                                updateVolume();
+                              }}
+                              disabled={isMuted}
+                              className="w-full"
+                            />
+                          </div>
+
+                          {/* Audio Track Volume */}
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <Label htmlFor="audio-volume" className="text-sm">Background Audio</Label>
+                              <span className="text-xs text-gray-500">{audioVolume}%</span>
+                            </div>
+                            <Slider
+                              id="audio-volume"
+                              min={0}
+                              max={100}
+                              step={5}
+                              value={[audioVolume]}
+                              onValueChange={(value) => {
+                                setAudioVolume(value[0]);
+                                updateVolume();
+                              }}
+                              disabled={isMuted}
+                              className="w-full"
+                            />
+                          </div>
+
+                          {/* Volume Mixing Info */}
+                          <div className="text-xs text-gray-500 space-y-1">
+                            <div className="flex justify-between">
+                              <span>Final Volume:</span>
+                              <span>{Math.round((masterVolume * audioVolume) / 100)}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Status:</span>
+                              <span className={isMuted ? "text-red-500" : "text-green-500"}>
+                                {isMuted ? "Muted" : "Active"}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Quick Volume Presets */}
+                          <div className="space-y-2">
+                            <Label className="text-xs text-gray-600">Quick Presets</Label>
+                            <div className="flex space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setMasterVolume(25);
+                                  setAudioVolume(20);
+                                  updateVolume();
+                                }}
+                                className="text-xs"
+                              >
+                                Quiet
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setMasterVolume(50);
+                                  setAudioVolume(30);
+                                  updateVolume();
+                                }}
+                                className="text-xs"
+                              >
+                                Normal
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setMasterVolume(75);
+                                  setAudioVolume(50);
+                                  updateVolume();
+                                }}
+                                className="text-xs"
+                              >
+                                Loud
+                              </Button>
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
