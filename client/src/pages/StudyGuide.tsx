@@ -372,25 +372,139 @@ export default function StudyGuide() {
     // Handle start music button
     const startButton = document.getElementById('enable-audio-btn');
     startButton?.addEventListener('click', () => {
-      // Create YouTube iframe with user interaction
-      const audioUrl = `https://www.youtube.com/embed/${track.youtubeId}?autoplay=1&loop=1&playlist=${track.youtubeId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1`;
+      // Create Web Audio API context for mobile-compatible sound generation
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       
-      const iframe = document.createElement('iframe');
-      iframe.id = 'background-audio-frame';
-      iframe.src = audioUrl;
-      iframe.style.cssText = `
+      // Create different types of ambient sounds based on track selection
+      const createAmbientSound = (type: string) => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        const filter = audioContext.createBiquadFilter();
+        
+        oscillator.connect(filter);
+        filter.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        // Configure sound based on track type
+        switch (type) {
+          case 'rain':
+            // White noise for rain effect
+            const bufferSize = audioContext.sampleRate * 2;
+            const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+              output[i] = Math.random() * 2 - 1;
+            }
+            const whiteNoise = audioContext.createBufferSource();
+            whiteNoise.buffer = noiseBuffer;
+            whiteNoise.loop = true;
+            
+            const rainFilter = audioContext.createBiquadFilter();
+            rainFilter.type = 'lowpass';
+            rainFilter.frequency.value = 2000;
+            
+            whiteNoise.connect(rainFilter);
+            rainFilter.connect(gainNode);
+            gainNode.gain.value = finalVolume * 0.3;
+            whiteNoise.start();
+            break;
+            
+          case 'ambient':
+          case 'forest':
+            // Low frequency ambient drone
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(80, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(120, audioContext.currentTime + 4);
+            oscillator.frequency.exponentialRampToValueAtTime(80, audioContext.currentTime + 8);
+            filter.frequency.value = 400;
+            gainNode.gain.value = finalVolume * 0.2;
+            oscillator.start();
+            break;
+            
+          case 'lofi':
+          case 'classical':
+            // Gentle sine wave with modulation
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(220, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(330, audioContext.currentTime + 6);
+            oscillator.frequency.exponentialRampToValueAtTime(220, audioContext.currentTime + 12);
+            gainNode.gain.value = finalVolume * 0.15;
+            oscillator.start();
+            break;
+            
+          case 'coffee':
+          default:
+            // Brown noise for coffee shop ambiance
+            const brownNoiseBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 2, audioContext.sampleRate);
+            const brownOutput = brownNoiseBuffer.getChannelData(0);
+            let lastOut = 0.0;
+            for (let i = 0; i < brownOutput.length; i++) {
+              const white = Math.random() * 2 - 1;
+              brownOutput[i] = (lastOut + (0.02 * white)) / 1.02;
+              lastOut = brownOutput[i];
+              brownOutput[i] *= 3.5;
+            }
+            const brownNoise = audioContext.createBufferSource();
+            brownNoise.buffer = brownNoiseBuffer;
+            brownNoise.loop = true;
+            brownNoise.connect(gainNode);
+            gainNode.gain.value = finalVolume * 0.25;
+            brownNoise.start();
+            break;
+        }
+        
+        // Store reference for cleanup
+        (window as any).currentAudioContext = audioContext;
+        (window as any).currentAudioNodes = { oscillator, gainNode, filter };
+      };
+      
+      // Start the ambient sound
+      createAmbientSound(track.id);
+      
+      // Create a visual indicator that audio is playing
+      const audioIndicator = document.createElement('div');
+      audioIndicator.id = 'background-audio-frame';
+      audioIndicator.style.cssText = `
         position: fixed;
-        bottom: 10px;
-        right: 10px;
-        width: 1px;
-        height: 1px;
-        opacity: 0.01;
-        pointer-events: none;
-        z-index: -1;
+        bottom: 20px;
+        right: 20px;
+        width: 40px;
+        height: 40px;
+        background: #3399FF;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 16px;
+        z-index: 1000;
+        animation: pulse 2s infinite;
+        cursor: pointer;
       `;
-      iframe.allow = 'autoplay; encrypted-media';
+      audioIndicator.innerHTML = '🎵';
+      audioIndicator.title = `Playing: ${track.title}`;
       
-      document.body.appendChild(iframe);
+      // Add click to stop audio
+      audioIndicator.addEventListener('click', () => {
+        if ((window as any).currentAudioContext) {
+          (window as any).currentAudioContext.close();
+          audioIndicator.remove();
+        }
+      });
+      
+      document.body.appendChild(audioIndicator);
+      
+      // Add CSS animation
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes pulse {
+          0% { transform: scale(1); opacity: 0.8; }
+          50% { transform: scale(1.1); opacity: 1; }
+          100% { transform: scale(1); opacity: 0.8; }
+        }
+      `;
+      document.head.appendChild(style);
+      
       overlay.remove();
     });
     
