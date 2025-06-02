@@ -201,8 +201,20 @@ export default function Home() {
     enabled: !!user?.id,
   });
 
+  const defaultStats = {
+    totalXp: 0,
+    level: 1,
+    currentStreak: 0,
+    averageAccuracy: 0,
+    totalQuizzes: 0,
+    totalTimeSpent: 0,
+    rank: 0
+  };
+
+  const stats = userStats || defaultStats;
+
   // Safe extraction of rank data
-  const userRank = userRankResponse?.rank || userStats?.rank || 'Unranked';
+  const userRank = userRankResponse?.rank || stats.rank || 'Unranked';
   const userTotalXP = userRankResponse?.totalXP || 0;
   const userAccuracy = userRankResponse?.averageAccuracy || 0;
 
@@ -215,8 +227,6 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ['/api/quiz-attempts'] });
     }
   }, [user?.id, refetchStats, refetchQuizzes, queryClient]);
-
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
