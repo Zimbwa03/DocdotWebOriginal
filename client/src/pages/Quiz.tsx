@@ -162,8 +162,12 @@ export default function Quiz() {
       setScore(score + 1);
     }
 
-    // Record quiz attempt with comprehensive analytics following the Python model
-    const userId = user?.id || 'demo-user'; // Use demo-user as fallback for consistent tracking
+    // Record quiz attempt with comprehensive analytics using authenticated Supabase user
+    if (!user?.id) {
+      console.warn('User not authenticated, skipping analytics recording');
+      return;
+    }
+    const userId = user.id;
     
     try {
       // Calculate XP based on correctness and streak (like the Python code)
