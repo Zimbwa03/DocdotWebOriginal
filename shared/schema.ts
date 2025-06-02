@@ -265,6 +265,34 @@ export const meetingReminders = pgTable("meeting_reminders", {
   reminderUnique: unique().on(table.groupId, table.userId),
 }));
 
+// User Analytics - Comprehensive tracking
+export const userAnalytics = pgTable("user_analytics", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: text("user_id").references(() => users.id).unique(),
+  totalStudyHours: integer("total_study_hours").notNull().default(0),
+  weeklyStudyHours: integer("weekly_study_hours").notNull().default(0),
+  monthlyStudyHours: integer("monthly_study_hours").notNull().default(0),
+  averageSessionDuration: integer("average_session_duration").notNull().default(0), // in minutes
+  totalQuizzes: integer("total_quizzes").notNull().default(0),
+  totalCorrectAnswers: integer("total_correct_answers").notNull().default(0),
+  overallAccuracy: integer("overall_accuracy").notNull().default(0), // percentage
+  weeklyQuizzes: integer("weekly_quizzes").notNull().default(0),
+  monthlyQuizzes: integer("monthly_quizzes").notNull().default(0),
+  strongestCategory: text("strongest_category"),
+  weakestCategory: text("weakest_category"),
+  improvementRate: integer("improvement_rate").notNull().default(0), // percentage
+  consistencyScore: integer("consistency_score").notNull().default(0), // 0-100
+  studyStreak: integer("study_streak").notNull().default(0),
+  longestStudyStreak: integer("longest_study_streak").notNull().default(0),
+  badgesEarned: integer("badges_earned").notNull().default(0),
+  rankPosition: integer("rank_position").notNull().default(0),
+  totalXpEarned: integer("total_xp_earned").notNull().default(0),
+  weeklyXpEarned: integer("weekly_xp_earned").notNull().default(0),
+  monthlyXpEarned: integer("monthly_xp_earned").notNull().default(0),
+  lastActiveDate: timestamp("last_active_date"),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Schema exports
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
@@ -299,6 +327,7 @@ export const insertAiChatSchema = createInsertSchema(aiChats);
 export const insertStudyGroupSchema = createInsertSchema(studyGroups).omit({ id: true, createdAt: true, currentMembers: true, isActive: true });
 export const insertStudyGroupMemberSchema = createInsertSchema(studyGroupMembers).omit({ id: true, joinedAt: true, hasJoinedMeeting: true });
 export const insertMeetingReminderSchema = createInsertSchema(meetingReminders).omit({ id: true, createdAt: true, emailSent: true });
+export const insertUserAnalyticsSchema = createInsertSchema(userAnalytics).omit({ id: true, updatedAt: true });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertQuizAttempt = z.infer<typeof insertQuizAttemptSchema>;
@@ -324,3 +353,4 @@ export type AiChat = typeof aiChats.$inferSelect;
 export type StudyGroup = typeof studyGroups.$inferSelect;
 export type StudyGroupMember = typeof studyGroupMembers.$inferSelect;
 export type MeetingReminder = typeof meetingReminders.$inferSelect;
+export type UserAnalytics = typeof userAnalytics.$inferSelect;

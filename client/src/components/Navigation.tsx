@@ -145,7 +145,6 @@ export function Navigation() {
     { path: '/notes', label: 'Notes', icon: BookOpen },
     { path: '/study-guide', label: 'Study Guide', icon: GraduationCap },
     { path: '/ai-tools', label: 'AI Tools', icon: Brain },
-    { path: '/performance', label: 'Performance', icon: BarChart3 },
     { path: '/analytics', label: 'Analytics', icon: Target },
     { path: '/badges', label: 'Badges', icon: Star },
     { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
@@ -156,7 +155,7 @@ export function Navigation() {
     { label: 'Start Quiz', icon: Zap, action: () => window.location.href = '/quiz' },
     { label: 'Study Timer', icon: Clock, action: () => window.location.href = '/study-guide' },
     { label: 'AI Tutor', icon: Brain, action: () => window.location.href = '/ai-tools' },
-    { label: 'View Progress', icon: BarChart3, action: () => window.location.href = '/performance' },
+    { label: 'View Analytics', icon: BarChart3, action: () => window.location.href = '/analytics' },
   ];
 
   const handleSignOut = async () => {
@@ -283,11 +282,13 @@ export function Navigation() {
           {/* Logo */}
           <Link href="/home">
             <div className="flex items-center space-x-2 cursor-pointer">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#3399FF' }}>
-                <GraduationCap className="w-5 h-5 text-white" />
-              </div>
+              <img 
+                src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview.png" 
+                alt="DocDot Logo" 
+                className="w-10 h-10 object-contain"
+              />
               <span className="text-lg lg:text-xl font-bold" style={{ color: '#1C1C1C' }}>
-                Docdot
+                DocDot
               </span>
             </div>
           </Link>
