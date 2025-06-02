@@ -96,8 +96,8 @@ export function AuthForm() {
           <div className="mx-auto mb-6">
             <img 
               src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview.png" 
-              alt="DocDot Logo" 
-              className="w-20 h-20 mx-auto object-contain"
+              alt="DocDot Medical Student Logo" 
+              className="w-24 h-24 mx-auto object-contain rounded-xl shadow-sm"
             />
           </div>
           <h1 className="text-3xl font-bold mb-2" style={{ color: '#1C1C1C' }}>DocDot</h1>

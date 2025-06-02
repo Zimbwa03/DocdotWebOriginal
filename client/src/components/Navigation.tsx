@@ -284,8 +284,8 @@ export function Navigation() {
             <div className="flex items-center space-x-2 cursor-pointer">
               <img 
                 src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview.png" 
-                alt="DocDot Logo" 
-                className="w-10 h-10 object-contain"
+                alt="DocDot Medical Student Logo" 
+                className="w-12 h-12 object-contain rounded-lg"
               />
               <span className="text-lg lg:text-xl font-bold" style={{ color: '#1C1C1C' }}>
                 DocDot
