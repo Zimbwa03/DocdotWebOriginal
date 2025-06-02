@@ -266,7 +266,7 @@ export default function Home() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-center">
               <div>
                 <div className="text-xl lg:text-2xl font-bold text-blue-600">
-                  {loadingStats ? '...' : Math.round((stats.totalTimeSpent || 0) / 60)}
+                  {loadingStats ? '...' : String(Math.round((stats.totalTimeSpent || 0) / 60))}
                 </div>
                 <div className="text-xs lg:text-sm text-gray-600">Minutes Today</div>
               </div>
