@@ -219,9 +219,26 @@ export default function Quiz() {
       }
   };
 
+  const getRandomQuestionIndex = () => {
+    let randomIndex;
+    do {
+      randomIndex = Math.floor(Math.random() * questions.length);
+    } while (randomIndex === currentQuestionIndex && questions.length > 1);
+    return randomIndex;
+  };
+
+  const handleSkipQuestion = () => {
+    const randomIndex = getRandomQuestionIndex();
+    setCurrentQuestionIndex(randomIndex);
+    setSelectedAnswer('');
+    setIsAnswered(false);
+    setQuestionStartTime(Date.now());
+  };
+
   const handleNextQuestion = async () => {
     if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      const randomIndex = getRandomQuestionIndex(); // Randomize next question
+      setCurrentQuestionIndex(randomIndex);
       setSelectedAnswer('');
       setIsAnswered(false);
       setQuestionStartTime(Date.now()); // Start timing for new question
@@ -688,29 +705,40 @@ export default function Quiz() {
             )}
 
             <div className="flex justify-between mt-6">
-              {!isAnswered ? (
-                <Button 
-                  onClick={handleSubmitAnswer}
-                  disabled={!selectedAnswer}
-                  style={{ backgroundColor: '#3399FF' }}
-                >
-                  Submit Answer
-                </Button>
-              ) : (
-                <Button 
-                  onClick={handleNextQuestion}
-                  style={{ backgroundColor: '#3399FF' }}
-                >
-                  {currentQuestionIndex < questions.length - 1 ? (
-                    <>
-                      Next Question
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </>
-                  ) : (
-                    'Complete Quiz'
-                  )}
-                </Button>
-              )}
+              <div className="flex gap-3">
+                {!isAnswered ? (
+                  <>
+                    <Button 
+                      onClick={handleSubmitAnswer}
+                      disabled={!selectedAnswer}
+                      style={{ backgroundColor: '#3399FF' }}
+                    >
+                      Submit Answer
+                    </Button>
+                    <Button 
+                      onClick={handleSkipQuestion}
+                      variant="outline"
+                      className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                    >
+                      Skip Question
+                    </Button>
+                  </>
+                ) : (
+                  <Button 
+                    onClick={handleNextQuestion}
+                    style={{ backgroundColor: '#3399FF' }}
+                  >
+                    {currentQuestionIndex < questions.length - 1 ? (
+                      <>
+                        Next Question
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </>
+                    ) : (
+                      'Complete Quiz'
+                    )}
+                  </Button>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
