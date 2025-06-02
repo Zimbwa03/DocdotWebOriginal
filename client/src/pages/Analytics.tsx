@@ -139,7 +139,7 @@ export default function Analytics() {
                 <BookOpen className="h-4 w-4" style={{ color: '#3399FF' }} />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{userStats?.totalQuestions || 0}</div>
+                <div className="text-2xl font-bold">{String(userStats?.totalQuestions || 0)}</div>
                 <p className="text-xs text-muted-foreground">
                   {userStats?.correctAnswers || 0} correct
                 </p>
@@ -152,7 +152,7 @@ export default function Analytics() {
                 <Target className="h-4 w-4" style={{ color: '#3399FF' }} />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{userStats?.averageScore || 0}%</div>
+                <div className="text-2xl font-bold">{String(userStats?.averageScore || 0)}%</div>
                 <p className="text-xs text-muted-foreground">
                   Accuracy rate
                 </p>

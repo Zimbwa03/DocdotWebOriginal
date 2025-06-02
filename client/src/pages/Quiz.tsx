@@ -557,7 +557,7 @@ export default function Quiz() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="text-center">
                   <div className="text-3xl font-bold mb-2" style={{ color: '#3399FF' }}>
-                    {score}/{questions.length}
+                    {String(score)}/{String(questions.length)}
                   </div>
                   <p className="text-sm" style={{ color: '#2E2E2E' }}>Correct Answers</p>
                 </div>
@@ -606,7 +606,7 @@ export default function Quiz() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold" style={{ color: '#1C1C1C' }}>{selectedCategory} Quiz</h2>
-            <p style={{ color: '#2E2E2E' }}>Question {currentQuestionIndex + 1} of {questions.length}</p>
+            <p style={{ color: '#2E2E2E' }}>Question {String(currentQuestionIndex + 1)} of {String(questions.length)}</p>
           </div>
           <Button 
             variant="outline" 

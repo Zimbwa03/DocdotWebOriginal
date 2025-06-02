@@ -415,7 +415,7 @@ export default function Home() {
               <CardContent>
                 <div className="text-center mb-4">
                   <div className="text-3xl font-bold text-yellow-600">
-                    {badgeData?.earned?.length || 0}
+                    {String(badgeData?.earned?.length || 0)}
                   </div>
                   <div className="text-sm text-yellow-700">
                     Badges Earned
@@ -538,7 +538,7 @@ export default function Home() {
               <CardContent>
                 <div className="text-center mb-4">
                   <div className="text-3xl font-bold text-green-600">
-                    {stats.currentStreak || 0}
+                    {String(stats.currentStreak || 0)}
                   </div>
                   <div className="text-sm text-green-700">
                     Day Streak
@@ -547,7 +547,7 @@ export default function Home() {
                 <div className="space-y-2 mb-4">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">This Week</span>
-                    <span className="font-medium">{Math.round((stats.totalTimeSpent || 0) / 60)} min</span>
+                    <span className="font-medium">{String(Math.round((stats.totalTimeSpent || 0) / 60))} min</span>
                   </div>
                   <Progress value={Math.min(((stats.totalTimeSpent || 0) / 60) / 120 * 100, 100)} className="h-2" />
                   <div className="text-xs text-gray-500 text-center">
