@@ -318,7 +318,7 @@ export default function Leaderboard() {
                     ? `${entries[0].user.firstName} ${entries[0].user.lastName}`
                     : 'Anonymous'}
                 </p>
-                <p className="text-sm text-gray-600">{entries[0].totalXP} XP</p>
+                <p className="text-sm text-gray-600">{String(entries[0].totalXP)} XP</p>
               </div>
             ) : (
               <p className="text-gray-500">No data yet</p>

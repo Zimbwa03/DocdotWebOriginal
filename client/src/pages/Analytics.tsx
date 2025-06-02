@@ -165,9 +165,9 @@ export default function Analytics() {
                 <Zap className="h-4 w-4" style={{ color: '#3399FF' }} />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{userStats?.currentStreak || 0}</div>
+                <div className="text-2xl font-bold">{String(userStats?.currentStreak || 0)}</div>
                 <p className="text-xs text-muted-foreground">
-                  Best: {userStats?.longestStreak || 0}
+                  Best: {String(userStats?.longestStreak || 0)}
                 </p>
               </CardContent>
             </Card>
@@ -239,7 +239,7 @@ export default function Analytics() {
                       <p className="text-sm text-muted-foreground">Avg Time</p>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold">{category.correctAnswers}</div>
+                      <div className="text-2xl font-bold">{String(category.correctAnswers)}</div>
                       <p className="text-sm text-muted-foreground">Correct</p>
                     </div>
                   </div>

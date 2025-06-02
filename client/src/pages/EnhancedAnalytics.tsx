@@ -177,7 +177,7 @@ export default function EnhancedAnalytics() {
             <BookOpen className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-900">{userStats?.totalQuestions || 0}</div>
+            <div className="text-3xl font-bold text-blue-900">{String(userStats?.totalQuestions || 0)}</div>
             <p className="text-xs text-blue-600">
               {userStats?.correctAnswers || 0} correct answers
             </p>
@@ -190,7 +190,7 @@ export default function EnhancedAnalytics() {
             <Target className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-900">{userStats?.averageScore || 0}%</div>
+            <div className="text-3xl font-bold text-green-900">{String(userStats?.averageScore || 0)}%</div>
             <div className="flex items-center text-xs text-green-600">
               {getTrendIcon(getPerformanceTrend())}
               <span className="ml-1">Performance trend</span>
@@ -204,9 +204,9 @@ export default function EnhancedAnalytics() {
             <Zap className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-orange-900">{userStats?.currentStreak || 0}</div>
+            <div className="text-3xl font-bold text-orange-900">{String(userStats?.currentStreak || 0)}</div>
             <p className="text-xs text-orange-600">
-              Best: {userStats?.longestStreak || 0} days
+              Best: {String(userStats?.longestStreak || 0)} days
             </p>
           </CardContent>
         </Card>
