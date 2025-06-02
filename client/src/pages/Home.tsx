@@ -196,7 +196,14 @@ export default function Home() {
       if (!user?.id) return null;
       const response = await fetch(`/api/user-rank?userId=${user.id}`);
       if (!response.ok) return null;
-      return response.json();
+      const data = await response.json();
+      // Ensure we return safe values that won't cause React errors
+      return {
+        rank: data?.rank || 'Unranked',
+        totalXP: data?.totalXP || 0,
+        averageAccuracy: data?.averageAccuracy || 0,
+        currentLevel: data?.currentLevel || 1
+      };
     },
     enabled: !!user?.id,
   });
@@ -265,19 +272,19 @@ export default function Home() {
               </div>
               <div>
                 <div className="text-xl lg:text-2xl font-bold text-green-600">
-                  {loadingStats ? '...' : stats.currentStreak || 0}
+                  {loadingStats ? '...' : String(stats.currentStreak || 0)}
                 </div>
                 <div className="text-xs lg:text-sm text-gray-600">Day Streak</div>
               </div>
               <div>
                 <div className="text-xl lg:text-2xl font-bold text-purple-600">
-                  {loadingStats ? '...' : stats.totalXp || 0}
+                  {loadingStats ? '...' : String(stats.totalXp || 0)}
                 </div>
                 <div className="text-xs lg:text-sm text-gray-600">Total XP</div>
               </div>
               <div>
                 <div className="text-xl lg:text-2xl font-bold text-orange-600">
-                  Level {loadingStats ? '...' : stats.level || 1}
+                  Level {loadingStats ? '...' : String(stats.level || 1)}
                 </div>
                 <div className="text-xs lg:text-sm text-gray-600">Your Level</div>
               </div>

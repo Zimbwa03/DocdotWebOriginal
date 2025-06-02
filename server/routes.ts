@@ -1,7 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { openRouterAI } from "./ai";
-import { dbStorage } from "./db";
+import { dbStorage, db } from "./db";
+import { sql } from 'drizzle-orm';
 import { insertQuizAttemptSchema } from "@shared/schema";
 import { v4 as uuidv4 } from "uuid";
 import { readFileSync } from "fs";
