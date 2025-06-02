@@ -276,7 +276,8 @@ export function Navigation() {
   };
 
   return (
-    <nav className="border-b" style={{ backgroundColor: '#D1E8F9' }}>
+    <>
+      <nav className="border-b" style={{ backgroundColor: '#D1E8F9' }}>
       <div className="max-w-7xl mx-auto px-4 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -312,33 +313,31 @@ export function Navigation() {
             ))}
           </div>
 
-          {/* Mobile Navigation - Show icons only */}
-          <div className="flex lg:hidden items-center space-x-1">
-            {navItems.slice(0, 3).map(({ path, label, icon: Icon }) => (
-              <Link key={path} href={path}>
-                <Button
-                  variant={location === path ? "default" : "ghost"}
-                  size="sm"
-                  className={`${
-                    location === path 
-                      ? 'text-white' 
-                      : 'text-gray-700 hover:text-gray-900'
-                  }`}
-                  style={location === path ? { backgroundColor: '#3399FF' } : {}}
-                >
-                  <Icon className="w-4 h-4" />
-                </Button>
-              </Link>
-            ))}
-          </div>
-
-          {/* Advanced User Menu */}
+          {/* Mobile Menu Button & Desktop Navigation */}
           <div className="flex items-center space-x-4">
-            {/* Notifications */}
-            <Button variant="ghost" size="sm" className="relative">
-              <Bell className="w-4 h-4" style={{ color: '#2E2E2E' }} />
-              <Badge className="absolute -top-1 -right-1 w-2 h-2 p-0" style={{ backgroundColor: '#3399FF' }}></Badge>
+            {/* Mobile Menu Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="lg:hidden p-2"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
+
+            {/* Desktop Quick Actions */}
+            <div className="hidden lg:flex items-center space-x-2">
+              {/* Notifications */}
+              <Button variant="ghost" size="sm" className="relative">
+                <Bell className="w-4 h-4" style={{ color: '#2E2E2E' }} />
+                <Badge className="absolute -top-1 -right-1 w-2 h-2 p-0" style={{ backgroundColor: '#3399FF' }}></Badge>
+              </Button>
+
+              {/* Search */}
+              <Button variant="ghost" size="sm">
+                <Search className="w-4 h-4" style={{ color: '#2E2E2E' }} />
+              </Button>
+            </div>
 
             {/* User Account Dropdown */}
             <DropdownMenu>
@@ -555,6 +554,260 @@ export function Navigation() {
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden absolute top-16 left-0 right-0 bg-white border-b shadow-lg z-40">
+          <div className="max-w-7xl mx-auto px-4 py-6">
+            {/* User Profile Section */}
+            <div className="flex items-center space-x-3 mb-6 p-4 bg-blue-50 rounded-lg">
+              <Avatar className="h-12 w-12">
+                <AvatarFallback style={{ backgroundColor: '#3399FF', color: 'white' }}>
+                  {getUserInitials()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <p className="font-medium text-gray-900">{getDisplayName()}</p>
+                <p className="text-sm text-gray-600">{user?.email}</p>
+                <div className="flex items-center space-x-2 mt-1">
+                  <Badge variant="outline" className="text-xs">
+                    {userProfile?.subscriptionTier || 'Free'} Plan
+                  </Badge>
+                  <Badge variant="outline" className="text-xs" style={{ backgroundColor: '#3399FF', color: 'white' }}>
+                    Level {userProfile?.level || 1}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="mb-6">
+              <h3 className="text-sm font-medium text-gray-900 mb-3">Quick Actions</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {quickActions.map((action, index) => (
+                  <Button
+                    key={index}
+                    variant="outline"
+                    className="flex items-center space-x-2 h-12 justify-start"
+                    onClick={() => {
+                      action.action();
+                      setIsMobileMenuOpen(false);
+                    }}
+                  >
+                    <action.icon className="w-4 h-4" />
+                    <span>{action.label}</span>
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Navigation Links */}
+            <div className="mb-6">
+              <h3 className="text-sm font-medium text-gray-900 mb-3">Navigation</h3>
+              <div className="space-y-2">
+                {navItems.map(({ path, label, icon: Icon }) => (
+                  <Link key={path} href={path}>
+                    <Button
+                      variant={location === path ? "default" : "ghost"}
+                      className={`w-full justify-start h-12 ${
+                        location === path 
+                          ? 'text-white' 
+                          : 'text-gray-700 hover:text-gray-900'
+                      }`}
+                      style={location === path ? { backgroundColor: '#3399FF' } : {}}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Icon className="w-4 h-4 mr-3" />
+                      <span>{label}</span>
+                    </Button>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Account Settings */}
+            <div className="mb-6">
+              <h3 className="text-sm font-medium text-gray-900 mb-3">Account Settings</h3>
+              <div className="space-y-2">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start h-12"
+                  onClick={() => {
+                    setIsProfileOpen(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                >
+                  <UserCircle className="w-4 h-4 mr-3" />
+                  <span>Profile Settings</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start h-12"
+                  onClick={() => {
+                    setIsPasswordChangeOpen(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                >
+                  <Lock className="w-4 h-4 mr-3" />
+                  <span>Change Password</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start h-12"
+                >
+                  <Bell className="w-4 h-4 mr-3" />
+                  <span>Notifications</span>
+                  <Badge className="ml-auto" style={{ backgroundColor: '#3399FF' }}>3</Badge>
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start h-12"
+                >
+                  <HelpCircle className="w-4 h-4 mr-3" />
+                  <span>Help & Support</span>
+                </Button>
+              </div>
+            </div>
+
+            {/* Logout */}
+            <div className="pt-4 border-t border-gray-200">
+              <Button
+                variant="ghost"
+                className="w-full justify-start h-12 text-red-600 hover:text-red-700 hover:bg-red-50"
+                onClick={() => {
+                  handleSignOut();
+                  setIsMobileMenuOpen(false);
+                }}
+              >
+                <LogOut className="w-4 h-4 mr-3" />
+                <span>Sign Out</span>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
+
+    {/* Profile Settings Dialog */}
+    <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Profile Settings</DialogTitle>
+          <DialogDescription>
+            Update your personal information and preferences
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="firstName">First Name</Label>
+              <Input
+                id="firstName"
+                value={profileData.firstName}
+                onChange={(e) => setProfileData(prev => ({...prev, firstName: e.target.value}))}
+                placeholder="Enter first name"
+              />
+            </div>
+            <div>
+              <Label htmlFor="lastName">Last Name</Label>
+              <Input
+                id="lastName"
+                value={profileData.lastName}
+                onChange={(e) => setProfileData(prev => ({...prev, lastName: e.target.value}))}
+                placeholder="Enter last name"
+              />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="specialization">Specialization</Label>
+            <Input
+              id="specialization"
+              value={profileData.specialization}
+              onChange={(e) => setProfileData(prev => ({...prev, specialization: e.target.value}))}
+              placeholder="e.g., Cardiology, Pediatrics"
+            />
+          </div>
+          <div>
+            <Label htmlFor="institution">Institution</Label>
+            <Input
+              id="institution"
+              value={profileData.institution}
+              onChange={(e) => setProfileData(prev => ({...prev, institution: e.target.value}))}
+              placeholder="e.g., Harvard Medical School"
+            />
+          </div>
+          <div>
+            <Label htmlFor="phone">Phone Number</Label>
+            <Input
+              id="phone"
+              value={profileData.phone}
+              onChange={(e) => setProfileData(prev => ({...prev, phone: e.target.value}))}
+              placeholder="Enter phone number"
+            />
+          </div>
+        </div>
+        <div className="flex justify-end space-x-2">
+          <Button variant="outline" onClick={() => setIsProfileOpen(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleProfileUpdate} disabled={loading}>
+            {loading ? 'Updating...' : 'Save Changes'}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+
+    {/* Change Password Dialog */}
+    <Dialog open={isPasswordChangeOpen} onOpenChange={setIsPasswordChangeOpen}>
+      <DialogContent className="sm:max-w-[400px]">
+        <DialogHeader>
+          <DialogTitle>Change Password</DialogTitle>
+          <DialogDescription>
+            Update your account password
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div>
+            <Label htmlFor="currentPassword">Current Password</Label>
+            <Input
+              id="currentPassword"
+              type="password"
+              value={passwordForm.currentPassword}
+              onChange={(e) => setPasswordForm(prev => ({...prev, currentPassword: e.target.value}))}
+              placeholder="Enter current password"
+            />
+          </div>
+          <div>
+            <Label htmlFor="newPassword">New Password</Label>
+            <Input
+              id="newPassword"
+              type="password"
+              value={passwordForm.newPassword}
+              onChange={(e) => setPasswordForm(prev => ({...prev, newPassword: e.target.value}))}
+              placeholder="Enter new password"
+            />
+          </div>
+          <div>
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              value={passwordForm.confirmPassword}
+              onChange={(e) => setPasswordForm(prev => ({...prev, confirmPassword: e.target.value}))}
+              placeholder="Confirm new password"
+            />
+          </div>
+        </div>
+        <div className="flex justify-end space-x-2">
+          <Button variant="outline" onClick={() => setIsPasswordChangeOpen(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handlePasswordChange} disabled={loading}>
+            {loading ? 'Updating...' : 'Update Password'}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  </>
   );
 }
