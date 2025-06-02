@@ -61,6 +61,7 @@ export const quizAttempts = pgTable("quiz_attempts", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   userId: text("user_id").references(() => users.id),
   quizId: integer("quiz_id").references(() => quizzes.id),
+  questionIdentifier: text("question_identifier"), // For tracking questions from JSON files
   category: text("category").notNull(),
   selectedAnswer: text("selected_answer").notNull(),
   correctAnswer: text("correct_answer").notNull(),
