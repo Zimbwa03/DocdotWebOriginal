@@ -141,7 +141,7 @@ export default function StudyGuide() {
   const [userNotes, setUserNotes] = useState('');
   const [readingProgress, setReadingProgress] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('sections');
+  const [activeTab, setActiveTab] = useState('timer');
 
   // Study Planner State
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -179,6 +179,42 @@ export default function StudyGuide() {
       name: "Nature Sounds",
       description: "Relaxing nature sounds for study",
       youtubeId: "lkkGlVWvkLk"
+    },
+    {
+      id: "lofi1",
+      name: "Lo-Fi Hip Hop",
+      description: "Chill lo-fi beats for studying",
+      youtubeId: "b_DcQHbJIfE"
+    },
+    {
+      id: "classical1",
+      name: "Classical Piano",
+      description: "Peaceful classical piano music",
+      youtubeId: "WPni755-Krg"
+    },
+    {
+      id: "ambient1",
+      name: "Ambient Study",
+      description: "Atmospheric ambient sounds",
+      youtubeId: "7pmxO9fHBHk"
+    },
+    {
+      id: "rain1",
+      name: "Rain & Thunder",
+      description: "Relaxing rain sounds with distant thunder",
+      youtubeId: "hlWiI4xVXKY"
+    },
+    {
+      id: "cafe1",
+      name: "Coffee Shop",
+      description: "Cozy coffee shop ambiance",
+      youtubeId: "iL2psQTS-lw"
+    },
+    {
+      id: "forest1",
+      name: "Forest Sounds",
+      description: "Peaceful forest atmosphere",
+      youtubeId: "kag0aJqQsGo"
     }
   ];
 
@@ -865,25 +901,17 @@ export default function StudyGuide() {
 
         {/* Tabs Navigation */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6 mb-8">
-            <TabsTrigger value="sections" className="flex items-center gap-2">
-              <BookOpen className="w-4 h-4" />
-              Study Sections
-            </TabsTrigger>
-            <TabsTrigger value="resources" className="flex items-center gap-2">
-              <Library className="w-4 h-4" />
-              Books & Resources
+          <TabsList className="grid w-full grid-cols-4 mb-8">
+            <TabsTrigger value="timer" className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              Study Timer
             </TabsTrigger>
             <TabsTrigger value="planner" className="flex items-center gap-2">
               <CalendarIcon className="w-4 h-4" />
               Study Planner
             </TabsTrigger>
-            <TabsTrigger value="timer" className="flex items-center gap-2">
-              <Clock className="w-4 h-4" />
-              Study Timer
-            </TabsTrigger>
             <TabsTrigger value="groups" className="flex items-center gap-2">
-              <User className="w-4 h-4" />
+              <Users className="w-4 h-4" />
               Study Groups
             </TabsTrigger>
             <TabsTrigger value="tips" className="flex items-center gap-2">

@@ -1,0 +1,60 @@
+Here is a clear and well-structured prompt you can use for your Replit assistant to implement your feature accurately:
+
+---
+
+**Prompt for Replit Assistant:**
+
+I am building a study assistant interface. Please update the UI and functionality according to the following requirements:
+
+### 1. **Rearrange the Main Layout**
+
+* On the first row, place the following in this order:
+
+  1. **Study Timer**
+  2. **Study Planner**
+  3. **Study Groups**
+  4. **Study Tips**
+* **Remove** the section labeled "Study Sections".
+
+---
+
+### 2. **Study Planner Functionality**
+
+* Allow users to **add a study session**.
+* Let users **update/edit** the scheduled time for that session.
+* When the scheduled session icon is **clicked**, it should change to **"Completed"**, and visually indicate this (e.g., change color or animation to show it's done).
+* Make this interaction **dynamic and lively** (use visual feedback like checkmarks or transitions).
+
+---
+
+### 3. **Study Groups Functionality**
+
+#### a. **Creating a Group**
+
+* When a user **creates a study group**, they must provide either a:
+
+  * **Zoom link** or
+  * **Google Meet link**.
+
+#### b. **Join Now Button Logic**
+
+* If the meeting is **currently active**, the **"Join Now"** button becomes active.
+
+  * Display the appropriate **Zoom or Google Meet icon** next to the button based on the link type.
+  * When another user **clicks to join**, increment the visible **member count** for that group.
+
+* If the meeting is **scheduled for the future** (e.g., tomorrow at 11:30 AM):
+
+  * The **"Join Now"** button should show **"Pending"**.
+  * If a user **clicks "Pending"**, automatically:
+
+    * Set a **reminder** for that user.
+    * 30 minutes before the scheduled time, **send an email reminder** using the email from the user’s **Supabase authentication**.
+    * The email must include:
+
+      * The meeting link (Zoom or Google Meet),
+      * The time of the meeting.
+
+---
+
+Let me know if you'd like the Supabase email function and scheduling logic written in JavaScript or Python.
