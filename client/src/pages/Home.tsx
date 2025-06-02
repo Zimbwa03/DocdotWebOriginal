@@ -313,7 +313,7 @@ export default function Home() {
                   {loadingStats ? '...' : (stats.totalXp ? stats.totalXp.toLocaleString() : '0')}
                 </div>
                 <div className="text-sm text-blue-600 mt-1">
-                  Level {loadingStats ? '...' : stats.level || 1}
+                  Level {loadingStats ? '...' : String(stats.level || 1)}
                 </div>
                 <Progress 
                   value={loadingStats ? 0 : ((stats.totalXp % 1000) / 1000) * 100} 
@@ -335,7 +335,7 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl lg:text-3xl font-bold text-orange-900">
-                  {loadingStats ? '...' : stats.currentStreak || 0}
+                  {loadingStats ? '...' : String(stats.currentStreak || 0)}
                 </div>
                 <div className="text-sm text-orange-600">days active</div>
                 <div className="text-xs text-orange-600 mt-1">
@@ -354,7 +354,7 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl lg:text-3xl font-bold text-green-900">
-                  {loadingStats ? '...' : Math.round(stats.averageAccuracy || 0)}%
+                  {loadingStats ? '...' : String(Math.round(stats.averageAccuracy || 0))}%
                 </div>
                 <div className="text-sm text-green-600">
                   {loadingStats ? '...' : String(stats.correctAnswers || 0)} of {loadingStats ? '...' : String(stats.totalQuestions || 0)} correct
@@ -485,11 +485,11 @@ export default function Home() {
                 <div className="flex items-center justify-center gap-2 mb-4">
                   <div className="flex items-center gap-1">
                     <Zap className="w-4 h-4 text-purple-500" />
-                    <span className="text-sm font-medium">{userRankData?.totalXP || 0} XP</span>
+                    <span className="text-sm font-medium">{userRankData?.totalXP ? String(userRankData.totalXP) : '0'} XP</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Target className="w-4 h-4 text-purple-500" />
-                    <span className="text-sm font-medium">{userRankData?.averageAccuracy ? Math.round(userRankData.averageAccuracy) : 0}%</span>
+                    <span className="text-sm font-medium">{userRankData?.averageAccuracy ? String(Math.round(userRankData.averageAccuracy)) : '0'}%</span>
                   </div>
                 </div>
                 <div className="space-y-2">
