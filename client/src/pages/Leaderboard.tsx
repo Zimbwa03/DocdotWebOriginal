@@ -173,18 +173,18 @@ export default function Leaderboard() {
               <div className="hidden md:block">
                 <div className="text-sm font-semibold text-gray-900 flex items-center">
                   <Zap className="w-4 h-4 mr-1 text-yellow-500" />
-                  {timeFrame === 'weekly' ? entry.weeklyXP : 
-                   timeFrame === 'monthly' ? entry.monthlyXP : entry.totalXP} XP
+                  {String(timeFrame === 'weekly' ? entry.weeklyXP : 
+                   timeFrame === 'monthly' ? entry.monthlyXP : entry.totalXP)} XP
                 </div>
                 <div className="text-xs text-gray-500">
-                  {entry.totalBadges} badges
+                  {String(entry.totalBadges)} badges
                 </div>
               </div>
 
               <div className="flex items-center space-x-2">
                 {getRankChange(entry.rankChange)}
                 <div className="text-xs text-gray-400">
-                  {Math.abs(entry.rankChange || 0) > 0 ? Math.abs(entry.rankChange || 0) : ''}
+                  {Math.abs(entry.rankChange || 0) > 0 ? String(Math.abs(entry.rankChange || 0)) : ''}
                 </div>
               </div>
             </div>
@@ -350,7 +350,7 @@ export default function Leaderboard() {
             <CardTitle className="text-lg">Active Students</CardTitle>
           </CardHeader>
           <CardContent className="text-center">
-            <p className="text-2xl font-bold text-blue-600">{entries.length}</p>
+            <p className="text-2xl font-bold text-blue-600">{String(entries.length)}</p>
           </CardContent>
         </Card>
       </div>
