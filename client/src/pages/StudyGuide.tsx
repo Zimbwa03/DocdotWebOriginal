@@ -273,7 +273,7 @@ export default function StudyGuide() {
     };
   }, [isRunning, timeLeft, studyGoal, breakTime, isPomodoroMode, isBreak]);
 
-  // Audio control functions
+  // Audio control functions - Mobile-friendly implementation
   const playBackgroundAudio = () => {
     if (selectedAudioTrack && !isMuted) {
       const track = audioTracks.find(t => t.id === selectedAudioTrack);
@@ -281,24 +281,131 @@ export default function StudyGuide() {
         // Calculate final volume (master volume * audio volume / 100)
         const finalVolume = (masterVolume * audioVolume) / 10000;
         
-        // Convert YouTube URL to audio-only format with volume control
-        const audioUrl = `https://www.youtube.com/embed/${track.youtubeId}?autoplay=1&loop=1&playlist=${track.youtubeId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&volume=${Math.round(finalVolume * 100)}`;
-        
-        // Create an iframe for YouTube audio
+        // Remove existing audio
         const existingFrame = document.getElementById('background-audio-frame');
         if (existingFrame) {
           existingFrame.remove();
         }
         
-        const iframe = document.createElement('iframe');
-        iframe.id = 'background-audio-frame';
-        iframe.src = audioUrl;
-        iframe.style.display = 'none';
-        iframe.allow = 'autoplay';
-        iframe.style.opacity = finalVolume.toString();
-        document.body.appendChild(iframe);
+        // For mobile browsers, we need to use a different approach
+        const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        if (isMobile) {
+          // For mobile devices, we need user interaction to start audio
+          // Create a mobile-friendly YouTube embed with user prompt
+          showMobileAudioPrompt(track);
+        } else {
+          // Desktop: Use YouTube iframe
+          const audioUrl = `https://www.youtube.com/embed/${track.youtubeId}?autoplay=1&loop=1&playlist=${track.youtubeId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&volume=${Math.round(finalVolume * 100)}`;
+          
+          const iframe = document.createElement('iframe');
+          iframe.id = 'background-audio-frame';
+          iframe.src = audioUrl;
+          iframe.style.display = 'none';
+          iframe.allow = 'autoplay; encrypted-media';
+          iframe.style.opacity = finalVolume.toString();
+          document.body.appendChild(iframe);
+        }
       }
     }
+  };
+
+  // Mobile audio prompt function
+  const showMobileAudioPrompt = (track: any) => {
+    // Remove any existing overlay
+    const existingOverlay = document.getElementById('mobile-audio-overlay');
+    if (existingOverlay) {
+      existingOverlay.remove();
+    }
+
+    // Calculate final volume
+    const finalVolume = (masterVolume * audioVolume) / 10000;
+    
+    // Create a user-friendly prompt overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'mobile-audio-overlay';
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      color: white;
+      font-family: system-ui;
+    `;
+    
+    overlay.innerHTML = `
+      <div style="text-align: center; padding: 20px; background: #1a1a1a; border-radius: 10px; margin: 20px; max-width: 90vw;">
+        <h3 style="margin-bottom: 10px;">🎵 Enable Background Music</h3>
+        <p style="margin-bottom: 15px;">Play "${track.title}" during your study session?</p>
+        <p style="margin-bottom: 20px; font-size: 14px; opacity: 0.8;">Mobile browsers require user interaction to play audio</p>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+          <button id="enable-audio-btn" style="
+            background: #3399FF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+          ">Start Music</button>
+          <button id="skip-audio-btn" style="
+            background: #666;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+          ">Skip Audio</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    
+    // Handle start music button
+    const startButton = document.getElementById('enable-audio-btn');
+    startButton?.addEventListener('click', () => {
+      // Create YouTube iframe with user interaction
+      const audioUrl = `https://www.youtube.com/embed/${track.youtubeId}?autoplay=1&loop=1&playlist=${track.youtubeId}&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1`;
+      
+      const iframe = document.createElement('iframe');
+      iframe.id = 'background-audio-frame';
+      iframe.src = audioUrl;
+      iframe.style.cssText = `
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        width: 1px;
+        height: 1px;
+        opacity: 0.01;
+        pointer-events: none;
+        z-index: -1;
+      `;
+      iframe.allow = 'autoplay; encrypted-media';
+      
+      document.body.appendChild(iframe);
+      overlay.remove();
+    });
+    
+    // Handle skip audio button
+    const skipButton = document.getElementById('skip-audio-btn');
+    skipButton?.addEventListener('click', () => {
+      overlay.remove();
+    });
+    
+    // Auto-remove overlay after 15 seconds
+    setTimeout(() => {
+      if (overlay.parentNode) {
+        overlay.remove();
+      }
+    }, 15000);
   };
 
   // Volume control functions
@@ -401,7 +508,18 @@ export default function StudyGuide() {
   const startTimer = () => {
     setIsRunning(true);
     if (isBackgroundMusicOn && selectedAudioTrack) {
-      playBackgroundAudio();
+      const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      if (isMobile) {
+        // For mobile, show immediate prompt when timer starts
+        const track = audioTracks.find(t => t.id === selectedAudioTrack);
+        if (track) {
+          showMobileAudioPrompt(track);
+        }
+      } else {
+        // Desktop can autoplay
+        playBackgroundAudio();
+      }
     }
   };
 
