@@ -359,7 +359,7 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl lg:text-3xl font-bold text-green-900">
-                  {loadingStats ? '...' : String(Math.round(stats.averageAccuracy || 0))}%
+                  {loadingStats ? '...' : String(Math.round(stats.averageScore || 0))}%
                 </div>
                 <div className="text-sm text-green-600">
                   {loadingStats ? '...' : String(stats.correctAnswers || 0)} of {loadingStats ? '...' : String(stats.totalQuestions || 0)} correct
@@ -444,6 +444,31 @@ export default function Home() {
                       Explore Badges
                     </Button>
                   </Link>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={async () => {
+                      if (user?.id) {
+                        try {
+                          const response = await fetch(`/api/initialize-user/${user.id}`, { 
+                            method: 'POST' 
+                          });
+                          if (response.ok) {
+                            await refetchStats();
+                            queryClient.invalidateQueries({ queryKey: ['/api/badges'] });
+                            queryClient.invalidateQueries({ queryKey: ['/api/user-stats'] });
+                            queryClient.invalidateQueries({ queryKey: ['/api/user-rank'] });
+                            window.location.reload();
+                          }
+                        } catch (error) {
+                         console.error('Error initializing user data:', error);
+                        }
+                      }
+                    }}
+                  >
+                    Initialize Data & Rankings
+                  </Button>
                   <Button 
                     variant="outline" 
                     size="sm" 
