@@ -18,7 +18,7 @@ interface GoogleDriveResourcesGridProps {
 }
 
 export default function GoogleDriveResourcesGrid({ searchQuery }: GoogleDriveResourcesGridProps) {
-  const { data: books, isLoading } = useQuery({
+  const { data: books, isLoading, error } = useQuery({
     queryKey: ['google-drive-files'],
     queryFn: async () => {
       const res = await fetch('/api/google-drive/files');
@@ -107,8 +107,33 @@ export default function GoogleDriveResourcesGrid({ searchQuery }: GoogleDriveRes
           </CardFooter>
         </Card>
       ))}
-      {filteredBooks.length === 0 && !isLoading && (
-        <div className="col-span-full text-center py-12">
+      {isLoading && (
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading medical books...</p>
+        </div>
+      )}
+
+      {error && (
+        <div className="text-center py-8">
+          <Book className="w-16 h-16 text-red-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-red-600 mb-2">
+            Failed to load books
+          </h3>
+          <p className="text-red-500 mb-4">
+            There was an error loading the medical books from Google Drive.
+          </p>
+          <Button 
+            onClick={() => window.location.reload()} 
+            variant="outline"
+          >
+            Try Again
+          </Button>
+        </div>
+      )}
+
+      {!isLoading && !error && filteredBooks.length === 0 && (
+        <div className="text-center py-12">
           <Book className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-600 mb-2">
             No books found

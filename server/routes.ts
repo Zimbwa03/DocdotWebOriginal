@@ -1542,6 +1542,7 @@ CRITICAL FORMATTING RULES:
       console.error('Google Drive API error:', error);
       res.status(500).json({ 
         error: 'Failed to fetch Google Drive files',
+        files: [],
         message: 'Check Google Drive API credentials and folder permissions'
       });
     }
@@ -1556,8 +1557,31 @@ CRITICAL FORMATTING RULES:
       console.error('Google Drive preview error:', error);
       res.status(500).json({ 
         error: 'Failed to generate file preview',
+        previewUrl: `https://drive.google.com/file/d/${req.params.fileId}/preview`,
         message: 'File preview unavailable'
       });
+    }
+  });
+
+  app.get('/api/google-drive/auth', async (req, res) => {
+    try {
+      res.json({
+        authUrl: null,
+        message: 'Service account authentication is configured'
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to get authorization URL' });
+    }
+  });
+
+  app.get('/api/google-drive/status', async (req, res) => {
+    try {
+      const { getMedicalBooks } = await import('./google-drive.js');
+      const files = await getMedicalBooks();
+      res.json({ connected: files.length > 0 });
+    } catch (error) {
+      console.error('Error checking Google Drive status:', error);
+      res.status(500).json({ connected: false, error: 'Failed to check connection status' });
     }
   });
 
