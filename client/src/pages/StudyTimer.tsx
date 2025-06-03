@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -7,78 +7,146 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Play, Pause, SkipForward, Music } from "lucide-react";
+import { 
+  Play, 
+  Pause, 
+  SkipForward, 
+  Music, 
+  VolumeX, 
+  Volume2, 
+  Coffee, 
+  Brain, 
+  Target,
+  Trophy,
+  Flame,
+  Clock,
+  Settings,
+  RotateCcw
+} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiRequest } from "@/lib/queryClient";
+
+// Music tracks for different study environments
+const MUSIC_TRACKS = [
+  { name: "Lo-Fi Study", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", genre: "Lo-Fi" },
+  { name: "Rain Sounds", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", genre: "Nature" },
+  { name: "Forest Ambience", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3", genre: "Nature" },
+  { name: "Piano Focus", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3", genre: "Classical" },
+  { name: "Café Ambience", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3", genre: "Ambient" },
+];
+
+const MOTIVATIONAL_QUOTES = [
+  "Great things never come from comfort zones.",
+  "Success is the sum of small efforts repeated day in and day out.",
+  "The expert in anything was once a beginner.",
+  "Don't watch the clock; do what it does. Keep going.",
+  "Education is the most powerful weapon you can use to change the world.",
+  "The beautiful thing about learning is that no one can take it away from you.",
+  "Study while others are sleeping; work while others are loafing.",
+  "Your limitation—it's only your imagination.",
+];
 
 export default function StudyTimer() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Timer states
   const [studyGoal, setStudyGoal] = useState(25);
+  const [shortBreak, setShortBreak] = useState(5);
+  const [longBreak, setLongBreak] = useState(15);
   const [isRunning, setIsRunning] = useState(false);
   const [timeLeft, setTimeLeft] = useState(studyGoal * 60);
-  const [isPomodoroMode, setIsPomodoroMode] = useState(false);
-  const [isBreak, setIsBreak] = useState(false);
-  const [breakTime, setBreakTime] = useState(5);
+  const [isPomodoroMode, setIsPomodoroMode] = useState(true);
+  const [currentPhase, setCurrentPhase] = useState<'study' | 'shortBreak' | 'longBreak'>('study');
+  const [pomodoroCount, setPomodoroCount] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [notes, setNotes] = useState("");
   const [totalTimeStudied, setTotalTimeStudied] = useState(0);
+  const [dailyGoal, setDailyGoal] = useState(120); // minutes
+  const [streakCount, setStreakCount] = useState(0);
+
+  // Music and sound states
   const [isBackgroundMusicOn, setIsBackgroundMusicOn] = useState(false);
+  const [currentTrack, setCurrentTrack] = useState(0);
+  const [volume, setVolume] = useState(50);
+  const [isMuted, setIsMuted] = useState(false);
+
+  // UI states
+  const [showSettings, setShowSettings] = useState(false);
+  const [motivationalQuote, setMotivationalQuote] = useState("");
+  const [showProgress, setShowProgress] = useState(true);
+
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const notificationAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const { data: categories } = useQuery({
     queryKey: ['/api/note-categories'],
   });
 
+  // Initialize audio and motivational quote
   useEffect(() => {
-    // Initialize audio
-    audioRef.current = new Audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3");
+    // Initialize background music
+    audioRef.current = new Audio(MUSIC_TRACKS[currentTrack].url);
     audioRef.current.loop = true;
+    audioRef.current.volume = volume / 100;
+
+    // Initialize notification sound
+    notificationAudioRef.current = new Audio("data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvGIcBjiS2O7Pcz+LJpzS8Nnz+LLI1dnS+6fO1LLVzPK1+rK9z8/OvPawye7t+7C+zLu9");
+
+    // Set initial motivational quote
+    setMotivationalQuote(MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)]);
     
     return () => {
-      // Clean up audio on unmount
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.src = "";
       }
+      if (notificationAudioRef.current) {
+        notificationAudioRef.current.src = "";
+      }
     };
   }, []);
 
-  // Reset timer when goal changes
-  useEffect(() => {
-    if (!isRunning) {
-      setTimeLeft(studyGoal * 60);
-    }
-  }, [studyGoal, isRunning]);
-
-  // Background music control
+  // Update audio track when currentTrack changes
   useEffect(() => {
     if (audioRef.current) {
-      if (isBackgroundMusicOn && isRunning) {
-        audioRef.current.play().catch(err => console.error("Error playing audio:", err));
-      } else {
-        audioRef.current.pause();
+      const wasPlaying = !audioRef.current.paused;
+      audioRef.current.src = MUSIC_TRACKS[currentTrack].url;
+      audioRef.current.volume = volume / 100;
+      if (wasPlaying && isBackgroundMusicOn) {
+        audioRef.current.play().catch(console.error);
       }
     }
-  }, [isBackgroundMusicOn, isRunning]);
+  }, [currentTrack]);
 
-  // Timer logic
+  // Update volume
   useEffect(() => {
-    if (isRunning) {
+    if (audioRef.current) {
+      audioRef.current.volume = isMuted ? 0 : volume / 100;
+    }
+  }, [volume, isMuted]);
+
+  // Reset timer when settings change
+  useEffect(() => {
+    if (!isRunning) {
+      const duration = getCurrentPhaseDuration();
+      setTimeLeft(duration * 60);
+    }
+  }, [studyGoal, shortBreak, longBreak, currentPhase, isRunning]);
+
+  // Timer countdown logic with enhanced features
+  useEffect(() => {
+    if (isRunning && timeLeft > 0) {
       timerRef.current = setInterval(() => {
-        setTimeLeft(prev => {
-          if (prev <= 1) {
-            clearInterval(timerRef.current!);
-            handleTimerComplete();
-            return 0;
-          }
-          return prev - 1;
-        });
+        setTimeLeft(prev => prev - 1);
       }, 1000);
-    } else if (timerRef.current) {
-      clearInterval(timerRef.current);
+    } else if (timeLeft === 0) {
+      handlePhaseComplete();
     }
 
     return () => {
@@ -86,83 +154,119 @@ export default function StudyTimer() {
         clearInterval(timerRef.current);
       }
     };
-  }, [isRunning, isBreak]);
+  }, [isRunning, timeLeft]);
 
-  const handleTimerComplete = () => {
-    if (isPomodoroMode) {
-      if (isBreak) {
-        // Break completed, start work session
-        setIsBreak(false);
-        setTimeLeft(studyGoal * 60);
-        toast({
-          title: "Break completed",
-          description: "Time to get back to work!",
-        });
-      } else {
-        // Work session completed, start break
-        setIsBreak(true);
-        setTimeLeft(breakTime * 60);
-        
-        // Record completed work session
-        if (user) {
-          recordStudySession();
-        }
-        
-        toast({
-          title: "Work session completed",
-          description: "Take a short break!",
-        });
-      }
-      setIsRunning(true);
-    } else {
-      // Regular timer completed
-      setIsRunning(false);
-      
-      if (user) {
-        recordStudySession();
-      }
-      
-      toast({
-        title: "Study session completed",
-        description: "Great job! You've completed your study goal.",
-      });
+  // Functions
+  const getCurrentPhaseDuration = () => {
+    switch (currentPhase) {
+      case 'study': return studyGoal;
+      case 'shortBreak': return shortBreak;
+      case 'longBreak': return longBreak;
+      default: return studyGoal;
     }
   };
 
-  const recordStudySession = async () => {
-    if (!user) return;
+  const handlePhaseComplete = () => {
+    setIsRunning(false);
     
-    try {
-      const sessionData = {
-        userId: user.id,
-        duration: studyGoal,
-        categoryId: selectedCategory ? parseInt(selectedCategory) : undefined,
-        notes: notes || undefined
-      };
-      
-      await apiRequest("POST", "/api/study-sessions", sessionData);
-      
-      // Update total time studied
+    // Play notification sound
+    if (notificationAudioRef.current) {
+      notificationAudioRef.current.play().catch(console.error);
+    }
+
+    if (isPomodoroMode) {
+      if (currentPhase === 'study') {
+        const newCount = pomodoroCount + 1;
+        setPomodoroCount(newCount);
+        setTotalTimeStudied(prev => prev + studyGoal);
+        setStreakCount(prev => prev + 1);
+
+        // Determine next phase
+        if (newCount % 4 === 0) {
+          setCurrentPhase('longBreak');
+          setTimeLeft(longBreak * 60);
+          toast({
+            title: "Excellent Work!",
+            description: `You've completed ${newCount} Pomodoros! Time for a long break.`,
+          });
+        } else {
+          setCurrentPhase('shortBreak');
+          setTimeLeft(shortBreak * 60);
+          toast({
+            title: "Pomodoro Complete!",
+            description: `Great focus! Take a short break. Pomodoros: ${newCount}`,
+          });
+        }
+      } else {
+        // Break finished
+        setCurrentPhase('study');
+        setTimeLeft(studyGoal * 60);
+        // Set new motivational quote
+        setMotivationalQuote(MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)]);
+        toast({
+          title: "Ready to Focus!",
+          description: "Break's over! Let's get back to productive studying.",
+        });
+      }
+    } else {
       setTotalTimeStudied(prev => prev + studyGoal);
-      
-    } catch (error) {
-      console.error("Failed to record study session:", error);
+      setStreakCount(prev => prev + 1);
       toast({
-        title: "Error",
-        description: "Failed to record your study session.",
-        variant: "destructive",
+        title: "Session Complete!",
+        description: `Excellent! You studied for ${studyGoal} minutes.`,
       });
     }
   };
 
-  const toggleTimer = () => {
-    setIsRunning(!isRunning);
+  // Control functions
+  const startTimer = () => {
+    setIsRunning(true);
+    if (isBackgroundMusicOn && audioRef.current) {
+      audioRef.current.play().catch(console.error);
+    }
+  };
+
+  const pauseTimer = () => {
+    setIsRunning(false);
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
   };
 
   const resetTimer = () => {
     setIsRunning(false);
-    setIsBreak(false);
-    setTimeLeft(studyGoal * 60);
+    setPomodoroCount(0);
+    setCurrentPhase('study');
+    const duration = getCurrentPhaseDuration();
+    setTimeLeft(duration * 60);
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+  };
+
+  const skipPhase = () => {
+    if (isPomodoroMode) {
+      handlePhaseComplete();
+    } else {
+      resetTimer();
+    }
+  };
+
+  const toggleMusic = () => {
+    setIsBackgroundMusicOn(!isBackgroundMusicOn);
+    if (!isBackgroundMusicOn) {
+      if (isRunning && audioRef.current) {
+        audioRef.current.play().catch(console.error);
+      }
+    } else {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    }
+  };
+
+  const nextTrack = () => {
+    setCurrentTrack((prev) => (prev + 1) % MUSIC_TRACKS.length);
   };
 
   const formatTime = (seconds: number) => {
@@ -171,226 +275,305 @@ export default function StudyTimer() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const calculateProgress = () => {
-    const totalSeconds = isBreak ? breakTime * 60 : studyGoal * 60;
-    return ((totalSeconds - timeLeft) / totalSeconds) * 100;
+  const getPhaseIcon = () => {
+    switch (currentPhase) {
+      case 'study': return <Brain className="w-5 h-5" />;
+      case 'shortBreak': return <Coffee className="w-5 h-5" />;
+      case 'longBreak': return <Coffee className="w-5 h-5" />;
+      default: return <Brain className="w-5 h-5" />;
+    }
   };
 
+  const getPhaseColor = () => {
+    switch (currentPhase) {
+      case 'study': return '#3399FF';
+      case 'shortBreak': return '#10B981';
+      case 'longBreak': return '#8B5CF6';
+      default: return '#3399FF';
+    }
+  };
+
+  const progressPercentage = ((getCurrentPhaseDuration() * 60 - timeLeft) / (getCurrentPhaseDuration() * 60)) * 100;
+  const dailyProgressPercentage = (totalTimeStudied / dailyGoal) * 100;
+
   return (
-    <div className="py-12 bg-white dark:bg-dark-900 min-h-screen">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="lg:text-center mb-10">
-          <h2 className="text-base text-secondary-600 dark:text-secondary-400 font-semibold tracking-wide uppercase">Study Timer</h2>
-          <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
-            Focus and track your study time
-          </p>
-          <p className="mt-4 max-w-2xl text-xl text-gray-500 dark:text-gray-300 lg:mx-auto">
-            Use the timer to stay focused and track your study sessions. Set goals and watch your progress.
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4">
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* Header with Stats */}
+        <div className="text-center space-y-4">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Advanced Study Timer
+          </h1>
+          <div className="flex justify-center space-x-6">
+            <div className="flex items-center space-x-2">
+              <Flame className="w-5 h-5 text-orange-500" />
+              <span className="text-sm text-gray-600 dark:text-gray-300">Streak: {streakCount}</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Trophy className="w-5 h-5 text-yellow-500" />
+              <span className="text-sm text-gray-600 dark:text-gray-300">Pomodoros: {pomodoroCount}</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Target className="w-5 h-5 text-green-500" />
+              <span className="text-sm text-gray-600 dark:text-gray-300">Today: {totalTimeStudied}min</span>
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          <div className="lg:col-span-2">
-            <Card className="shadow-lg">
+        {/* Main Timer Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Timer Display */}
+          <Card className="lg:col-span-2">
+            <CardHeader className="text-center">
+              <div className="flex items-center justify-center space-x-2 mb-2">
+                {getPhaseIcon()}
+                <CardTitle style={{ color: getPhaseColor() }}>
+                  {currentPhase === 'study' ? 'Focus Time' : 
+                   currentPhase === 'shortBreak' ? 'Short Break' : 'Long Break'}
+                </CardTitle>
+              </div>
+              {motivationalQuote && (
+                <p className="text-sm text-gray-600 dark:text-gray-300 italic">
+                  "{motivationalQuote}"
+                </p>
+              )}
+            </CardHeader>
+            <CardContent className="text-center space-y-6">
+              {/* Circular Progress Timer */}
+              <div className="relative w-64 h-64 mx-auto">
+                <svg className="w-64 h-64 transform -rotate-90" viewBox="0 0 100 100">
+                  {/* Background circle */}
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    className="text-gray-200 dark:text-gray-700"
+                  />
+                  {/* Progress circle */}
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    fill="none"
+                    stroke={getPhaseColor()}
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    strokeDasharray={`${progressPercentage * 2.827} 283`}
+                    className="transition-all duration-1000 ease-out"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-gray-900 dark:text-gray-100">
+                      {formatTime(timeLeft)}
+                    </div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      {Math.floor(progressPercentage)}% complete
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Control Buttons */}
+              <div className="flex justify-center space-x-4">
+                <Button
+                  onClick={isRunning ? pauseTimer : startTimer}
+                  size="lg"
+                  className="px-8"
+                  style={{ backgroundColor: getPhaseColor() }}
+                >
+                  {isRunning ? (
+                    <><Pause className="w-5 h-5 mr-2" /> Pause</>
+                  ) : (
+                    <><Play className="w-5 h-5 mr-2" /> Start</>
+                  )}
+                </Button>
+                <Button onClick={resetTimer} variant="outline" size="lg">
+                  <RotateCcw className="w-5 h-5 mr-2" /> Reset
+                </Button>
+                {isPomodoroMode && (
+                  <Button onClick={skipPhase} variant="outline" size="lg">
+                    <SkipForward className="w-5 h-5 mr-2" /> Skip
+                  </Button>
+                )}
+              </div>
+
+              {/* Daily Progress */}
+              {showProgress && (
+                <div className="mt-6">
+                  <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-2">
+                    <span>Daily Goal Progress</span>
+                    <span>{totalTimeStudied}/{dailyGoal} minutes</span>
+                  </div>
+                  <Progress value={dailyProgressPercentage} className="h-2" />
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Settings and Music Panel */}
+          <div className="space-y-6">
+            {/* Music Controls */}
+            <Card>
               <CardHeader>
-                <CardTitle className="text-center text-2xl">
-                  {isBreak ? "Break Time" : "Study Timer"}
+                <CardTitle className="flex items-center space-x-2">
+                  <Music className="w-5 h-5" />
+                  <span>Background Music</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex flex-col items-center">
-                <div className="w-64 h-64 relative flex items-center justify-center mb-8">
-                  <svg className="w-full h-full" viewBox="0 0 100 100">
-                    <circle
-                      className="text-gray-200 dark:text-gray-700 stroke-current"
-                      strokeWidth="4"
-                      cx="50"
-                      cy="50"
-                      r="40"
-                      fill="transparent"
-                    />
-                    <circle
-                      className="text-primary-500 stroke-current progress-ring-circle"
-                      strokeWidth="4"
-                      strokeLinecap="round"
-                      cx="50"
-                      cy="50"
-                      r="40"
-                      fill="transparent"
-                      strokeDasharray={2 * Math.PI * 40}
-                      strokeDashoffset={2 * Math.PI * 40 * (1 - calculateProgress() / 100)}
-                    />
-                    <text
-                      x="50"
-                      y="50"
-                      fontSize="16"
-                      textAnchor="middle"
-                      alignmentBaseline="middle"
-                      fill="currentColor"
-                      className="text-4xl font-bold"
-                    >
-                      {formatTime(timeLeft)}
-                    </text>
-                  </svg>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label>Enable Music</Label>
+                  <Switch checked={isBackgroundMusicOn} onCheckedChange={toggleMusic} />
                 </div>
+                
+                {isBackgroundMusicOn && (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Current Track</Label>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium">{MUSIC_TRACKS[currentTrack].name}</p>
+                          <p className="text-xs text-gray-500">{MUSIC_TRACKS[currentTrack].genre}</p>
+                        </div>
+                        <Button onClick={nextTrack} variant="outline" size="sm">
+                          <SkipForward className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
 
-                <div className="grid grid-cols-3 gap-4 w-full max-w-md">
-                  <Button
-                    variant={isRunning ? "outline" : "default"}
-                    className="col-span-2"
-                    onClick={toggleTimer}
-                  >
-                    {isRunning ? (
-                      <>
-                        <Pause className="mr-2 h-4 w-4" /> Pause
-                      </>
-                    ) : (
-                      <>
-                        <Play className="mr-2 h-4 w-4" /> Start
-                      </>
-                    )}
-                  </Button>
-                  <Button variant="outline" onClick={resetTimer}>
-                    <SkipForward className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                <div className="mt-8 w-full max-w-md">
-                  <div className="flex items-center justify-between mb-2">
-                    <Label htmlFor="goal-slider">{isBreak ? "Break" : "Study"} Duration (minutes)</Label>
-                    <span>{isBreak ? breakTime : studyGoal} min</span>
-                  </div>
-                  <Slider
-                    id="goal-slider"
-                    min={1}
-                    max={60}
-                    step={1}
-                    value={[isBreak ? breakTime : studyGoal]}
-                    onValueChange={(value) => {
-                      if (isBreak) {
-                        setBreakTime(value[0]);
-                      } else {
-                        setStudyGoal(value[0]);
-                      }
-                    }}
-                    disabled={isRunning}
-                  />
-                </div>
-
-                <div className="mt-6 flex items-center justify-between w-full max-w-md">
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="pomodoro-mode"
-                      checked={isPomodoroMode}
-                      onCheckedChange={setIsPomodoroMode}
-                      disabled={isRunning}
-                    />
-                    <Label htmlFor="pomodoro-mode">Pomodoro Mode</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="background-music"
-                      checked={isBackgroundMusicOn}
-                      onCheckedChange={setIsBackgroundMusicOn}
-                    />
-                    <Label htmlFor="background-music" className="flex items-center">
-                      <Music className="h-4 w-4 mr-1" /> Background Music
-                    </Label>
-                  </div>
-                </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label>Volume</Label>
+                        <Button
+                          onClick={() => setIsMuted(!isMuted)}
+                          variant="ghost"
+                          size="sm"
+                        >
+                          {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                        </Button>
+                      </div>
+                      <Slider
+                        value={[volume]}
+                        onValueChange={(value) => setVolume(value[0])}
+                        max={100}
+                        step={5}
+                        disabled={isMuted}
+                      />
+                    </div>
+                  </>
+                )}
               </CardContent>
-              <CardFooter className="flex justify-between">
-                <div>
-                  {totalTimeStudied > 0 && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Total time studied today: {Math.floor(totalTimeStudied / 60)}h {totalTimeStudied % 60}m
-                    </p>
-                  )}
-                </div>
-                <div>
-                  {isPomodoroMode && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Mode: {isBreak ? "Break" : "Work"}
-                    </p>
-                  )}
-                </div>
-              </CardFooter>
             </Card>
-          </div>
 
-          <div>
-            <Card className="shadow-lg">
+            {/* Timer Settings */}
+            <Card>
               <CardHeader>
-                <CardTitle>Session Details</CardTitle>
+                <CardTitle className="flex items-center space-x-2">
+                  <Settings className="w-5 h-5" />
+                  <span>Timer Settings</span>
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="category">Study Category</Label>
-                  <Select 
-                    value={selectedCategory} 
-                    onValueChange={setSelectedCategory}
-                    disabled={isRunning}
-                  >
-                    <SelectTrigger id="category">
-                      <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="uncategorized">Uncategorized</SelectItem>
-                      {categories?.map((category: any) => (
-                        <SelectItem key={category.id} value={category.id.toString()}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <div className="flex items-center justify-between">
+                  <Label>Pomodoro Mode</Label>
+                  <Switch checked={isPomodoroMode} onCheckedChange={setIsPomodoroMode} />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="notes">Session Notes</Label>
-                  <Textarea
-                    id="notes"
-                    placeholder="What are you studying today?"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    className="min-h-[120px]"
+                  <Label>Study Duration: {studyGoal} minutes</Label>
+                  <Slider
+                    value={[studyGoal]}
+                    onValueChange={(value) => setStudyGoal(value[0])}
+                    min={1}
+                    max={120}
+                    step={1}
+                    disabled={isRunning}
                   />
                 </div>
-              </CardContent>
-              <CardFooter>
-                {!user && (
-                  <p className="text-sm text-amber-600 dark:text-amber-400">
-                    Login to save your study sessions and track your progress.
-                  </p>
-                )}
-              </CardFooter>
-            </Card>
 
-            <Card className="shadow-lg mt-6">
-              <CardHeader>
-                <CardTitle>Study Tips</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-                  <li className="flex items-start">
-                    <span className="text-primary-500 mr-2">•</span>
-                    <span>Break complex topics into manageable chunks</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-primary-500 mr-2">•</span>
-                    <span>Use active recall instead of passive reading</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-primary-500 mr-2">•</span>
-                    <span>Take short breaks to maintain focus (Pomodoro technique)</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-primary-500 mr-2">•</span>
-                    <span>Stay hydrated and maintain proper posture</span>
-                  </li>
-                </ul>
+                {isPomodoroMode && (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Short Break: {shortBreak} minutes</Label>
+                      <Slider
+                        value={[shortBreak]}
+                        onValueChange={(value) => setShortBreak(value[0])}
+                        min={1}
+                        max={30}
+                        step={1}
+                        disabled={isRunning}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Long Break: {longBreak} minutes</Label>
+                      <Slider
+                        value={[longBreak]}
+                        onValueChange={(value) => setLongBreak(value[0])}
+                        min={5}
+                        max={60}
+                        step={1}
+                        disabled={isRunning}
+                      />
+                    </div>
+                  </>
+                )}
+
+                <div className="space-y-2">
+                  <Label>Daily Goal: {dailyGoal} minutes</Label>
+                  <Slider
+                    value={[dailyGoal]}
+                    onValueChange={(value) => setDailyGoal(value[0])}
+                    min={30}
+                    max={600}
+                    step={30}
+                  />
+                </div>
               </CardContent>
             </Card>
           </div>
         </div>
+
+        {/* Study Notes Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Study Session Notes</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="category">Study Category</Label>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger id="category">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="uncategorized">Uncategorized</SelectItem>
+                    {categories && Array.isArray(categories) && categories.map((category: any) => (
+                      <SelectItem key={category.id} value={category.id.toString()}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="notes">Session Notes</Label>
+              <Textarea
+                id="notes"
+                placeholder="What are you studying today? Track your progress and thoughts..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
