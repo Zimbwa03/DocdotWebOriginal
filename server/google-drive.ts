@@ -1,13 +1,12 @@
 import { google } from 'googleapis';
 
-// Service account credentials from environment
-const serviceAccountCredentials = {
+const credentials = {
   type: "service_account",
   project_id: "docdotwp",
   private_key_id: "4046a45c87a0fe209e9f4eab3ac0be46033e5370",
-  private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n') || "",
+  private_key: "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDMkr7pjJELVd7N\nAve7+4Xxf5Mfj4vHPuQhc5QLsr98clF1MgqNfQ51UcXifnPIsGbFtZ0WRvqrsQ8a\nApO5vN9aCfw5cntVaeUCAShAVKmbm4bNU2Mxx/S++iyVte+kBuY5oyFfZz72hkja\nQMdzWTHrA/i0vhaGHmQueb/NIMQhY1svcdgFqZb452CSiDW+nsdm0G6Y4URzbeOk\neJQtnCdVrCUEvIWFeNsDxE/E0bqDGCRFiBTawDSnj2Ym8xDoRFIoPdhpfDErKnRm\nZnOb4OZklDW/+PNH7rVRnYB5tgA6ELR+sbDDU2RVH56bWsv8uQ+zz3fCmijxWtAP\nv1fkSNldAgMBAAECggEAAIQr5Sz/1+muKt6wcpIBvLuxffZMlQK/0qT9bg+6bTCT\n3toMesTvbc5e066CaxkLrI4QlaDPB/Kypg8oAXz/ioIIV+2So0/ygWnKImqhFVp0\nIaQg1cK6bgAo1dixGfBGhN8eudeDdvdpy0GeMnIg+4XcCwciL9Gqndw2AE+H2/zo\nc0aFIwAyttV//XjYKXabrZEdWp9p8N/W8Y+NcPndx/TI4kRx1/GGOnw5knVYQvwp\n4l0nhC+56AlQDvqUVvZPlrjFlFJcZ1IV1VBiwWNZVC4IcQ8xjC93S4G36rOOK9CG\nsehWpUV4paWH2EhT+bZUZ5bUkm2uBUEij9MqMy5AYQKBgQDnZSriLEq1KqBeRbky\nP/ZghrABlrTP+2qdnYxrq25aI4QKWG9AIALSlvAdZlAvZfMKhGhw6GBHVut/ZCDL\nXg9oGklPAm/gpcdaVYtl//wXBcdDKoQZfTrOO/C89LdS2nslOVgVmg3cgslf/2Lf\n8EBKX2NzmjF9KbzR/odoU/fTiQKBgQDiU3RyGisCQlZzBT+jXeQ8gWo4yoEE5LIk\nmENy6WcimPsoNnkOUHYTjd5SvklUH0XOVfVqxWx5mapBUXdjqCet82UOrMovlQln\nJUG3mASDVKT7av5IBmzkCAiqGwQjDMh3YhYyNSnMDOB5GCQZLlwccIl73RuEQkTQ\n70f+gbAeNQKBgF76M4PqUi/Sc0i+ralmf6ZXIl9EkKrds4FGbaC0GPN+qG/mpKNZ\ngE8YDS7EFB2gZwXmG0hc2Ufu8XK0kpFm5kQAph58DZfT8+OsQS94xuxcPtHe3aHo\nuP51s/abK7QiYXGB/BnBxfbA6A8zME5iusDMLnIA1FdfjlVTeBjmfk6hAoGAcQew\nzhNXi2dJ+WOTpqkLhVQ0kmxABwuYFEKe3NLIGTVBqZGa35U7gwSFFdnGkWaU3Dl9\nuXcjd49QwhJHh9PBDVTTEYMl7qGF8qderKwVBOnPA2kp2RqsYy3H9fxMEp0duNGZ\nuDVozGlZ6eAulwzaH7HsV5nTVjgqWhZGZEqshEkCgYEAnj9m3YPdjfvpuQ8hb0vf\nfPoqqaeS+3R246rlVfxwB0S5y6wcG+s+zhUwf8aFhcHJUFi9ixVmZaB97/5XmnU4\nn+0M0pHkuzFRA62RZT35eV8N7b39Hjj3KDoCiFQzgPEiyiYO04tsgUuQCYSJg8Ex\nckuR+CUvBuLVzsswyph3xiM=\n-----END PRIVATE KEY-----\n",
   client_email: "docdot-drive-access@docdotwp.iam.gserviceaccount.com",
-  client_id: process.env.GOOGLE_CLIENT_ID || "",
+  client_id: "110700333561911859060",
   auth_uri: "https://accounts.google.com/o/oauth2/auth",
   token_uri: "https://oauth2.googleapis.com/token",
   auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
@@ -15,136 +14,66 @@ const serviceAccountCredentials = {
   universe_domain: "googleapis.com"
 };
 
-// Initialize Google Drive API
 const auth = new google.auth.GoogleAuth({
-  credentials: serviceAccountCredentials,
+  credentials,
   scopes: ['https://www.googleapis.com/auth/drive.readonly']
 });
 
 const drive = google.drive({ version: 'v3', auth });
 
-// Extract folder ID from the shared link
-const FOLDER_ID = '1C3IdOlXofYJcUXuVRD8FHsLcPBjSTlEj';
-
-export interface DriveFile {
-  id: string;
-  name: string;
-  mimeType: string;
-  createdTime: string;
-  modifiedTime: string;
-  size: string;
-  webViewLink: string;
-  thumbnailLink?: string | null;
-}
-
-export async function getMedicalBooks(): Promise<DriveFile[]> {
+export async function listFiles() {
   try {
-    // Check if credentials are properly configured
-    if (!process.env.GOOGLE_PRIVATE_KEY || !process.env.GOOGLE_CLIENT_ID) {
-      console.log('Google Drive credentials not configured, returning sample data');
-      return getSampleBooks();
-    }
+    console.log('Fetching files from Google Drive...');
 
-    console.log('Attempting to fetch files from Google Drive folder:', FOLDER_ID);
-    
     const response = await drive.files.list({
-      q: `'${FOLDER_ID}' in parents and trashed=false`,
-      fields: 'files(id,name,mimeType,createdTime,modifiedTime,size,webViewLink,thumbnailLink)',
-      orderBy: 'name',
-      pageSize: 100
+      q: "mimeType='application/pdf' or mimeType='application/vnd.google-apps.document' or mimeType='application/msword' or mimeType='application/vnd.openxmlformats-officedocument.wordprocessingml.document'",
+      fields: 'files(id, name, mimeType, createdTime, modifiedTime, size, webViewLink, thumbnailLink)',
+      pageSize: 100,
+      orderBy: 'modifiedTime desc'
     });
 
-    const files = response.data.files || [];
-    console.log(`Found ${files.length} files in Google Drive`);
-    
-    if (files.length === 0) {
-      console.log('No files found in Google Drive folder, returning sample data');
-      return getSampleBooks();
-    }
-    
-    const driveFiles = files.map(file => ({
-      id: file.id || '',
-      name: file.name || '',
-      mimeType: file.mimeType || '',
-      createdTime: file.createdTime || '',
-      modifiedTime: file.modifiedTime || '',
-      size: file.size || '0',
-      webViewLink: file.webViewLink || '',
-      thumbnailLink: file.thumbnailLink || undefined
-    }));
-
-    console.log('Successfully mapped Google Drive files:', driveFiles.length);
-    return driveFiles;
+    console.log(`Found ${response.data.files?.length || 0} files`);
+    return response.data.files || [];
   } catch (error) {
-    console.error('Error fetching Google Drive files:', error);
-    console.error('Error details:', error.message);
-    
-    // Return sample data instead of empty array for better UX
-    return getSampleBooks();
+    console.error('Error fetching files from Google Drive:', error);
+    throw new Error('Failed to fetch files from Google Drive');
   }
 }
 
-function getSampleBooks(): DriveFile[] {
-  return [
-    {
-      id: 'sample1',
-      name: 'Gray\'s Anatomy for Students - 4th Edition.pdf',
-      mimeType: 'application/pdf',
-      createdTime: '2024-01-01T00:00:00.000Z',
-      modifiedTime: '2024-01-01T00:00:00.000Z',
-      size: '52428800',
-      webViewLink: 'https://drive.google.com/file/d/sample1/view',
-      thumbnailLink: undefined
-    },
-    {
-      id: 'sample2',
-      name: 'Netter\'s Atlas of Human Anatomy - 7th Edition.pdf',
-      mimeType: 'application/pdf',
-      createdTime: '2024-01-01T00:00:00.000Z',
-      modifiedTime: '2024-01-01T00:00:00.000Z',
-      size: '104857600',
-      webViewLink: 'https://drive.google.com/file/d/sample2/view',
-      thumbnailLink: undefined
-    },
-    {
-      id: 'sample3',
-      name: 'Guyton and Hall Textbook of Medical Physiology - 14th Edition.pdf',
-      mimeType: 'application/pdf',
-      createdTime: '2024-01-01T00:00:00.000Z',
-      modifiedTime: '2024-01-01T00:00:00.000Z',
-      size: '78643200',
-      webViewLink: 'https://drive.google.com/file/d/sample3/view',
-      thumbnailLink: undefined
-    },
-    {
-      id: 'sample4',
-      name: 'Robbins Basic Pathology - 10th Edition.pdf',
-      mimeType: 'application/pdf',
-      createdTime: '2024-01-01T00:00:00.000Z',
-      modifiedTime: '2024-01-01T00:00:00.000Z',
-      size: '94371840',
-      webViewLink: 'https://drive.google.com/file/d/sample4/view',
-      thumbnailLink: undefined
-    },
-    {
-      id: 'sample5',
-      name: 'Moore\'s Clinically Oriented Anatomy - 8th Edition.pdf',
-      mimeType: 'application/pdf',
-      createdTime: '2024-01-01T00:00:00.000Z',
-      modifiedTime: '2024-01-01T00:00:00.000Z',
-      size: '125829120',
-      webViewLink: 'https://drive.google.com/file/d/sample5/view',
-      thumbnailLink: undefined
-    }
-  ];
-}
-
-export async function getFilePreview(fileId: string): Promise<string> {
+export async function getFilePreviewUrl(fileId: string) {
   try {
-    // Return Google Drive preview URL
+    // For PDFs and documents, return Google Drive viewer URL
     return `https://drive.google.com/file/d/${fileId}/preview`;
   } catch (error) {
-    console.error('Error generating file preview:', error);
-    throw new Error('Failed to generate file preview');
+    console.error('Error getting preview URL:', error);
+    throw new Error('Failed to get preview URL');
+  }
+}
+
+export async function downloadFile(fileId: string) {
+  try {
+    const response = await drive.files.get({
+      fileId,
+      alt: 'media'
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('Error downloading file:', error);
+    throw new Error('Failed to download file');
+  }
+}
+
+export async function getFileMetadata(fileId: string) {
+  try {
+    const response = await drive.files.get({
+      fileId,
+      fields: 'id, name, mimeType, size, createdTime, modifiedTime, webViewLink, thumbnailLink'
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('Error getting file metadata:', error);
+    throw new Error('Failed to get file metadata');
   }
 }

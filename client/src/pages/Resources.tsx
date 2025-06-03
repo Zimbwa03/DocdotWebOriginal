@@ -20,20 +20,23 @@ interface DriveFile {
 export default function Resources() {
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { data: books, isLoading, error } = useQuery({
+  const { data: books, isLoading, error, refetch } = useQuery({
     queryKey: ['google-drive-files'],
     queryFn: async () => {
       console.log('Fetching books from Google Drive...');
       const res = await fetch('/api/google-drive/files');
       if (!res.ok) {
-        throw new Error('Failed to fetch books');
+        const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.error || 'Failed to fetch books');
       }
       const data = await res.json();
       console.log('Books data received:', data);
       return Array.isArray(data) ? data : [];
     },
     retry: 3,
-    retryDelay: 1000
+    retryDelay: 1000,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000 // 10 minutes
   });
 
   const filteredBooks = books?.filter(book => 
@@ -83,14 +86,28 @@ export default function Resources() {
           </TabsList>
 
           <TabsContent value="books" className="space-y-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                placeholder="Search medical books..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
+            <div className="flex gap-4 items-center">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  placeholder="Search medical books..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Button 
+                onClick={() => refetch()} 
+                variant="outline"
+                disabled={isLoading}
+                className="flex-shrink-0"
+              >
+                {isLoading ? (
+                  <div className="w-4 h-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-900" />
+                ) : (
+                  'Refresh'
+                )}
+              </Button>
             </div>
 
             {isLoading && (
@@ -102,7 +119,21 @@ export default function Resources() {
 
             {error && (
               <div className="text-center py-8">
-                <p className="text-red-600 dark:text-red-400">Failed to load books. Please check your connection.</p>
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 max-w-md mx-auto">
+                  <h3 className="text-lg font-medium text-red-800 dark:text-red-200 mb-2">
+                    Failed to Load Resources
+                  </h3>
+                  <p className="text-red-600 dark:text-red-400 mb-4">
+                    {error.message || 'Unable to connect to Google Drive. Please try again.'}
+                  </p>
+                  <Button 
+                    onClick={() => refetch()} 
+                    variant="outline"
+                    className="border-red-300 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/20"
+                  >
+                    Try Again
+                  </Button>
+                </div>
               </div>
             )}
 

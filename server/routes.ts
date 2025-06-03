@@ -17,7 +17,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const questionsPath = resolve(process.cwd(), "client", "public", "docdot-questions.json");
       const questionsData = readFileSync(questionsPath, "utf-8");
       const questions = JSON.parse(questionsData);
-      
+
       res.json(questions);
     } catch (error) {
       console.error("Error loading questions:", error);
@@ -42,13 +42,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/study-planner-sessions", async (req, res) => {
     try {
       const { title, subject, topic, date, startTime, endTime, duration, notes } = req.body;
-      
+
       const result = await db.execute(sql`
         INSERT INTO study_planner_sessions (title, subject, topic, date, start_time, end_time, duration, notes, created_at)
         VALUES (${title}, ${subject}, ${topic}, ${date}, ${startTime}, ${endTime}, ${duration}, ${notes}, NOW())
         RETURNING *
       `);
-      
+
       res.json(result[0]);
     } catch (error) {
       console.error("Error creating study session:", error);
@@ -76,13 +76,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/study-groups", async (req, res) => {
     try {
       const { title, description, meetingLink, meetingType, scheduledTime, duration, maxMembers } = req.body;
-      
+
       const result = await db.execute(sql`
         INSERT INTO study_groups (title, description, meeting_link, meeting_type, scheduled_time, duration, max_members, created_at)
         VALUES (${title}, ${description}, ${meetingLink}, ${meetingType}, ${scheduledTime}, ${duration}, ${maxMembers}, NOW())
         RETURNING *
       `);
-      
+
       res.json(result[0]);
     } catch (error) {
       console.error("Error creating study group:", error);
@@ -91,7 +91,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User profile management API routes
-  
+
   // Get user profile
   app.get("/api/user/:id", async (req, res) => {
     try {
@@ -122,11 +122,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const updates = req.body;
       const updatedUser = await dbStorage.updateUser(req.params.id, updates);
-      
+
       if (!updatedUser) {
         return res.status(404).json({ error: "User not found" });
       }
-      
+
       res.json(updatedUser);
     } catch (error) {
       res.status(500).json({ error: "Failed to update user" });
@@ -138,14 +138,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { userId } = req.params;
       const userStats = await dbStorage.getUserStats(userId);
-      
+
       if (!userStats) {
         // Initialize stats for new user
         await dbStorage.updateUserStats(userId, true, 0, 0);
         const newStats = await dbStorage.getUserStats(userId);
         return res.json(newStats || { totalXp: 0, level: 1, currentStreak: 0, averageAccuracy: 0, totalQuizzes: 0, totalTimeSpent: 0 });
       }
-      
+
       res.json(userStats);
     } catch (error) {
       console.error("Error fetching user stats:", error);
@@ -158,10 +158,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { userId } = req.params;
       const { isCorrect, xpEarned, timeSpent } = req.body;
-      
+
       await dbStorage.updateUserStats(userId, isCorrect, xpEarned || 10, timeSpent || 0);
       const updatedStats = await dbStorage.getUserStats(userId);
-      
+
       res.json(updatedStats);
     } catch (error) {
       console.error("Error updating user stats:", error);
@@ -174,7 +174,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { userId } = req.params;
       const limit = parseInt(req.query.limit as string) || 10;
-      
+
       const attempts = await dbStorage.getRecentQuizAttempts(userId, limit);
       res.json(attempts);
     } catch (error) {
@@ -188,7 +188,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const attemptData = req.body;
       const result = await dbStorage.recordQuizAttempt(attemptData);
-      
+
       // Update user stats based on quiz performance
       await dbStorage.updateUserStats(
         attemptData.userId, 
@@ -196,7 +196,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         attemptData.isCorrect ? 10 : 0, 
         attemptData.timeSpent || 0
       );
-      
+
       res.json(result);
     } catch (error) {
       console.error("Error recording quiz attempt:", error);
@@ -227,10 +227,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/badges/:userId", async (req, res) => {
     try {
       const { userId } = req.params;
-      
+
       // Initialize badges if not exists
       await dbStorage.initializeBadges();
-      
+
       const badges = await dbStorage.getUserBadges(userId);
       res.json(badges);
     } catch (error) {
@@ -258,9 +258,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limit = parseInt(req.query.limit as string) || 50;
       const category = req.query.category as string;
       const timeFrame = req.query.timeFrame as string || 'all-time';
-      
+
       const leaderboardData = await dbStorage.getEnhancedLeaderboard(limit, category, timeFrame);
-      
+
       // Ensure we always return the expected structure
       const response = {
         entries: leaderboardData.entries || [],
@@ -269,7 +269,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           'Physiology - Cardiovascular System', 'Physiology - Respiratory System'
         ]
       };
-      
+
       res.json(response);
     } catch (error) {
       console.error("Error fetching leaderboard:", error);
@@ -287,11 +287,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { userId } = req.query;
       const category = req.query.category as string;
       const timeFrame = req.query.timeFrame as string || 'all-time';
-      
+
       if (!userId) {
         return res.status(400).json({ error: "User ID required" });
       }
-      
+
       const rankData = await dbStorage.getUserRank(userId as string, category, timeFrame);
       res.json(rankData);
     } catch (error) {
@@ -341,7 +341,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Add sample quiz attempts
         const attempts = Math.floor(Math.random() * 50) + 10;
         const correctRate = 0.6 + Math.random() * 0.3; // 60-90% accuracy
-        
+
         for (let i = 0; i < attempts; i++) {
           const isCorrect = Math.random() < correctRate;
           await dbStorage.updateUserStats(userData.id, isCorrect, isCorrect ? 10 : 2, Math.random() * 60);
@@ -359,10 +359,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/initialize-user/:userId", async (req, res) => {
     try {
       const { userId } = req.params;
-      
+
       // Always create/update comprehensive user stats for better demo experience
       let userStats = await dbStorage.getUserStats(userId);
-      
+
       // Create base user record if it doesn't exist
       try {
         const existingUser = await dbStorage.getUser(userId);
@@ -377,7 +377,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } catch (userError) {
         console.log('User creation handled:', userError.message);
       }
-      
+
       // Initialize comprehensive stats regardless of existing data
       const statUpdates = [
         { correct: true, xp: 150, time: 600 },
@@ -389,11 +389,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         { correct: false, xp: 15, time: 360 },
         { correct: true, xp: 200, time: 660 }
       ];
-      
+
       for (const update of statUpdates) {
         await dbStorage.updateUserStats(userId, update.correct, update.xp, update.time);
       }
-      
+
       // Update category stats for all medical subjects
       const categories = [
         { name: 'Anatomy - Upper Limb', correct: true, time: 360 },
@@ -404,11 +404,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         { name: 'Pathology', correct: false, time: 280 },
         { name: 'Pharmacology', correct: true, time: 350 }
       ];
-      
+
       for (const cat of categories) {
         await dbStorage.updateCategoryStats(userId, cat.name, cat.correct, cat.time);
       }
-      
+
       // Update daily stats for past week
       const today = new Date();
       for (let i = 0; i < 7; i++) {
@@ -416,21 +416,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         date.setDate(date.getDate() - i);
         await dbStorage.updateDailyStats(userId, 'Anatomy', i % 3 !== 0, 80 + (i * 10));
       }
-      
+
       // Get updated stats
       userStats = await dbStorage.getUserStats(userId);
-      
+
       // Initialize badges system and check progress
       await dbStorage.initializeBadges();
       await dbStorage.checkBadgeProgress(userId);
-      
+
       // Update leaderboard position
       await dbStorage.updateLeaderboard(userId);
       await dbStorage.updateLeaderboardRanks();
-      
+
       const badges = await dbStorage.getUserBadges(userId);
       const rank = await dbStorage.getUserRank(userId);
-      
+
       res.json({
         stats: userStats,
         badges: badges || { earned: [], available: [] },
@@ -445,7 +445,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // AI-powered endpoints
-  
+
   // Get AI chat sessions for user (disabled for now)
   // app.get("/api/ai/sessions/:userId", async (req, res) => {
   //   try {
@@ -483,7 +483,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { message = "What is myocardial infarction?" } = req.body;
       console.log("Testing OpenRouter API with message:", message);
-      
+
       // Direct API test without any database dependencies
       const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
       if (!OPENROUTER_API_KEY) {
@@ -520,7 +520,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const data = await response.json();
       const aiResponse = data.choices[0]?.message?.content || 'No response generated';
-      
+
       res.json({ response: aiResponse, success: true });
     } catch (error: any) {
       console.error("OpenRouter test error:", error);
@@ -532,9 +532,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/ai/chat", async (req, res) => {
     try {
       const { message, context, userId, sessionId, toolType = 'tutor' } = req.body;
-      
+
       console.log("Received AI chat request:", { message, context, userId, toolType });
-      
+
       // Direct DeepSeek API call for AI chat
       const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
       if (!DEEPSEEK_API_KEY) {
@@ -595,11 +595,11 @@ ${context ? `Context: ${context}` : ''}`;
 
       const data = await response.json();
       const aiResponse = data.choices[0]?.message?.content || 'I apologize, but I could not generate a response.';
-      
+
       res.json({ response: aiResponse, sessionId: sessionId || uuidv4() });
     } catch (error: any) {
       console.error("AI Chat error:", error);
-      
+
       // Check if it's a timeout error
       if (error.name === 'AbortError') {
         return res.status(408).json({ 
@@ -607,7 +607,7 @@ ${context ? `Context: ${context}` : ''}`;
           message: "The AI service is taking too long to respond. Please try again." 
         });
       }
-      
+
       // Return appropriate error for insufficient API credits
       res.status(500).json({ 
         error: "AI service temporarily unavailable",
@@ -620,7 +620,7 @@ ${context ? `Context: ${context}` : ''}`;
   app.post("/api/ai/generate-questions", async (req, res) => {
     try {
       const { topic, difficulty, count = 5 } = req.body;
-      
+
       const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
       if (!DEEPSEEK_API_KEY) {
         return res.status(500).json({ error: "DeepSeek API key not configured" });
@@ -677,7 +677,7 @@ Return a JSON array with this exact format:
 
       const data = await response.json();
       const aiResponse = data.choices[0]?.message?.content || '[]';
-      
+
       try {
         const questions = JSON.parse(aiResponse);
         res.json({ questions });
@@ -695,7 +695,7 @@ Return a JSON array with this exact format:
   app.post("/api/ai/explain", async (req, res) => {
     try {
       const { concept, level = 'intermediate' } = req.body;
-      
+
       const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
       if (!OPENROUTER_API_KEY) {
         return res.status(500).json({ error: "OpenRouter API key not configured" });
@@ -744,7 +744,7 @@ CRITICAL FORMATTING RULES:
 
       const data = await response.json();
       const explanation = data.choices[0]?.message?.content || 'Unable to generate explanation.';
-      
+
       res.json({ explanation });
     } catch (error: any) {
       console.error("Concept explanation error:", error);
@@ -789,16 +789,16 @@ CRITICAL FORMATTING RULES:
   });
 
   // Analytics and User Stats API Routes
-  
+
   // Record quiz attempt with comprehensive stats tracking
   app.post("/api/quiz/attempt", async (req, res) => {
     try {
       const attemptData = req.body;
       console.log('Recording quiz attempt for user:', attemptData.userId);
-      
+
       // Use the XP calculation from frontend (includes streak bonus)
       const xpEarned = attemptData.xpEarned || (attemptData.isCorrect ? 10 : 2);
-      
+
       const quizAttempt = await dbStorage.recordQuizAttempt({
         userId: attemptData.userId,
         quizId: attemptData.quizId || null,
@@ -810,7 +810,7 @@ CRITICAL FORMATTING RULES:
         difficulty: attemptData.difficulty || 'medium',
         xpEarned: xpEarned
       });
-      
+
       console.log('Quiz attempt recorded successfully:', quizAttempt.id);
       res.json({ success: true, attempt: quizAttempt, xpEarned });
     } catch (error) {
@@ -820,11 +820,11 @@ CRITICAL FORMATTING RULES:
   });
 
   // Get user statistics - Enhanced with comprehensive analytics
-  app.get("/api/user-stats/:userId", async (req, res) => {
+app.get("/api/user-stats/:userId", async (req, res) => {
     try {
       const { userId } = req.params;
       const userStats = await dbStorage.getUserStats(userId);
-      
+
       if (!userStats) {
         // Return default stats for new users
         return res.json({
@@ -840,7 +840,7 @@ CRITICAL FORMATTING RULES:
           longestStreak: 0
         });
       }
-      
+
       res.json(userStats);
     } catch (error) {
       console.error("Error fetching user stats:", error);
@@ -878,7 +878,7 @@ CRITICAL FORMATTING RULES:
     try {
       const { userId } = req.params;
       const limit = parseInt(req.query.limit as string) || 10;
-      
+
       // This would typically come from database, but for now using in-memory storage
       const attempts = await dbStorage.getRecentQuizAttempts(userId, limit);
       res.json(attempts);
@@ -906,13 +906,13 @@ CRITICAL FORMATTING RULES:
     try {
       const attemptData = req.body;
       console.log('Recording detailed quiz attempt:', attemptData);
-      
+
       const userId = attemptData.userId;
       const category = attemptData.category;
       const isCorrect = attemptData.isCorrect;
       const timeSpent = attemptData.timeSpent || 0;
       const xpEarned = attemptData.xpEarned || (isCorrect ? 10 : 2);
-      
+
       // Ensure user exists in database before recording attempt
       try {
         const existingUser = await dbStorage.getUser(userId);
@@ -929,7 +929,7 @@ CRITICAL FORMATTING RULES:
       } catch (userError) {
         console.log('User creation error (may already exist):', userError);
       }
-      
+
       // Record the quiz attempt (quizId set to null since we're using JSON questions)
       const quizAttempt = await dbStorage.recordQuizAttempt({
         userId,
@@ -943,7 +943,7 @@ CRITICAL FORMATTING RULES:
         difficulty: attemptData.difficulty || 'medium',
         xpEarned
       });
-      
+
       console.log('Quiz attempt recorded with enhanced analytics:', quizAttempt.id);
       res.json({ 
         success: true, 
@@ -964,7 +964,7 @@ CRITICAL FORMATTING RULES:
   app.get("/api/analytics-dashboard/:userId", async (req, res) => {
     try {
       const { userId } = req.params;
-      
+
       // Fetch all analytics data in parallel
       const [userStats, categoryStats, dailyStats, recentAttempts, leaderboard] = await Promise.all([
         dbStorage.getUserStats(userId),
@@ -973,7 +973,7 @@ CRITICAL FORMATTING RULES:
         dbStorage.getRecentQuizAttempts(userId, 20),
         dbStorage.getLeaderboard(10)
       ]);
-      
+
       // Calculate additional metrics
       const analytics = {
         userStats: userStats || {
@@ -1000,7 +1000,7 @@ CRITICAL FORMATTING RULES:
           .sort((a: any, b: any) => b.averageScore - a.averageScore)
           .slice(0, 3)
       };
-      
+
       res.json(analytics);
     } catch (error: any) {
       console.error("Error fetching analytics dashboard:", error);
@@ -1040,7 +1040,7 @@ CRITICAL FORMATTING RULES:
     try {
       const { userId } = req.params;
       const { limit = 10 } = req.query;
-      
+
       // Get recent quiz attempts for user
       const attempts = []; // This should fetch from database
       res.json(attempts);
@@ -1098,7 +1098,7 @@ CRITICAL FORMATTING RULES:
       if (!userId) {
         return res.status(400).json({ error: "User ID is required" });
       }
-      
+
       const rank = await dbStorage.getUserRank(userId as string, category as string, timeFrame as string);
       res.json(rank);
     } catch (error) {
@@ -1126,7 +1126,7 @@ CRITICAL FORMATTING RULES:
     try {
       const { sectionId } = req.params;
       const { userId } = req.query;
-      
+
       const result = await db.execute(sql`
         SELECT 
           t.*,
@@ -1139,7 +1139,7 @@ CRITICAL FORMATTING RULES:
         WHERE t.section_id = ${sectionId}
         ORDER BY t.order_index, t.title
       `);
-      
+
       res.json(result.rows);
     } catch (error) {
       console.error('Error fetching study guide topics:', error);
@@ -1151,7 +1151,7 @@ CRITICAL FORMATTING RULES:
     try {
       const { topicId } = req.params;
       const { userId } = req.query;
-      
+
       const result = await db.execute(sql`
         SELECT 
           t.*,
@@ -1165,7 +1165,7 @@ CRITICAL FORMATTING RULES:
         LEFT JOIN study_guide_progress p ON t.id = p.topic_id AND p.user_id = ${userId}
         WHERE t.id = ${topicId}
       `);
-      
+
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Topic not found' });
       }
@@ -1179,7 +1179,7 @@ CRITICAL FORMATTING RULES:
           DO UPDATE SET last_accessed = NOW()
         `);
       }
-      
+
       res.json(result.rows[0]);
     } catch (error) {
       console.error('Error fetching study guide topic:', error);
@@ -1190,7 +1190,7 @@ CRITICAL FORMATTING RULES:
   app.post('/api/study-guide/progress', async (req, res) => {
     try {
       const { userId, topicId, completionPercentage, notes, isBookmarked } = req.body;
-      
+
       if (!userId || !topicId) {
         return res.status(400).json({ error: 'User ID and topic ID required' });
       }
@@ -1207,7 +1207,7 @@ CRITICAL FORMATTING RULES:
           is_bookmarked = ${isBookmarked || false},
           last_accessed = NOW()
       `);
-      
+
       res.json({ success: true });
     } catch (error) {
       console.error('Error updating study guide progress:', error);
@@ -1218,7 +1218,7 @@ CRITICAL FORMATTING RULES:
   app.get('/api/study-guide/user-progress/:userId', async (req, res) => {
     try {
       const { userId } = req.params;
-      
+
       const result = await db.execute(sql`
         SELECT 
           COUNT(DISTINCT p.topic_id) as topics_started,
@@ -1228,7 +1228,7 @@ CRITICAL FORMATTING RULES:
         FROM study_guide_progress p
         WHERE p.user_id = ${userId}
       `);
-      
+
       res.json(result.rows[0] || {
         topics_started: 0,
         topics_completed: 0,
@@ -1257,16 +1257,16 @@ CRITICAL FORMATTING RULES:
   app.get("/api/badges/:userId", async (req, res) => {
     try {
       const { userId } = req.params;
-      
+
       // Initialize badges if they don't exist
       await dbStorage.initializeBadges();
-      
+
       // Get user's earned badges
       const earnedBadges = await dbStorage.getUserBadges(userId);
-      
+
       // Get all available badges
       const allBadges = await db.select().from(badges);
-      
+
       // Calculate progress for each badge
       const availableBadges = [];
       for (const badge of allBadges) {
@@ -1280,7 +1280,7 @@ CRITICAL FORMATTING RULES:
           });
         }
       }
-      
+
       // Add earned status to earned badges
       const earnedWithDetails = Array.isArray(earnedBadges) ? earnedBadges.map((earned: any) => {
         const badge = allBadges.find(b => b.id === earned.badgeId);
@@ -1291,7 +1291,7 @@ CRITICAL FORMATTING RULES:
           progress: badge?.requirement || 0
         };
       }) : [];
-      
+
       res.json({
         earned: earnedWithDetails,
         available: availableBadges
@@ -1307,7 +1307,7 @@ CRITICAL FORMATTING RULES:
     try {
       const { userId } = req.params;
       const { badgeId, progress } = req.body;
-      
+
       const result = await dbStorage.awardBadge(userId, badgeId, progress);
       res.json(result);
     } catch (error) {
@@ -1352,7 +1352,7 @@ CRITICAL FORMATTING RULES:
         LEFT JOIN users u ON sg.creator_id = u.id
         ORDER BY sg.scheduled_time ASC
       `);
-      
+
       const groups = result.rows.map((row: any) => ({
         ...row,
         creator: {
@@ -1360,7 +1360,7 @@ CRITICAL FORMATTING RULES:
           lastName: row.creatorLastName
         }
       }));
-      
+
       res.json(groups);
     } catch (error) {
       console.error('Error fetching study groups:', error);
@@ -1382,7 +1382,7 @@ CRITICAL FORMATTING RULES:
           ${groupData.maxMembers}, ${groupData.category}
         ) RETURNING *
       `);
-      
+
       res.json(result.rows[0]);
     } catch (error) {
       console.error('Error creating study group:', error);
@@ -1394,30 +1394,30 @@ CRITICAL FORMATTING RULES:
     try {
       const { groupId } = req.params;
       const { userId } = req.body;
-      
+
       // Check if user is already a member
       const existingMember = await db.execute(sql`
         SELECT id FROM study_group_members 
         WHERE group_id = ${groupId} AND user_id = ${userId}
       `);
-      
+
       if (existingMember.rows.length > 0) {
         return res.status(400).json({ error: 'User is already a member' });
       }
-      
+
       // Add user to group
       await db.execute(sql`
         INSERT INTO study_group_members (group_id, user_id)
         VALUES (${groupId}, ${userId})
       `);
-      
+
       // Update current members count
       await db.execute(sql`
         UPDATE study_groups 
         SET current_members = current_members + 1
         WHERE id = ${groupId}
       `);
-      
+
       res.json({ success: true, message: 'Successfully joined study group' });
     } catch (error) {
       console.error('Error joining study group:', error);
@@ -1429,17 +1429,17 @@ CRITICAL FORMATTING RULES:
   app.get('/api/study-planner-sessions', async (req, res) => {
     try {
       const { userId } = req.query;
-      
+
       if (!userId) {
         return res.status(400).json({ error: 'User ID is required' });
       }
-      
+
       const result = await db.execute(sql`
         SELECT * FROM study_planner_sessions 
         WHERE user_id = ${userId}
         ORDER BY date DESC, start_time ASC
       `);
-      
+
       res.json(result.rows);
     } catch (error) {
       console.error('Error fetching study sessions:', error);
@@ -1450,7 +1450,7 @@ CRITICAL FORMATTING RULES:
   app.post('/api/study-planner-sessions', async (req, res) => {
     try {
       const sessionData = req.body;
-      
+
       const result = await db.execute(sql`
         INSERT INTO study_planner_sessions (
           user_id, title, subject, topic, date, start_time, 
@@ -1461,7 +1461,7 @@ CRITICAL FORMATTING RULES:
           ${sessionData.endTime}, ${sessionData.duration}, ${sessionData.notes}
         ) RETURNING *
       `);
-      
+
       res.json(result.rows[0]);
     } catch (error) {
       console.error('Error creating study session:', error);
@@ -1473,7 +1473,7 @@ CRITICAL FORMATTING RULES:
     try {
       const { sessionId } = req.params;
       const updates = req.body;
-      
+
       const result = await db.execute(sql`
         UPDATE study_planner_sessions 
         SET 
@@ -1490,7 +1490,7 @@ CRITICAL FORMATTING RULES:
         WHERE id = ${sessionId}
         RETURNING *
       `);
-      
+
       res.json(result.rows[0]);
     } catch (error) {
       console.error('Error updating study session:', error);
