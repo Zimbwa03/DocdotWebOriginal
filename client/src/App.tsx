@@ -14,6 +14,7 @@ import Notes from "@/pages/Notes";
 import Pricing from "@/pages/Pricing";
 import StudyGuide from "@/pages/StudyGuide";
 import StudyGroups from "@/pages/StudyGroups";
+import StudyTimer from "@/pages/StudyTimer";
 import Performance from "@/pages/Performance";
 import Analytics from "@/pages/Analytics";
 import EnhancedAnalytics from "@/pages/EnhancedAnalytics";

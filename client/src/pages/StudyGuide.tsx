@@ -79,7 +79,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import StudyGroupsAdvanced from "@/components/StudyGroupsAdvanced";
-import GoogleDriveLibrary from "@/components/GoogleDriveLibrary";
+import StudyTimer from "./StudyTimer";
+import GoogleDriveResourcesGrid from "@/components/GoogleDriveResourcesGrid";
 
 const sessionSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -238,128 +239,17 @@ export default function StudyGuide() {
         </div>
 
         {/* Main Content */}
-        <Tabs defaultValue="content" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="content">Study Content</TabsTrigger>
+        <Tabs defaultValue="timer" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="timer">Study Timer</TabsTrigger>
             <TabsTrigger value="planner">Study Planner</TabsTrigger>
             <TabsTrigger value="groups">Study Groups</TabsTrigger>
             <TabsTrigger value="resources">Books & Resources</TabsTrigger>
-            <TabsTrigger value="tips">Library</TabsTrigger>
           </TabsList>
 
-          {/* Study Content Tab */}
-          <TabsContent value="content" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              {/* Sections Sidebar */}
-              <Card className="lg:col-span-1">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BookOpen className="w-5 h-5" />
-                    Study Sections
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {loadingSections ? (
-                      <div className="space-y-2">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <div key={i} className="h-10 bg-gray-200 rounded animate-pulse" />
-                        ))}
-                      </div>
-                    ) : (
-                      sections.map((section: StudySection) => (
-                        <Button
-                          key={section.id}
-                          variant={selectedSection === section.id ? "default" : "ghost"}
-                          className="w-full justify-start"
-                          onClick={() => setSelectedSection(section.id)}
-                        >
-                          <ChevronRight className="w-4 h-4 mr-2" />
-                          {section.title}
-                        </Button>
-                      ))
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Topics Content */}
-              <div className="lg:col-span-3">
-                {selectedSection ? (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>
-                        {sections.find((s: StudySection) => s.id === selectedSection)?.title}
-                      </CardTitle>
-                      <CardDescription>
-                        {sections.find((s: StudySection) => s.id === selectedSection)?.description}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {loadingTopics ? (
-                        <div className="space-y-4">
-                          {Array.from({ length: 3 }).map((_, i) => (
-                            <div key={i} className="p-4 border rounded-lg animate-pulse">
-                              <div className="h-6 bg-gray-200 rounded mb-2" />
-                              <div className="h-4 bg-gray-200 rounded w-3/4" />
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
-                          {topics.map((topic: StudyTopic) => (
-                            <Card key={topic.id} className="p-4 hover:shadow-md transition-shadow">
-                              <div className="flex items-center justify-between mb-2">
-                                <h3 className="font-semibold text-lg">{topic.title}</h3>
-                                <div className="flex items-center gap-2">
-                                  <Badge className={getDifficultyColor(topic.difficulty_level)}>
-                                    {topic.difficulty_level}
-                                  </Badge>
-                                  <span className="text-sm text-gray-500">
-                                    {topic.estimated_read_time} min
-                                  </span>
-                                </div>
-                              </div>
-                              <p className="text-gray-600 mb-3">{topic.content}</p>
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  {topic.tags.map((tag) => (
-                                    <Badge key={tag} variant="outline" className="text-xs">
-                                      {tag}
-                                    </Badge>
-                                  ))}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Button variant="outline" size="sm">
-                                    <Bookmark className="w-4 h-4" />
-                                  </Button>
-                                  <Button size="sm">
-                                    <PlayCircle className="w-4 h-4 mr-1" />
-                                    Study
-                                  </Button>
-                                </div>
-                              </div>
-                            </Card>
-                          ))}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <Card className="h-96 flex items-center justify-center">
-                    <div className="text-center">
-                      <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-gray-600 mb-2">
-                        Select a Study Section
-                      </h3>
-                      <p className="text-gray-500">
-                        Choose a section from the sidebar to view study topics
-                      </p>
-                    </div>
-                  </Card>
-                )}
-              </div>
-            </div>
+          {/* Study Timer Tab */}
+          <TabsContent value="timer" className="space-y-6">
+            <StudyTimer />
           </TabsContent>
 
           {/* Study Planner Tab */}
@@ -627,81 +517,32 @@ export default function StudyGuide() {
 
           {/* Books & Resources Tab */}
           <TabsContent value="resources" className="space-y-6">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search books and resources..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="lg:text-center mb-10">
+                <h2 className="text-base text-secondary-600 dark:text-secondary-400 font-semibold tracking-wide uppercase">Resources</h2>
+                <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
+                  Medical Education Library
+                </p>
+                <p className="mt-4 max-w-2xl text-xl text-gray-500 dark:text-gray-300 lg:mx-auto">
+                  Access our comprehensive collection of medical textbooks and resources from your Google Drive.
+                </p>
               </div>
-            </div>
+              
+              <div className="mb-8 max-w-md mx-auto">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                  <Input
+                    type="text"
+                    placeholder="Search resources..."
+                    className="pl-10"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[
-                {
-                  id: 1,
-                  title: "Gray's Anatomy",
-                  description: "Comprehensive human anatomy reference",
-                  category: "Anatomy",
-                  type: "textbook",
-                  difficulty: "intermediate",
-                  url: "https://example.com/grays-anatomy"
-                },
-                {
-                  id: 2,
-                  title: "Robbins Basic Pathology",
-                  description: "Essential pathology concepts and cases",
-                  category: "Pathology",
-                  type: "textbook",
-                  difficulty: "advanced",
-                  url: "https://example.com/robbins-pathology"
-                },
-                {
-                  id: 3,
-                  title: "Physiology Lectures",
-                  description: "Video series on human physiology",
-                  category: "Physiology",
-                  type: "video",
-                  difficulty: "beginner",
-                  url: "https://example.com/physiology-videos"
-                }
-              ].map((resource) => (
-                <Card key={resource.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                        <ExternalLink className="w-5 h-5 text-purple-600" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg">{resource.title}</CardTitle>
-                        <Badge variant="outline" className="mt-1">
-                          {resource.category}
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 mb-4">{resource.description}</p>
-                    <Button 
-                      onClick={() => window.open(resource.url, '_blank')}
-                      variant="outline"
-                      className="w-full"
-                    >
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      Visit Website
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
+              <GoogleDriveResourcesGrid searchQuery={searchQuery} />
             </div>
-          </TabsContent>
-
-          {/* Library Tab */}
-          <TabsContent value="tips" className="space-y-6">
-            <GoogleDriveLibrary />
           </TabsContent>
         </Tabs>
       </div>

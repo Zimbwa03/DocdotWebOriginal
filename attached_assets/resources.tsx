@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Search, Book, Download, ExternalLink } from "lucide-react";
 import { useSubscription } from "@/context/subscription-context";
@@ -24,9 +25,6 @@ export default function Resources() {
     queryKey: ['books'],
     queryFn: async () => {
       const res = await fetch('/api/resources/books');
-      if (!res.ok) {
-        throw new Error('Failed to fetch books');
-      }
       return res.json() as Promise<DriveFile[]>;
     }
   });
@@ -38,9 +36,6 @@ export default function Resources() {
   const handleDownload = async (fileId: string) => {
     try {
       const res = await fetch(`/api/resources/books/${fileId}/download`);
-      if (!res.ok) {
-        throw new Error('Failed to generate download URL');
-      }
       const { downloadUrl } = await res.json();
       window.open(downloadUrl, '_blank');
     } catch (error) {
@@ -49,21 +44,21 @@ export default function Resources() {
   };
 
   return (
-    <div className="py-12 min-h-screen">
+    <div className="py-12 bg-white dark:bg-dark-900 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="lg:text-center mb-10">
-          <h2 className="text-base text-primary font-semibold tracking-wide uppercase">Resources</h2>
-          <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight sm:text-4xl">
+          <h2 className="text-base text-secondary-600 dark:text-secondary-400 font-semibold tracking-wide uppercase">Resources</h2>
+          <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
             Medical Education Library
           </p>
-          <p className="mt-4 max-w-2xl text-xl text-muted-foreground lg:mx-auto">
+          <p className="mt-4 max-w-2xl text-xl text-gray-500 dark:text-gray-300 lg:mx-auto">
             Access our comprehensive collection of medical textbooks and resources.
           </p>
         </div>
         
         <div className="mb-8 max-w-md mx-auto">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <Input
               type="text"
               placeholder="Search resources..."
@@ -76,8 +71,6 @@ export default function Resources() {
 
         {isLoading ? (
           <div className="text-center">Loading resources...</div>
-        ) : filteredBooks.length === 0 ? (
-          <div className="text-center text-muted-foreground">No resources found.</div>
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filteredBooks.map((book) => (
@@ -86,10 +79,10 @@ export default function Resources() {
                   <CardTitle className="truncate">{book.name}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
                     Size: {formatFileSize(parseInt(book.size))}
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
                     Last modified: {new Date(book.modifiedTime).toLocaleDateString()}
                   </p>
                 </CardContent>
