@@ -1303,23 +1303,20 @@ CRITICAL FORMATTING RULES:
   // Google Drive API Routes
   app.get('/api/google-drive/files', async (req, res) => {
     try {
-      // This would connect to Google Drive API
-      // For now, return a message asking for Google Drive credentials
-      res.status(401).json({ 
-        error: 'Google Drive not connected',
-        message: 'Please provide Google Drive API credentials to access your files'
-      });
+      const { getFilesFromFolder } = await import('./googleDrive.js');
+      const files = await getFilesFromFolder();
+      res.json(files);
     } catch (error) {
       console.error('Error fetching Google Drive files:', error);
-      res.status(500).json({ error: 'Failed to fetch files' });
+      res.status(500).json({ error: 'Failed to fetch files from Google Drive' });
     }
   });
 
   app.get('/api/google-drive/auth', async (req, res) => {
     try {
       res.json({
-        authUrl: 'https://accounts.google.com/oauth/authorize',
-        message: 'Google Drive integration requires API credentials'
+        authUrl: null,
+        message: 'Service account authentication is configured'
       });
     } catch (error) {
       res.status(500).json({ error: 'Failed to get authorization URL' });
@@ -1328,8 +1325,11 @@ CRITICAL FORMATTING RULES:
 
   app.get('/api/google-drive/status', async (req, res) => {
     try {
-      res.json({ connected: false });
+      const { checkFolderAccess } = await import('./googleDrive.js');
+      const connected = await checkFolderAccess();
+      res.json({ connected });
     } catch (error) {
+      console.error('Error checking Google Drive status:', error);
       res.status(500).json({ error: 'Failed to check connection status' });
     }
   });
