@@ -1,0 +1,162 @@
+9:03:58 PM [express] POST /api/user 200 in 930ms :: {"id":"a45b9d10-e419-4a35-8321-ca57120be2c2","em…
+9:03:58 PM [express] GET /api/study-planner-sessions 304 in 682ms :: [{"id":1,"user_id":null,"title"…
+Error fetching files from Google Drive: Error: error:1E08010C:DECODER routines::unsupported
+    at Sign.sign (node:internal/crypto/sig:128:29)
+    at Object.sign (/home/runner/workspace/node_modules/jwa/index.js:166:45)
+    at Object.jwsSign [as sign] (/home/runner/workspace/node_modules/jws/lib/sign-stream.js:32:24)
+    at GoogleToken._GoogleToken_requestToken (/home/runner/workspace/node_modules/gtoken/build/src/index.js:235:27)
+    at GoogleToken._GoogleToken_getTokenAsyncInner (/home/runner/workspace/node_modules/gtoken/build/src/index.js:180:97)
+    at GoogleToken._GoogleToken_getTokenAsync (/home/runner/workspace/node_modules/gtoken/build/src/index.js:160:173)
+    at GoogleToken.getToken (/home/runner/workspace/node_modules/gtoken/build/src/index.js:110:102)
+    at JWT.refreshTokenNoCache (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/jwtclient.js:173:36)
+    at JWT.refreshToken (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:187:24)
+    at JWT.getRequestMetadataAsync (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:333:28)
+    at JWT.getRequestMetadataAsync (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/jwtclient.js:95:26)
+    at JWT.requestAsync (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:418:34)
+    at JWT.request (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:412:25)
+    at GoogleAuth.request (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/googleauth.js:754:23) {
+  library: 'DECODER routines',
+  reason: 'unsupported',
+  code: 'ERR_OSSL_UNSUPPORTED'
+}
+Error fetching Google Drive files: Error: error:1E08010C:DECODER routines::unsupported
+    at Sign.sign (node:internal/crypto/sig:128:29)
+    at Object.sign (/home/runner/workspace/node_modules/jwa/index.js:166:45)
+    at Object.jwsSign [as sign] (/home/runner/workspace/node_modules/jws/lib/sign-stream.js:32:24)
+    at GoogleToken._GoogleToken_requestToken (/home/runner/workspace/node_modules/gtoken/build/src/index.js:235:27)
+    at GoogleToken._GoogleToken_getTokenAsyncInner (/home/runner/workspace/node_modules/gtoken/build/src/index.js:180:97)
+    at GoogleToken._GoogleToken_getTokenAsync (/home/runner/workspace/node_modules/gtoken/build/src/index.js:160:173)
+    at GoogleToken.getToken (/home/runner/workspace/node_modules/gtoken/build/src/index.js:110:102)
+    at JWT.refreshTokenNoCache (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/jwtclient.js:173:36)
+    at JWT.refreshToken (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:187:24)
+    at JWT.getRequestMetadataAsync (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:333:28)
+    at JWT.getRequestMetadataAsync (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/jwtclient.js:95:26)
+    at JWT.requestAsync (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:418:34)
+    at JWT.request (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:412:25)
+    at GoogleAuth.request (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/googleauth.js:754:23) {
+  library: 'DECODER routines',
+  reason: 'unsupported',
+  code: 'ERR_OSSL_UNSUPPORTED'
+}
+9:04:00 PM [express] GET /api/google-drive/files 500 in 1003ms :: {"error":"Failed to fetch files fr…
+Error fetching files from Google Drive: Error: error:1E08010C:DECODER routines::unsupported
+    at Sign.sign (node:internal/crypto/sig:128:29)
+    at Object.sign (/home/runner/workspace/node_modules/jwa/index.js:166:45)
+    at Object.jwsSign [as sign] (/home/runner/workspace/node_modules/jws/lib/sign-stream.js:32:24)
+    at GoogleToken._GoogleToken_requestToken (/home/runner/workspace/node_modules/gtoken/build/src/index.js:235:27)
+    at GoogleToken._GoogleToken_getTokenAsyncInner (/home/runner/workspace/node_modules/gtoken/build/src/index.js:180:97)
+    at GoogleToken._GoogleToken_getTokenAsync (/home/runner/workspace/node_modules/gtoken/build/src/index.js:160:173)
+    at GoogleToken.getToken (/home/runner/workspace/node_modules/gtoken/build/src/index.js:110:102)
+    at JWT.refreshTokenNoCache (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/jwtclient.js:173:36)
+    at JWT.refreshToken (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:187:24)
+    at JWT.getRequestMetadataAsync (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:333:28)
+    at JWT.getRequestMetadataAsync (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/jwtclient.js:95:26)
+    at JWT.requestAsync (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:418:34)
+    at JWT.request (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:412:25)
+    at GoogleAuth.request (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/googleauth.js:754:23) {
+  library: 'DECODER routines',
+  reason: 'unsupported',
+  code: 'ERR_OSSL_UNSUPPORTED'
+}
+Error fetching Google Drive files: Error: error:1E08010C:DECODER routines::unsupported
+    at Sign.sign (node:internal/crypto/sig:128:29)
+    at Object.sign (/home/runner/workspace/node_modules/jwa/index.js:166:45)
+    at Object.jwsSign [as sign] (/home/runner/workspace/node_modules/jws/lib/sign-stream.js:32:24)
+    at GoogleToken._GoogleToken_requestToken (/home/runner/workspace/node_modules/gtoken/build/src/index.js:235:27)
+    at GoogleToken._GoogleToken_getTokenAsyncInner (/home/runner/workspace/node_modules/gtoken/build/src/index.js:180:97)
+    at GoogleToken._GoogleToken_getTokenAsync (/home/runner/workspace/node_modules/gtoken/build/src/index.js:160:173)
+    at GoogleToken.getToken (/home/runner/workspace/node_modules/gtoken/build/src/index.js:110:102)
+    at JWT.refreshTokenNoCache (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/jwtclient.js:173:36)
+    at JWT.refreshToken (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:187:24)
+    at JWT.getRequestMetadataAsync (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:333:28)
+    at JWT.getRequestMetadataAsync (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/jwtclient.js:95:26)
+    at JWT.requestAsync (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:418:34)
+    at JWT.request (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:412:25)
+    at GoogleAuth.request (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/googleauth.js:754:23) {
+  library: 'DECODER routines',
+  reason: 'unsupported',
+  code: 'ERR_OSSL_UNSUPPORTED'
+}
+9:04:01 PM [express] GET /api/google-drive/files 500 in 4ms :: {"error":"Failed to fetch files from …
+Error fetching files from Google Drive: Error: error:1E08010C:DECODER routines::unsupported
+    at Sign.sign (node:internal/crypto/sig:128:29)
+    at Object.sign (/home/runner/workspace/node_modules/jwa/index.js:166:45)
+    at Object.jwsSign [as sign] (/home/runner/workspace/node_modules/jws/lib/sign-stream.js:32:24)
+    at GoogleToken._GoogleToken_requestToken (/home/runner/workspace/node_modules/gtoken/build/src/index.js:235:27)
+    at GoogleToken._GoogleToken_getTokenAsyncInner (/home/runner/workspace/node_modules/gtoken/build/src/index.js:180:97)
+    at GoogleToken._GoogleToken_getTokenAsync (/home/runner/workspace/node_modules/gtoken/build/src/index.js:160:173)
+    at GoogleToken.getToken (/home/runner/workspace/node_modules/gtoken/build/src/index.js:110:102)
+    at JWT.refreshTokenNoCache (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/jwtclient.js:173:36)
+    at JWT.refreshToken (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:187:24)
+    at JWT.getRequestMetadataAsync (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:333:28)
+    at JWT.getRequestMetadataAsync (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/jwtclient.js:95:26)
+    at JWT.requestAsync (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:418:34)
+    at JWT.request (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:412:25)
+    at GoogleAuth.request (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/googleauth.js:754:23) {
+  library: 'DECODER routines',
+  reason: 'unsupported',
+  code: 'ERR_OSSL_UNSUPPORTED'
+}
+Error fetching Google Drive files: Error: error:1E08010C:DECODER routines::unsupported
+    at Sign.sign (node:internal/crypto/sig:128:29)
+    at Object.sign (/home/runner/workspace/node_modules/jwa/index.js:166:45)
+    at Object.jwsSign [as sign] (/home/runner/workspace/node_modules/jws/lib/sign-stream.js:32:24)
+    at GoogleToken._GoogleToken_requestToken (/home/runner/workspace/node_modules/gtoken/build/src/index.js:235:27)
+    at GoogleToken._GoogleToken_getTokenAsyncInner (/home/runner/workspace/node_modules/gtoken/build/src/index.js:180:97)
+    at GoogleToken._GoogleToken_getTokenAsync (/home/runner/workspace/node_modules/gtoken/build/src/index.js:160:173)
+    at GoogleToken.getToken (/home/runner/workspace/node_modules/gtoken/build/src/index.js:110:102)
+    at JWT.refreshTokenNoCache (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/jwtclient.js:173:36)
+    at JWT.refreshToken (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:187:24)
+    at JWT.getRequestMetadataAsync (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:333:28)
+    at JWT.getRequestMetadataAsync (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/jwtclient.js:95:26)
+    at JWT.requestAsync (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:418:34)
+    at JWT.request (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:412:25)
+    at GoogleAuth.request (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/googleauth.js:754:23) {
+  library: 'DECODER routines',
+  reason: 'unsupported',
+  code: 'ERR_OSSL_UNSUPPORTED'
+}
+9:04:03 PM [express] GET /api/google-drive/files 500 in 2ms :: {"error":"Failed to fetch files from …
+Error fetching files from Google Drive: Error: error:1E08010C:DECODER routines::unsupported
+    at Sign.sign (node:internal/crypto/sig:128:29)
+    at Object.sign (/home/runner/workspace/node_modules/jwa/index.js:166:45)
+    at Object.jwsSign [as sign] (/home/runner/workspace/node_modules/jws/lib/sign-stream.js:32:24)
+    at GoogleToken._GoogleToken_requestToken (/home/runner/workspace/node_modules/gtoken/build/src/index.js:235:27)
+    at GoogleToken._GoogleToken_getTokenAsyncInner (/home/runner/workspace/node_modules/gtoken/build/src/index.js:180:97)
+    at GoogleToken._GoogleToken_getTokenAsync (/home/runner/workspace/node_modules/gtoken/build/src/index.js:160:173)
+    at GoogleToken.getToken (/home/runner/workspace/node_modules/gtoken/build/src/index.js:110:102)
+    at JWT.refreshTokenNoCache (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/jwtclient.js:173:36)
+    at JWT.refreshToken (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:187:24)
+    at JWT.getRequestMetadataAsync (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:333:28)
+    at JWT.getRequestMetadataAsync (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/jwtclient.js:95:26)
+    at JWT.requestAsync (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:418:34)
+    at JWT.request (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:412:25)
+    at GoogleAuth.request (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/googleauth.js:754:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5) {
+  library: 'DECODER routines',
+  reason: 'unsupported',
+  code: 'ERR_OSSL_UNSUPPORTED'
+}
+Error fetching Google Drive files: Error: error:1E08010C:DECODER routines::unsupported
+    at Sign.sign (node:internal/crypto/sig:128:29)
+    at Object.sign (/home/runner/workspace/node_modules/jwa/index.js:166:45)
+    at Object.jwsSign [as sign] (/home/runner/workspace/node_modules/jws/lib/sign-stream.js:32:24)
+    at GoogleToken._GoogleToken_requestToken (/home/runner/workspace/node_modules/gtoken/build/src/index.js:235:27)
+    at GoogleToken._GoogleToken_getTokenAsyncInner (/home/runner/workspace/node_modules/gtoken/build/src/index.js:180:97)
+    at GoogleToken._GoogleToken_getTokenAsync (/home/runner/workspace/node_modules/gtoken/build/src/index.js:160:173)
+    at GoogleToken.getToken (/home/runner/workspace/node_modules/gtoken/build/src/index.js:110:102)
+    at JWT.refreshTokenNoCache (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/jwtclient.js:173:36)
+    at JWT.refreshToken (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:187:24)
+    at JWT.getRequestMetadataAsync (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:333:28)
+    at JWT.getRequestMetadataAsync (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/jwtclient.js:95:26)
+    at JWT.requestAsync (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:418:34)
+    at JWT.request (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/oauth2client.js:412:25)
+    at GoogleAuth.request (/home/runner/workspace/node_modules/google-auth-library/build/src/auth/googleauth.js:754:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5) {
+  library: 'DECODER routines',
+  reason: 'unsupported',
+  code: 'ERR_OSSL_UNSUPPORTED'
+}
+9:04:04 PM [express] GET /api/google-drive/files 500 in 5ms :: {"error":"Failed to fetch files from …
+9:04:07 PM [express] POST /api/initialize-user/a45b9d10-e419-4a35-8321-ca57120be2c2 200 in 9305ms ::…
+9:04:09 PM [express] POST /api/leaderboard/a45b9d10-e419-4a35-8321-ca57120be2c2/update 200 in 731ms …
