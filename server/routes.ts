@@ -259,11 +259,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const category = req.query.category as string;
       const timeFrame = req.query.timeFrame as string || 'all-time';
       
-      const leaderboard = await dbStorage.getEnhancedLeaderboard(limit, category, timeFrame);
-      res.json(leaderboard);
+      const leaderboardData = await dbStorage.getEnhancedLeaderboard(limit, category, timeFrame);
+      
+      // Ensure we always return the expected structure
+      const response = {
+        entries: leaderboardData.entries || [],
+        categories: leaderboardData.categories || [
+          'Anatomy - Upper Limb', 'Anatomy - Lower Limb', 'Anatomy - Thorax', 
+          'Physiology - Cardiovascular System', 'Physiology - Respiratory System'
+        ]
+      };
+      
+      res.json(response);
     } catch (error) {
       console.error("Error fetching leaderboard:", error);
-      res.status(500).json({ error: "Failed to fetch leaderboard" });
+      res.status(500).json({ 
+        error: "Failed to fetch leaderboard",
+        entries: [],
+        categories: []
+      });
     }
   });
 
@@ -278,11 +292,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "User ID required" });
       }
       
-      const rank = await dbStorage.getUserRank(userId as string, category, timeFrame);
-      res.json({ rank });
+      const rankData = await dbStorage.getUserRank(userId as string, category, timeFrame);
+      res.json(rankData);
     } catch (error) {
       console.error("Error fetching user rank:", error);
-      res.status(500).json({ error: "Failed to fetch user rank" });
+      res.status(500).json({ 
+        error: "Failed to fetch user rank",
+        rank: 0,
+        totalXP: 0,
+        averageAccuracy: 0,
+        currentLevel: 1
+      });
     }
   });
 
@@ -296,6 +316,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating leaderboard:", error);
       res.status(500).json({ error: "Failed to update leaderboard" });
+    }
+  });
+
+  // Initialize sample leaderboard data for testing
+  app.post("/api/initialize-sample-data", async (req, res) => {
+    try {
+      const sampleUsers = [
+        { id: 'user1', email: 'student1@medical.edu', firstName: 'Alice', lastName: 'Johnson' },
+        { id: 'user2', email: 'student2@medical.edu', firstName: 'Bob', lastName: 'Smith' },
+        { id: 'user3', email: 'student3@medical.edu', firstName: 'Carol', lastName: 'Davis' },
+        { id: 'user4', email: 'student4@medical.edu', firstName: 'David', lastName: 'Wilson' },
+        { id: 'user5', email: 'student5@medical.edu', firstName: 'Emma', lastName: 'Brown' }
+      ];
+
+      for (const userData of sampleUsers) {
+        // Create user if doesn't exist
+        try {
+          await dbStorage.upsertUser(userData);
+        } catch (error) {
+          console.log('User may already exist:', userData.id);
+        }
+
+        // Add sample quiz attempts
+        const attempts = Math.floor(Math.random() * 50) + 10;
+        const correctRate = 0.6 + Math.random() * 0.3; // 60-90% accuracy
+        
+        for (let i = 0; i < attempts; i++) {
+          const isCorrect = Math.random() < correctRate;
+          await dbStorage.updateUserStats(userData.id, isCorrect, isCorrect ? 10 : 2, Math.random() * 60);
+        }
+      }
+
+      res.json({ success: true, message: 'Sample data initialized' });
+    } catch (error) {
+      console.error("Error initializing sample data:", error);
+      res.status(500).json({ error: "Failed to initialize sample data" });
     }
   });
 

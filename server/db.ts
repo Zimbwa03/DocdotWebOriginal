@@ -1,13 +1,13 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { 
-  users, userStats, categoryStats, dailyStats, leaderboard, quizAttempts,
+  users, userStats, categoryStats, dailyStats, leaderboard, quizAttempts, badges, userBadges,
   type User, type InsertUser, type UserStats, type CategoryStats, 
   type DailyStats, type LeaderboardEntry, type QuizAttempt,
   type InsertQuizAttempt, type InsertUserStats, type InsertCategoryStats,
   type InsertDailyStats, type InsertLeaderboard
 } from '@shared/schema';
-import { eq, desc, sql, and, gte } from 'drizzle-orm';
+import { eq, desc, sql, and, gte, isNotNull, lte } from 'drizzle-orm';
 
 const connectionString = process.env.DATABASE_URL!;
 const client = postgres(connectionString);
@@ -389,64 +389,48 @@ export class DatabaseStorage {
   // Enhanced leaderboard with time frame support
   async getEnhancedLeaderboard(limit: number = 50, category?: string, timeFrame: string = 'all-time') {
     try {
-      let timeFilter;
-      const now = new Date();
-      
-      switch (timeFrame) {
-        case 'weekly':
-          timeFilter = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-          break;
-        case 'monthly':
-          timeFilter = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-          break;
-        default:
-          timeFilter = null;
-      }
-
       const query = db
         .select({
-          id: leaderboard.id,
-          userId: leaderboard.userId,
-          rank: leaderboard.rank,
-          totalXP: leaderboard.totalXP,
-          currentLevel: leaderboard.currentLevel,
-          weeklyXP: leaderboard.weeklyXP,
-          monthlyXP: leaderboard.monthlyXP,
-          averageAccuracy: leaderboard.averageAccuracy,
-          totalBadges: leaderboard.totalBadges,
-          category: leaderboard.category,
-          lastActive: leaderboard.lastActive,
+          id: userStats.id,
+          userId: userStats.userId,
+          rank: userStats.rank,
+          totalXP: userStats.totalXP,
+          currentLevel: userStats.currentLevel,
+          weeklyXP: sql`0`.as('weeklyXP'), // Default for now
+          monthlyXP: sql`0`.as('monthlyXP'), // Default for now
+          averageAccuracy: userStats.averageScore,
+          totalBadges: sql`0`.as('totalBadges'), // Default for now
+          category: sql`null`.as('category'),
+          lastActive: userStats.updatedAt,
           user: {
             firstName: users.firstName,
             lastName: users.lastName,
             email: users.email
           }
         })
-        .from(leaderboard)
-        .leftJoin(users, eq(leaderboard.userId, users.id))
-        .orderBy(desc(leaderboard.totalXP))
+        .from(userStats)
+        .leftJoin(users, eq(userStats.userId, users.id))
+        .where(sql`${userStats.totalXP} > 0`)
+        .orderBy(desc(userStats.totalXP))
         .limit(limit);
-
-      if (category && category !== 'all') {
-        query.where(eq(leaderboard.category, category));
-      }
 
       const entries = await query;
       
       // Add rank numbers and category list
       const rankedEntries = entries.map((entry, index) => ({
         ...entry,
-        rank: index + 1
+        rank: index + 1,
+        rankChange: 0 // Default for now
       }));
 
-      const categories = await db
-        .selectDistinct({ category: leaderboard.category })
-        .from(leaderboard)
-        .where(isNotNull(leaderboard.category));
+      // Get available categories from categoryStats
+      const categoriesResult = await db
+        .selectDistinct({ category: categoryStats.category })
+        .from(categoryStats);
 
       return {
         entries: rankedEntries,
-        categories: categories.map(c => c.category).filter(Boolean)
+        categories: categoriesResult.map(c => c.category).filter(Boolean)
       };
     } catch (error) {
       console.error('Error getting enhanced leaderboard:', error);
@@ -457,22 +441,28 @@ export class DatabaseStorage {
   // Get user rank and position
   async getUserRank(userId: string, category?: string, timeFrame: string = 'all-time') {
     try {
-      const userEntry = await db
-        .select({
-          rank: leaderboard.rank,
-          totalXP: leaderboard.totalXP,
-          averageAccuracy: leaderboard.averageAccuracy,
-          currentLevel: leaderboard.currentLevel
-        })
-        .from(leaderboard)
-        .where(eq(leaderboard.userId, userId))
-        .limit(1);
-
-      if (userEntry.length === 0) {
+      // First get user's stats
+      const userStats = await this.getUserStats(userId);
+      if (!userStats) {
         return { rank: 0, totalXP: 0, averageAccuracy: 0, currentLevel: 1 };
       }
 
-      return userEntry[0];
+      // Calculate rank by counting users with higher XP
+      const rankResult = await db
+        .select({
+          rank: sql`COUNT(*) + 1`.as('rank')
+        })
+        .from(userStats)
+        .where(sql`${userStats.totalXP} > ${userStats.totalXP}`);
+
+      const rank = parseInt(rankResult[0]?.rank as string) || 1;
+
+      return {
+        rank,
+        totalXP: userStats.totalXP,
+        averageAccuracy: userStats.averageScore,
+        currentLevel: userStats.currentLevel
+      };
     } catch (error) {
       console.error('Error getting user rank:', error);
       return { rank: 0, totalXP: 0, averageAccuracy: 0, currentLevel: 1 };
