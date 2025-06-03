@@ -206,7 +206,7 @@ export function TooltipGuideProvider({ children }: { children: ReactNode }) {
         startGuide('home');
       }, 1000);
     }
-  }, [isFirstTimeUser]);
+  }, [isFirstTimeUser, isGuideActive]);
 
   const currentPageSteps = tooltipSteps
     .filter(step => step.page === currentPage)
