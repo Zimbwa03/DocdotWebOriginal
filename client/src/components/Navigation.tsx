@@ -144,6 +144,7 @@ export function Navigation() {
     { path: '/quiz', label: 'Quiz', icon: Brain },
     { path: '/notes', label: 'Notes', icon: BookOpen },
     { path: '/study-guide', label: 'Study Guide', icon: GraduationCap },
+    { path: '/study-groups', label: 'Study Groups', icon: Users },
     { path: '/ai-tools', label: 'AI Tools', icon: Brain },
     { path: '/analytics', label: 'Analytics', icon: Target },
     { path: '/badges', label: 'Badges', icon: Star },
