@@ -755,7 +755,7 @@ export default function Quiz() {
         </div>
         <Button 
           variant="outline" 
-          onClick={()={() => setSelectedQuizType(null)}
+          onClick={() => setSelectedQuizType(null)}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Quiz Types
