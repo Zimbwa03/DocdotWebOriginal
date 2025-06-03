@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { 
   Home, 
   BookOpen, 
@@ -66,6 +67,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 export function Navigation() {
   const [location] = useLocation();
   const { user, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -335,9 +337,13 @@ export function Navigation() {
                 <Badge className="absolute -top-1 -right-1 w-2 h-2 p-0" style={{ backgroundColor: '#3399FF' }}></Badge>
               </Button>
 
-              {/* Search */}
-              <Button variant="ghost" size="sm">
-                <Search className="w-4 h-4" style={{ color: '#2E2E2E' }} />
+              {/* Theme Toggle */}
+              <Button variant="ghost" size="sm" onClick={toggleTheme}>
+                {theme === 'light' ? (
+                  <Moon className="w-4 h-4" style={{ color: '#2E2E2E' }} />
+                ) : (
+                  <Sun className="w-4 h-4" style={{ color: '#CBD5E1' }} />
+                )}
               </Button>
             </div>
 
