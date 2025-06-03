@@ -22,10 +22,14 @@ export default function Resources() {
   const { isPremium } = useSubscription();
 
   const { data: books, isLoading } = useQuery({
-    queryKey: ['books'],
+    queryKey: ['google-drive-files'],
     queryFn: async () => {
-      const res = await fetch('/api/resources/books');
-      return res.json() as Promise<DriveFile[]>;
+      const res = await fetch('/api/google-drive/files');
+      if (!res.ok) {
+        throw new Error('Failed to fetch books');
+      }
+      const data = await res.json();
+      return data.files as DriveFile[];
     }
   });
 
@@ -33,13 +37,16 @@ export default function Resources() {
     book.name.toLowerCase().includes(searchQuery.toLowerCase())
   ) || [];
 
-  const handleDownload = async (fileId: string) => {
+  const handlePreview = async (fileId: string) => {
     try {
-      const res = await fetch(`/api/resources/books/${fileId}/download`);
-      const { downloadUrl } = await res.json();
-      window.open(downloadUrl, '_blank');
+      const res = await fetch(`/api/google-drive/preview/${fileId}`);
+      if (!res.ok) {
+        throw new Error('Failed to get preview URL');
+      }
+      const { previewUrl } = await res.json();
+      window.open(previewUrl, '_blank');
     } catch (error) {
-      console.error('Download error:', error);
+      console.error('Preview error:', error);
     }
   };
 

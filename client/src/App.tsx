@@ -25,6 +25,7 @@ import ProfileSetup from "@/pages/ProfileSetup";
 import AiTools from "@/pages/AiTools";
 import Badges from "@/pages/Badges";
 import Leaderboard from "@/pages/Leaderboard";
+import Resources from "@/pages/Resources";
 import NotFound from "@/pages/not-found";
 
 function AuthRedirect() {
@@ -126,6 +127,12 @@ function Router() {
         <ProtectedRoute>
           <Navigation />
           <Leaderboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/resources">
+        <ProtectedRoute>
+          <Navigation />
+          <Resources />
         </ProtectedRoute>
       </Route>
       <Route path="/ai-tools">
