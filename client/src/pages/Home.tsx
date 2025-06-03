@@ -606,7 +606,7 @@ export default function Home() {
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Link href="/quiz">
+            <Link href="/quiz" data-tooltip-target="start-quiz">
               <Card className="hover:shadow-lg transition-all cursor-pointer bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
                 <CardContent className="p-6 text-center">
                   <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
