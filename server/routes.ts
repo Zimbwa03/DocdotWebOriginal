@@ -500,7 +500,7 @@ ${context ? `Context: ${context}` : ''}`;
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('OpenRouter API error:', response.status, errorText);
+        console.error('DeepSeek API error:', response.status, errorText);
         return res.status(500).json({ error: `AI service error: ${response.status}` });
       }
 
@@ -510,7 +510,20 @@ ${context ? `Context: ${context}` : ''}`;
       res.json({ response: aiResponse, sessionId: sessionId || uuidv4() });
     } catch (error: any) {
       console.error("AI Chat error:", error);
-      res.status(500).json({ error: error.message || "AI service unavailable" });
+      
+      // Check if it's a timeout error
+      if (error.name === 'AbortError') {
+        return res.status(408).json({ 
+          error: "Request timeout", 
+          message: "The AI service is taking too long to respond. Please try again." 
+        });
+      }
+      
+      // Return appropriate error for insufficient API credits
+      res.status(500).json({ 
+        error: "AI service temporarily unavailable",
+        message: "Please contact support for API access"
+      });
     }
   });
 
