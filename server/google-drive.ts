@@ -1,3 +1,4 @@
+
 import { google } from 'googleapis';
 
 const credentials = {
@@ -21,9 +22,9 @@ const auth = new google.auth.GoogleAuth({
 
 const drive = google.drive({ version: 'v3', auth });
 
-export async function listFiles() {
+export async function getMedicalBooks() {
   try {
-    console.log('Fetching files from Google Drive...');
+    console.log('Fetching medical books from Google Drive...');
 
     const response = await drive.files.list({
       q: "mimeType='application/pdf' or mimeType='application/vnd.google-apps.document' or mimeType='application/msword' or mimeType='application/vnd.openxmlformats-officedocument.wordprocessingml.document'",
@@ -32,15 +33,15 @@ export async function listFiles() {
       orderBy: 'modifiedTime desc'
     });
 
-    console.log(`Found ${response.data.files?.length || 0} files`);
+    console.log(`Found ${response.data.files?.length || 0} medical books`);
     return response.data.files || [];
   } catch (error) {
-    console.error('Error fetching files from Google Drive:', error);
-    throw new Error('Failed to fetch files from Google Drive');
+    console.error('Error fetching medical books from Google Drive:', error);
+    throw new Error('Failed to fetch medical books from Google Drive');
   }
 }
 
-export async function getFilePreviewUrl(fileId: string) {
+export async function getFilePreview(fileId: string) {
   try {
     // For PDFs and documents, return Google Drive viewer URL
     return `https://drive.google.com/file/d/${fileId}/preview`;
@@ -75,5 +76,18 @@ export async function getFileMetadata(fileId: string) {
   } catch (error) {
     console.error('Error getting file metadata:', error);
     throw new Error('Failed to get file metadata');
+  }
+}
+
+export async function checkFolderAccess() {
+  try {
+    const response = await drive.files.list({
+      pageSize: 1,
+      fields: 'files(id, name)'
+    });
+    return response.data.files && response.data.files.length >= 0;
+  } catch (error) {
+    console.error('Error checking folder access:', error);
+    return false;
   }
 }

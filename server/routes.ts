@@ -1577,9 +1577,9 @@ app.get("/api/user-stats/:userId", async (req, res) => {
 
   app.get('/api/google-drive/status', async (req, res) => {
     try {
-      const { getMedicalBooks } = await import('./google-drive.js');
-      const files = await getMedicalBooks();
-      res.json({ connected: files.length > 0 });
+      const { checkFolderAccess } = await import('./google-drive.js');
+      const connected = await checkFolderAccess();
+      res.json({ connected });
     } catch (error) {
       console.error('Error checking Google Drive status:', error);
       res.status(500).json({ connected: false, error: 'Failed to check connection status' });
