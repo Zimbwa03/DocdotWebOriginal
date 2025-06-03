@@ -52,12 +52,20 @@ export default function StudyGroupsAdvanced() {
   });
 
   // Fetch study groups
-  const { data: studyGroups = [], isLoading } = useQuery({
+  const { data: studyGroups = [], isLoading, error } = useQuery({
     queryKey: ['/api/study-groups'],
     queryFn: async () => {
-      const response = await fetch('/api/study-groups');
-      if (!response.ok) return [];
-      return response.json();
+      try {
+        const response = await fetch('/api/study-groups');
+        if (!response.ok) {
+          throw new Error(`Failed to fetch study groups: ${response.status}`);
+        }
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+      } catch (error) {
+        console.error('Study groups fetch error:', error);
+        return [];
+      }
     },
   });
 
@@ -294,11 +302,11 @@ export default function StudyGroupsAdvanced() {
                     Create New Group
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-md">
+                <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>Create Study Group</DialogTitle>
                   </DialogHeader>
-                  <div className="space-y-4">
+                  <div className="max-h-[70vh] overflow-y-auto pr-2 space-y-4">
                     <div>
                       <Label htmlFor="title">Group Title *</Label>
                       <Input

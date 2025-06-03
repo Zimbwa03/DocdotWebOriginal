@@ -263,12 +263,16 @@ export default function StudyTimer() {
   };
 
   const toggleMusic = () => {
-    setIsBackgroundMusicOn(!isBackgroundMusicOn);
-    if (!isBackgroundMusicOn) {
+    const newMusicState = !isBackgroundMusicOn;
+    setIsBackgroundMusicOn(newMusicState);
+    
+    if (newMusicState) {
+      // Music is being turned ON
       if (isRunning && audioRef.current) {
         audioRef.current.play().catch(console.error);
       }
     } else {
+      // Music is being turned OFF
       if (audioRef.current) {
         audioRef.current.pause();
       }

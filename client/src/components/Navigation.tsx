@@ -279,7 +279,7 @@ export function Navigation() {
 
   return (
     <>
-      <nav className="border-b" style={{ backgroundColor: '#D1E8F9' }}>
+      <nav className="border-b bg-[#D1E8F9] dark:bg-gray-800 dark:border-gray-700">
       <div className="max-w-7xl mx-auto px-4 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -290,7 +290,7 @@ export function Navigation() {
                 alt="DocDot Medical Student Logo" 
                 className="w-12 h-12 object-contain rounded-lg"
               />
-              <span className="text-lg lg:text-xl font-bold" style={{ color: '#1C1C1C' }}>
+              <span className="text-lg lg:text-xl font-bold text-[#1C1C1C] dark:text-white">
                 DocDot
               </span>
             </div>
