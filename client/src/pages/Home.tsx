@@ -37,6 +37,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Link } from 'wouter';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
+import { useTooltipGuide } from '@/contexts/TooltipGuideContext';
 
 function QuizSection() {
   const categories = {
@@ -124,6 +125,7 @@ export default function Home() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const { startGuide } = useTooltipGuide();
 
   // Update time every minute for accurate greeting
   useEffect(() => {
@@ -240,6 +242,15 @@ export default function Home() {
             <p className="text-lg lg:text-xl text-gray-600 dark:text-gray-300">
               Ready to continue your medical learning journey?
             </p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => startGuide('home')}
+              className="mt-4 mx-auto"
+            >
+              <Star className="w-4 h-4 mr-2" />
+              Take a Quick Tour
+            </Button>
           </div>
           
           <div className="flex items-center justify-center mb-4">
