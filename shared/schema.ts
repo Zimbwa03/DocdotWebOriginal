@@ -194,14 +194,7 @@ export const studyPlans = pgTable("study_plans", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Study sessions
-export const studySessions = pgTable("study_sessions", {
-  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  userId: text("user_id").references(() => users.id),
-  topicId: integer("topic_id").references(() => topics.id),
-  duration: integer("duration").notNull(), // in minutes
-  completedAt: timestamp("completed_at").defaultNow(),
-});
+
 
 // AI chat history with sessions
 export const aiSessions = pgTable("ai_sessions", {
@@ -223,6 +216,23 @@ export const aiChats = pgTable("ai_chats", {
   toolType: text("tool_type").notNull(),
   context: json("context"), // Additional context data
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Study planner sessions
+export const studyPlannerSessions = pgTable("study_planner_sessions", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: text("user_id").references(() => users.id),
+  title: text("title").notNull(),
+  subject: text("subject").notNull(),
+  topic: text("topic"),
+  date: timestamp("date").notNull(),
+  startTime: text("start_time").notNull(),
+  endTime: text("end_time").notNull(),
+  duration: integer("duration").notNull(), // in minutes
+  status: text("status").notNull().default("planned"), // planned, completed, missed
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Study groups
@@ -247,6 +257,7 @@ export const studyGroupMembers = pgTable("study_group_members", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   groupId: integer("group_id").references(() => studyGroups.id),
   userId: text("user_id").references(() => users.id),
+  reminderSent: boolean("reminder_sent").notNull().default(false),
   joinedAt: timestamp("joined_at").defaultNow(),
   hasJoinedMeeting: boolean("has_joined_meeting").notNull().default(false),
 }, (table) => ({
@@ -324,8 +335,9 @@ export const insertFlashcardSchema = createInsertSchema(flashcards);
 export const insertStudyPlanSchema = createInsertSchema(studyPlans);
 export const insertAiSessionSchema = createInsertSchema(aiSessions);
 export const insertAiChatSchema = createInsertSchema(aiChats);
+export const insertStudyPlannerSessionSchema = createInsertSchema(studyPlannerSessions).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertStudyGroupSchema = createInsertSchema(studyGroups).omit({ id: true, createdAt: true, currentMembers: true, isActive: true });
-export const insertStudyGroupMemberSchema = createInsertSchema(studyGroupMembers).omit({ id: true, joinedAt: true, hasJoinedMeeting: true });
+export const insertStudyGroupMemberSchema = createInsertSchema(studyGroupMembers).omit({ id: true, joinedAt: true, hasJoinedMeeting: true, reminderSent: true });
 export const insertMeetingReminderSchema = createInsertSchema(meetingReminders).omit({ id: true, createdAt: true, emailSent: true });
 export const insertUserAnalyticsSchema = createInsertSchema(userAnalytics).omit({ id: true, updatedAt: true });
 
@@ -347,7 +359,7 @@ export type DailyStats = typeof dailyStats.$inferSelect;
 export type LeaderboardEntry = typeof leaderboard.$inferSelect;
 export type Flashcard = typeof flashcards.$inferSelect;
 export type StudyPlan = typeof studyPlans.$inferSelect;
-export type StudySession = typeof studySessions.$inferSelect;
+export type StudyPlannerSession = typeof studyPlannerSessions.$inferSelect;
 export type AiSession = typeof aiSessions.$inferSelect;
 export type AiChat = typeof aiChats.$inferSelect;
 export type StudyGroup = typeof studyGroups.$inferSelect;
