@@ -403,8 +403,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('OpenRouter API error:', response.status, errorText);
-        return res.status(500).json({ error: `OpenRouter API error: ${response.status} - ${errorText}` });
+        console.error('DeepSeek API error:', response.status, errorText);
+        return res.status(500).json({ error: `DeepSeek API error: ${response.status} - ${errorText}` });
       }
 
       const data = await response.json();
@@ -424,44 +424,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log("Received AI chat request:", { message, context, userId, toolType });
       
-      // Direct OpenRouter API call (bypassing the ai.ts service for now)
-      const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
-      if (!OPENROUTER_API_KEY) {
-        return res.status(500).json({ error: "OpenRouter API key not configured" });
+      // Direct DeepSeek API call for AI chat
+      const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
+      if (!DEEPSEEK_API_KEY) {
+        return res.status(500).json({ error: "DeepSeek API key not configured" });
       }
 
-      const systemPrompt = `You are an expert medical tutor with deep knowledge in anatomy, physiology, pathology, pharmacology, and clinical medicine. 
+      const systemPrompt = `You are an expert medical tutor 👨‍⚕️ with deep knowledge in anatomy, physiology, pathology, pharmacology, and clinical medicine. 
 Your goal is to help medical students learn effectively through clear explanations, examples, and educational guidance.
 
-CRITICAL FORMATTING RULES:
-- Never use markdown formatting (**, *, _, etc.)
-- Never use emojis or special characters
-- Write in plain text only
-- Use professional medical language
-- Structure responses with clear paragraphs
-- Use numbered lists for steps or multiple points
+**Formatting Guidelines:**
+- Use **bold text** for key medical terms
+- Include helpful emojis for engagement 
+- Structure responses with clear sections and bullet points
+- Add encouraging phrases like "Great question!" or "You're on the right track!"
+- Use 💭 for thought-provoking questions
+- Use 🏥 for clinical correlations
+- Use 📚 for study tips
 
 Guidelines:
 - Provide accurate, evidence-based medical information
 - Use clear, educational language appropriate for medical students
 - Include relevant examples and mnemonics when helpful
-- Encourage critical thinking
+- Encourage critical thinking with thoughtful questions
 - Always emphasize the importance of clinical correlation
 - If unsure about specific clinical recommendations, advise consulting current medical literature
 - Give direct, comprehensive answers without asking for clarification unless absolutely necessary
 
 ${context ? `Context: ${context}` : ''}`;
 
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      const response = await fetch('https://api.deepseek.com/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+          'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
           'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://docdot.app',
-          'X-Title': 'Docdot Medical Learning Platform'
         },
         body: JSON.stringify({
-          model: 'deepseek/deepseek-r1:free',
+          model: 'deepseek-chat',
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: message }
@@ -492,17 +491,17 @@ ${context ? `Context: ${context}` : ''}`;
     try {
       const { topic, difficulty, count = 5 } = req.body;
       
-      const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
-      if (!OPENROUTER_API_KEY) {
-        return res.status(500).json({ error: "OpenRouter API key not configured" });
+      const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
+      if (!DEEPSEEK_API_KEY) {
+        return res.status(500).json({ error: "DeepSeek API key not configured" });
       }
 
-      const systemPrompt = `You are an expert medical educator. Generate ${count} multiple-choice questions about ${topic} at ${difficulty} difficulty level. 
+      const systemPrompt = `You are an expert medical educator 👨‍⚕️. Generate ${count} multiple-choice questions about ${topic} at ${difficulty} difficulty level. 
 Each question should be medically accurate and educational.
 
-CRITICAL FORMATTING RULES:
+**CRITICAL FORMATTING RULES:**
 - Return ONLY valid JSON format
-- No markdown formatting or special characters
+- No markdown formatting or special characters outside JSON
 - No explanatory text outside the JSON
 
 Return a JSON array with this exact format:
@@ -511,22 +510,20 @@ Return a JSON array with this exact format:
     "question": "Question text here",
     "options": ["A) Option 1", "B) Option 2", "C) Option 3", "D) Option 4"],
     "correctAnswer": "A) Option 1",
-    "explanation": "Detailed explanation of why this is correct",
+    "explanation": "**Detailed explanation** with medical reasoning and clinical correlations 🏥",
     "category": "${topic}",
     "difficulty": "${difficulty}"
   }
 ]`;
 
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      const response = await fetch('https://api.deepseek.com/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+          'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
           'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://docdot.app',
-          'X-Title': 'Docdot Medical Learning Platform'
         },
         body: JSON.stringify({
-          model: 'deepseek/deepseek-r1:free',
+          model: 'deepseek-chat',
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: `Generate ${count} medical questions about ${topic}` }
