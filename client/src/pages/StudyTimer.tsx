@@ -31,21 +31,15 @@ import { apiRequest } from "@/lib/queryClient";
 
 // Enhanced music tracks for different study environments
 const MUSIC_TRACKS = [
-  { name: "Reading Music to Concentrate", url: "https://youtu.be/BklGhQYKl30", genre: "Ambient Study", duration: "Long" },
-  { name: "Deep Focus for Studying", url: "https://youtu.be/oPVte6aMprI", genre: "Focus Music", duration: "Extended" },
-  { name: "12 Hours Ambient Study Music", url: "https://youtu.be/Z6WYhiSurqE", genre: "Ambient", duration: "12 Hours" },
-  { name: "Mozart Relaxing Concerto", url: "https://youtu.be/vwIUJbIU57s", genre: "Classical", duration: "Long" },
-  { name: "Deep Focus for Reading & Work", url: "https://youtu.be/ITn5Q6W9RQY", genre: "Focus Music", duration: "Extended" },
-  { name: "4 Hours Study Concentration", url: "https://youtu.be/sjkrrmBnpGE", genre: "Study Music", duration: "4 Hours" },
-  { name: "3 Hour Alpha Waves Brain Music", url: "https://youtu.be/ctXQxPO3bbg", genre: "Alpha Waves", duration: "3 Hours" },
-  { name: "Classical Reading Music", url: "https://youtu.be/mIYzp5rcTvU", genre: "Classical", duration: "Long" },
-  { name: "SUPER FOCUS Binaural Beats", url: "https://youtu.be/n4YghVcjbpw", genre: "Binaural", duration: "Flow State" },
-  { name: "Music for Concentration", url: "https://youtu.be/SjiSEvh6fJs", genre: "Focus Music", duration: "Extended" },
-  { name: "1 Hour Deep Focus Ambient", url: "https://youtu.be/V7XVOHsuzYw", genre: "Ambient", duration: "1 Hour" },
-  { name: "Lofi Hip Hop Radio", url: "https://www.youtube.com/@LofiGirl", genre: "Lo-Fi", duration: "24/7" },
-  { name: "Piano Guys - A Thousand Years", url: "https://youtu.be/QgaTQ5-XfMM", genre: "Piano", duration: "Single" },
-  { name: "2 Hours Relaxing Reading Music", url: "https://youtu.be/2OEL4P1Rz04", genre: "Relaxing", duration: "2 Hours" },
   { name: "Focus Music for Reading", url: "https://youtu.be/WPni755-Krg", genre: "Ambient Study", duration: "Extended" },
+  { name: "Deep Study Focus Music", url: "https://youtu.be/0NzMAHxWzII", genre: "Focus Music", duration: "Long" },
+  { name: "Relaxing Study Music", url: "https://youtu.be/lkkGlVWvkLk", genre: "Relaxing", duration: "Extended" },
+  { name: "Music for Concentration", url: "https://youtu.be/SjiSEvh6fJs", genre: "Focus Music", duration: "Extended" },
+  { name: "Calming Study Atmosphere", url: "https://youtu.be/acQS2Fef8tU", genre: "Ambient", duration: "Long" },
+  { name: "Productive Study Session", url: "https://youtu.be/KYC99Ev2sz4", genre: "Study Music", duration: "Extended" },
+  { name: "Deep Work Focus", url: "https://youtu.be/zV9ZOFks68Q", genre: "Focus Music", duration: "Long" },
+  { name: "Concentration Enhancement", url: "https://youtu.be/5LXhPbmoHmU", genre: "Brain Music", duration: "Extended" },
+  { name: "Ultimate Study Flow", url: "https://youtu.be/9mXd3XEnRn8", genre: "Flow State", duration: "Long" },
 ];
 
 const MOTIVATIONAL_QUOTES = [
@@ -100,46 +94,25 @@ export default function StudyTimer() {
 
   // Initialize audio and motivational quote
   useEffect(() => {
-    // Initialize background music
-    audioRef.current = new Audio(MUSIC_TRACKS[currentTrack].url);
-    audioRef.current.loop = true;
-    audioRef.current.volume = volume / 100;
-
-    // Initialize notification sound
+    // Note: YouTube URLs require iframe embed for proper playback
+    // Initialize notification sound for timer alerts
     notificationAudioRef.current = new Audio("data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvGIcBjiS2O7Pcz+LJpzS8Nnz+LLI1dnS+6fO1LLVzPK1+rK9z8/OvPawye7t+7C+zLu9");
 
     // Set initial motivational quote
     setMotivationalQuote(MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)]);
     
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = "";
-      }
       if (notificationAudioRef.current) {
         notificationAudioRef.current.src = "";
       }
     };
   }, []);
 
-  // Update audio track when currentTrack changes
+  // Track changes trigger iframe reload for YouTube integration
   useEffect(() => {
-    if (audioRef.current) {
-      const wasPlaying = !audioRef.current.paused;
-      audioRef.current.src = MUSIC_TRACKS[currentTrack].url;
-      audioRef.current.volume = volume / 100;
-      if (wasPlaying && isBackgroundMusicOn) {
-        audioRef.current.play().catch(console.error);
-      }
-    }
-  }, [currentTrack]);
-
-  // Update volume
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = isMuted ? 0 : volume / 100;
-    }
-  }, [volume, isMuted]);
+    // YouTube player will be updated through iframe src changes
+    // Volume control is handled by YouTube player itself
+  }, [currentTrack, volume, isMuted]);
 
   // Reset timer when settings change
   useEffect(() => {
@@ -231,16 +204,12 @@ export default function StudyTimer() {
   // Control functions
   const startTimer = () => {
     setIsRunning(true);
-    if (isBackgroundMusicOn && audioRef.current) {
-      audioRef.current.play().catch(console.error);
-    }
+    // YouTube iframe will handle autoplay based on isRunning state
   };
 
   const pauseTimer = () => {
     setIsRunning(false);
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
+    // YouTube iframe will stop autoplay when isRunning is false
   };
 
   const resetTimer = () => {
@@ -249,9 +218,7 @@ export default function StudyTimer() {
     setCurrentPhase('study');
     const duration = getCurrentPhaseDuration();
     setTimeLeft(duration * 60);
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
+    // YouTube iframe will handle stopping
   };
 
   const skipPhase = () => {
@@ -265,18 +232,7 @@ export default function StudyTimer() {
   const toggleMusic = () => {
     const newMusicState = !isBackgroundMusicOn;
     setIsBackgroundMusicOn(newMusicState);
-    
-    if (newMusicState) {
-      // Music is being turned ON
-      if (isRunning && audioRef.current) {
-        audioRef.current.play().catch(console.error);
-      }
-    } else {
-      // Music is being turned OFF
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-    }
+    // YouTube iframe will be shown/hidden based on isBackgroundMusicOn state
   };
 
   const nextTrack = () => {
@@ -473,25 +429,24 @@ export default function StudyTimer() {
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label>Volume</Label>
-                        <Button
-                          onClick={() => setIsMuted(!isMuted)}
-                          variant="ghost"
-                          size="sm"
-                        >
-                          {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                        </Button>
+                    {/* YouTube Player Embed */}
+                    {isBackgroundMusicOn && (
+                      <div className="space-y-2">
+                        <Label>Now Playing</Label>
+                        <div className="w-full h-32 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
+                          <iframe
+                            width="100%"
+                            height="128"
+                            src={`https://www.youtube.com/embed/${MUSIC_TRACKS[currentTrack].url.split('youtu.be/')[1]?.split('?')[0] || MUSIC_TRACKS[currentTrack].url.split('watch?v=')[1]?.split('&')[0]}?autoplay=${isRunning ? 1 : 0}&loop=1&playlist=${MUSIC_TRACKS[currentTrack].url.split('youtu.be/')[1]?.split('?')[0] || MUSIC_TRACKS[currentTrack].url.split('watch?v=')[1]?.split('&')[0]}`}
+                            title={MUSIC_TRACKS[currentTrack].name}
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            className="rounded-lg"
+                          ></iframe>
+                        </div>
                       </div>
-                      <Slider
-                        value={[volume]}
-                        onValueChange={(value) => setVolume(value[0])}
-                        max={100}
-                        step={5}
-                        disabled={isMuted}
-                      />
-                    </div>
+                    )}
                   </>
                 )}
               </CardContent>

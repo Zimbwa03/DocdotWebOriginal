@@ -70,7 +70,7 @@ export function Navigation() {
   const { theme, toggleTheme } = useTheme();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   // State for mobile menu and profile management
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -358,7 +358,7 @@ export function Navigation() {
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              
+
               <DropdownMenuContent className="w-80" align="end">
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
@@ -378,9 +378,9 @@ export function Navigation() {
                     </div>
                   </div>
                 </DropdownMenuLabel>
-                
+
                 <DropdownMenuSeparator />
-                
+
                 {/* Profile Management */}
                 <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
                   <DialogTrigger asChild>
@@ -519,31 +519,31 @@ export function Navigation() {
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Account Settings</span>
                 </DropdownMenuItem>
-                
+
                 <DropdownMenuItem>
                   <Shield className="mr-2 h-4 w-4" />
                   <span>Privacy & Security</span>
                 </DropdownMenuItem>
-                
+
                 <DropdownMenuItem>
                   <CreditCard className="mr-2 h-4 w-4" />
                   <span>Billing & Subscription</span>
                 </DropdownMenuItem>
-                
+
                 <DropdownMenuItem>
                   <Download className="mr-2 h-4 w-4" />
                   <span>Download Data</span>
                 </DropdownMenuItem>
-                
+
                 <DropdownMenuSeparator />
-                
+
                 <DropdownMenuItem>
                   <HelpCircle className="mr-2 h-4 w-4" />
                   <span>Help & Support</span>
                 </DropdownMenuItem>
-                
+
                 <DropdownMenuSeparator />
-                
+
                 <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Sign Out</span>
@@ -667,6 +667,16 @@ export function Navigation() {
                 </Button>
               </div>
             </div>
+
+            {/* Theme Toggle for Mobile */}
+            <Button variant="ghost" className="w-full justify-start h-12" onClick={toggleTheme}>
+              {theme === 'light' ? (
+                <Moon className="w-4 h-4 mr-3" />
+              ) : (
+                <Sun className="w-4 h-4 mr-3" />
+              )}
+              <span>{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
+            </Button>
 
             {/* Logout */}
             <div className="pt-4 border-t border-gray-200">
