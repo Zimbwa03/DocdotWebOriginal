@@ -29,13 +29,23 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { apiRequest } from "@/lib/queryClient";
 
-// Music tracks for different study environments
+// Enhanced music tracks for different study environments
 const MUSIC_TRACKS = [
-  { name: "Lo-Fi Study", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", genre: "Lo-Fi" },
-  { name: "Rain Sounds", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", genre: "Nature" },
-  { name: "Forest Ambience", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3", genre: "Nature" },
-  { name: "Piano Focus", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3", genre: "Classical" },
-  { name: "Café Ambience", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3", genre: "Ambient" },
+  { name: "Reading Music to Concentrate", url: "https://youtu.be/BklGhQYKl30", genre: "Ambient Study", duration: "Long" },
+  { name: "Deep Focus for Studying", url: "https://youtu.be/oPVte6aMprI", genre: "Focus Music", duration: "Extended" },
+  { name: "12 Hours Ambient Study Music", url: "https://youtu.be/Z6WYhiSurqE", genre: "Ambient", duration: "12 Hours" },
+  { name: "Mozart Relaxing Concerto", url: "https://youtu.be/vwIUJbIU57s", genre: "Classical", duration: "Long" },
+  { name: "Deep Focus for Reading & Work", url: "https://youtu.be/ITn5Q6W9RQY", genre: "Focus Music", duration: "Extended" },
+  { name: "4 Hours Study Concentration", url: "https://youtu.be/sjkrrmBnpGE", genre: "Study Music", duration: "4 Hours" },
+  { name: "3 Hour Alpha Waves Brain Music", url: "https://youtu.be/ctXQxPO3bbg", genre: "Alpha Waves", duration: "3 Hours" },
+  { name: "Classical Reading Music", url: "https://youtu.be/mIYzp5rcTvU", genre: "Classical", duration: "Long" },
+  { name: "SUPER FOCUS Binaural Beats", url: "https://youtu.be/n4YghVcjbpw", genre: "Binaural", duration: "Flow State" },
+  { name: "Music for Concentration", url: "https://youtu.be/SjiSEvh6fJs", genre: "Focus Music", duration: "Extended" },
+  { name: "1 Hour Deep Focus Ambient", url: "https://youtu.be/V7XVOHsuzYw", genre: "Ambient", duration: "1 Hour" },
+  { name: "Lofi Hip Hop Radio", url: "https://www.youtube.com/@LofiGirl", genre: "Lo-Fi", duration: "24/7" },
+  { name: "Piano Guys - A Thousand Years", url: "https://youtu.be/QgaTQ5-XfMM", genre: "Piano", duration: "Single" },
+  { name: "2 Hours Relaxing Reading Music", url: "https://youtu.be/2OEL4P1Rz04", genre: "Relaxing", duration: "2 Hours" },
+  { name: "Focus Music for Reading", url: "https://youtu.be/WPni755-Krg", genre: "Ambient Study", duration: "Extended" },
 ];
 
 const MOTIVATIONAL_QUOTES = [
@@ -433,11 +443,25 @@ export default function StudyTimer() {
                 {isBackgroundMusicOn && (
                   <>
                     <div className="space-y-2">
-                      <Label>Current Track</Label>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium">{MUSIC_TRACKS[currentTrack].name}</p>
-                          <p className="text-xs text-gray-500">{MUSIC_TRACKS[currentTrack].genre}</p>
+                      <Label>Select Music Track</Label>
+                      <Select value={currentTrack.toString()} onValueChange={(value) => setCurrentTrack(parseInt(value))}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choose a music track" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {MUSIC_TRACKS.map((track, index) => (
+                            <SelectItem key={index} value={index.toString()}>
+                              <div className="flex flex-col">
+                                <span className="font-medium">{track.name}</span>
+                                <span className="text-xs text-gray-500">{track.genre} • {track.duration}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <div className="flex items-center justify-between mt-2">
+                        <div className="text-xs text-gray-600 dark:text-gray-400">
+                          {MUSIC_TRACKS[currentTrack].genre} • {MUSIC_TRACKS[currentTrack].duration}
                         </div>
                         <Button onClick={nextTrack} variant="outline" size="sm">
                           <SkipForward className="w-4 h-4" />

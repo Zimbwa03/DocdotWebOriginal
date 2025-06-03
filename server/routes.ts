@@ -25,6 +25,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Study Planner Sessions API routes
+  app.get("/api/study-planner-sessions", async (req, res) => {
+    try {
+      const sessions = await db.execute(sql`
+        SELECT * FROM study_sessions 
+        ORDER BY date DESC, start_time ASC
+      `);
+      res.json(sessions.rows || []);
+    } catch (error) {
+      console.error("Error fetching study sessions:", error);
+      res.status(500).json({ error: "Failed to fetch study sessions" });
+    }
+  });
+
+  app.post("/api/study-planner-sessions", async (req, res) => {
+    try {
+      const { title, subject, topic, date, startTime, endTime, duration, notes } = req.body;
+      
+      const result = await db.execute(sql`
+        INSERT INTO study_sessions (title, subject, topic, date, start_time, end_time, duration, notes, created_at)
+        VALUES (${title}, ${subject}, ${topic}, ${date}, ${startTime}, ${endTime}, ${duration}, ${notes}, NOW())
+        RETURNING *
+      `);
+      
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error("Error creating study session:", error);
+      res.status(500).json({ error: "Failed to create study session" });
+    }
+  });
+
+  // Study Groups API routes
+  app.get("/api/study-groups", async (req, res) => {
+    try {
+      const groups = await db.execute(sql`
+        SELECT sg.*, COUNT(sgm.user_id) as member_count
+        FROM study_groups sg
+        LEFT JOIN study_group_members sgm ON sg.id = sgm.group_id
+        GROUP BY sg.id
+        ORDER BY sg.created_at DESC
+      `);
+      res.json(groups.rows || []);
+    } catch (error) {
+      console.error("Error fetching study groups:", error);
+      res.status(500).json({ error: "Failed to fetch study groups" });
+    }
+  });
+
+  app.post("/api/study-groups", async (req, res) => {
+    try {
+      const { name, description, subject, maxMembers, isPrivate } = req.body;
+      
+      const result = await db.execute(sql`
+        INSERT INTO study_groups (name, description, subject, max_members, is_private, created_at)
+        VALUES (${name}, ${description}, ${subject}, ${maxMembers}, ${isPrivate}, NOW())
+        RETURNING *
+      `);
+      
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error("Error creating study group:", error);
+      res.status(500).json({ error: "Failed to create study group" });
+    }
+  });
+
   // User profile management API routes
   
   // Get user profile

@@ -272,15 +272,16 @@ export default function StudyGuide() {
                         Add Session
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
+                    <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
                       <DialogHeader>
                         <DialogTitle>Schedule Study Session</DialogTitle>
                         <DialogDescription>
                           Create a new study session to track your learning progress
                         </DialogDescription>
                       </DialogHeader>
-                      <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                      <div className="max-h-[60vh] overflow-y-auto pr-2">
+                        <Form {...form}>
+                          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                           <FormField
                             control={form.control}
                             name="title"
@@ -459,8 +460,9 @@ export default function StudyGuide() {
                               Cancel
                             </Button>
                           </div>
-                        </form>
-                      </Form>
+                          </form>
+                        </Form>
+                      </div>
                     </DialogContent>
                   </Dialog>
                 </CardHeader>
