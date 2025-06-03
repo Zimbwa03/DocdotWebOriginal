@@ -213,9 +213,11 @@ export function TooltipGuideProvider({ children }: { children: ReactNode }) {
     .sort((a, b) => a.order - b.order);
 
   const startGuide = (page: string) => {
+    console.log('Starting guide for page:', page);
     setCurrentPage(page);
     setCurrentStep(0);
     setIsGuideActive(true);
+    setIsFirstTimeUser(false); // Reset first time user flag when manually triggered
   };
 
   const nextStep = () => {

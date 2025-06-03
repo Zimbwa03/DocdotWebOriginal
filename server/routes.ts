@@ -1399,5 +1399,48 @@ CRITICAL FORMATTING RULES:
     }
   });
 
+  // Google Drive API routes
+  app.get('/api/google-drive/files', async (req, res) => {
+    try {
+      // Check if Google Drive API credentials are available
+      const apiKey = process.env.GOOGLE_DRIVE_API_KEY;
+      
+      if (!apiKey) {
+        return res.status(500).json({ 
+          error: 'Google Drive API key not configured',
+          message: 'Please configure GOOGLE_DRIVE_API_KEY in environment variables'
+        });
+      }
+
+      // Mock response for now - replace with actual Google Drive API call
+      const mockFiles = [
+        {
+          id: '1',
+          name: 'Medical Textbook - Anatomy.pdf',
+          mimeType: 'application/pdf',
+          createdTime: '2024-01-01T00:00:00.000Z',
+          modifiedTime: '2024-01-01T00:00:00.000Z',
+          size: '15728640'
+        },
+        {
+          id: '2', 
+          name: 'Physiology Reference Guide.pdf',
+          mimeType: 'application/pdf',
+          createdTime: '2024-01-02T00:00:00.000Z',
+          modifiedTime: '2024-01-02T00:00:00.000Z',
+          size: '12582912'
+        }
+      ];
+
+      res.json({ files: mockFiles });
+    } catch (error) {
+      console.error('Google Drive API error:', error);
+      res.status(500).json({ 
+        error: 'Failed to fetch Google Drive files',
+        message: 'Internal server error'
+      });
+    }
+  });
+
   return httpServer;
 }

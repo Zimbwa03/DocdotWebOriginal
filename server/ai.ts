@@ -1,7 +1,7 @@
 // Using Node.js built-in fetch (available in Node 18+)
 
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
-const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
+const API_URL = 'https://api.deepseek.com/v1/chat/completions';
 
 interface AIMessage {
   role: 'system' | 'user' | 'assistant';
@@ -12,15 +12,15 @@ class OpenRouterAI {
   private apiKey: string | null;
 
   constructor() {
-    this.apiKey = OPENROUTER_API_KEY || null;
+    this.apiKey = DEEPSEEK_API_KEY || null;
     if (!this.apiKey) {
-      console.warn('OPENROUTER_API_KEY is not configured - AI features will be disabled');
+      console.warn('DEEPSEEK_API_KEY is not configured - AI features will be disabled');
     }
   }
 
   private checkApiKey(): boolean {
     if (!this.apiKey) {
-      console.error('OpenRouter API key not configured');
+      console.error('DeepSeek API key not configured');
       return false;
     }
     return true;
@@ -44,7 +44,7 @@ class OpenRouterAI {
           'X-Title': 'Docdot Medical Learning Platform'
         },
         body: JSON.stringify({
-          model: 'deepseek/deepseek-r1:free',
+          model: 'deepseek-chat',
           messages,
           temperature,
           max_tokens: 1500,
@@ -105,15 +105,19 @@ class OpenRouterAI {
 
   // Medical Tutor Chat
   async tutorResponse(userQuestion: string, context?: string): Promise<string> {
-    const systemPrompt = `You are an expert medical tutor with deep knowledge in anatomy, physiology, pathology, pharmacology, and clinical medicine. 
+    const systemPrompt = `You are an expert medical tutor 👨‍⚕️ with deep knowledge in anatomy, physiology, pathology, pharmacology, and clinical medicine. 
     Your goal is to help medical students learn effectively through clear explanations, examples, and educational guidance.
     
     Guidelines:
     - Provide accurate, evidence-based medical information
     - Use clear, educational language appropriate for medical students
     - Include relevant examples and mnemonics when helpful
-    - Encourage critical thinking
-    - Always emphasize the importance of clinical correlation
+    - Encourage critical thinking with 💭 thoughtful questions
+    - Always emphasize the importance of clinical correlation 🏥
+    - Use **bold text** for key medical terms
+    - Include helpful emojis and formatting for engagement
+    - Structure responses with clear sections and bullet points
+    - Add encouraging phrases like "Great question!" or "You're on the right track!"
     - If unsure about specific clinical recommendations, advise consulting current medical literature
     
     ${context ? `Context: ${context}` : ''}`;
