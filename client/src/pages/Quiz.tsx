@@ -310,8 +310,8 @@ export default function Quiz() {
   const renderQuizTypeSelection = () => (
     <div className="space-y-8">
       <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4" style={{ color: '#1C1C1C' }}>Medical Quizzes</h1>
-        <p className="text-lg" style={{ color: '#2E2E2E' }}>Choose your learning path and start practicing</p>
+        <h1 className="text-4xl font-bold mb-4 text-gray-900 dark:text-white">Medical Quizzes</h1>
+        <p className="text-lg text-gray-700 dark:text-gray-300">Choose your learning path and start practicing</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -950,7 +950,7 @@ export default function Quiz() {
 
   if (selectedQuizType === 'ai-generator') {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
+      <div className="min-h-screen bg-white dark:bg-gray-900">
         <div className="max-w-6xl mx-auto px-8 py-12">
           {renderAiGenerator()}
         </div>
@@ -960,7 +960,7 @@ export default function Quiz() {
 
   if (selectedQuizType === 'cadaver') {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
+      <div className="min-h-screen bg-white dark:bg-gray-900">
         <div className="max-w-6xl mx-auto px-8 py-12">
           {renderCadaverTopics()}
         </div>
@@ -970,12 +970,12 @@ export default function Quiz() {
 
   if (selectedQuizType === 'histology') {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
+      <div className="min-h-screen bg-white dark:bg-gray-900">
         <div className="max-w-6xl mx-auto px-8 py-12">
           <div className="text-center py-20">
             <Microscope className="w-16 h-16 mx-auto mb-4" style={{ color: '#3399FF' }} />
-            <h2 className="text-2xl font-bold mb-4" style={{ color: '#1C1C1C' }}>Histology Slide Quiz</h2>
-            <p style={{ color: '#2E2E2E' }}>Coming soon! Practice with microscopic anatomy images.</p>
+            <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Histology Slide Quiz</h2>
+            <p className="text-gray-700 dark:text-gray-300">Coming soon! Practice with microscopic anatomy images.</p>
             <Button 
               onClick={() => setSelectedQuizType(null)}
               className="mt-4"
@@ -991,7 +991,7 @@ export default function Quiz() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
+    <div className="min-h-screen bg-white dark:bg-gray-900">
       <div className="max-w-6xl mx-auto px-8 py-12">
         {renderQuizTypeSelection()}
       </div>

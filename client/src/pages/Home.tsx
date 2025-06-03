@@ -229,15 +229,15 @@ export default function Home() {
   }, [user?.id, refetchStats, refetchQuizzes, queryClient]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-6 lg:py-8">
         {/* Hero Section with Personalized Greeting */}
         <div className="text-center mb-8 lg:mb-12">
           <div className="mb-6">
-            <h1 className="text-2xl lg:text-4xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">
               {getTimeBasedGreeting()}
             </h1>
-            <p className="text-lg lg:text-xl text-gray-600">
+            <p className="text-lg lg:text-xl text-gray-600 dark:text-gray-300">
               Ready to continue your medical learning journey?
             </p>
           </div>
