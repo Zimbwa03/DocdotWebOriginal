@@ -21,12 +21,17 @@ export default function GoogleDriveResourcesGrid({ searchQuery }: GoogleDriveRes
   const { data: books, isLoading, error } = useQuery({
     queryKey: ['google-drive-files'],
     queryFn: async () => {
+      console.log('Fetching Google Drive files...');
       const res = await fetch('/api/google-drive/files');
       if (!res.ok) {
         throw new Error('Failed to fetch files');
       }
-      return res.json() as Promise<DriveFile[]>;
-    }
+      const data = await res.json();
+      console.log('Received Google Drive files:', data);
+      return Array.isArray(data) ? data : [];
+    },
+    retry: 3,
+    retryDelay: 1000
   });
 
   const filteredBooks = books?.filter(book => 

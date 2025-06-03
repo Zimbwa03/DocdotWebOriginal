@@ -1535,14 +1535,15 @@ CRITICAL FORMATTING RULES:
   // Google Drive API routes
   app.get('/api/google-drive/files', async (req, res) => {
     try {
+      console.log('Google Drive API route called');
       const { getMedicalBooks } = await import('./google-drive.js');
       const files = await getMedicalBooks();
-      res.json({ files });
+      console.log(`Returning ${files.length} files from Google Drive API`);
+      res.json(files);
     } catch (error) {
       console.error('Google Drive API error:', error);
       res.status(500).json({ 
         error: 'Failed to fetch Google Drive files',
-        files: [],
         message: 'Check Google Drive API credentials and folder permissions'
       });
     }

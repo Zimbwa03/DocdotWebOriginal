@@ -45,20 +45,24 @@ export async function getMedicalBooks(): Promise<DriveFile[]> {
       return getSampleBooks();
     }
 
+    console.log('Attempting to fetch files from Google Drive folder:', FOLDER_ID);
+    
     const response = await drive.files.list({
       q: `'${FOLDER_ID}' in parents and trashed=false`,
       fields: 'files(id,name,mimeType,createdTime,modifiedTime,size,webViewLink,thumbnailLink)',
-      orderBy: 'name'
+      orderBy: 'name',
+      pageSize: 100
     });
 
     const files = response.data.files || [];
+    console.log(`Found ${files.length} files in Google Drive`);
     
     if (files.length === 0) {
-      console.log('No files found in Google Drive, returning sample data');
+      console.log('No files found in Google Drive folder, returning sample data');
       return getSampleBooks();
     }
     
-    return files.map(file => ({
+    const driveFiles = files.map(file => ({
       id: file.id || '',
       name: file.name || '',
       mimeType: file.mimeType || '',
@@ -68,8 +72,12 @@ export async function getMedicalBooks(): Promise<DriveFile[]> {
       webViewLink: file.webViewLink || '',
       thumbnailLink: file.thumbnailLink || undefined
     }));
+
+    console.log('Successfully mapped Google Drive files:', driveFiles.length);
+    return driveFiles;
   } catch (error) {
     console.error('Error fetching Google Drive files:', error);
+    console.error('Error details:', error.message);
     
     // Return sample data instead of empty array for better UX
     return getSampleBooks();

@@ -23,13 +23,17 @@ export default function Resources() {
   const { data: books, isLoading, error } = useQuery({
     queryKey: ['google-drive-files'],
     queryFn: async () => {
+      console.log('Fetching books from Google Drive...');
       const res = await fetch('/api/google-drive/files');
       if (!res.ok) {
         throw new Error('Failed to fetch books');
       }
       const data = await res.json();
-      return data.files as DriveFile[];
-    }
+      console.log('Books data received:', data);
+      return Array.isArray(data) ? data : [];
+    },
+    retry: 3,
+    retryDelay: 1000
   });
 
   const filteredBooks = books?.filter(book => 
