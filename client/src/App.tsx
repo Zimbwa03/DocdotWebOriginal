@@ -13,6 +13,7 @@ import Quiz from "@/pages/Quiz";
 import Notes from "@/pages/Notes";
 import Pricing from "@/pages/Pricing";
 import StudyGuide from "@/pages/StudyGuide";
+import StudyGroups from "@/pages/StudyGroups";
 import Performance from "@/pages/Performance";
 import Analytics from "@/pages/Analytics";
 import EnhancedAnalytics from "@/pages/EnhancedAnalytics";
@@ -79,6 +80,12 @@ function Router() {
         <ProtectedRoute>
           <Navigation />
           <StudyGuide />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/study-groups">
+        <ProtectedRoute>
+          <Navigation />
+          <StudyGroups />
         </ProtectedRoute>
       </Route>
       <Route path="/performance">

@@ -739,8 +739,25 @@ export default function StudyGuide() {
     createSessionMutation.mutate(data);;
   };
 
+  // Fetch study planner sessions from database
+  const { data: studyPlannerSessions = [] } = useQuery({
+    queryKey: ['/api/study-planner-sessions', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const response = await fetch(`/api/study-planner-sessions?userId=${user.id}`);
+      if (!response.ok) return [];
+      return response.json();
+    },
+    enabled: !!user?.id,
+  });
+
   const getSessionsForDate = (date: Date) => {
-    // Mock sessions for demonstration
+    // Filter sessions for the selected date
+    const dateString = date.toISOString().split('T')[0];
+    return studyPlannerSessions.filter((session: any) => {
+      const sessionDate = new Date(session.date).toISOString().split('T')[0];
+      return sessionDate === dateString;
+    }).sort((a: any, b: any) => a.startTime.localeCompare(b.startTime));
     const sessions = [
       {
         id: 1,

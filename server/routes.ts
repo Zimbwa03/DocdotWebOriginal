@@ -1132,5 +1132,173 @@ CRITICAL FORMATTING RULES:
 
   const httpServer = createServer(app);
 
+  // Study Groups API Routes
+  app.get('/api/study-groups', async (req, res) => {
+    try {
+      const result = await db.execute(sql`
+        SELECT 
+          sg.*,
+          u.first_name as "creatorFirstName",
+          u.last_name as "creatorLastName",
+          (
+            SELECT COUNT(*) 
+            FROM study_group_members sgm 
+            WHERE sgm.group_id = sg.id
+          ) as current_members,
+          CASE 
+            WHEN sg.scheduled_time <= NOW() AND sg.scheduled_time > NOW() - INTERVAL '1 hour'
+            THEN true 
+            ELSE false 
+          END as is_active
+        FROM study_groups sg
+        LEFT JOIN users u ON sg.creator_id = u.id
+        ORDER BY sg.scheduled_time ASC
+      `);
+      
+      const groups = result.rows.map((row: any) => ({
+        ...row,
+        creator: {
+          firstName: row.creatorFirstName,
+          lastName: row.creatorLastName
+        }
+      }));
+      
+      res.json(groups);
+    } catch (error) {
+      console.error('Error fetching study groups:', error);
+      res.status(500).json({ error: 'Failed to fetch study groups' });
+    }
+  });
+
+  app.post('/api/study-groups', async (req, res) => {
+    try {
+      const groupData = req.body;
+      const result = await db.execute(sql`
+        INSERT INTO study_groups (
+          creator_id, title, description, meeting_link, meeting_type,
+          scheduled_time, duration, max_members, category
+        ) VALUES (
+          ${groupData.creatorId}, ${groupData.title}, ${groupData.description},
+          ${groupData.meetingLink}, ${groupData.meetingType}, 
+          ${groupData.scheduledTime}, ${groupData.duration}, 
+          ${groupData.maxMembers}, ${groupData.category}
+        ) RETURNING *
+      `);
+      
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error('Error creating study group:', error);
+      res.status(500).json({ error: 'Failed to create study group' });
+    }
+  });
+
+  app.post('/api/study-groups/:groupId/join', async (req, res) => {
+    try {
+      const { groupId } = req.params;
+      const { userId } = req.body;
+      
+      // Check if user is already a member
+      const existingMember = await db.execute(sql`
+        SELECT id FROM study_group_members 
+        WHERE group_id = ${groupId} AND user_id = ${userId}
+      `);
+      
+      if (existingMember.rows.length > 0) {
+        return res.status(400).json({ error: 'User is already a member' });
+      }
+      
+      // Add user to group
+      await db.execute(sql`
+        INSERT INTO study_group_members (group_id, user_id)
+        VALUES (${groupId}, ${userId})
+      `);
+      
+      // Update current members count
+      await db.execute(sql`
+        UPDATE study_groups 
+        SET current_members = current_members + 1
+        WHERE id = ${groupId}
+      `);
+      
+      res.json({ success: true, message: 'Successfully joined study group' });
+    } catch (error) {
+      console.error('Error joining study group:', error);
+      res.status(500).json({ error: 'Failed to join study group' });
+    }
+  });
+
+  // Study Planner Sessions API Routes
+  app.get('/api/study-planner-sessions', async (req, res) => {
+    try {
+      const { userId } = req.query;
+      
+      if (!userId) {
+        return res.status(400).json({ error: 'User ID is required' });
+      }
+      
+      const result = await db.execute(sql`
+        SELECT * FROM study_planner_sessions 
+        WHERE user_id = ${userId}
+        ORDER BY date DESC, start_time ASC
+      `);
+      
+      res.json(result.rows);
+    } catch (error) {
+      console.error('Error fetching study sessions:', error);
+      res.status(500).json({ error: 'Failed to fetch study sessions' });
+    }
+  });
+
+  app.post('/api/study-planner-sessions', async (req, res) => {
+    try {
+      const sessionData = req.body;
+      
+      const result = await db.execute(sql`
+        INSERT INTO study_planner_sessions (
+          user_id, title, subject, topic, date, start_time, 
+          end_time, duration, notes
+        ) VALUES (
+          ${sessionData.userId}, ${sessionData.title}, ${sessionData.subject},
+          ${sessionData.topic}, ${sessionData.date}, ${sessionData.startTime},
+          ${sessionData.endTime}, ${sessionData.duration}, ${sessionData.notes}
+        ) RETURNING *
+      `);
+      
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error('Error creating study session:', error);
+      res.status(500).json({ error: 'Failed to create study session' });
+    }
+  });
+
+  app.put('/api/study-planner-sessions/:sessionId', async (req, res) => {
+    try {
+      const { sessionId } = req.params;
+      const updates = req.body;
+      
+      const result = await db.execute(sql`
+        UPDATE study_planner_sessions 
+        SET 
+          title = ${updates.title},
+          subject = ${updates.subject},
+          topic = ${updates.topic},
+          date = ${updates.date},
+          start_time = ${updates.startTime},
+          end_time = ${updates.endTime},
+          duration = ${updates.duration},
+          notes = ${updates.notes},
+          status = ${updates.status},
+          updated_at = NOW()
+        WHERE id = ${sessionId}
+        RETURNING *
+      `);
+      
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error('Error updating study session:', error);
+      res.status(500).json({ error: 'Failed to update study session' });
+    }
+  });
+
   return httpServer;
 }
