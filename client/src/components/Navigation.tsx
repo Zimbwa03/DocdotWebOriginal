@@ -144,7 +144,6 @@ export function Navigation() {
     { path: '/quiz', label: 'Quiz', icon: Brain },
     { path: '/notes', label: 'Notes', icon: BookOpen },
     { path: '/study-guide', label: 'Study Guide', icon: GraduationCap },
-    { path: '/study-groups', label: 'Study Groups', icon: Users },
     { path: '/ai-tools', label: 'AI Tools', icon: Brain },
     { path: '/analytics', label: 'Analytics', icon: Target },
     { path: '/badges', label: 'Badges', icon: Star },
@@ -154,7 +153,7 @@ export function Navigation() {
 
   const quickActions = [
     { label: 'Start Quiz', icon: Zap, action: () => window.location.href = '/quiz' },
-    { label: 'Study Timer', icon: Clock, action: () => window.location.href = '/study-guide' },
+    { label: 'Study Timer', icon: Clock, action: () => window.location.href = '/study-timer' },
     { label: 'AI Tutor', icon: Brain, action: () => window.location.href = '/ai-tools' },
     { label: 'View Analytics', icon: BarChart3, action: () => window.location.href = '/analytics' },
   ];

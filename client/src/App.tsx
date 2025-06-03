@@ -83,6 +83,12 @@ function Router() {
           <StudyGuide />
         </ProtectedRoute>
       </Route>
+      <Route path="/study-timer">
+        <ProtectedRoute>
+          <Navigation />
+          <StudyTimer />
+        </ProtectedRoute>
+      </Route>
       <Route path="/study-groups">
         <ProtectedRoute>
           <Navigation />
