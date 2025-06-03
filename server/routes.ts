@@ -204,6 +204,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User profile endpoint
+  app.get("/api/user/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const userStats = await dbStorage.getUserStats(userId);
+      res.json(userStats || {
+        totalXP: 0,
+        currentLevel: 1,
+        currentStreak: 0,
+        averageScore: 0,
+        totalQuestions: 0,
+        totalStudyTime: 0
+      });
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ error: "Failed to fetch user data" });
+    }
+  });
+
   // Badges endpoints
   app.get("/api/badges/:userId", async (req, res) => {
     try {
@@ -404,7 +423,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('DeepSeek API error:', response.status, errorText);
-        return res.status(500).json({ error: `DeepSeek API error: ${response.status} - ${errorText}` });
+        return res.status(500).json({ 
+          error: "AI service temporarily unavailable",
+          message: "Please try again in a moment"
+        });
       }
 
       const data = await response.json();
@@ -453,6 +475,9 @@ Guidelines:
 
 ${context ? `Context: ${context}` : ''}`;
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
       const response = await fetch('https://api.deepseek.com/chat/completions', {
         method: 'POST',
         headers: {
@@ -467,8 +492,11 @@ ${context ? `Context: ${context}` : ''}`;
           ],
           temperature: 0.7,
           max_tokens: 1500
-        })
+        }),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -516,6 +544,9 @@ Return a JSON array with this exact format:
   }
 ]`;
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+
       const response = await fetch('https://api.deepseek.com/chat/completions', {
         method: 'POST',
         headers: {
@@ -530,8 +561,11 @@ Return a JSON array with this exact format:
           ],
           temperature: 0.3,
           max_tokens: 2000
-        })
+        }),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorText = await response.text();

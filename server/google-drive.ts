@@ -39,6 +39,12 @@ export interface DriveFile {
 
 export async function getMedicalBooks(): Promise<DriveFile[]> {
   try {
+    // Check if credentials are properly configured
+    if (!process.env.GOOGLE_PRIVATE_KEY || !process.env.GOOGLE_CLIENT_ID) {
+      console.error('Google Drive credentials not configured');
+      return [];
+    }
+
     const response = await drive.files.list({
       q: `'${FOLDER_ID}' in parents and trashed=false`,
       fields: 'files(id,name,mimeType,createdTime,modifiedTime,size,webViewLink,thumbnailLink)',
@@ -59,7 +65,9 @@ export async function getMedicalBooks(): Promise<DriveFile[]> {
     }));
   } catch (error) {
     console.error('Error fetching Google Drive files:', error);
-    throw new Error('Failed to fetch medical books from Google Drive');
+    
+    // Return empty array instead of throwing error to prevent 500 status
+    return [];
   }
 }
 
