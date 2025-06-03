@@ -81,9 +81,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (userData.profileCompleted) {
           localStorage.setItem('profileSetupComplete', 'true');
         }
+        
+        // Initialize user analytics and badge system automatically
+        await initializeUserData(user.id);
       }
     } catch (error) {
       console.error('Error syncing user profile:', error);
+    }
+  };
+
+  const initializeUserData = async (userId: string) => {
+    try {
+      // Check if user already has stats, if not initialize them
+      const statsResponse = await fetch(`/api/user-stats/${userId}`);
+      const existingStats = await statsResponse.json();
+      
+      // If user has no meaningful data (only defaults), initialize with real starter data
+      if (!existingStats || (existingStats.totalXp === 0 && existingStats.totalQuizzes === 0)) {
+        const initResponse = await fetch(`/api/initialize-user/${userId}`, {
+          method: 'POST'
+        });
+        
+        if (initResponse.ok) {
+          console.log('User analytics and badges initialized successfully');
+        }
+      }
+    } catch (error) {
+      console.error('Error initializing user data:', error);
     }
   };
 

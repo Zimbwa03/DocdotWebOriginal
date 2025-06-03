@@ -202,12 +202,12 @@ export default function Home() {
   });
 
   const defaultStats = {
-    totalXp: 0,
-    level: 1,
+    totalXP: 0,
+    currentLevel: 1,
     currentStreak: 0,
-    averageAccuracy: 0,
-    totalQuizzes: 0,
-    totalTimeSpent: 0,
+    averageScore: 0,
+    totalQuestions: 0,
+    totalStudyTime: 0,
     rank: 0
   };
 
@@ -264,7 +264,7 @@ export default function Home() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-center">
               <div>
                 <div className="text-xl lg:text-2xl font-bold text-blue-600">
-                  {loadingStats ? '...' : String(Math.round((stats.totalTimeSpent || 0) / 60))}
+                  {loadingStats ? '...' : String(Math.round((stats.totalStudyTime || 0) / 60))}
                 </div>
                 <div className="text-xs lg:text-sm text-gray-600">Minutes Today</div>
               </div>
@@ -276,13 +276,13 @@ export default function Home() {
               </div>
               <div>
                 <div className="text-xl lg:text-2xl font-bold text-purple-600">
-                  {loadingStats ? '...' : String(stats.totalXp || 0)}
+                  {loadingStats ? '...' : String(stats.totalXP || 0)}
                 </div>
                 <div className="text-xs lg:text-sm text-gray-600">Total XP</div>
               </div>
               <div>
                 <div className="text-xl lg:text-2xl font-bold text-orange-600">
-                  Level {loadingStats ? '...' : String(stats.level || 1)}
+                  Level {loadingStats ? '...' : String(stats.currentLevel || 1)}
                 </div>
                 <div className="text-xs lg:text-sm text-gray-600">Your Level</div>
               </div>
@@ -315,17 +315,17 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl lg:text-3xl font-bold text-blue-900">
-                  {loadingStats ? '...' : (stats.totalXp ? stats.totalXp.toLocaleString() : '0')}
+                  {loadingStats ? '...' : (stats.totalXP ? stats.totalXP.toLocaleString() : '0')}
                 </div>
                 <div className="text-sm text-blue-600 mt-1">
-                  Level {loadingStats ? '...' : String(stats.level || 1)}
+                  Level {loadingStats ? '...' : String(stats.currentLevel || 1)}
                 </div>
                 <Progress 
-                  value={loadingStats ? 0 : ((stats.totalXp % 1000) / 1000) * 100} 
+                  value={loadingStats ? 0 : ((stats.totalXP % 1000) / 1000) * 100} 
                   className="mt-2 h-2" 
                 />
                 <div className="text-xs text-blue-600 mt-1">
-                  {loadingStats ? '...' : String(1000 - ((stats.totalXp || 0) % 1000))} XP to next level
+                  {loadingStats ? '...' : String(1000 - ((stats.totalXP || 0) % 1000))} XP to next level
                 </div>
               </CardContent>
             </Card>

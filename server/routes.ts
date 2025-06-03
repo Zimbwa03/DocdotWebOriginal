@@ -242,7 +242,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         for (let i = 0; i < 7; i++) {
           const date = new Date(today);
           date.setDate(date.getDate() - i);
-          await dbStorage.updateDailyStats(userId, 'General', i % 2 === 0, 80, date.toISOString());
+          await dbStorage.updateDailyStats(userId, 'General', i % 2 === 0, 80);
         }
         
         userStats = await dbStorage.getUserStats(userId);
@@ -261,7 +261,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         stats: userStats,
         badges: badges || [],
-        rank: rank || { rank: 1, totalXP: userStats?.totalXp || 0, averageAccuracy: userStats?.averageAccuracy || 0 },
+        rank: rank || { rank: 1, totalXP: userStats?.totalXP || 0, averageAccuracy: userStats?.averageScore || 0 },
         initialized: true,
         message: "User data initialized with sample analytics"
       });
