@@ -685,14 +685,58 @@ export default function StudyGuide() {
   };
 
   // Study session functions
+  const createSessionMutation = useMutation({
+    mutationFn: async (data: SessionFormData) => {
+      const [startHour, startMinute] = data.startTime.split(':');
+      const [endHour, endMinute] = data.endTime.split(':');
+      
+      const sessionDate = new Date(selectedDate);
+      const startDateTime = new Date(sessionDate);
+      startDateTime.setHours(parseInt(startHour), parseInt(startMinute), 0, 0);
+      
+      const endDateTime = new Date(sessionDate);
+      endDateTime.setHours(parseInt(endHour), parseInt(endMinute), 0, 0);
+      
+      const duration = Math.round((endDateTime.getTime() - startDateTime.getTime()) / (1000 * 60));
+      
+      const response = await fetch('/api/study-planner-sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user?.id,
+          title: data.title,
+          subject: data.category,
+          topic: data.description,
+          date: sessionDate.toISOString(),
+          startTime: data.startTime,
+          endTime: data.endTime,
+          duration,
+          notes: data.description
+        })
+      });
+      if (!response.ok) throw new Error('Failed to create session');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/study-planner-sessions'] });
+      toast({
+        title: "Study Session Created",
+        description: "Session has been scheduled successfully.",
+      });
+      setIsDialogOpen(false);
+      form.reset();
+    },
+    onError: () => {
+      toast({
+        title: "Error creating session",
+        description: "Please try again later.",
+        variant: "destructive"
+      });
+    }
+  });
+
   const onSubmit = (data: SessionFormData) => {
-    console.log('Session data:', data);
-    toast({
-      title: "Study Session Created",
-      description: `Session "${data.title}" has been scheduled successfully.`,
-    });
-    setIsDialogOpen(false);
-    form.reset();
+    createSessionMutation.mutate(data);;
   };
 
   const getSessionsForDate = (date: Date) => {
