@@ -1,0 +1,96 @@
+Here’s a **custom dark mode color palette** designed specifically for **Docdot**, perfectly complementing your original light theme. It maintains the clean, clinical look while ensuring high readability and harmony with your **#3399FF accent blue**.
+
+---
+
+## 🎨 **Docdot Dark Mode Color Palette**
+
+### 🔹 **Accent (Brand Color)**
+
+* **Primary CTA / Links**: `#3399FF` (same as light mode)
+* **CTA Hover**: `#1A73E8`
+* **CTA Focus Ring / Glow**: `rgba(51, 153, 255, 0.4)`
+
+---
+
+### 🖼️ **Backgrounds**
+
+| Element           | Color     | Description                   |
+| ----------------- | --------- | ----------------------------- |
+| Main Background   | `#0F172A` | Dark navy-slate base          |
+| Card / Panel BG   | `#1E293B` | Slightly lighter for contrast |
+| Sidebar/NavBar BG | `#111827` | Deep dark gray/blue tone      |
+| Border / Divider  | `#334155` | Subtle but visible separation |
+
+---
+
+### 📝 **Text**
+
+| Use Case      | Color     | Description                     |
+| ------------- | --------- | ------------------------------- |
+| Heading Text  | `#F1F5F9` | Very light gray                 |
+| Body Text     | `#CBD5E1` | Soft slate-gray                 |
+| Muted Text    | `#94A3B8` | For secondary info              |
+| Disabled Text | `#64748B` | Use for placeholder or disabled |
+
+---
+
+### 🖱️ **Hover / Focus States**
+
+| Use Case           | Color / Style                        |
+| ------------------ | ------------------------------------ |
+| Button Hover       | `#1A73E8` (deeper blue)              |
+| Button Focus Ring  | `rgba(51, 153, 255, 0.4)`            |
+| Input Border Focus | `#3399FF` or shadow around `#1E293B` |
+
+---
+
+### 🧩 **Other Elements**
+
+* **Success Green**: `#22C55E`
+* **Warning Yellow**: `#EAB308`
+* **Error Red**: `#EF4444`
+* **Info Blue**: `#3B82F6`
+
+---
+
+## ✅ Example Tailwind Dark Theme Mapping
+
+```js
+// Tailwind config (tailwind.config.js)
+theme: {
+  extend: {
+    colors: {
+      dark: {
+        background: '#0F172A',
+        surface: '#1E293B',
+        sidebar: '#111827',
+        border: '#334155',
+        text: {
+          base: '#CBD5E1',
+          heading: '#F1F5F9',
+          muted: '#94A3B8',
+        },
+        primary: '#3399FF',
+        hover: '#1A73E8',
+        focus: 'rgba(51, 153, 255, 0.4)',
+      }
+    }
+  }
+}
+```
+
+---
+
+## 🌓 Bonus Tip: Auto Toggle Light/Dark Mode
+
+Use `darkMode: 'class'` in Tailwind and toggle with:
+
+```html
+<html class="dark">
+<!-- or in JS -->
+document.documentElement.classList.toggle('dark');
+```
+
+---
+
+Would you like a **Dark Mode switch component** or a full **Tailwind CSS theme setup** now?
