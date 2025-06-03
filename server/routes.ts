@@ -1300,5 +1300,39 @@ CRITICAL FORMATTING RULES:
     }
   });
 
+  // Google Drive API Routes
+  app.get('/api/google-drive/files', async (req, res) => {
+    try {
+      // This would connect to Google Drive API
+      // For now, return a message asking for Google Drive credentials
+      res.status(401).json({ 
+        error: 'Google Drive not connected',
+        message: 'Please provide Google Drive API credentials to access your files'
+      });
+    } catch (error) {
+      console.error('Error fetching Google Drive files:', error);
+      res.status(500).json({ error: 'Failed to fetch files' });
+    }
+  });
+
+  app.get('/api/google-drive/auth', async (req, res) => {
+    try {
+      res.json({
+        authUrl: 'https://accounts.google.com/oauth/authorize',
+        message: 'Google Drive integration requires API credentials'
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to get authorization URL' });
+    }
+  });
+
+  app.get('/api/google-drive/status', async (req, res) => {
+    try {
+      res.json({ connected: false });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to check connection status' });
+    }
+  });
+
   return httpServer;
 }

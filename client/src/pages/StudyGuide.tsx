@@ -21,6 +21,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { format, isToday } from 'date-fns';
+import StudyGroupsAdvanced from '@/components/StudyGroupsAdvanced';
+import GoogleDriveLibrary from '@/components/GoogleDriveLibrary';
 import { 
   BookOpen, 
   Clock, 
@@ -1890,151 +1892,9 @@ export default function StudyGuide() {
 
           {/* Study Groups Tab */}
           <TabsContent value="groups" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* My Groups */}
-              <Card className="lg:col-span-2">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="w-5 h-5" />
-                    My Study Groups
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {[
-                      {
-                        id: 1,
-                        name: "Anatomy Study Group",
-                        members: 8,
-                        category: "Anatomy",
-                        nextSession: "Today 2:00 PM",
-                        isActive: true
-                      },
-                      {
-                        id: 2,
-                        name: "USMLE Step 1 Prep",
-                        members: 15,
-                        category: "General",
-                        nextSession: "Tomorrow 10:00 AM",
-                        isActive: true
-                      },
-                      {
-                        id: 3,
-                        name: "Physiology Discussion",
-                        members: 6,
-                        category: "Physiology",
-                        nextSession: "Friday 3:00 PM",
-                        isActive: false
-                      }
-                    ].map((group) => (
-                      <Card key={group.id} className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="space-y-1">
-                            <div className="flex items-center space-x-2">
-                              <h4 className="font-medium">{group.name}</h4>
-                              <Badge variant="secondary">{group.category}</Badge>
-                              {group.isActive && (
-                                <Badge variant="default" className="bg-green-500">Live</Badge>
-                              )}
-                            </div>
-                            <div className="flex items-center space-x-4 text-sm text-gray-500">
-                              <span className="flex items-center gap-1">
-                                <Users className="w-3 h-3" />
-                                {group.members} members
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                {group.nextSession}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Button variant="outline" size="sm">
-                              <MessageCircle className="w-4 h-4 mr-1" />
-                              Chat
-                            </Button>
-                            <Button size="sm">
-                              Join Session
-                            </Button>
-                          </div>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Group Actions */}
-              <Card className="lg:col-span-1">
-                <CardHeader>
-                  <CardTitle>Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Button className="w-full">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create New Group
-                  </Button>
-                  <Button variant="outline" className="w-full">
-                    <Search className="w-4 h-4 mr-2" />
-                    Find Groups
-                  </Button>
-                  <Button variant="outline" className="w-full">
-                    <Settings className="w-4 h-4 mr-2" />
-                    Group Settings
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Active Sessions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Active Study Sessions</CardTitle>
-                <CardDescription>Join ongoing study sessions in your groups</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {[
-                    {
-                      id: 1,
-                      group: "Anatomy Study Group",
-                      topic: "Cardiovascular System",
-                      participants: 5,
-                      duration: "45 minutes",
-                      isLive: true
-                    },
-                    {
-                      id: 2,
-                      group: "USMLE Step 1 Prep",
-                      topic: "Practice Questions",
-                      participants: 12,
-                      duration: "2 hours",
-                      isLive: true
-                    }
-                  ].map((session) => (
-                    <Card key={session.id} className="p-4 border-green-200 bg-green-50">
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <Badge variant="default" className="bg-green-500">LIVE</Badge>
-                          <span className="text-xs text-gray-500">{session.duration}</span>
-                        </div>
-                        <div>
-                          <h4 className="font-medium text-sm">{session.group}</h4>
-                          <p className="text-sm text-gray-600">{session.topic}</p>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs text-gray-500">
-                            {session.participants} participants
-                          </span>
-                          <Button size="sm">Join Now</Button>
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <StudyGroupsAdvanced />
           </TabsContent>
+
 
           {/* Books & Resources Tab */}
           <TabsContent value="resources" className="space-y-6">
@@ -2104,8 +1964,10 @@ export default function StudyGuide() {
             )}
           </TabsContent>
 
-          {/* Study Tips Tab */}
+          {/* Library Tab */}
           <TabsContent value="tips" className="space-y-6">
+            <GoogleDriveLibrary />
+          </TabsContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {studyTips.map((tip) => {
                 const IconComponent = getTypeIcon(tip.type);
