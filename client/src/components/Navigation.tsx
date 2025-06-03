@@ -338,7 +338,7 @@ export function Navigation() {
               </Button>
 
               {/* Theme Toggle */}
-              <Button variant="ghost" size="sm" onClick={toggleTheme}>
+              <Button variant="ghost" size="sm" onClick={toggleTheme} data-tooltip="theme-toggle">
                 {theme === 'light' ? (
                   <Moon className="w-4 h-4" style={{ color: '#2E2E2E' }} />
                 ) : (

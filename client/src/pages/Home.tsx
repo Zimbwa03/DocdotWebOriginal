@@ -232,7 +232,7 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-6 lg:py-8">
         {/* Hero Section with Personalized Greeting */}
-        <div className="text-center mb-8 lg:mb-12">
+        <div className="text-center mb-8 lg:mb-12" data-tooltip="welcome-message">
           <div className="mb-6">
             <h1 className="text-2xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">
               {getTimeBasedGreeting()}
@@ -304,7 +304,7 @@ export default function Home() {
             </Link>
           </div>
           
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6" data-tooltip="user-stats">
             {/* XP and Level */}
             <Card className="col-span-2 lg:col-span-1 bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
               <CardHeader className="pb-2">
