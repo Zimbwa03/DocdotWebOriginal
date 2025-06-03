@@ -62,25 +62,33 @@ export default function Analytics() {
   const fetchAnalytics = async () => {
     setLoading(true);
     try {
-      // Use a demo user ID for now - in production this would come from auth context
-      const userId = 'demo-user';
+      // Get user ID from localStorage (set by auth)
+      const userData = localStorage.getItem('user');
+      if (!userData) {
+        console.error('No user data found');
+        setLoading(false);
+        return;
+      }
+      
+      const user = JSON.parse(userData);
+      const userId = user.id;
 
       // Fetch user stats
-      const statsResponse = await fetch(`/api/user/${userId}/stats`);
+      const statsResponse = await fetch(`/api/user-stats/${userId}`);
       if (statsResponse.ok) {
         const stats = await statsResponse.json();
         setUserStats(stats);
       }
 
       // Fetch category stats
-      const categoryResponse = await fetch(`/api/user/${userId}/category-stats`);
+      const categoryResponse = await fetch(`/api/category-stats/${userId}`);
       if (categoryResponse.ok) {
         const categories = await categoryResponse.json();
         setCategoryStats(categories);
       }
 
       // Fetch daily stats
-      const dailyResponse = await fetch(`/api/user/${userId}/daily-stats?days=7`);
+      const dailyResponse = await fetch(`/api/daily-stats/${userId}?days=7`);
       if (dailyResponse.ok) {
         const daily = await dailyResponse.json();
         setDailyStats(daily);
@@ -90,7 +98,7 @@ export default function Analytics() {
       const leaderboardResponse = await fetch('/api/leaderboard?limit=10');
       if (leaderboardResponse.ok) {
         const board = await leaderboardResponse.json();
-        setLeaderboard(board);
+        setLeaderboard(board.entries || []);
       }
     } catch (error) {
       console.error('Error fetching analytics:', error);
@@ -139,7 +147,7 @@ export default function Analytics() {
                 <BookOpen className="h-4 w-4" style={{ color: '#3399FF' }} />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{String(userStats?.totalQuestions || 0)}</div>
+                <div className="text-2xl font-bold">{userStats?.totalQuestions || 0}</div>
                 <p className="text-xs text-muted-foreground">
                   {userStats?.correctAnswers || 0} correct
                 </p>
@@ -152,7 +160,7 @@ export default function Analytics() {
                 <Target className="h-4 w-4" style={{ color: '#3399FF' }} />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{String(userStats?.averageScore || 0)}%</div>
+                <div className="text-2xl font-bold">{userStats?.averageScore || 0}%</div>
                 <p className="text-xs text-muted-foreground">
                   Accuracy rate
                 </p>
@@ -165,22 +173,22 @@ export default function Analytics() {
                 <Zap className="h-4 w-4" style={{ color: '#3399FF' }} />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{String(userStats?.currentStreak || 0)}</div>
+                <div className="text-2xl font-bold">{userStats?.currentStreak || 0}</div>
                 <p className="text-xs text-muted-foreground">
-                  Best: {String(userStats?.longestStreak || 0)}
+                  Best: {userStats?.longestStreak || 0}
                 </p>
               </CardContent>
             </Card>
 
             <Card style={{ backgroundColor: '#F7FAFC' }}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Global Rank</CardTitle>
+                <CardTitle className="text-sm font-medium">Total XP</CardTitle>
                 <Trophy className="h-4 w-4" style={{ color: '#3399FF' }} />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">#{userStats?.rank || 0}</div>
+                <div className="text-2xl font-bold">{userStats?.totalXP || 0}</div>
                 <p className="text-xs text-muted-foreground">
-                  Overall ranking
+                  Level {userStats?.currentLevel || 1}
                 </p>
               </CardContent>
             </Card>
@@ -207,7 +215,7 @@ export default function Analytics() {
                   className="h-3"
                 />
                 <p className="text-sm text-muted-foreground">
-                  {userStats ? 1000 - getCurrentLevelXP(userStats.totalXP, userStats.currentLevel) : 1000} XP to next level
+                  {userStats ? Math.max(0, 1000 - getCurrentLevelXP(userStats.totalXP, userStats.currentLevel)) : 1000} XP to next level
                 </p>
               </div>
             </CardContent>
@@ -227,23 +235,23 @@ export default function Analytics() {
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="text-center">
-                      <div className="text-2xl font-bold">{category.questionsAttempted}</div>
+                      <div className="text-2xl font-bold">{category.questionsAttempted || 0}</div>
                       <p className="text-sm text-muted-foreground">Questions</p>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold">{category.averageScore}%</div>
+                      <div className="text-2xl font-bold">{category.averageScore || 0}%</div>
                       <p className="text-sm text-muted-foreground">Accuracy</p>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold">{category.averageTime}s</div>
+                      <div className="text-2xl font-bold">{Math.round(category.averageTime || 0)}s</div>
                       <p className="text-sm text-muted-foreground">Avg Time</p>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold">{String(category.correctAnswers)}</div>
+                      <div className="text-2xl font-bold">{category.correctAnswers || 0}</div>
                       <p className="text-sm text-muted-foreground">Correct</p>
                     </div>
                   </div>
-                  <Progress value={category.mastery} className="mt-4 h-2" />
+                  <Progress value={category.mastery || 0} className="mt-4 h-2" />
                 </CardContent>
               </Card>
             ))}

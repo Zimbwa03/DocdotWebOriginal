@@ -66,12 +66,22 @@ export default function Badges() {
   const { data: badgeData, isLoading } = useQuery({
     queryKey: ['/api/badges', user?.id],
     queryFn: async () => {
-      if (!user?.id) return { earned: [], available: [] };
-      const response = await fetch(`/api/badges/${user.id}`);
+      // Get user ID from localStorage if not available in context
+      let userId = user?.id;
+      if (!userId) {
+        const userData = localStorage.getItem('user');
+        if (userData) {
+          userId = JSON.parse(userData).id;
+        }
+      }
+      
+      if (!userId) return { earned: [], available: [] };
+      
+      const response = await fetch(`/api/badges/${userId}`);
       if (!response.ok) return { earned: [], available: [] };
       return response.json();
     },
-    enabled: !!user?.id,
+    enabled: !!user?.id || !!localStorage.getItem('user'),
   });
 
   const earnedBadges = badgeData?.earned || [];

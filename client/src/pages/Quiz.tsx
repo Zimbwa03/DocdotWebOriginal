@@ -155,9 +155,9 @@ export default function Quiz() {
     const currentQuestion = questions[currentQuestionIndex];
     const isCorrect = selectedAnswer === currentQuestion.correct_answer;
     const timeSpent = questionStartTime ? Math.floor((Date.now() - questionStartTime) / 1000) : 0;
-    
+
     setIsAnswered(true);
-    
+
     if (isCorrect) {
       setScore(score + 1);
     }
@@ -168,13 +168,13 @@ export default function Quiz() {
       return;
     }
     const userId = user.id;
-    
+
     try {
       // Calculate XP based on correctness and streak (like the Python code)
       const baseXP = isCorrect ? 10 : 2;
       const streakBonus = isCorrect ? (score * 2) : 0; // Streak bonus for correct answers
       const xpEarned = baseXP + streakBonus;
-      
+
       const response = await fetch('/api/quiz/record-attempt', {
         method: 'POST',
         headers: {
@@ -198,17 +198,17 @@ export default function Quiz() {
         if (response.ok) {
           const result = await response.json();
           console.log('Quiz attempt recorded with XP:', result.xpEarned);
-          
+
           // Force immediate refresh of all analytics data
           await queryClient.invalidateQueries({ queryKey: ['/api/user-stats'] });
           await queryClient.refetchQueries({ queryKey: ['/api/user-stats', user.id] });
-          
+
           // Also refresh other related queries
           queryClient.invalidateQueries({ queryKey: ['/api/quiz-attempts'] });
           queryClient.invalidateQueries({ queryKey: ['/api/category-stats'] });
           queryClient.invalidateQueries({ queryKey: ['/api/daily-stats'] });
           queryClient.invalidateQueries({ queryKey: ['/api/leaderboard'] });
-          
+
         } else {
           console.error('Failed to record quiz attempt:', response.status);
           const errorText = await response.text();
@@ -244,12 +244,12 @@ export default function Quiz() {
       setQuestionStartTime(Date.now()); // Start timing for new question
     } else {
       setQuizCompleted(true);
-      
+
       // Force refresh all stats after quiz completion
       try {
         const finalScore = score + (selectedAnswer === questions[currentQuestionIndex].correct_answer ? 1 : 0);
         const totalTime = startTime ? Math.round((new Date().getTime() - startTime.getTime()) / 1000) : 0;
-        
+
         // Force refresh all stats after quiz completion
         setTimeout(() => {
           queryClient.invalidateQueries({ queryKey: ['/api/user-stats'] });
@@ -258,7 +258,7 @@ export default function Quiz() {
           queryClient.invalidateQueries({ queryKey: ['/api/daily-stats'] });
           queryClient.invalidateQueries({ queryKey: ['/api/leaderboard'] });
         }, 1000); // Delay to ensure database has processed all attempts
-        
+
       } catch (error) {
         console.error('Error updating final stats:', error);
       }
@@ -633,7 +633,7 @@ export default function Quiz() {
                 const isCorrect = option === currentQuestion.correct_answer;
 
                 let buttonStyle = 'w-full p-6 border-2 rounded-lg transition-all duration-200 flex items-center justify-between ';
-                
+
                 if (isAnswered) {
                   if (isCorrect) {
                     buttonStyle += 'border-green-500 bg-green-50 text-green-900';
@@ -755,7 +755,7 @@ export default function Quiz() {
         </div>
         <Button 
           variant="outline" 
-          onClick={() => setSelectedQuizType(null)}
+          onClick={()={() => setSelectedQuizType(null)}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Quiz Types

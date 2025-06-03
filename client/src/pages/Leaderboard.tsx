@@ -76,19 +76,28 @@ export default function Leaderboard() {
   const { data: userRank } = useQuery({
     queryKey: ['userRank', user?.id, selectedCategory, timeFrame],
     queryFn: async () => {
-      if (!user?.id) return null;
+      // Get user ID from localStorage if not available in context
+      let userId = user?.id;
+      if (!userId) {
+        const userData = localStorage.getItem('user');
+        if (userData) {
+          userId = JSON.parse(userData).id;
+        }
+      }
+      
+      if (!userId) return null;
 
       const params = new URLSearchParams({
-        userId: user.id,
+        userId: userId,
         timeFrame
       });
-      if (selectedCategory) params.append('category', selectedCategory);
+      if (selectedCategory !== 'all') params.append('category', selectedCategory);
 
       const response = await fetch(`/api/user-rank?${params}`);
       if (!response.ok) throw new Error('Failed to fetch user rank');
       return response.json();
     },
-    enabled: !!user?.id,
+    enabled: !!user?.id || !!localStorage.getItem('user'),
     refetchInterval: 10000 // Refresh every 10 seconds
   });
 
@@ -128,7 +137,15 @@ export default function Leaderboard() {
 
   const renderLeaderboardEntry = (entry: LeaderboardEntry, index: number) => {
     const rankConfig = getRankIcon(entry.rank);
-    const isCurrentUser = entry.userId === user?.id;
+    // Get current user ID from either auth context or localStorage
+    let currentUserId = user?.id;
+    if (!currentUserId) {
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        currentUserId = JSON.parse(userData).id;
+      }
+    }
+    const isCurrentUser = entry.userId === currentUserId;
     const IconComponent = rankConfig.icon;
 
     return (
