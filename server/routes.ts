@@ -29,10 +29,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/study-planner-sessions", async (req, res) => {
     try {
       const sessions = await db.execute(sql`
-        SELECT * FROM study_sessions 
+        SELECT * FROM study_planner_sessions 
         ORDER BY date DESC, start_time ASC
       `);
-      res.json(sessions.rows || []);
+      res.json(sessions || []);
     } catch (error) {
       console.error("Error fetching study sessions:", error);
       res.status(500).json({ error: "Failed to fetch study sessions" });
@@ -44,12 +44,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { title, subject, topic, date, startTime, endTime, duration, notes } = req.body;
       
       const result = await db.execute(sql`
-        INSERT INTO study_sessions (title, subject, topic, date, start_time, end_time, duration, notes, created_at)
+        INSERT INTO study_planner_sessions (title, subject, topic, date, start_time, end_time, duration, notes, created_at)
         VALUES (${title}, ${subject}, ${topic}, ${date}, ${startTime}, ${endTime}, ${duration}, ${notes}, NOW())
         RETURNING *
       `);
       
-      res.json(result.rows[0]);
+      res.json(result[0]);
     } catch (error) {
       console.error("Error creating study session:", error);
       res.status(500).json({ error: "Failed to create study session" });
@@ -66,7 +66,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         GROUP BY sg.id
         ORDER BY sg.created_at DESC
       `);
-      res.json(groups.rows || []);
+      res.json(groups || []);
     } catch (error) {
       console.error("Error fetching study groups:", error);
       res.status(500).json({ error: "Failed to fetch study groups" });
@@ -75,15 +75,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/study-groups", async (req, res) => {
     try {
-      const { name, description, subject, maxMembers, isPrivate } = req.body;
+      const { title, description, meetingLink, meetingType, scheduledTime, duration, maxMembers } = req.body;
       
       const result = await db.execute(sql`
-        INSERT INTO study_groups (name, description, subject, max_members, is_private, created_at)
-        VALUES (${name}, ${description}, ${subject}, ${maxMembers}, ${isPrivate}, NOW())
+        INSERT INTO study_groups (title, description, meeting_link, meeting_type, scheduled_time, duration, max_members, created_at)
+        VALUES (${title}, ${description}, ${meetingLink}, ${meetingType}, ${scheduledTime}, ${duration}, ${maxMembers}, NOW())
         RETURNING *
       `);
       
-      res.json(result.rows[0]);
+      res.json(result[0]);
     } catch (error) {
       console.error("Error creating study group:", error);
       res.status(500).json({ error: "Failed to create study group" });

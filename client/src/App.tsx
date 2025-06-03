@@ -78,6 +78,12 @@ function Router() {
           <Pricing />
         </ProtectedRoute>
       </Route>
+      <Route path="/study">
+        <ProtectedRoute>
+          <Navigation />
+          <StudyGuide />
+        </ProtectedRoute>
+      </Route>
       <Route path="/study-guide">
         <ProtectedRoute>
           <Navigation />
