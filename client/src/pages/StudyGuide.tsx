@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 import {
   Card,
   CardContent,
@@ -188,13 +188,38 @@ export default function StudyGuide() {
   });
 
   const onSubmit = (data: SessionFormData) => {
-    createSessionMutation.mutate(data);
+    try {
+      // Validate date before submission
+      if (!data.date || isNaN(data.date.getTime())) {
+        console.error('Invalid date in form submission');
+        return;
+      }
+      
+      // Ensure start and end times are provided
+      if (!data.startTime || !data.endTime) {
+        console.error('Start time and end time are required');
+        return;
+      }
+      
+      createSessionMutation.mutate(data);
+    } catch (error) {
+      console.error('Error submitting session form:', error);
+    }
   };
 
   const getSessionsForDate = (date: Date) => {
+    if (!date || !studySessions) return [];
+    
     return studySessions.filter((session: any) => {
-      const sessionDate = new Date(session.date);
-      return format(sessionDate, "yyyy-MM-dd") === format(date, "yyyy-MM-dd");
+      try {
+        if (!session.date) return false;
+        const sessionDate = new Date(session.date);
+        if (isNaN(sessionDate.getTime())) return false;
+        return format(sessionDate, "yyyy-MM-dd") === format(date, "yyyy-MM-dd");
+      } catch (error) {
+        console.error('Error parsing session date:', session.date, error);
+        return false;
+      }
     });
   };
 
@@ -470,7 +495,15 @@ export default function StudyGuide() {
                   <Calendar
                     mode="single"
                     selected={selectedDate}
-                    onSelect={setSelectedDate}
+                    onSelect={(date) => {
+                      try {
+                        if (date && !isNaN(date.getTime())) {
+                          setSelectedDate(date);
+                        }
+                      } catch (error) {
+                        console.error('Invalid date selected:', error);
+                      }
+                    }}
                     className="rounded-md border"
                   />
                 </CardContent>
@@ -481,7 +514,16 @@ export default function StudyGuide() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Clock className="w-5 h-5" />
-                    {selectedDate ? format(selectedDate, "MMM d") : "Today's"} Sessions
+                    {(() => {
+                      try {
+                        return selectedDate && !isNaN(selectedDate.getTime()) 
+                          ? format(selectedDate, "MMM d") 
+                          : "Today's";
+                      } catch (error) {
+                        console.error('Error formatting date:', error);
+                        return "Today's";
+                      }
+                    })()} Sessions
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -490,13 +532,13 @@ export default function StudyGuide() {
                       <Card key={session.id} className="p-3">
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
-                            <h4 className="font-medium">{session.title}</h4>
-                            <Badge variant="outline">{session.subject}</Badge>
+                            <h4 className="font-medium">{session.title || 'Untitled Session'}</h4>
+                            <Badge variant="outline">{session.subject || 'General'}</Badge>
                           </div>
-                          <p className="text-sm text-gray-600">{session.topic}</p>
+                          <p className="text-sm text-gray-600">{session.topic || 'No topic specified'}</p>
                           <div className="flex items-center gap-2 text-xs text-gray-500">
                             <Clock className="w-3 h-3" />
-                            {session.start_time} - {session.end_time}
+                            {session.start_time || '00:00'} - {session.end_time || '00:00'}
                           </div>
                         </div>
                       </Card>
