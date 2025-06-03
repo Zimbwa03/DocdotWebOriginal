@@ -289,23 +289,33 @@ export class DatabaseStorage {
       const userStatsData = await this.getUserStats(userId);
       if (!userStatsData) return;
       
-      // Update overall leaderboard
-      await db.insert(leaderboard).values({
-        userId,
-        category: null,
-        rank: 0,
-        score: userStatsData.totalXP,
-        totalQuestions: userStatsData.totalQuestions,
-        accuracy: userStatsData.averageScore
-      }).onConflictDoUpdate({
-        target: [leaderboard.userId, leaderboard.category],
-        set: {
+      // Check if leaderboard entry exists
+      const existingEntry = await db.select()
+        .from(leaderboard)
+        .where(and(eq(leaderboard.userId, userId), sql`${leaderboard.category} IS NULL`))
+        .limit(1);
+      
+      if (existingEntry.length > 0) {
+        // Update existing entry
+        await db.update(leaderboard)
+          .set({
+            score: userStatsData.totalXP,
+            totalQuestions: userStatsData.totalQuestions,
+            accuracy: userStatsData.averageScore,
+            updatedAt: new Date()
+          })
+          .where(eq(leaderboard.id, existingEntry[0].id));
+      } else {
+        // Insert new entry
+        await db.insert(leaderboard).values({
+          userId,
+          category: null,
+          rank: 0,
           score: userStatsData.totalXP,
           totalQuestions: userStatsData.totalQuestions,
-          accuracy: userStatsData.averageScore,
-          updatedAt: new Date()
-        }
-      });
+          accuracy: userStatsData.averageScore
+        });
+      }
       
       // Update ranks for all users
       await this.updateLeaderboardRanks();
@@ -442,8 +452,8 @@ export class DatabaseStorage {
   async getUserRank(userId: string, category?: string, timeFrame: string = 'all-time') {
     try {
       // First get user's stats
-      const userStats = await this.getUserStats(userId);
-      if (!userStats) {
+      const currentUserStats = await this.getUserStats(userId);
+      if (!currentUserStats) {
         return { rank: 0, totalXP: 0, averageAccuracy: 0, currentLevel: 1 };
       }
 
@@ -453,15 +463,15 @@ export class DatabaseStorage {
           rank: sql`COUNT(*) + 1`.as('rank')
         })
         .from(userStats)
-        .where(sql`${userStats.totalXP} > ${userStats.totalXP}`);
+        .where(sql`${userStats.totalXP} > ${currentUserStats.totalXP}`);
 
       const rank = parseInt(rankResult[0]?.rank as string) || 1;
 
       return {
         rank,
-        totalXP: userStats.totalXP,
-        averageAccuracy: userStats.averageScore,
-        currentLevel: userStats.currentLevel
+        totalXP: currentUserStats.totalXP,
+        averageAccuracy: currentUserStats.averageScore,
+        currentLevel: currentUserStats.currentLevel
       };
     } catch (error) {
       console.error('Error getting user rank:', error);

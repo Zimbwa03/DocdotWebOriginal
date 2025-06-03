@@ -92,19 +92,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const initializeUserData = async (userId: string) => {
     try {
-      // Check if user already has stats, if not initialize them
-      const statsResponse = await fetch(`/api/user-stats/${userId}`);
-      const existingStats = await statsResponse.json();
+      // Always initialize comprehensive user data for better demo
+      const initResponse = await fetch(`/api/initialize-user/${userId}`, {
+        method: 'POST'
+      });
       
-      // If user has no meaningful data (only defaults), initialize with real starter data
-      if (!existingStats || (existingStats.totalXp === 0 && existingStats.totalQuizzes === 0)) {
-        const initResponse = await fetch(`/api/initialize-user/${userId}`, {
+      if (initResponse.ok) {
+        const result = await initResponse.json();
+        console.log('User analytics and badges initialized successfully:', result);
+        
+        // Force update leaderboard after initialization
+        await fetch(`/api/leaderboard/${userId}/update`, {
           method: 'POST'
         });
         
-        if (initResponse.ok) {
-          console.log('User analytics and badges initialized successfully');
-        }
+        // Initialize sample leaderboard data if needed
+        await fetch('/api/initialize-sample-data', {
+          method: 'POST'
+        });
+        
+        console.log('Leaderboard and sample data updated');
       }
     } catch (error) {
       console.error('Error initializing user data:', error);

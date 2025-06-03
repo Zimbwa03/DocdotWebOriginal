@@ -360,54 +360,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { userId } = req.params;
       
-      // Check if user already has stats
+      // Always create/update comprehensive user stats for better demo experience
       let userStats = await dbStorage.getUserStats(userId);
       
-      if (!userStats) {
-        // Create comprehensive initial user stats to demonstrate the system
-        await dbStorage.updateUserStats(userId, true, 100, 600); // Correct answer, 100 XP, 10 minutes
-        await dbStorage.updateUserStats(userId, true, 75, 450); // Correct answer, 75 XP, 7.5 minutes
-        await dbStorage.updateUserStats(userId, false, 0, 300); // Wrong answer, 0 XP, 5 minutes
-        await dbStorage.updateUserStats(userId, true, 120, 720); // Correct answer, 120 XP, 12 minutes
-        await dbStorage.updateUserStats(userId, true, 90, 540); // Correct answer, 90 XP, 9 minutes
-        
-        // Update category stats for different subjects
-        await dbStorage.updateCategoryStats(userId, 'Anatomy', true, 360);
-        await dbStorage.updateCategoryStats(userId, 'Physiology', true, 300);
-        await dbStorage.updateCategoryStats(userId, 'Pathology', false, 240);
-        await dbStorage.updateCategoryStats(userId, 'Pharmacology', true, 420);
-        
-        // Update daily stats for the past few days
-        const today = new Date();
-        for (let i = 0; i < 7; i++) {
-          const date = new Date(today);
-          date.setDate(date.getDate() - i);
-          await dbStorage.updateDailyStats(userId, 'General', i % 2 === 0, 80);
+      // Create base user record if it doesn't exist
+      try {
+        const existingUser = await dbStorage.getUser(userId);
+        if (!existingUser) {
+          await dbStorage.createUser({
+            id: userId,
+            email: `user_${userId}@docdot.com`,
+            firstName: 'Medical',
+            lastName: 'Student'
+          });
         }
-        
-        userStats = await dbStorage.getUserStats(userId);
+      } catch (userError) {
+        console.log('User creation handled:', userError.message);
       }
       
-      // Initialize badges system
+      // Initialize comprehensive stats regardless of existing data
+      const statUpdates = [
+        { correct: true, xp: 150, time: 600 },
+        { correct: true, xp: 125, time: 450 },
+        { correct: false, xp: 10, time: 300 },
+        { correct: true, xp: 180, time: 720 },
+        { correct: true, xp: 140, time: 540 },
+        { correct: true, xp: 160, time: 480 },
+        { correct: false, xp: 15, time: 360 },
+        { correct: true, xp: 200, time: 660 }
+      ];
+      
+      for (const update of statUpdates) {
+        await dbStorage.updateUserStats(userId, update.correct, update.xp, update.time);
+      }
+      
+      // Update category stats for all medical subjects
+      const categories = [
+        { name: 'Anatomy - Upper Limb', correct: true, time: 360 },
+        { name: 'Anatomy - Lower Limb', correct: true, time: 300 },
+        { name: 'Anatomy - Thorax', correct: false, time: 240 },
+        { name: 'Physiology - Cardiovascular System', correct: true, time: 420 },
+        { name: 'Physiology - Respiratory System', correct: true, time: 390 },
+        { name: 'Pathology', correct: false, time: 280 },
+        { name: 'Pharmacology', correct: true, time: 350 }
+      ];
+      
+      for (const cat of categories) {
+        await dbStorage.updateCategoryStats(userId, cat.name, cat.correct, cat.time);
+      }
+      
+      // Update daily stats for past week
+      const today = new Date();
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        await dbStorage.updateDailyStats(userId, 'Anatomy', i % 3 !== 0, 80 + (i * 10));
+      }
+      
+      // Get updated stats
+      userStats = await dbStorage.getUserStats(userId);
+      
+      // Initialize badges system and check progress
       await dbStorage.initializeBadges();
       await dbStorage.checkBadgeProgress(userId);
       
       // Update leaderboard position
       await dbStorage.updateLeaderboard(userId);
+      await dbStorage.updateLeaderboardRanks();
       
       const badges = await dbStorage.getUserBadges(userId);
       const rank = await dbStorage.getUserRank(userId);
       
       res.json({
         stats: userStats,
-        badges: badges || [],
+        badges: badges || { earned: [], available: [] },
         rank: rank || { rank: 1, totalXP: userStats?.totalXP || 0, averageAccuracy: userStats?.averageScore || 0 },
         initialized: true,
-        message: "User data initialized with sample analytics"
+        message: "User data initialized with comprehensive analytics"
       });
     } catch (error) {
       console.error("Error initializing user:", error);
-      res.status(500).json({ error: "Failed to initialize user data" });
+      res.status(500).json({ error: "Failed to initialize user data", details: error.message });
     }
   });
 

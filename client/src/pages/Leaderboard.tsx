@@ -54,33 +54,42 @@ export default function Leaderboard() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [timeFrame, setTimeFrame] = useState<string>('all-time');
 
+  // Fetch leaderboard data
   const { data: leaderboardData, isLoading } = useQuery({
-    queryKey: ['/api/leaderboard', selectedCategory, timeFrame],
+    queryKey: ['leaderboard', selectedCategory, timeFrame, user?.id],
     queryFn: async () => {
-      const params = new URLSearchParams();
-      if (selectedCategory !== 'all') params.append('category', selectedCategory);
-      params.append('timeFrame', timeFrame);
-      
+      const params = new URLSearchParams({
+        limit: '50',
+        timeFrame
+      });
+      if (selectedCategory) params.append('category', selectedCategory);
+
       const response = await fetch(`/api/leaderboard?${params}`);
-      if (!response.ok) return { entries: [], userPosition: null, categories: [] };
+      if (!response.ok) throw new Error('Failed to fetch leaderboard');
       return response.json();
     },
+    refetchInterval: 10000, // Refresh every 10 seconds for better demo
+    enabled: !!user?.id // Only fetch when user is authenticated
   });
 
+  // Fetch user's rank
   const { data: userRank } = useQuery({
-    queryKey: ['/api/user-rank', user?.id, selectedCategory, timeFrame],
+    queryKey: ['userRank', user?.id, selectedCategory, timeFrame],
     queryFn: async () => {
       if (!user?.id) return null;
-      const params = new URLSearchParams();
-      params.append('userId', user.id);
-      if (selectedCategory !== 'all') params.append('category', selectedCategory);
-      params.append('timeFrame', timeFrame);
-      
+
+      const params = new URLSearchParams({
+        userId: user.id,
+        timeFrame
+      });
+      if (selectedCategory) params.append('category', selectedCategory);
+
       const response = await fetch(`/api/user-rank?${params}`);
-      if (!response.ok) return null;
+      if (!response.ok) throw new Error('Failed to fetch user rank');
       return response.json();
     },
     enabled: !!user?.id,
+    refetchInterval: 10000 // Refresh every 10 seconds
   });
 
   const entries = leaderboardData?.entries || [];
@@ -148,7 +157,7 @@ export default function Leaderboard() {
                     {getInitials(entry.user?.firstName, entry.user?.lastName, entry.user?.email)}
                   </AvatarFallback>
                 </Avatar>
-                
+
                 <div>
                   <div className="font-semibold text-gray-900 flex items-center">
                     {entry.user?.firstName && entry.user?.lastName 
