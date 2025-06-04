@@ -28,11 +28,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User API routes
   app.get("/api/user/:id", async (req, res) => {
     try {
-      const user = await dbStorage.getUser(req.params.id);
+      const userId = req.params.id;
+      if (!userId) {
+        return res.status(400).json({ error: "User ID is required" });
+      }
+      
+      const user = await dbStorage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
       res.json(user);
     } catch (userError) {
       console.error("Error fetching user:", userError);
-      res.status(404).json({ error: "User not found" });
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 
@@ -48,22 +57,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/user", async (req, res) => {
     try {
+      console.log("Creating user with data:", { id: req.body.id, email: req.body.email });
       const result = await dbStorage.createUser(req.body);
+      console.log("User created successfully:", result.id);
       res.json(result);
     } catch (error: any) {
-      console.error("Error creating user:", error);
+      console.error("Error creating user:", {
+        message: error.message,
+        code: error.code,
+        userData: { id: req.body.id, email: req.body.email }
+      });
       
       // Handle duplicate key error specifically
       if (error.code === '23505') {
         // User already exists, try to get the existing user
         try {
+          console.log("User already exists, fetching existing user");
           const existingUser = await dbStorage.getUser(req.body.id);
-          res.json(existingUser);
+          if (existingUser) {
+            res.json(existingUser);
+          } else {
+            res.status(409).json({ error: "User already exists but could not retrieve" });
+          }
         } catch (getError) {
+          console.error("Error fetching existing user:", getError);
           res.status(409).json({ error: "User already exists" });
         }
       } else {
-        res.status(500).json({ error: "Failed to create user" });
+        res.status(500).json({ error: "Failed to create user", details: error.message });
       }
     }
   });
@@ -325,8 +346,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Topic is required" });
       }
 
+      // Check if DeepSeek API key is available
+      if (!process.env.DEEPSEEK_API_KEY) {
+        return res.status(503).json({ 
+          error: "AI service not configured",
+          message: "DeepSeek API key is missing"
+        });
+      }
+
+      console.log(`Generating ${questionCount} questions for topic: ${topic}, difficulty: ${difficulty}`);
       const questions = await openRouterAI.generateMedicalQuestions(topic, difficulty, parseInt(questionCount));
       
+      if (!questions || questions.length === 0) {
+        throw new Error("No questions were generated");
+      }
+
       res.json({ 
         success: true,
         questions: questions.map((q: any, index: number) => ({
@@ -340,10 +374,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }))
       });
     } catch (error: any) {
-      console.error("AI Quiz Generator Error:", error);
+      console.error("AI Quiz Generator Error details:", {
+        message: error.message,
+        stack: error.stack,
+        topic: req.body.topic
+      });
       res.status(500).json({ 
         error: "Failed to generate quiz questions",
-        details: error.message 
+        message: error.message || "Please try again later"
       });
     }
   });
@@ -374,27 +412,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Check if DeepSeek API key is available
       if (!process.env.DEEPSEEK_API_KEY) {
+        console.error("DeepSeek API key not found in environment variables");
         return res.status(503).json({ 
           error: "AI service not configured",
           message: "DeepSeek API key is missing. Please configure DEEPSEEK_API_KEY in your environment variables."
         });
       }
 
+      console.log("Processing AI chat request for message:", message.substring(0, 50) + "...");
       const response = await openRouterAI.tutorResponse(message, context);
+      console.log("AI response generated successfully");
+      
       res.json({ response, success: true });
     } catch (error: any) {
-      console.error("AI Chat error:", error);
+      console.error("AI Chat error details:", {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
       
       // Provide more specific error messages
-      if (error.message.includes('API key not configured')) {
+      if (error.message?.includes('API key not configured')) {
         res.status(503).json({ 
           error: "AI service not configured",
           message: "Please configure your DeepSeek API key"
         });
-      } else if (error.message.includes('timed out')) {
+      } else if (error.message?.includes('timed out') || error.name === 'AbortError') {
         res.status(408).json({ 
           error: "Request timeout",
-          message: "The AI service took too long to respond. Please try again."
+          message: "The AI service took too long to respond. Please try again with a shorter message."
+        });
+      } else if (error.message?.includes('fetch failed') || error.code === 'ENOTFOUND') {
+        res.status(503).json({ 
+          error: "Network error",
+          message: "Unable to connect to AI service. Please check your internet connection."
         });
       } else {
         res.status(500).json({ 

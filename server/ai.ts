@@ -74,21 +74,23 @@ class OpenRouterAI {
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 20000); // Reduced to 20 seconds
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // Reduced to 15 seconds
 
+      console.log('Making request to DeepSeek API...');
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'User-Agent': 'DocDot-Medical-App/1.0'
         },
         body: JSON.stringify({
           model: 'deepseek-chat',
           messages,
           temperature,
-          max_tokens: 1000, // Reduced from 2000 for faster responses
+          max_tokens: 800, // Further reduced for faster responses
           stream: false,
-          top_p: 0.9, // Add top_p for better performance
+          top_p: 0.9,
           frequency_penalty: 0.1,
           presence_penalty: 0.1
         }),
@@ -98,23 +100,53 @@ class OpenRouterAI {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('DeepSeek API error:', response.status, errorText);
+        const errorText = await response.text().catch(() => 'Unknown error');
+        console.error('DeepSeek API error:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorText
+        });
+        
+        if (response.status === 401) {
+          throw new Error('Invalid API key - please check your DeepSeek API key configuration');
+        } else if (response.status === 429) {
+          throw new Error('API rate limit exceeded - please try again in a few seconds');
+        } else if (response.status >= 500) {
+          throw new Error('DeepSeek service is temporarily unavailable - please try again later');
+        }
+        
         throw new Error(`DeepSeek API error: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json() as any;
-      const result = data.choices[0]?.message?.content || 'I apologize, but I could not generate a response.';
+      
+      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+        console.error('Invalid API response structure:', data);
+        throw new Error('Invalid response from AI service');
+      }
+      
+      const result = data.choices[0].message.content || 'I apologize, but I could not generate a response.';
       
       // Cache the response
       this.setCache(cacheKey, result);
       
+      console.log('AI response generated successfully');
       return result;
     } catch (error: any) {
-      console.error('AI Generation Error:', error);
+      console.error('AI Generation Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack?.substring(0, 500)
+      });
+      
       if (error.name === 'AbortError') {
-        throw new Error('Request timed out after 20 seconds. Please try again with a shorter question.');
+        throw new Error('Request timed out after 15 seconds. Please try again with a shorter question.');
       }
+      
+      if (error.message?.includes('fetch failed') || error.code === 'ENOTFOUND') {
+        throw new Error('Network connection failed. Please check your internet connection.');
+      }
+      
       throw error;
     }
   }

@@ -16,13 +16,22 @@ export const db = drizzle(client);
 export class DatabaseStorage {
   private users = new Map<string, any>();
   private quizAttempts = new Map<string, any>();
-  async getUser(id: string): Promise<User | undefined> {
+  async getUser(userId: string): Promise<User | null> {
     try {
-      const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
-      return result[0];
+      if (!userId) {
+        throw new Error('User ID is required');
+      }
+
+      const result = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+
+      return result[0] || null;
     } catch (error) {
       console.error('Error getting user:', error);
-      return undefined;
+      throw error;
     }
   }
 
