@@ -70,46 +70,46 @@ function QuizSection() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4">
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
           Start Your Medical Learning Journey
         </h2>
-        <p className="text-gray-600 mb-8 max-w-2xl mx-auto px-4">
+        <p className="text-gray-600 dark:text-gray-300 mb-6 sm:mb-8 max-w-2xl mx-auto px-3 sm:px-4 text-sm sm:text-base">
           Choose from comprehensive medical categories with authentic questions from authoritative medical textbooks
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
         {Object.entries(categories).map(([mainCategory, subcategories]) => (
-          <Card key={mainCategory} className="hover:shadow-lg transition-shadow">
+          <Card key={mainCategory} className="hover:shadow-lg transition-shadow dark:bg-gray-800 dark:border-gray-700">
             <CardHeader className="pb-2">
-              <CardTitle className="flex items-center text-lg">
-                {mainCategory === 'Anatomy' && <Heart className="w-5 h-5 mr-2 text-red-500" />}
-                {mainCategory === 'Physiology' && <Activity className="w-5 h-5 mr-2 text-blue-500" />}
-                {mainCategory === 'Other Subjects' && <BookOpen className="w-5 h-5 mr-2 text-green-500" />}
-                {mainCategory}
+              <CardTitle className="flex items-center text-base sm:text-lg">
+                {mainCategory === 'Anatomy' && <Heart className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-red-500" />}
+                {mainCategory === 'Physiology' && <Activity className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-500" />}
+                {mainCategory === 'Other Subjects' && <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-green-500" />}
+                <span className="dark:text-white">{mainCategory}</span>
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="dark:text-gray-300">
                 {subcategories.length} topics available
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2 mb-4">
+              <div className="space-y-1 sm:space-y-2 mb-3 sm:mb-4">
                 {subcategories.slice(0, 3).map((sub) => (
-                  <div key={sub} className="text-sm text-gray-600">
+                  <div key={sub} className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                     • {sub}
                   </div>
                 ))}
                 {subcategories.length > 3 && (
-                  <div className="text-sm text-gray-500">
+                  <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-500">
                     +{subcategories.length - 3} more topics
                   </div>
                 )}
               </div>
               <Link href={`/quiz?category=${encodeURIComponent(mainCategory)}`}>
-                <Button className="w-full" style={{ backgroundColor: '#3399FF' }}>
-                  <Play className="w-4 h-4 mr-2" />
+                <Button className="w-full text-sm sm:text-base" style={{ backgroundColor: '#3399FF' }}>
+                  <Play className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                   Start Quiz
                 </Button>
               </Link>

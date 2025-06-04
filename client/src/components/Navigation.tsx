@@ -279,18 +279,18 @@ export function Navigation() {
 
   return (
     <>
-      <nav className="border-b bg-[#D1E8F9] dark:bg-gray-800 dark:border-gray-700">
-      <div className="max-w-7xl mx-auto px-4 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+      <nav className="border-b bg-[#D1E8F9] dark:bg-gray-800 dark:border-gray-700 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+        <div className="flex items-center justify-between h-14 sm:h-16">
           {/* Logo */}
           <Link href="/home">
             <div className="flex items-center space-x-2 cursor-pointer">
               <img 
                 src="/attached_assets/logo.png" 
                 alt="DocDot Medical Student Logo" 
-                className="w-12 h-12 object-contain rounded-lg"
+                className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 object-contain rounded-lg"
               />
-              <span className="text-lg lg:text-xl font-bold text-[#1C1C1C] dark:text-white">
+              <span className="text-base sm:text-lg lg:text-xl font-bold text-[#1C1C1C] dark:text-white">
                 DocDot
               </span>
             </div>
@@ -306,7 +306,7 @@ export function Navigation() {
                   className={`flex items-center space-x-2 ${
                     location === path 
                       ? 'text-white' 
-                      : 'text-gray-700 hover:text-gray-900'
+                      : 'text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
                   }`}
                   style={location === path ? { backgroundColor: '#3399FF' } : {}}
                 >
@@ -318,15 +318,15 @@ export function Navigation() {
           </div>
 
           {/* Mobile Menu Button & Desktop Navigation */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             {/* Mobile Menu Button */}
             <Button
               variant="ghost"
               size="sm"
-              className="lg:hidden p-2"
+              className="lg:hidden p-1 sm:p-2"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
-              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {isMobileMenuOpen ? <X className="w-4 h-4 sm:w-5 sm:h-5" /> : <Menu className="w-4 h-4 sm:w-5 sm:h-5" />}
             </Button>
 
             {/* Desktop Quick Actions */}
@@ -556,18 +556,18 @@ export function Navigation() {
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden absolute top-16 left-0 right-0 bg-white border-b shadow-lg z-40">
-          <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="lg:hidden absolute top-14 sm:top-16 left-0 right-0 bg-white dark:bg-gray-800 border-b shadow-lg z-40 max-h-screen overflow-y-auto">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
             {/* User Profile Section */}
-            <div className="flex items-center space-x-3 mb-6 p-4 bg-blue-50 rounded-lg">
-              <Avatar className="h-12 w-12">
+            <div className="flex items-center space-x-3 mb-4 sm:mb-6 p-3 sm:p-4 bg-blue-50 dark:bg-gray-700 rounded-lg">
+              <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
                 <AvatarFallback style={{ backgroundColor: '#3399FF', color: 'white' }}>
                   {getUserInitials()}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1">
-                <p className="font-medium text-gray-900">{getDisplayName()}</p>
-                <p className="text-sm text-gray-600">{user?.email}</p>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">{getDisplayName()}</p>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 truncate">{user?.email}</p>
                 <div className="flex items-center space-x-2 mt-1">
                   <Badge variant="outline" className="text-xs">
                     {userProfile?.subscriptionTier || 'Free'} Plan
@@ -580,43 +580,43 @@ export function Navigation() {
             </div>
 
             {/* Quick Actions */}
-            <div className="mb-6">
-              <h3 className="text-sm font-medium text-gray-900 mb-3">Quick Actions</h3>
-              <div className="grid grid-cols-2 gap-3">
+            <div className="mb-4 sm:mb-6">
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Quick Actions</h3>
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
                 {quickActions.map((action, index) => (
                   <Button
                     key={index}
                     variant="outline"
-                    className="flex items-center space-x-2 h-12 justify-start"
+                    className="flex items-center space-x-2 h-10 sm:h-12 justify-start text-xs sm:text-sm"
                     onClick={() => {
                       action.action();
                       setIsMobileMenuOpen(false);
                     }}
                   >
-                    <action.icon className="w-4 h-4" />
-                    <span>{action.label}</span>
+                    <action.icon className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="truncate">{action.label}</span>
                   </Button>
                 ))}
               </div>
             </div>
 
             {/* Navigation Links */}
-            <div className="mb-6">
-              <h3 className="text-sm font-medium text-gray-900 mb-3">Navigation</h3>
-              <div className="space-y-2">
+            <div className="mb-4 sm:mb-6">
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Navigation</h3>
+              <div className="space-y-1 sm:space-y-2">
                 {navItems.map(({ path, label, icon: Icon }) => (
                   <Link key={path} href={path}>
                     <Button
                       variant={location === path ? "default" : "ghost"}
-                      className={`w-full justify-start h-12 ${
+                      className={`w-full justify-start h-10 sm:h-12 text-sm sm:text-base ${
                         location === path 
                           ? 'text-white' 
-                          : 'text-gray-700 hover:text-gray-900'
+                          : 'text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
                       }`}
                       style={location === path ? { backgroundColor: '#3399FF' } : {}}
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      <Icon className="w-4 h-4 mr-3" />
+                      <Icon className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3" />
                       <span>{label}</span>
                     </Button>
                   </Link>
@@ -625,29 +625,29 @@ export function Navigation() {
             </div>
 
             {/* Account Settings */}
-            <div className="mb-6">
-              <h3 className="text-sm font-medium text-gray-900 mb-3">Account Settings</h3>
-              <div className="space-y-2">
+            <div className="mb-4 sm:mb-6">
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Account Settings</h3>
+              <div className="space-y-1 sm:space-y-2">
                 <Button
                   variant="ghost"
-                  className="w-full justify-start h-12"
+                  className="w-full justify-start h-10 sm:h-12 text-sm sm:text-base dark:text-gray-300 dark:hover:text-white"
                   onClick={() => {
                     setIsProfileOpen(true);
                     setIsMobileMenuOpen(false);
                   }}
                 >
-                  <UserCircle className="w-4 h-4 mr-3" />
+                  <UserCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3" />
                   <span>Profile Settings</span>
                 </Button>
                 <Button
                   variant="ghost"
-                  className="w-full justify-start h-12"
+                  className="w-full justify-start h-10 sm:h-12 text-sm sm:text-base dark:text-gray-300 dark:hover:text-white"
                   onClick={() => {
                     setIsPasswordChangeOpen(true);
                     setIsMobileMenuOpen(false);
                   }}
                 >
-                  <Lock className="w-4 h-4 mr-3" />
+                  <Lock className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3" />
                   <span>Change Password</span>
                 </Button>
                 <Button

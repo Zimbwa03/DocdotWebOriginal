@@ -308,13 +308,13 @@ export default function Quiz() {
   };
 
   const renderQuizTypeSelection = () => (
-    <div className="space-y-8">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4 text-gray-900 dark:text-white">Medical Quizzes</h1>
-        <p className="text-lg text-gray-700 dark:text-gray-300">Choose your learning path and start practicing</p>
+    <div className="space-y-6 sm:space-y-8">
+      <div className="text-center px-3 sm:px-4">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 text-gray-900 dark:text-white">Medical Quizzes</h1>
+        <p className="text-sm sm:text-base lg:text-lg text-gray-700 dark:text-gray-300">Choose your learning path and start practicing</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 max-w-4xl mx-auto px-3 sm:px-4">
         {/* AI Generator */}
         <Card 
           className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300"
