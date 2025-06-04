@@ -1,7 +1,7 @@
 // Using Node.js built-in fetch (available in Node 18+)
 
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
-const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+const API_URL = 'https://api.deepseek.com/chat/completions';
 
 interface AIMessage {
   role: 'system' | 'user' | 'assistant';
@@ -42,15 +42,13 @@ class OpenRouterAI {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://docdot.app',
-          'X-Title': 'Docdot Medical Learning Platform'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'deepseek/deepseek-chat',
+          model: 'deepseek-chat',
           messages,
           temperature,
-          max_tokens: 1500,
+          max_tokens: 2000,
           stream: false
         }),
         signal: controller.signal
@@ -60,8 +58,8 @@ class OpenRouterAI {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('OpenRouter API error:', response.status, errorText);
-        throw new Error(`OpenRouter API error: ${response.status} - ${errorText}`);
+        console.error('DeepSeek API error:', response.status, errorText);
+        throw new Error(`DeepSeek API error: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json() as any;
@@ -77,29 +75,49 @@ class OpenRouterAI {
 
   // Medical Question Generation
   async generateMedicalQuestions(topic: string, difficulty: string, count: number = 5): Promise<any[]> {
-    const systemPrompt = `You are an expert medical educator. Generate ${count} multiple-choice questions about ${topic} at ${difficulty} difficulty level. 
-    Each question should be medically accurate and educational.
+    const systemPrompt = `You are an expert medical educator and board exam specialist. Generate ${count} True/False questions about ${topic} at ${difficulty} difficulty level. 
+    
+    Requirements:
+    - Each question should be medically accurate and evidence-based
+    - Use current medical knowledge and guidelines
+    - Include clinical scenarios when appropriate
+    - Provide detailed explanations for both correct and incorrect answers
+    - Make questions challenging but fair for medical students
     
     Return ONLY a valid JSON array with this exact format:
     [
       {
-        "question": "Question text here",
-        "options": ["A) Option 1", "B) Option 2", "C) Option 3", "D) Option 4"],
-        "correctAnswer": "A) Option 1",
-        "explanation": "Detailed explanation of why this is correct",
+        "question": "Clear, specific question statement about ${topic}",
+        "options": ["True", "False"],
+        "correctAnswer": "True",
+        "correct_answer": "True",
+        "explanation": "Comprehensive explanation of why the answer is correct, including relevant medical facts and clinical significance",
         "category": "${topic}",
         "difficulty": "${difficulty}"
       }
-    ]`;
+    ]
+    
+    Ensure all medical terminology is accurate and explanations include:
+    - Physiological/anatomical basis
+    - Clinical significance
+    - Related concepts or conditions`;
 
     const messages: AIMessage[] = [
       { role: 'system', content: systemPrompt },
-      { role: 'user', content: `Generate ${count} medical questions about ${topic}` }
+      { role: 'user', content: `Generate ${count} high-quality True/False medical questions about ${topic} for medical students` }
     ];
 
     try {
-      const response = await this.generateResponse(messages, 0.3);
-      return JSON.parse(response);
+      const response = await this.generateResponse(messages, 0.2);
+      const parsedResponse = JSON.parse(response);
+      
+      // Ensure correct format
+      return parsedResponse.map((q: any) => ({
+        ...q,
+        options: ['True', 'False'],
+        correctAnswer: q.correctAnswer || q.correct_answer,
+        correct_answer: q.correctAnswer || q.correct_answer
+      }));
     } catch (error) {
       console.error('Question generation error:', error);
       return [];

@@ -217,6 +217,122 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Explain Route
+  app.post("/api/ai/explain", async (req, res) => {
+    try {
+      const { concept, level = 'intermediate' } = req.body;
+
+      if (!concept) {
+        return res.status(400).json({ error: "Concept is required" });
+      }
+
+      const explanation = await openRouterAI.explainConcept(concept, level);
+      
+      res.json({ explanation });
+    } catch (error: any) {
+      console.error("AI Explain Error:", error);
+      res.status(500).json({ 
+        error: "Failed to generate explanation",
+        details: error.message 
+      });
+    }
+  });
+
+  // AI Generate Questions Route
+  app.post("/api/ai/generate-questions", async (req, res) => {
+    try {
+      const { topic, difficulty = 'medium', count = 5 } = req.body;
+
+      if (!topic) {
+        return res.status(400).json({ error: "Topic is required" });
+      }
+
+      const questions = await openRouterAI.generateMedicalQuestions(topic, difficulty, count);
+      
+      res.json({ questions });
+    } catch (error: any) {
+      console.error("AI Questions Error:", error);
+      res.status(500).json({ 
+        error: "Failed to generate questions",
+        details: error.message 
+      });
+    }
+  });
+
+  // AI Case Analysis Route
+  app.post("/api/ai/analyze-case", async (req, res) => {
+    try {
+      const { caseDetails } = req.body;
+
+      if (!caseDetails) {
+        return res.status(400).json({ error: "Case details are required" });
+      }
+
+      const analysis = await openRouterAI.analyzeCaseStudy(caseDetails);
+      
+      res.json({ analysis });
+    } catch (error: any) {
+      console.error("AI Case Analysis Error:", error);
+      res.status(500).json({ 
+        error: "Failed to analyze case",
+        details: error.message 
+      });
+    }
+  });
+
+  // AI Study Plan Route
+  app.post("/api/ai/study-plan", async (req, res) => {
+    try {
+      const { goals, timeframe, currentLevel } = req.body;
+
+      if (!goals || !Array.isArray(goals) || goals.length === 0) {
+        return res.status(400).json({ error: "Goals array is required" });
+      }
+
+      const studyPlan = await openRouterAI.generateStudyPlan(goals, timeframe, currentLevel);
+      
+      res.json({ studyPlan });
+    } catch (error: any) {
+      console.error("AI Study Plan Error:", error);
+      res.status(500).json({ 
+        error: "Failed to generate study plan",
+        details: error.message 
+      });
+    }
+  });
+
+  // AI Quiz Generator Route (for Quiz page)
+  app.post("/api/ai/quiz-generator", async (req, res) => {
+    try {
+      const { topic, difficulty = 'medium', questionCount = 5 } = req.body;
+
+      if (!topic) {
+        return res.status(400).json({ error: "Topic is required" });
+      }
+
+      const questions = await openRouterAI.generateMedicalQuestions(topic, difficulty, parseInt(questionCount));
+      
+      res.json({ 
+        success: true,
+        questions: questions.map((q: any, index: number) => ({
+          id: index + 1,
+          question: q.question,
+          options: q.options || ['True', 'False'],
+          correct_answer: q.correctAnswer || q.correct_answer,
+          explanation: q.explanation,
+          category: topic,
+          difficulty: difficulty
+        }))
+      });
+    } catch (error: any) {
+      console.error("AI Quiz Generator Error:", error);
+      res.status(500).json({ 
+        error: "Failed to generate quiz questions",
+        details: error.message 
+      });
+    }
+  });
+
   // Quiz attempts endpoint
   app.get("/api/quiz-attempts/:userId", async (req, res) => {
     try {
@@ -232,7 +348,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI Chat Route
+  // AI Chat Route for general chat
   app.post("/api/ai/chat", async (req, res) => {
     try {
       const { message, context } = req.body;

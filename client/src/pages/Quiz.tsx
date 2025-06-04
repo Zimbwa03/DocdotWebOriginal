@@ -294,15 +294,65 @@ export default function Quiz() {
     const userMessage = { role: 'user' as const, content: aiPrompt };
     setAiMessages(prev => [...prev, userMessage]);
 
-    // Simulate AI response (replace with actual AI integration)
-    setTimeout(() => {
-      const aiResponse = { 
+    try {
+      // Generate questions using AI
+      const response = await fetch('/api/ai/quiz-generator', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topic: aiPrompt,
+          difficulty: 'medium',
+          questionCount: 5
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate questions');
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.questions) {
+        // Set the generated questions for quiz taking
+        setQuestions(data.questions);
+        setSelectedCategory(aiPrompt);
+        setCurrentQuestionIndex(0);
+        setScore(0);
+        setQuizCompleted(false);
+        setSelectedAnswer('');
+        setIsAnswered(false);
+        setStartTime(new Date());
+        setQuestionStartTime(Date.now());
+
+        const aiResponse = { 
+          role: 'assistant' as const, 
+          content: `🎯 **Quiz Generated Successfully!** \n\nI've created **${data.questions.length} medical questions** about "${aiPrompt}". \n\n✨ **Features:**\n• True/False format\n• Detailed explanations\n• Instant feedback\n• Progress tracking\n\n🚀 **Ready to start?** Your personalized quiz is loaded and ready to go! Click "Start Quiz" below to begin practicing.`
+        };
+        setAiMessages(prev => [...prev, aiResponse]);
+        
+        toast({
+          title: "Quiz Generated!",
+          description: `Created ${data.questions.length} questions about ${aiPrompt}`,
+        });
+      } else {
+        throw new Error('Invalid response format');
+      }
+    } catch (error) {
+      console.error('AI Quiz Generation Error:', error);
+      const errorResponse = { 
         role: 'assistant' as const, 
-        content: `Based on your request "${aiPrompt}", I'll generate medical questions focused on this topic. Here are some practice questions I've created for you:\n\n1. **Question**: What is the primary function of the structure you mentioned?\n\n2. **Clinical Scenario**: A patient presents with symptoms related to this area. What would be your differential diagnosis?\n\n3. **Anatomy Question**: Identify the key anatomical landmarks in this region.\n\nWould you like me to generate more specific questions or focus on a particular difficulty level?`
+        content: `❌ **Sorry, I couldn't generate the quiz.** \n\nThere was an issue creating questions about "${aiPrompt}". Please try:\n\n• **Different topic**: Try a more specific medical topic\n• **Simpler request**: Use clear, medical terminology\n• **Try again**: Sometimes it's just a temporary issue\n\n💡 **Example topics:**\n• "Cardiovascular anatomy"\n• "Diabetes pathophysiology"\n• "Respiratory physiology"`
       };
-      setAiMessages(prev => [...prev, aiResponse]);
+      setAiMessages(prev => [...prev, errorResponse]);
+      
+      toast({
+        variant: "destructive",
+        title: "Generation Failed",
+        description: "Failed to generate quiz. Please try again with a different topic."
+      });
+    } finally {
       setIsGenerating(false);
-    }, 2000);
+    }
 
     setAiPrompt('');
   };
@@ -815,26 +865,41 @@ export default function Quiz() {
             </div>
 
             {/* Input Area */}
-            <div className="flex space-x-2">
-              <Textarea
-                placeholder="Ask me to generate questions on any medical topic..."
-                value={aiPrompt}
-                onChange={(e) => setAiPrompt(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleAiSubmit();
-                  }
-                }}
-                className="flex-1"
-              />
-              <Button 
-                onClick={handleAiSubmit}
-                disabled={!aiPrompt.trim() || isGenerating}
-                style={{ backgroundColor: '#3399FF' }}
-              >
-                <Send className="w-4 h-4" />
-              </Button>
+            <div className="space-y-3">
+              <div className="flex space-x-2">
+                <Textarea
+                  placeholder="Ask me to generate questions on any medical topic..."
+                  value={aiPrompt}
+                  onChange={(e) => setAiPrompt(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleAiSubmit();
+                    }
+                  }}
+                  className="flex-1"
+                />
+                <Button 
+                  onClick={handleAiSubmit}
+                  disabled={!aiPrompt.trim() || isGenerating}
+                  style={{ backgroundColor: '#3399FF' }}
+                >
+                  <Send className="w-4 h-4" />
+                </Button>
+              </div>
+              
+              {questions.length > 0 && selectedCategory === aiPrompt && (
+                <div className="text-center">
+                  <Button 
+                    onClick={() => setSelectedQuizType('ai-quiz')}
+                    size="lg"
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <Play className="w-4 h-4 mr-2" />
+                    Start AI Generated Quiz ({questions.length} questions)
+                  </Button>
+                </div>
+              )}
             </div>
 
             {/* Quick Suggestions */}
@@ -953,6 +1018,16 @@ export default function Quiz() {
       <div className="min-h-screen bg-white dark:bg-gray-900">
         <div className="max-w-6xl mx-auto px-8 py-12">
           {renderAiGenerator()}
+        </div>
+      </div>
+    );
+  }
+
+  if (selectedQuizType === 'ai-quiz' && questions.length > 0) {
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
+        <div className="max-w-4xl mx-auto px-8 py-12">
+          {renderMCQQuiz()}
         </div>
       </div>
     );

@@ -697,7 +697,7 @@ export default function AiTools() {
           <h1 className="text-3xl font-bold mb-4" style={{ color: '#1C1C1C' }}>AI Medical Learning Tools</h1>
           <p className="text-xl mb-4" style={{ color: '#2E2E2E' }}>Powered by advanced AI to enhance your medical education</p>
           <Badge className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white">
-            DeepSeek AI Integration
+            🚀 DeepSeek R1 - Premium API Integration
           </Badge>
         </div>
 
@@ -809,9 +809,9 @@ export default function AiTools() {
             </p>
             <div className="flex items-center justify-center space-x-2 text-sm" style={{ color: '#2E2E2E' }}>
               <span>Powered by</span>
-              <Badge variant="outline">DeepSeek R1</Badge>
+              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">✨ DeepSeek R1 Premium API</Badge>
               <span>•</span>
-              <Badge variant="outline">OpenRouter</Badge>
+              <Badge variant="outline">Professional Medical AI</Badge>
             </div>
           </CardContent>
         </Card>
