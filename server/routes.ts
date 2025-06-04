@@ -60,13 +60,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/study-groups", async (req, res) => {
     try {
       const groups = await db.execute(sql`
-        SELECT sg.*, COUNT(sgm.user_id) as member_count
+        SELECT 
+          sg.*,
+          u.first_name as "creatorFirstName",
+          u.last_name as "creatorLastName",
+          COUNT(sgm.user_id) as current_members,
+          CASE 
+            WHEN sg.scheduled_time <= NOW() AND sg.scheduled_time > NOW() - INTERVAL '1 hour'
+            THEN true 
+            ELSE false 
+          END as is_active
         FROM study_groups sg
+        LEFT JOIN users u ON sg.creator_id = u.id
         LEFT JOIN study_group_members sgm ON sg.id = sgm.group_id
-        GROUP BY sg.id
-        ORDER BY sg.created_at DESC
+        GROUP BY sg.id, u.first_name, u.last_name
+        ORDER BY sg.scheduled_time ASC
       `);
-      res.json(groups || []);
+
+      const formattedGroups = (groups.rows || []).map((group: any) => ({
+        ...group,
+        creator: group.creatorFirstName ? {
+          firstName: group.creatorFirstName,
+          lastName: group.creatorLastName
+        } : null
+      }));
+
+      res.json(formattedGroups);
     } catch (error) {
       console.error("Error fetching study groups:", error);
       res.status(500).json({ error: "Failed to fetch study groups" });
@@ -1301,22 +1320,41 @@ app.get("/api/user-stats/:userId", async (req, res) => {
   app.post('/api/study-groups', async (req, res) => {
     try {
       const groupData = req.body;
+      console.log('Creating study group with data:', groupData);
+
+      // Ensure all required fields are present
+      if (!groupData.title || !groupData.meeting_link || !groupData.scheduled_time || !groupData.creatorId) {
+        return res.status(400).json({ 
+          error: 'Missing required fields',
+          required: ['title', 'meeting_link', 'scheduled_time', 'creatorId']
+        });
+      }
+
       const result = await db.execute(sql`
         INSERT INTO study_groups (
           creator_id, title, description, meeting_link, meeting_type,
           scheduled_time, duration, max_members, category
         ) VALUES (
-          ${groupData.creatorId}, ${groupData.title}, ${groupData.description},
-          ${groupData.meetingLink}, ${groupData.meetingType}, 
-          ${groupData.scheduledTime}, ${groupData.duration}, 
-          ${groupData.maxMembers}, ${groupData.category}
+          ${groupData.creatorId}, 
+          ${groupData.title}, 
+          ${groupData.description || ''}, 
+          ${groupData.meeting_link}, 
+          ${groupData.meeting_type || 'zoom'}, 
+          ${groupData.scheduled_time}, 
+          ${groupData.duration || 60}, 
+          ${groupData.max_members || 10}, 
+          ${groupData.category || ''}
         ) RETURNING *
       `);
 
+      console.log('Study group created successfully:', result.rows[0]);
       res.json(result.rows[0]);
     } catch (error) {
       console.error('Error creating study group:', error);
-      res.status(500).json({ error: 'Failed to create study group' });
+      res.status(500).json({ 
+        error: 'Failed to create study group',
+        details: error.message
+      });
     }
   });
 

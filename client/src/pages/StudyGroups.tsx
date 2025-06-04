@@ -65,16 +65,31 @@ export default function StudyGroups() {
   // Create study group mutation
   const createGroupMutation = useMutation({
     mutationFn: async (data: any) => {
+      const groupData = {
+        title: data.title,
+        description: data.description,
+        meeting_link: data.meetingLink,
+        meeting_type: data.meetingType,
+        scheduled_time: new Date(data.scheduledTime).toISOString(),
+        duration: data.duration,
+        max_members: data.maxMembers,
+        category: data.category,
+        creatorId: user?.id
+      };
+
+      console.log('Sending study group data:', groupData);
+
       const response = await fetch('/api/study-groups', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...data,
-          creatorId: user?.id,
-          scheduledTime: new Date(data.scheduledTime).toISOString()
-        })
+        body: JSON.stringify(groupData)
       });
-      if (!response.ok) throw new Error('Failed to create group');
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create group');
+      }
+      
       return response.json();
     },
     onSuccess: () => {

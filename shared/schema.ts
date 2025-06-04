@@ -238,18 +238,18 @@ export const studyPlannerSessions = pgTable("study_planner_sessions", {
 // Study groups
 export const studyGroups = pgTable("study_groups", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  creatorId: text("creator_id").references(() => users.id),
+  creator_id: text("creator_id").references(() => users.id),
   title: text("title").notNull(),
   description: text("description"),
-  meetingLink: text("meeting_link").notNull(), // Zoom or Google Meet link
-  meetingType: text("meeting_type").notNull(), // 'zoom' or 'meet'
-  scheduledTime: timestamp("scheduled_time").notNull(),
+  meeting_link: text("meeting_link").notNull(), // Zoom or Google Meet link
+  meeting_type: text("meeting_type").notNull(), // 'zoom' or 'meet'
+  scheduled_time: timestamp("scheduled_time").notNull(),
   duration: integer("duration").notNull().default(60), // in minutes
-  maxMembers: integer("max_members").notNull().default(10),
-  currentMembers: integer("current_members").notNull().default(1),
-  isActive: boolean("is_active").notNull().default(false),
+  max_members: integer("max_members").notNull().default(10),
+  current_members: integer("current_members").notNull().default(1),
+  is_active: boolean("is_active").notNull().default(false),
   category: text("category"), // study topic category
-  createdAt: timestamp("created_at").defaultNow(),
+  created_at: timestamp("created_at").defaultNow(),
 });
 
 // Study group members
