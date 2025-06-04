@@ -153,9 +153,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Leaderboard
   app.get("/api/leaderboard", async (req, res) => {
     try {
-      const limit = parseInt(req.query.limit as string) || 10;
+      const limit = parseInt(req.query.limit as string) || 50;
       const timeFrame = req.query.timeFrame as string || 'all-time';
       const category = req.query.category as string;
+      
+      // Update leaderboard data before fetching
+      await dbStorage.updateGlobalLeaderboard();
       
       const leaderboard = await dbStorage.getLeaderboard(limit, timeFrame, category);
       

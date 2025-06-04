@@ -7,7 +7,7 @@ import {
   type InsertQuizAttempt, type InsertUserStats, type InsertCategoryStats,
   type InsertDailyStats, type InsertLeaderboard
 } from '@shared/schema';
-import { eq, desc, sql, and, gte, isNotNull, lte } from 'drizzle-orm';
+import { eq, desc, sql, and, gte, isNotNull, lte, gt, lt, count, sum, avg } from 'drizzle-orm';
 
 const connectionString = process.env.DATABASE_URL!;
 const client = postgres(connectionString);
@@ -392,7 +392,7 @@ export class DatabaseStorage {
         .where(eq(quizAttempts.userId, userId))
         .orderBy(desc(quizAttempts.attemptedAt))
         .limit(limit);
-      
+
       return attempts;
     } catch (error) {
       console.error('Error getting recent quiz attempts:', error);
@@ -733,6 +733,79 @@ export class DatabaseStorage {
     } catch (error) {
       console.error('Error checking badge progress:', error);
       return [];
+    }
+  }
+
+  async getLeaderboard(limit: number = 10, timeFrame: string = 'all-time', category?: string): Promise<any[]> {
+    try {
+      // First, refresh the leaderboard data
+      await this.updateGlobalLeaderboard();
+
+      let baseQuery = db
+        .select({
+          id: userStats.id,
+          userId: userStats.userId,
+          rank: sql<number>`ROW_NUMBER() OVER (ORDER BY ${userStats.totalXP} DESC)`.as('rank'),
+          totalXP: userStats.totalXP,
+          currentLevel: userStats.currentLevel,
+          weeklyXP: sql<number>`COALESCE(${userStats.totalXP}, 0)`.as('weeklyXP'),
+          monthlyXP: sql<number>`COALESCE(${userStats.totalXP}, 0)`.as('monthlyXP'),
+          averageAccuracy: userStats.averageScore,
+          totalBadges: sql<number>`0`.as('totalBadges'),
+          lastActive: userStats.updatedAt,
+          user: {
+            firstName: users.firstName,
+            lastName: users.lastName,
+            email: users.email
+          }
+        })
+        .from(userStats)
+        .leftJoin(users, eq(userStats.userId, users.id))
+        .where(gt(userStats.totalQuestions, 0))
+        .orderBy(desc(userStats.totalXP))
+        .limit(limit);
+
+      const results = await baseQuery;
+
+      return results.map((result, index) => ({
+        ...result,
+        rank: index + 1,
+        rankChange: 0 // Could implement change tracking later
+      }));
+    } catch (error) {
+      console.error('Error getting leaderboard:', error);
+      return [];
+    }
+  }
+
+  async getUserRank(userId: string, timeFrame: string = 'all-time', category?: string): Promise<any> {
+    try {
+      // Get user's current stats
+      const userStatsData = await this.getUserStats(userId);
+      if (!userStatsData) {
+        return { rank: 'Unranked', totalXP: 0, averageAccuracy: 0 };
+      }
+
+      // Count users with higher XP to determine rank
+      const rankQuery = db
+        .select({ count: sql<number>`count(*)` })
+        .from(userStats)
+        .where(and(
+          gt(userStats.totalXP, userStatsData.totalXP),
+          gt(userStats.totalQuestions, 0)
+        ));
+
+      const rankResult = await rankQuery;
+      const rank = (rankResult[0]?.count || 0) + 1;
+
+      return {
+        rank,
+        totalXP: userStatsData.totalXP,
+        averageAccuracy: userStatsData.averageScore
+      };
+    } catch (error) {
+      console.error('Error getting user rank:', error);
+      return { rank: 'Unranked', totalXP: 0, averageAccuracy: 0 };
     }
   }
 }
