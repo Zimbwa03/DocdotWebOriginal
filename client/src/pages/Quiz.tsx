@@ -317,87 +317,87 @@ export default function Quiz() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 max-w-4xl mx-auto px-3 sm:px-4">
         {/* AI Generator */}
         <Card 
-          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300"
+          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300 dark:bg-gray-800 dark:border-gray-600"
           style={{ backgroundColor: '#F7FAFC' }}
           onClick={() => setSelectedQuizType('ai-generator')}
         >
-          <CardHeader className="text-center">
-            <Bot className="w-16 h-16 mx-auto mb-4" style={{ color: '#3399FF' }} />
-            <CardTitle className="text-xl" style={{ color: '#1C1C1C' }}>AI Generator</CardTitle>
-            <CardDescription style={{ color: '#2E2E2E' }}>
+          <CardHeader className="text-center p-4 sm:p-6">
+            <Bot className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4" style={{ color: '#3399FF' }} />
+            <CardTitle className="text-lg sm:text-xl text-gray-900 dark:text-white">AI Generator</CardTitle>
+            <CardDescription className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
               Create personalized questions using advanced AI technology
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <Badge variant="secondary">AI-Powered</Badge>
-              <Badge variant="secondary">Personalized</Badge>
-              <Badge variant="secondary">Adaptive</Badge>
+          <CardContent className="p-4 sm:p-6 pt-0">
+            <div className="flex flex-wrap gap-1 sm:gap-2">
+              <Badge variant="secondary" className="text-xs">AI-Powered</Badge>
+              <Badge variant="secondary" className="text-xs">Personalized</Badge>
+              <Badge variant="secondary" className="text-xs">Adaptive</Badge>
             </div>
           </CardContent>
         </Card>
 
         {/* Cadaver Quiz */}
         <Card 
-          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300"
+          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300 dark:bg-gray-800 dark:border-gray-600"
           style={{ backgroundColor: '#F7FAFC' }}
           onClick={() => setSelectedQuizType('cadaver')}
         >
-          <CardHeader className="text-center">
-            <ImageIcon className="w-16 h-16 mx-auto mb-4" style={{ color: '#3399FF' }} />
-            <CardTitle className="text-xl" style={{ color: '#1C1C1C' }}>Cadaver Quiz</CardTitle>
-            <CardDescription style={{ color: '#2E2E2E' }}>
+          <CardHeader className="text-center p-4 sm:p-6">
+            <ImageIcon className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4" style={{ color: '#3399FF' }} />
+            <CardTitle className="text-lg sm:text-xl text-gray-900 dark:text-white">Cadaver Quiz</CardTitle>
+            <CardDescription className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
               Visual anatomy with real cadaver images and structures
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <Badge variant="secondary">Real Images</Badge>
-              <Badge variant="secondary">7 Topics</Badge>
-              <Badge variant="secondary">Interactive</Badge>
+          <CardContent className="p-4 sm:p-6 pt-0">
+            <div className="flex flex-wrap gap-1 sm:gap-2">
+              <Badge variant="secondary" className="text-xs">Real Images</Badge>
+              <Badge variant="secondary" className="text-xs">7 Topics</Badge>
+              <Badge variant="secondary" className="text-xs">Interactive</Badge>
             </div>
           </CardContent>
         </Card>
 
         {/* Histology Slide Quiz */}
         <Card 
-          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300"
+          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300 dark:bg-gray-800 dark:border-gray-600"
           style={{ backgroundColor: '#F7FAFC' }}
           onClick={() => setSelectedQuizType('histology')}
         >
-          <CardHeader className="text-center">
-            <Microscope className="w-16 h-16 mx-auto mb-4" style={{ color: '#3399FF' }} />
-            <CardTitle className="text-xl" style={{ color: '#1C1C1C' }}>Histology Slide Quiz</CardTitle>
-            <CardDescription style={{ color: '#2E2E2E' }}>
+          <CardHeader className="text-center p-4 sm:p-6">
+            <Microscope className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4" style={{ color: '#3399FF' }} />
+            <CardTitle className="text-lg sm:text-xl text-gray-900 dark:text-white">Histology Slide Quiz</CardTitle>
+            <CardDescription className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
               Microscopic anatomy and histological structures
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <Badge variant="secondary">Microscopic Images</Badge>
-              <Badge variant="secondary">Histology</Badge>
-              <Badge variant="secondary">Detailed</Badge>
+          <CardContent className="p-4 sm:p-6 pt-0">
+            <div className="flex flex-wrap gap-1 sm:gap-2">
+              <Badge variant="secondary" className="text-xs">Microscopic Images</Badge>
+              <Badge variant="secondary" className="text-xs">Histology</Badge>
+              <Badge variant="secondary" className="text-xs">Detailed</Badge>
             </div>
           </CardContent>
         </Card>
 
         {/* MCQ Questions */}
         <Card 
-          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300"
+          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300 dark:bg-gray-800 dark:border-gray-600"
           style={{ backgroundColor: '#F7FAFC' }}
           onClick={() => setSelectedQuizType('mcq')}
         >
-          <CardHeader className="text-center">
-            <BookOpen className="w-16 h-16 mx-auto mb-4" style={{ color: '#3399FF' }} />
-            <CardTitle className="text-xl" style={{ color: '#1C1C1C' }}>MCQ Questions</CardTitle>
-            <CardDescription style={{ color: '#2E2E2E' }}>
+          <CardHeader className="text-center p-4 sm:p-6">
+            <BookOpen className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4" style={{ color: '#3399FF' }} />
+            <CardTitle className="text-lg sm:text-xl text-gray-900 dark:text-white">MCQ Questions</CardTitle>
+            <CardDescription className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
               Multiple choice questions from our comprehensive question bank
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <Badge variant="secondary">Anatomy & Physiology</Badge>
-              <Badge variant="secondary">Categorized</Badge>
+          <CardContent className="p-4 sm:p-6 pt-0">
+            <div className="flex flex-wrap gap-1 sm:gap-2">
+              <Badge variant="secondary" className="text-xs">Anatomy & Physiology</Badge>
+              <Badge variant="secondary" className="text-xs">Categorized</Badge>
               <Badge variant="secondary">Instant Feedback</Badge>
             </div>
           </CardContent>
