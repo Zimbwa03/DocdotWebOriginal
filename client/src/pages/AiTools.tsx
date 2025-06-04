@@ -288,7 +288,29 @@ export default function AiTools() {
                       ? 'bg-blue-500 text-white' 
                       : 'bg-white text-gray-800 border'
                   }`}>
-                    {message.content}
+                    {message.role === 'ai' ? (
+                      <div className="space-y-2">
+                        {message.content.split('\n').map((paragraph, pIndex) => {
+                          if (!paragraph.trim()) return null;
+                          
+                          // Convert **bold** to actual bold styling
+                          const formattedParagraph = paragraph.replace(
+                            /\*\*(.*?)\*\*/g, 
+                            '<strong class="font-semibold text-blue-600">$1</strong>'
+                          );
+                          
+                          return (
+                            <div 
+                              key={pIndex} 
+                              className="leading-relaxed"
+                              dangerouslySetInnerHTML={{ __html: formattedParagraph }}
+                            />
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      message.content
+                    )}
                   </div>
                 </div>
               ))}
@@ -352,13 +374,27 @@ export default function AiTools() {
             {explanation && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Explanation: {concept}</CardTitle>
+                  <CardTitle>✨ AI Explanation</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="prose max-w-none">
-                    {explanation.split('\n').map((paragraph, index) => (
-                      <p key={index} className="mb-3">{paragraph}</p>
-                    ))}
+                  <div className="prose max-w-none space-y-3">
+                    {explanation.split('\n').map((paragraph, index) => {
+                      if (!paragraph.trim()) return null;
+                      
+                      // Convert **bold** to actual bold styling
+                      const formattedParagraph = paragraph.replace(
+                        /\*\*(.*?)\*\*/g, 
+                        '<strong class="font-semibold text-blue-600">$1</strong>'
+                      );
+                      
+                      return (
+                        <div 
+                          key={index} 
+                          className="mb-3 leading-relaxed"
+                          dangerouslySetInnerHTML={{ __html: formattedParagraph }}
+                        />
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>
@@ -464,13 +500,27 @@ export default function AiTools() {
             {caseAnalysis && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Case Analysis</CardTitle>
+                  <CardTitle>🏥 AI Case Analysis</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="prose max-w-none">
-                    {caseAnalysis.split('\n').map((paragraph, index) => (
-                      <p key={index} className="mb-3">{paragraph}</p>
-                    ))}
+                  <div className="prose max-w-none space-y-3">
+                    {caseAnalysis.split('\n').map((paragraph, index) => {
+                      if (!paragraph.trim()) return null;
+                      
+                      // Convert **bold** to actual bold styling
+                      const formattedParagraph = paragraph.replace(
+                        /\*\*(.*?)\*\*/g, 
+                        '<strong class="font-semibold text-red-600">$1</strong>'
+                      );
+                      
+                      return (
+                        <div 
+                          key={index} 
+                          className="mb-3 leading-relaxed"
+                          dangerouslySetInnerHTML={{ __html: formattedParagraph }}
+                        />
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>
@@ -542,25 +592,57 @@ export default function AiTools() {
             {studyPlan && (
               <Card>
                 <CardHeader>
-                  <CardTitle>{studyPlan.title}</CardTitle>
+                  <CardTitle>📅 {studyPlan.title || 'Your AI Study Plan'}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     {studyPlan.weeklySchedule?.map((week: any, index: number) => (
-                      <div key={index} className="border rounded-lg p-4">
-                        <h4 className="font-medium mb-2">Week {week.week}: {week.focus}</h4>
-                        <div className="space-y-2">
+                      <div key={index} className="border rounded-lg p-4 bg-gradient-to-r from-blue-50 to-indigo-50">
+                        <h4 className="font-semibold mb-3 text-blue-800">
+                          📚 Week {week.week}: {week.focus}
+                        </h4>
+                        <div className="space-y-3">
                           <div>
-                            <strong>Daily Tasks:</strong>
-                            <ul className="list-disc list-inside ml-4">
+                            <strong className="text-gray-700">🎯 Daily Tasks:</strong>
+                            <ul className="list-none ml-4 mt-2 space-y-1">
                               {week.dailyTasks?.map((task: string, taskIndex: number) => (
-                                <li key={taskIndex}>{task}</li>
+                                <li key={taskIndex} className="flex items-start">
+                                  <span className="text-green-500 mr-2">✓</span>
+                                  <span>{task}</span>
+                                </li>
                               ))}
                             </ul>
                           </div>
+                          {week.resources && (
+                            <div>
+                              <strong className="text-gray-700">📖 Resources:</strong>
+                              <ul className="list-none ml-4 mt-2 space-y-1">
+                                {week.resources.map((resource: string, resIndex: number) => (
+                                  <li key={resIndex} className="flex items-start">
+                                    <span className="text-blue-500 mr-2">📄</span>
+                                    <span>{resource}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
+                    
+                    {studyPlan.tips && (
+                      <div className="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <h4 className="font-semibold mb-2 text-yellow-800">💡 Study Tips:</h4>
+                        <ul className="space-y-1">
+                          {studyPlan.tips.map((tip: string, tipIndex: number) => (
+                            <li key={tipIndex} className="flex items-start">
+                              <span className="text-yellow-500 mr-2">⭐</span>
+                              <span>{tip}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
