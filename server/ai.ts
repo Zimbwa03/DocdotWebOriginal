@@ -1,7 +1,7 @@
 // Using Node.js built-in fetch (available in Node 18+)
 
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
-const API_URL = 'https://api.deepseek.com/v1/chat/completions';
+const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 interface AIMessage {
   role: 'system' | 'user' | 'assistant';
@@ -15,6 +15,9 @@ class OpenRouterAI {
     this.apiKey = DEEPSEEK_API_KEY || null;
     if (!this.apiKey) {
       console.warn('DEEPSEEK_API_KEY is not configured - AI features will be disabled');
+      console.log('Available environment variables:', Object.keys(process.env).filter(key => key.includes('API')));
+    } else {
+      console.log('AI service initialized successfully');
     }
   }
 
@@ -44,7 +47,7 @@ class OpenRouterAI {
           'X-Title': 'Docdot Medical Learning Platform'
         },
         body: JSON.stringify({
-          model: 'deepseek-chat',
+          model: 'deepseek/deepseek-chat',
           messages,
           temperature,
           max_tokens: 1500,

@@ -565,23 +565,113 @@ ${context ? `Context: ${context}` : ''}`;
     }
   });
 
+  // AI Chat/Tutor endpoint
+  app.post("/api/ai/chat", async (req, res) => {
+    try {
+      const { message, context, userId, sessionId, toolType } = req.body;
+
+      if (!message) {
+        return res.status(400).json({ error: "Message is required" });
+      }
+
+      const response = await openRouterAI.tutorResponse(message, context);
+      
+      res.json({ 
+        response,
+        sessionId: sessionId || `session_${Date.now()}`,
+        success: true 
+      });
+    } catch (error: any) {
+      console.error("AI Chat error:", error);
+      res.status(500).json({ 
+        error: "AI service temporarily unavailable",
+        message: error.message || "Please try again later"
+      });
+    }
+  });
+
+  // AI Concept Explanation endpoint
+  app.post("/api/ai/explain", async (req, res) => {
+    try {
+      const { concept, level } = req.body;
+
+      if (!concept) {
+        return res.status(400).json({ error: "Concept is required" });
+      }
+
+      const explanation = await openRouterAI.explainConcept(concept, level);
+      
+      res.json({ explanation, success: true });
+    } catch (error: any) {
+      console.error("AI Explain error:", error);
+      res.status(500).json({ 
+        error: "AI service temporarily unavailable",
+        message: error.message || "Please try again later"
+      });
+    }
+  });
+
   // Generate Medical Questions
   app.post("/api/ai/generate-questions", async (req, res) => {
     try {
       const { topic, difficulty, count = 5 } = req.body;
 
-      const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
-      if (!DEEPSEEK_API_KEY) {
-        return res.status(500).json({ error: "DeepSeek API key not configured" });
+      if (!topic) {
+        return res.status(400).json({ error: "Topic is required" });
       }
 
-      const systemPrompt = `You are an expert medical educator 👨‍⚕️. Generate ${count} multiple-choice questions about ${topic} at ${difficulty} difficulty level. 
-Each question should be medically accurate and educational.
+      const questions = await openRouterAI.generateMedicalQuestions(topic, difficulty, count);
+      
+      res.json({ questions, success: true });
+    } catch (error: any) {
+      console.error("AI Question Generation error:", error);
+      res.status(500).json({ 
+        error: "AI service temporarily unavailable",
+        message: error.message || "Please try again later"
+      });
+    }
+  });
 
-**CRITICAL FORMATTING RULES:**
-- Return ONLY valid JSON format
-- No markdown formatting or special characters outside JSON
-- No explanatory text outside the JSON
+  // AI Case Study Analysis endpoint
+  app.post("/api/ai/analyze-case", async (req, res) => {
+    try {
+      const { caseDetails } = req.body;
+
+      if (!caseDetails) {
+        return res.status(400).json({ error: "Case details are required" });
+      }
+
+      const analysis = await openRouterAI.analyzeCaseStudy(caseDetails);
+      
+      res.json({ analysis, success: true });
+    } catch (error: any) {
+      console.error("AI Case Analysis error:", error);
+      res.status(500).json({ 
+        error: "AI service temporarily unavailable",
+        message: error.message || "Please try again later"
+      });
+    }
+  });
+
+  // AI Study Plan Generation endpoint
+  app.post("/api/ai/study-plan", async (req, res) => {
+    try {
+      const { goals, timeframe, currentLevel } = req.body;
+
+      if (!goals || !Array.isArray(goals) || goals.length === 0) {
+        return res.status(400).json({ error: "Goals are required" });
+      }
+
+      const studyPlan = await openRouterAI.generateStudyPlan(goals, timeframe, currentLevel);
+      
+      res.json({ studyPlan, success: true });
+    } catch (error: any) {
+      console.error("AI Study Plan error:", error);
+      res.status(500).json({ 
+        error: "AI service temporarily unavailable",
+        message: error.message || "Please try again later"
+      });
+    }atory text outside the JSON
 
 Return a JSON array with this exact format:
 [
