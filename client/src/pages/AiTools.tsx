@@ -49,9 +49,9 @@ import {
 } from 'lucide-react';
 
 export default function AiTools() {
-  const { user } = useAuth();
   const { toast } = useToast();
-  
+  const { user } = useAuth();
+
   // Tool states
   const [selectedTool, setSelectedTool] = useState<string | null>(null);
   const [inputText, setInputText] = useState('');
@@ -68,7 +68,7 @@ export default function AiTools() {
   const [currentLevel, setCurrentLevel] = useState('intermediate');
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [chatSessions, setChatSessions] = useState<any[]>([]);
-  
+
   // Results states
   const [explanation, setExplanation] = useState('');
   const [generatedQuestions, setGeneratedQuestions] = useState<any[]>([]);
@@ -126,7 +126,7 @@ export default function AiTools() {
   const tutorMutation = useMutation({
     mutationFn: async (message: string) => {
       if (!user?.id) throw new Error('User not authenticated');
-      
+
       const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -292,13 +292,13 @@ export default function AiTools() {
                       <div className="space-y-2">
                         {message.content.split('\n').map((paragraph, pIndex) => {
                           if (!paragraph.trim()) return null;
-                          
+
                           // Convert **bold** to actual bold styling
                           const formattedParagraph = paragraph.replace(
                             /\*\*(.*?)\*\*/g, 
                             '<strong class="font-semibold text-blue-600">$1</strong>'
                           );
-                          
+
                           return (
                             <div 
                               key={pIndex} 
@@ -380,13 +380,13 @@ export default function AiTools() {
                   <div className="prose max-w-none space-y-3">
                     {explanation.split('\n').map((paragraph, index) => {
                       if (!paragraph.trim()) return null;
-                      
+
                       // Convert **bold** to actual bold styling
                       const formattedParagraph = paragraph.replace(
                         /\*\*(.*?)\*\*/g, 
                         '<strong class="font-semibold text-blue-600">$1</strong>'
                       );
-                      
+
                       return (
                         <div 
                           key={index} 
@@ -506,13 +506,13 @@ export default function AiTools() {
                   <div className="prose max-w-none space-y-3">
                     {caseAnalysis.split('\n').map((paragraph, index) => {
                       if (!paragraph.trim()) return null;
-                      
+
                       // Convert **bold** to actual bold styling
                       const formattedParagraph = paragraph.replace(
                         /\*\*(.*?)\*\*/g, 
                         '<strong class="font-semibold text-red-600">$1</strong>'
                       );
-                      
+
                       return (
                         <div 
                           key={index} 
@@ -629,7 +629,7 @@ export default function AiTools() {
                         </div>
                       </div>
                     ))}
-                    
+
                     {studyPlan.tips && (
                       <div className="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
                         <h4 className="font-semibold mb-2 text-yellow-800">💡 Study Tips:</h4>
@@ -704,7 +704,7 @@ export default function AiTools() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {aiTools.map((tool) => {
             const IconComponent = tool.icon;
-            
+
             return (
               <Card 
                 key={tool.id}
