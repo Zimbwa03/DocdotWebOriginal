@@ -139,7 +139,7 @@ export default function Home() {
   const getTimeBasedGreeting = () => {
     const hour = currentTime.getHours();
     const firstName = user?.user_metadata?.firstName || user?.email?.split('@')[0] || 'User';
-    
+
     if (hour >= 5 && hour < 12) {
       return `Good Morning, ${firstName}! ☀️`;
     } else if (hour >= 12 && hour < 17) {
@@ -252,7 +252,7 @@ export default function Home() {
               Take a Quick Tour
             </Button>
           </div>
-          
+
           <div className="flex items-center justify-center mb-4">
             <div 
               className="w-12 h-12 lg:w-16 lg:h-16 rounded-full flex items-center justify-center mr-4" 
@@ -314,7 +314,7 @@ export default function Home() {
               </Button>
             </Link>
           </div>
-          
+
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6" data-tooltip="user-stats">
             {/* XP and Level */}
             <Card className="col-span-2 lg:col-span-1 bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
@@ -408,7 +408,7 @@ export default function Home() {
           <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-6">
             Gamification Hub
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Badge Collection */}
             <Card className="bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200 hover:shadow-lg transition-shadow">
@@ -462,42 +462,25 @@ export default function Home() {
                     onClick={async () => {
                       if (user?.id) {
                         try {
-                          const response = await fetch(`/api/initialize-user/${user.id}`, { 
-                            method: 'POST' 
-                          });
-                          if (response.ok) {
-                            await refetchStats();
-                            queryClient.invalidateQueries({ queryKey: ['/api/badges'] });
-                            queryClient.invalidateQueries({ queryKey: ['/api/user-stats'] });
-                            queryClient.invalidateQueries({ queryKey: ['/api/user-rank'] });
-                            window.location.reload();
-                          }
+                          // Refresh actual user data without adding fake data
+                          await Promise.all([
+                            queryClient.invalidateQueries({ queryKey: ['/api/user-stats'] }),
+                            queryClient.invalidateQueries({ queryKey: ['/api/quiz-attempts'] }),
+                            queryClient.invalidateQueries({ queryKey: ['/api/category-stats'] }),
+                            queryClient.invalidateQueries({ queryKey: ['/api/daily-stats'] }),
+                            queryClient.invalidateQueries({ queryKey: ['/api/leaderboard'] }),
+                            queryClient.invalidateQueries({ queryKey: ['/api/badges'] }),
+                            queryClient.invalidateQueries({ queryKey: ['/api/user-rank'] })
+                          ]);
+
+                          console.log('Analytics data refreshed');
                         } catch (error) {
-                         console.error('Error initializing user data:', error);
+                         console.error('Error refreshing user data:', error);
                         }
                       }
                     }}
                   >
-                    Initialize Data & Rankings
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full"
-                    onClick={async () => {
-                      if (user?.id) {
-                        try {
-                          await fetch(`/api/initialize-user/${user.id}`, { method: 'POST' });
-                          await fetch(`/api/badges/${user.id}/check`, { method: 'POST' });
-                          queryClient.invalidateQueries({ queryKey: ['/api/badges'] });
-                          queryClient.invalidateQueries({ queryKey: ['/api/user-stats'] });
-                        } catch (error) {
-                          console.error('Error updating badges:', error);
-                        }
-                      }
-                    }}
-                  >
-                    Activate Badge System
+                    Refresh Analytics
                   </Button>
                 </div>
               </CardContent>
@@ -604,7 +587,7 @@ export default function Home() {
           <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-6">
             Quick Actions
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Link href="/quiz" data-tooltip-target="start-quiz">
               <Card className="hover:shadow-lg transition-all cursor-pointer bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">

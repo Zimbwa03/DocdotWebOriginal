@@ -92,27 +92,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const initializeUserData = async (userId: string) => {
     try {
-      // Always initialize comprehensive user data for better demo
-      const initResponse = await fetch(`/api/initialize-user/${userId}`, {
+      // Initialize user stats if they don't exist, but don't create fake data
+      const statsResponse = await fetch(`/api/user-stats/${userId}`);
+      
+      if (!statsResponse.ok || (await statsResponse.json()).totalQuestions === undefined) {
+        // Only initialize empty user stats if none exist
+        await fetch(`/api/user-stats/${userId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isCorrect: false, xpEarned: 0, timeSpent: 0 })
+        });
+      }
+      
+      // Initialize badges system without fake progress
+      await fetch(`/api/badges/${userId}/check`, {
         method: 'POST'
       });
       
-      if (initResponse.ok) {
-        const result = await initResponse.json();
-        console.log('User analytics and badges initialized successfully:', result);
-        
-        // Force update leaderboard after initialization
-        await fetch(`/api/leaderboard/${userId}/update`, {
-          method: 'POST'
-        });
-        
-        // Initialize sample leaderboard data if needed
-        await fetch('/api/initialize-sample-data', {
-          method: 'POST'
-        });
-        
-        console.log('Leaderboard and sample data updated');
-      }
+      // Update leaderboard position based on actual performance
+      await fetch(`/api/leaderboard/${userId}/update`, {
+        method: 'POST'
+      });
+      
+      console.log('User data initialized with actual performance data');
     } catch (error) {
       console.error('Error initializing user data:', error);
     }

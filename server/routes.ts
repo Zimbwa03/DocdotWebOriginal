@@ -319,49 +319,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Initialize sample leaderboard data for testing
-  app.post("/api/initialize-sample-data", async (req, res) => {
-    try {
-      const sampleUsers = [
-        { id: 'user1', email: 'student1@medical.edu', firstName: 'Alice', lastName: 'Johnson' },
-        { id: 'user2', email: 'student2@medical.edu', firstName: 'Bob', lastName: 'Smith' },
-        { id: 'user3', email: 'student3@medical.edu', firstName: 'Carol', lastName: 'Davis' },
-        { id: 'user4', email: 'student4@medical.edu', firstName: 'David', lastName: 'Wilson' },
-        { id: 'user5', email: 'student5@medical.edu', firstName: 'Emma', lastName: 'Brown' }
-      ];
+  
 
-      for (const userData of sampleUsers) {
-        // Create user if doesn't exist
-        try {
-          await dbStorage.upsertUser(userData);
-        } catch (error) {
-          console.log('User may already exist:', userData.id);
-        }
-
-        // Add sample quiz attempts
-        const attempts = Math.floor(Math.random() * 50) + 10;
-        const correctRate = 0.6 + Math.random() * 0.3; // 60-90% accuracy
-
-        for (let i = 0; i < attempts; i++) {
-          const isCorrect = Math.random() < correctRate;
-          await dbStorage.updateUserStats(userData.id, isCorrect, isCorrect ? 10 : 2, Math.random() * 60);
-        }
-      }
-
-      res.json({ success: true, message: 'Sample data initialized' });
-    } catch (error) {
-      console.error("Error initializing sample data:", error);
-      res.status(500).json({ error: "Failed to initialize sample data" });
-    }
-  });
-
-  // Initialize user gamification data with sample analytics
+  // Initialize user gamification data without fake performance data
   app.post("/api/initialize-user/:userId", async (req, res) => {
     try {
       const { userId } = req.params;
-
-      // Always create/update comprehensive user stats for better demo experience
-      let userStats = await dbStorage.getUserStats(userId);
 
       // Create base user record if it doesn't exist
       try {
@@ -378,53 +341,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('User creation handled:', userError.message);
       }
 
-      // Initialize comprehensive stats regardless of existing data
-      const statUpdates = [
-        { correct: true, xp: 150, time: 600 },
-        { correct: true, xp: 125, time: 450 },
-        { correct: false, xp: 10, time: 300 },
-        { correct: true, xp: 180, time: 720 },
-        { correct: true, xp: 140, time: 540 },
-        { correct: true, xp: 160, time: 480 },
-        { correct: false, xp: 15, time: 360 },
-        { correct: true, xp: 200, time: 660 }
-      ];
-
-      for (const update of statUpdates) {
-        await dbStorage.updateUserStats(userId, update.correct, update.xp, update.time);
+      // Get existing stats (don't create fake ones)
+      let userStats = await dbStorage.getUserStats(userId);
+      
+      // Only initialize empty stats if none exist
+      if (!userStats) {
+        await dbStorage.updateUserStats(userId, false, 0, 0);
+        userStats = await dbStorage.getUserStats(userId);
       }
 
-      // Update category stats for all medical subjects
-      const categories = [
-        { name: 'Anatomy - Upper Limb', correct: true, time: 360 },
-        { name: 'Anatomy - Lower Limb', correct: true, time: 300 },
-        { name: 'Anatomy - Thorax', correct: false, time: 240 },
-        { name: 'Physiology - Cardiovascular System', correct: true, time: 420 },
-        { name: 'Physiology - Respiratory System', correct: true, time: 390 },
-        { name: 'Pathology', correct: false, time: 280 },
-        { name: 'Pharmacology', correct: true, time: 350 }
-      ];
-
-      for (const cat of categories) {
-        await dbStorage.updateCategoryStats(userId, cat.name, cat.correct, cat.time);
-      }
-
-      // Update daily stats for past week
-      const today = new Date();
-      for (let i = 0; i < 7; i++) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-        await dbStorage.updateDailyStats(userId, 'Anatomy', i % 3 !== 0, 80 + (i * 10));
-      }
-
-      // Get updated stats
-      userStats = await dbStorage.getUserStats(userId);
-
-      // Initialize badges system and check progress
+      // Initialize badges system and check actual progress
       await dbStorage.initializeBadges();
       await dbStorage.checkBadgeProgress(userId);
 
-      // Update leaderboard position
+      // Update leaderboard position based on actual performance
       await dbStorage.updateLeaderboard(userId);
       await dbStorage.updateLeaderboardRanks();
 
@@ -434,9 +364,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         stats: userStats,
         badges: badges || { earned: [], available: [] },
-        rank: rank || { rank: 1, totalXP: userStats?.totalXP || 0, averageAccuracy: userStats?.averageScore || 0 },
+        rank: rank || { rank: 0, totalXP: userStats?.totalXP || 0, averageAccuracy: userStats?.averageScore || 0 },
         initialized: true,
-        message: "User data initialized with comprehensive analytics"
+        message: "User data initialized with actual performance data"
       });
     } catch (error) {
       console.error("Error initializing user:", error);
