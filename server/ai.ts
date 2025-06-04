@@ -10,14 +10,44 @@ interface AIMessage {
 
 class OpenRouterAI {
   private apiKey: string | null;
+  private responseCache: Map<string, { response: string; timestamp: number }>;
+  private readonly CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
 
   constructor() {
     this.apiKey = DEEPSEEK_API_KEY || null;
+    this.responseCache = new Map();
     if (!this.apiKey) {
       console.warn('DEEPSEEK_API_KEY is not configured - AI features will be disabled');
       console.log('Available environment variables:', Object.keys(process.env).filter(key => key.includes('API')));
     } else {
-      console.log('AI service initialized successfully');
+      console.log('AI service initialized successfully with caching');
+    }
+  }
+
+  private getCacheKey(messages: AIMessage[], temperature: number): string {
+    return JSON.stringify({ messages: messages.slice(-2), temperature }); // Only cache last 2 messages
+  }
+
+  private getFromCache(key: string): string | null {
+    const cached = this.responseCache.get(key);
+    if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
+      return cached.response;
+    }
+    if (cached) {
+      this.responseCache.delete(key); // Remove expired cache
+    }
+    return null;
+  }
+
+  private setCache(key: string, response: string): void {
+    this.responseCache.set(key, { response, timestamp: Date.now() });
+    
+    // Clean old cache entries (keep only last 100)
+    if (this.responseCache.size > 100) {
+      const entries = Array.from(this.responseCache.entries());
+      entries.sort((a, b) => b[1].timestamp - a[1].timestamp);
+      this.responseCache.clear();
+      entries.slice(0, 50).forEach(([k, v]) => this.responseCache.set(k, v));
     }
   }
 
@@ -34,9 +64,17 @@ class OpenRouterAI {
       throw new Error('AI service not available - API key not configured');
     }
 
+    // Check cache first
+    const cacheKey = this.getCacheKey(messages, temperature);
+    const cachedResponse = this.getFromCache(cacheKey);
+    if (cachedResponse) {
+      console.log('Returning cached AI response');
+      return cachedResponse;
+    }
+
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 20000); // Reduced to 20 seconds
 
       const response = await fetch(API_URL, {
         method: 'POST',
@@ -48,8 +86,11 @@ class OpenRouterAI {
           model: 'deepseek-chat',
           messages,
           temperature,
-          max_tokens: 2000,
-          stream: false
+          max_tokens: 1000, // Reduced from 2000 for faster responses
+          stream: false,
+          top_p: 0.9, // Add top_p for better performance
+          frequency_penalty: 0.1,
+          presence_penalty: 0.1
         }),
         signal: controller.signal
       });
@@ -63,11 +104,16 @@ class OpenRouterAI {
       }
 
       const data = await response.json() as any;
-      return data.choices[0]?.message?.content || 'I apologize, but I could not generate a response.';
+      const result = data.choices[0]?.message?.content || 'I apologize, but I could not generate a response.';
+      
+      // Cache the response
+      this.setCache(cacheKey, result);
+      
+      return result;
     } catch (error: any) {
       console.error('AI Generation Error:', error);
       if (error.name === 'AbortError') {
-        throw new Error('Request timed out. Please try again.');
+        throw new Error('Request timed out after 20 seconds. Please try again with a shorter question.');
       }
       throw error;
     }
@@ -126,47 +172,32 @@ class OpenRouterAI {
 
   // Medical Tutor Chat
   async tutorResponse(userQuestion: string, context?: string): Promise<string> {
-    const systemPrompt = `You are an expert medical tutor 👨‍⚕️ with deep knowledge in anatomy, physiology, pathology, pharmacology, and clinical medicine. 
-    Your goal is to help medical students learn effectively through clear explanations, examples, and educational guidance.
+    const systemPrompt = `You are an expert medical tutor 👨‍⚕️. Provide concise, accurate medical education responses.
     
-    CRITICAL FORMATTING RULES:
-    - Always start responses with an appropriate emoji and greeting
-    - Use **bold text** for key medical terms (the frontend will render this properly)
-    - Structure responses with clear sections using emojis as headers
-    - Include bullet points with relevant emojis
-    - End with encouraging emojis and call-to-action
-    - Use clinical correlation emojis 🏥 for practical applications
-    - Include study tip emojis 📚 for learning strategies
+    FORMATTING:
+    - Start with greeting emoji
+    - Use **bold** for key medical terms
+    - Structure with emoji headers
+    - Keep responses focused and under 500 words
     
-    Content Guidelines:
-    - Provide accurate, evidence-based medical information
-    - Use clear, educational language appropriate for medical students
-    - Include relevant examples and mnemonics when helpful
-    - Encourage critical thinking with 💭 thoughtful questions
-    - Always emphasize the importance of clinical correlation 🏥
-    - Add encouraging phrases like "Great question!" or "You're on the right track!"
-    - If unsure about specific clinical recommendations, advise consulting current medical literature
+    CONTENT:
+    - Accurate, evidence-based information
+    - Clear language for medical students
+    - Include practical examples
+    - End with encouragement
     
-    Response Structure Template:
-    [Greeting Emoji] Great question! [Topic Emoji]
+    STRUCTURE:
+    [Emoji] Great question!
     
-    📖 **Definition/Overview:**
-    [Clear explanation with **bold** key terms]
+    📖 **Key Concept:** [Brief explanation with **bold** terms]
     
-    🔍 **Key Points:**
-    • [Point 1 with **bold** terms]
-    • [Point 2 with **bold** terms]
+    🔍 **Important Points:**
+    • [Point 1]
+    • [Point 2]
     
-    🏥 **Clinical Relevance:**
-    [Practical applications]
+    🏥 **Clinical Application:** [Brief practical relevance]
     
-    📚 **Study Tips:**
-    [Memory aids or study strategies]
-    
-    💭 **Think About This:**
-    [Thought-provoking question]
-    
-    ✨ Keep up the excellent work! Any follow-up questions?
+    ✨ Keep studying!
     
     ${context ? `Context: ${context}` : ''}`;
 
@@ -175,7 +206,7 @@ class OpenRouterAI {
       { role: 'user', content: userQuestion }
     ];
 
-    return await this.generateResponse(messages, 0.7);
+    return await this.generateResponse(messages, 0.8);
   }
 
   // Study Plan Generation
