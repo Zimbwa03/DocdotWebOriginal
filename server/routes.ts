@@ -671,9 +671,26 @@ ${context ? `Context: ${context}` : ''}`;
         error: "AI service temporarily unavailable",
         message: error.message || "Please try again later"
       });
-    }atory text outside the JSON
+    }
+  });
 
-Return a JSON array with this exact format:
+// AI Quiz Generator Route
+router.post('/api/ai/quiz-generator', async (req, res) => {
+  try {
+    const { topic, difficulty = 'intermediate', count = 5 } = req.body;
+    
+    if (!topic) {
+      return res.status(400).json({ error: 'Topic is required' });
+    }
+
+    const questions = await openRouterAI.generateMedicalQuestions(topic, difficulty, count);
+    res.json({ questions, success: true });
+  } catch (error: any) {
+    console.error("AI Quiz Generator error:", error);
+    res.status(500).json({ 
+      error: "AI service temporarily unavailable",
+      message: error.message || "Please try again later"
+    });
 [
   {
     "question": "Question text here",

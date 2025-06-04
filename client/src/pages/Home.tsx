@@ -232,14 +232,14 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-6 lg:py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
         {/* Hero Section with Personalized Greeting */}
-        <div className="text-center mb-8 lg:mb-12" data-tooltip="welcome-message">
-          <div className="mb-6">
-            <h1 className="text-2xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">
+        <div className="text-center mb-6 sm:mb-8 lg:mb-12" data-tooltip="welcome-message">
+          <div className="mb-4 sm:mb-6">
+            <h1 className="text-xl sm:text-2xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2">
               {getTimeBasedGreeting()}
             </h1>
-            <p className="text-lg lg:text-xl text-gray-600 dark:text-gray-300">
+            <p className="text-base sm:text-lg lg:text-xl text-gray-600 dark:text-gray-300 px-2">
               Ready to continue your medical learning journey?
             </p>
             <Button 
@@ -271,108 +271,109 @@ export default function Home() {
           </div>
 
           {/* Quick Study Insights */}
-          <div className="bg-white rounded-lg shadow-sm p-4 lg:p-6 max-w-4xl mx-auto">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-3 sm:p-4 lg:p-6 max-w-4xl mx-auto">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 text-center">
               <div>
-                <div className="text-xl lg:text-2xl font-bold text-blue-600">
+                <div className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-600">
                   {loadingStats ? '...' : String(Math.round((stats.totalStudyTime || 0) / 60))}
                 </div>
-                <div className="text-xs lg:text-sm text-gray-600">Minutes Today</div>
+                <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Minutes Today</div>
               </div>
               <div>
-                <div className="text-xl lg:text-2xl font-bold text-green-600">
+                <div className="text-lg sm:text-xl lg:text-2xl font-bold text-green-600">
                   {loadingStats ? '...' : String(stats.currentStreak || 0)}
                 </div>
-                <div className="text-xs lg:text-sm text-gray-600">Day Streak</div>
+                <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Day Streak</div>
               </div>
               <div>
-                <div className="text-xl lg:text-2xl font-bold text-purple-600">
+                <div className="text-lg sm:text-xl lg:text-2xl font-bold text-purple-600">
                   {loadingStats ? '...' : String(stats.totalXP || 0)}
                 </div>
-                <div className="text-xs lg:text-sm text-gray-600">Total XP</div>
+                <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Total XP</div>
               </div>
               <div>
-                <div className="text-xl lg:text-2xl font-bold text-orange-600">
+                <div className="text-lg sm:text-xl lg:text-2xl font-bold text-orange-600">
                   Level {loadingStats ? '...' : String(stats.currentLevel || 1)}
                 </div>
-                <div className="text-xs lg:text-sm text-gray-600">Your Level</div>
+                <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Your Level</div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Enhanced Analytics Dashboard */}
-        <div className="mb-8 lg:mb-12">
-          <div className="flex justify-between items-center mb-4 lg:mb-6">
-            <h2 className="text-xl lg:text-2xl font-bold text-gray-900">
+        <div className="mb-6 sm:mb-8 lg:mb-12">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 lg:mb-6 gap-3 sm:gap-0">
+            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
               Analytics Dashboard
             </h2>
             <Link href="/analytics">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="w-full sm:w-auto">
                 <BarChart3 className="w-4 h-4 mr-2" />
-                Detailed Analytics
+                <span className="hidden sm:inline">Detailed Analytics</span>
+                <span className="sm:hidden">View Details</span>
               </Button>
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6" data-tooltip="user-stats">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6" data-tooltip="user-stats">
             {/* XP and Level */}
-            <Card className="col-span-2 lg:col-span-1 bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
+            <Card className="sm:col-span-1 lg:col-span-1 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 border-blue-200 dark:border-blue-700">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-blue-800 flex items-center">
-                  <Zap className="w-4 h-4 mr-1 text-blue-600" />
+                <CardTitle className="text-sm font-medium text-blue-800 dark:text-blue-200 flex items-center">
+                  <Zap className="w-4 h-4 mr-1 text-blue-600 dark:text-blue-400" />
                   XP & Level
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl lg:text-3xl font-bold text-blue-900">
+                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-900 dark:text-blue-100">
                   {loadingStats ? '...' : (stats.totalXP ? stats.totalXP.toLocaleString() : '0')}
                 </div>
-                <div className="text-sm text-blue-600 mt-1">
+                <div className="text-sm text-blue-600 dark:text-blue-300 mt-1">
                   Level {loadingStats ? '...' : String(stats.currentLevel || 1)}
                 </div>
                 <Progress 
                   value={loadingStats ? 0 : ((stats.totalXP % 1000) / 1000) * 100} 
                   className="mt-2 h-2" 
                 />
-                <div className="text-xs text-blue-600 mt-1">
+                <div className="text-xs text-blue-600 dark:text-blue-300 mt-1">
                   {loadingStats ? '...' : String(1000 - ((stats.totalXP || 0) % 1000))} XP to next level
                 </div>
               </CardContent>
             </Card>
 
             {/* Current Streak */}
-            <Card className="bg-gradient-to-r from-orange-50 to-orange-100 border-orange-200">
+            <Card className="bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900 dark:to-orange-800 border-orange-200 dark:border-orange-700">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-orange-800 flex items-center">
-                  <Calendar className="w-4 h-4 mr-1 text-orange-600" />
+                <CardTitle className="text-sm font-medium text-orange-800 dark:text-orange-200 flex items-center">
+                  <Calendar className="w-4 h-4 mr-1 text-orange-600 dark:text-orange-400" />
                   Study Streak
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl lg:text-3xl font-bold text-orange-900">
+                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-orange-900 dark:text-orange-100">
                   {loadingStats ? '...' : String(stats.currentStreak || 0)}
                 </div>
-                <div className="text-sm text-orange-600">days active</div>
-                <div className="text-xs text-orange-600 mt-1">
+                <div className="text-sm text-orange-600 dark:text-orange-300">days active</div>
+                <div className="text-xs text-orange-600 dark:text-orange-300 mt-1">
                   Best: {loadingStats ? '...' : String(stats.longestStreak || 0)} days
                 </div>
               </CardContent>
             </Card>
 
             {/* Accuracy */}
-            <Card className="bg-gradient-to-r from-green-50 to-green-100 border-green-200">
+            <Card className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 border-green-200 dark:border-green-700">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-green-800 flex items-center">
-                  <Target className="w-4 h-4 mr-1 text-green-600" />
+                <CardTitle className="text-sm font-medium text-green-800 dark:text-green-200 flex items-center">
+                  <Target className="w-4 h-4 mr-1 text-green-600 dark:text-green-400" />
                   Overall Accuracy
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl lg:text-3xl font-bold text-green-900">
+                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-900 dark:text-green-100">
                   {loadingStats ? '...' : String(Math.round(stats.averageScore || 0))}%
                 </div>
-                <div className="text-sm text-green-600">
+                <div className="text-sm text-green-600 dark:text-green-300">
                   {loadingStats ? '...' : String(stats.correctAnswers || 0)} of {loadingStats ? '...' : String(stats.totalQuestions || 0)} correct
                 </div>
               </CardContent>
