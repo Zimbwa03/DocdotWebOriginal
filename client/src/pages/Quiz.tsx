@@ -27,8 +27,10 @@ import {
   XCircle,
   Award,
   ArrowRight,
-  ArrowLeft
+  ArrowLeft,
+  Play
 } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 interface Question {
   id: number;
@@ -295,24 +297,34 @@ export default function Quiz() {
     setAiMessages(prev => [...prev, userMessage]);
 
     try {
-      // Generate questions using AI
+      console.log('Generating AI quiz for topic:', aiPrompt);
+      
+      // Generate questions using AI with better error handling
       const response = await fetch('/api/ai/quiz-generator', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify({
-          topic: aiPrompt,
+          topic: aiPrompt.trim(),
           difficulty: 'medium',
           questionCount: 5
         })
       });
 
+      console.log('Response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error('Failed to generate questions');
+        const errorText = await response.text();
+        console.error('API Error Response:', errorText);
+        throw new Error(`Server error: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
+      console.log('AI Response data:', data);
       
-      if (data.success && data.questions) {
+      if (data.success && data.questions && Array.isArray(data.questions) && data.questions.length > 0) {
         // Set the generated questions for quiz taking
         setQuestions(data.questions);
         setSelectedCategory(aiPrompt);
@@ -331,24 +343,35 @@ export default function Quiz() {
         setAiMessages(prev => [...prev, aiResponse]);
         
         toast({
-          title: "Quiz Generated!",
-          description: `Created ${data.questions.length} questions about ${aiPrompt}`,
+          title: "🎉 Quiz Generated!",
+          description: `Successfully created ${data.questions.length} questions about ${aiPrompt}`,
         });
       } else {
-        throw new Error('Invalid response format');
+        console.error('Invalid response format:', data);
+        throw new Error('No questions were generated. Please try a different topic.');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('AI Quiz Generation Error:', error);
+      
+      let errorMessage = "Failed to generate quiz. Please try again.";
+      if (error.message?.includes('503')) {
+        errorMessage = "AI service is not configured. Please check DeepSeek API key.";
+      } else if (error.message?.includes('500')) {
+        errorMessage = "Server error. Please try again in a moment.";
+      } else if (error.message?.includes('timeout')) {
+        errorMessage = "Request timed out. Please try a shorter topic.";
+      }
+      
       const errorResponse = { 
         role: 'assistant' as const, 
-        content: `❌ **Sorry, I couldn't generate the quiz.** \n\nThere was an issue creating questions about "${aiPrompt}". Please try:\n\n• **Different topic**: Try a more specific medical topic\n• **Simpler request**: Use clear, medical terminology\n• **Try again**: Sometimes it's just a temporary issue\n\n💡 **Example topics:**\n• "Cardiovascular anatomy"\n• "Diabetes pathophysiology"\n• "Respiratory physiology"`
+        content: `❌ **Sorry, I couldn't generate the quiz.** \n\n**Error:** ${errorMessage}\n\nPlease try:\n\n• **Different topic**: Try a more specific medical topic\n• **Simpler request**: Use clear, medical terminology\n• **Check connection**: Ensure you have internet access\n\n💡 **Example topics:**\n• "Cardiovascular anatomy"\n• "Diabetes pathophysiology"\n• "Respiratory physiology"\n• "Cell biology basics"`
       };
       setAiMessages(prev => [...prev, errorResponse]);
       
       toast({
         variant: "destructive",
         title: "Generation Failed",
-        description: "Failed to generate quiz. Please try again with a different topic."
+        description: errorMessage
       });
     } finally {
       setIsGenerating(false);
@@ -888,7 +911,7 @@ export default function Quiz() {
                 </Button>
               </div>
               
-              {questions.length > 0 && selectedCategory === aiPrompt && (
+              {questions.length > 0 && (
                 <div className="text-center">
                   <Button 
                     onClick={() => setSelectedQuizType('ai-quiz')}

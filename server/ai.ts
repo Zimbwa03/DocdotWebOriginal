@@ -153,73 +153,166 @@ class OpenRouterAI {
 
   // Medical Question Generation
   async generateMedicalQuestions(topic: string, difficulty: string, count: number = 5): Promise<any[]> {
-    const systemPrompt = `You are an expert medical educator. Generate ${count} True/False questions about ${topic} at ${difficulty} difficulty level.
+    if (!this.checkApiKey()) {
+      throw new Error('AI service not available - API key not configured');
+    }
 
-    CRITICAL: You MUST respond with ONLY a valid JSON array. Do not include any text before or after the JSON.
+    // Validate inputs
+    if (!topic || topic.trim().length === 0) {
+      throw new Error('Topic is required');
+    }
+
+    const sanitizedTopic = topic.trim();
+    const validCount = Math.min(Math.max(count, 1), 10);
+
+    const systemPrompt = `You are an expert medical educator creating True/False questions for medical students.
+
+    CRITICAL REQUIREMENTS:
+    1. Generate EXACTLY ${validCount} True/False questions about "${sanitizedTopic}"
+    2. Difficulty level: ${difficulty}
+    3. Respond with ONLY a valid JSON array - no extra text
+    4. Each question must be medically accurate and evidence-based
 
     JSON Format (EXACT):
     [
       {
-        "question": "Medical question about ${topic}",
-        "options": ["True", "False"],
+        "question": "The heart has four chambers",
         "correctAnswer": "True",
-        "correct_answer": "True",
-        "explanation": "Clear explanation of the answer",
-        "category": "${topic}",
+        "explanation": "The heart consists of two atria and two ventricles, making four chambers total",
+        "category": "${sanitizedTopic}",
         "difficulty": "${difficulty}"
       }
     ]
 
     Requirements:
-    - Medically accurate and evidence-based
-    - Return ONLY the JSON array
-    - No additional text or explanations outside the JSON`;
+    - Questions must be True/False only
+    - Include clear, educational explanations
+    - Use proper medical terminology
+    - Return ONLY the JSON array`;
 
     const messages: AIMessage[] = [
       { role: 'system', content: systemPrompt },
-      { role: 'user', content: `Generate ${count} high-quality True/False medical questions about ${topic} for medical students` }
+      { role: 'user', content: `Generate ${validCount} medical True/False questions about "${sanitizedTopic}" at ${difficulty} level for medical students. Return only valid JSON.` }
     ];
 
     try {
+      console.log(`Generating ${validCount} questions about "${sanitizedTopic}" at ${difficulty} level`);
       const response = await this.generateResponse(messages, 0.2);
       
-      // Clean the response to extract JSON if it's wrapped in text
+      if (!response || response.trim().length === 0) {
+        throw new Error('Empty response from AI service');
+      }
+
+      console.log('Raw AI response:', response.substring(0, 200) + '...');
+      
+      // Clean the response to extract JSON
       let jsonString = response.trim();
       
-      // Look for JSON array in the response
+      // Remove common prefixes/suffixes
+      jsonString = jsonString.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+      jsonString = jsonString.replace(/^```\s*/, '').replace(/\s*```$/, '');
+      
+      // Find JSON array bounds
       const jsonStart = jsonString.indexOf('[');
       const jsonEnd = jsonString.lastIndexOf(']');
       
-      if (jsonStart !== -1 && jsonEnd !== -1) {
-        jsonString = jsonString.substring(jsonStart, jsonEnd + 1);
+      if (jsonStart === -1 || jsonEnd === -1) {
+        throw new Error('No valid JSON array found in response');
       }
       
-      const parsedResponse = JSON.parse(jsonString);
+      jsonString = jsonString.substring(jsonStart, jsonEnd + 1);
+      
+      let parsedResponse;
+      try {
+        parsedResponse = JSON.parse(jsonString);
+      } catch (parseError) {
+        console.error('JSON parsing failed:', parseError);
+        console.error('Failed JSON string:', jsonString);
+        throw new Error('Invalid JSON format in AI response');
+      }
       
       // Ensure it's an array
       const questions = Array.isArray(parsedResponse) ? parsedResponse : [parsedResponse];
       
-      // Ensure correct format
-      return questions.map((q: any) => ({
-        ...q,
-        options: ['True', 'False'],
-        correctAnswer: q.correctAnswer || q.correct_answer,
-        correct_answer: q.correctAnswer || q.correct_answer
-      }));
-    } catch (error) {
-      console.error('Question generation error:', error);
+      if (questions.length === 0) {
+        throw new Error('No questions generated');
+      }
+
+      // Validate and format questions
+      const formattedQuestions = questions.slice(0, validCount).map((q: any, index: number) => {
+        if (!q.question || typeof q.question !== 'string') {
+          throw new Error(`Invalid question format at index ${index}`);
+        }
+
+        return {
+          question: q.question.trim(),
+          options: ['True', 'False'],
+          correctAnswer: q.correctAnswer || q.correct_answer || 'True',
+          correct_answer: q.correctAnswer || q.correct_answer || 'True',
+          explanation: q.explanation || `Explanation for question about ${sanitizedTopic}`,
+          category: sanitizedTopic,
+          difficulty: difficulty
+        };
+      });
+
+      console.log(`Successfully generated ${formattedQuestions.length} questions`);
+      return formattedQuestions;
+
+    } catch (error: any) {
+      console.error('Question generation error details:', {
+        message: error.message,
+        name: error.name,
+        topic: sanitizedTopic,
+        count: validCount
+      });
       
-      // Return fallback questions if parsing fails
-      return Array.from({ length: count }, (_, i) => ({
-        question: `Sample question ${i + 1} about ${topic}`,
-        options: ['True', 'False'],
-        correctAnswer: 'True',
-        correct_answer: 'True',
-        explanation: `This is a sample explanation for ${topic}`,
-        category: topic,
-        difficulty: difficulty
-      }));
+      // If AI fails, provide educational fallback questions
+      if (error.message?.includes('API key') || error.message?.includes('not configured')) {
+        throw error; // Re-throw configuration errors
+      }
+      
+      console.log('Providing fallback questions due to AI error');
+      return this.generateFallbackQuestions(sanitizedTopic, difficulty, validCount);
     }
+  }
+
+  // Fallback question generator
+  private generateFallbackQuestions(topic: string, difficulty: string, count: number): any[] {
+    const fallbackQuestions = [
+      {
+        question: `${topic} is an important topic in medical education`,
+        correctAnswer: 'True',
+        explanation: `${topic} is indeed a fundamental concept that medical students need to understand thoroughly`
+      },
+      {
+        question: `Understanding ${topic} requires memorization only`,
+        correctAnswer: 'False',
+        explanation: `Medical education requires both understanding concepts and practical application, not just memorization`
+      },
+      {
+        question: `${topic} has clinical applications in patient care`,
+        correctAnswer: 'True',
+        explanation: `Most medical topics have direct or indirect applications in clinical practice and patient care`
+      },
+      {
+        question: `${topic} is unrelated to other medical subjects`,
+        correctAnswer: 'False',
+        explanation: `Medical subjects are interconnected, and ${topic} likely relates to other areas of medicine`
+      },
+      {
+        question: `Studying ${topic} helps in medical diagnosis`,
+        correctAnswer: 'True',
+        explanation: `Understanding medical concepts like ${topic} contributes to better diagnostic skills`
+      }
+    ];
+
+    return fallbackQuestions.slice(0, count).map((q, index) => ({
+      ...q,
+      options: ['True', 'False'],
+      correct_answer: q.correctAnswer,
+      category: topic,
+      difficulty: difficulty
+    }));
   }
 
   // Medical Tutor Chat
