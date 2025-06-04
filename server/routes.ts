@@ -1594,8 +1594,8 @@ app.get("/api/user-stats/:userId", async (req, res) => {
   app.get('/api/google-drive/files', async (req, res) => {
     try {
       console.log('Google Drive API route called');
-      const { getMedicalBooks } = await import('./google-drive.js');
-      const files = await getMedicalBooks();
+      const { getFilesFromFolder } = await import('./googleDrive.js');
+      const files = await getFilesFromFolder();
       console.log(`Returning ${files.length} files from Google Drive API`);
       res.json(files);
     } catch (error) {
