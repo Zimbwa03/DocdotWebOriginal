@@ -50,9 +50,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const result = await dbStorage.createUser(req.body);
       res.json(result);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating user:", error);
-      res.status(500).json({ error: "Failed to create user" });
+      
+      // Handle duplicate key error specifically
+      if (error.code === '23505') {
+        // User already exists, try to get the existing user
+        try {
+          const existingUser = await dbStorage.getUser(req.body.id);
+          res.json(existingUser);
+        } catch (getError) {
+          res.status(409).json({ error: "User already exists" });
+        }
+      } else {
+        res.status(500).json({ error: "Failed to create user" });
+      }
     }
   });
 
@@ -360,14 +372,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Message is required and must be a string' });
       }
 
+      // Check if DeepSeek API key is available
+      if (!process.env.DEEPSEEK_API_KEY) {
+        return res.status(503).json({ 
+          error: "AI service not configured",
+          message: "DeepSeek API key is missing. Please configure DEEPSEEK_API_KEY in your environment variables."
+        });
+      }
+
       const response = await openRouterAI.tutorResponse(message, context);
       res.json({ response, success: true });
     } catch (error: any) {
       console.error("AI Chat error:", error);
-      res.status(500).json({ 
-        error: "AI service temporarily unavailable",
-        message: error.message || "Please try again later"
-      });
+      
+      // Provide more specific error messages
+      if (error.message.includes('API key not configured')) {
+        res.status(503).json({ 
+          error: "AI service not configured",
+          message: "Please configure your DeepSeek API key"
+        });
+      } else if (error.message.includes('timed out')) {
+        res.status(408).json({ 
+          error: "Request timeout",
+          message: "The AI service took too long to respond. Please try again."
+        });
+      } else {
+        res.status(500).json({ 
+          error: "AI service temporarily unavailable",
+          message: error.message || "Please try again later"
+        });
+      }
     }
   });
 
