@@ -56,42 +56,164 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Record quiz attempt
+  app.post("/api/quiz/record-attempt", async (req, res) => {
+    try {
+      const { 
+        userId, category, selectedAnswer, correctAnswer, 
+        isCorrect, timeSpent, xpEarned, difficulty, 
+        questionId, currentQuestionIndex, totalQuestions 
+      } = req.body;
+
+      if (!userId) {
+        return res.status(400).json({ error: "User ID is required" });
+      }
+
+      // Create quiz attempt record
+      const attemptId = Date.now();
+      const attempt = {
+        id: attemptId,
+        userId,
+        category,
+        selectedAnswer,
+        correctAnswer,
+        isCorrect,
+        timeSpent,
+        difficulty: difficulty || 'medium',
+        xpEarned: xpEarned || (isCorrect ? 10 : 2),
+        questionId,
+        currentQuestionIndex,
+        totalQuestions,
+        attemptedAt: new Date().toISOString()
+      };
+
+      // Store in database
+      await dbStorage.recordQuizAttempt(attempt);
+
+      // Update user stats
+      await dbStorage.updateUserStats(userId, {
+        xpEarned: attempt.xpEarned,
+        isCorrect,
+        timeSpent,
+        category
+      });
+
+      res.json({ 
+        success: true, 
+        attemptId, 
+        xpEarned: attempt.xpEarned,
+        message: "Quiz attempt recorded successfully" 
+      });
+    } catch (error) {
+      console.error("Error recording quiz attempt:", error);
+      res.status(500).json({ error: "Failed to record quiz attempt" });
+    }
+  });
+
   // User statistics
   app.get("/api/user-stats/:userId", async (req, res) => {
     try {
-      res.json({
-        totalXP: 0,
-        currentLevel: 1,
-        currentStreak: 0,
-        totalStudyTime: 0,
-        averageScore: 0,
-        correctAnswers: 0,
-        totalQuestions: 0,
-        longestStreak: 0
-      });
+      const userId = req.params.userId;
+      const userStats = await dbStorage.getUserStats(userId);
+      
+      res.json(userStats);
     } catch (error) {
       console.error("Error fetching user stats:", error);
       res.status(500).json({ error: "Failed to fetch user stats" });
     }
   });
 
+  // Category statistics
+  app.get("/api/category-stats/:userId", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const categoryStats = await dbStorage.getCategoryStats(userId);
+      
+      res.json(categoryStats);
+    } catch (error) {
+      console.error("Error fetching category stats:", error);
+      res.status(500).json({ error: "Failed to fetch category stats" });
+    }
+  });
+
+  // Daily statistics
+  app.get("/api/daily-stats/:userId", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const days = parseInt(req.query.days as string) || 7;
+      const dailyStats = await dbStorage.getDailyStats(userId, days);
+      
+      res.json(dailyStats);
+    } catch (error) {
+      console.error("Error fetching daily stats:", error);
+      res.status(500).json({ error: "Failed to fetch daily stats" });
+    }
+  });
+
   // Leaderboard
   app.get("/api/leaderboard", async (req, res) => {
     try {
-      res.json([]);
+      const limit = parseInt(req.query.limit as string) || 10;
+      const timeFrame = req.query.timeFrame as string || 'all-time';
+      const category = req.query.category as string;
+      
+      const leaderboard = await dbStorage.getLeaderboard(limit, timeFrame, category);
+      
+      res.json({
+        entries: leaderboard,
+        categories: ['Anatomy - Upper Limb', 'Anatomy - Lower Limb', 'Anatomy - Thorax', 'Physiology - Cardiovascular System', 'Physiology - Respiratory System']
+      });
     } catch (error) {
       console.error("Error fetching leaderboard:", error);
       res.status(500).json({ error: "Failed to fetch leaderboard" });
     }
   });
 
-  // Quiz attempts
-  app.get("/api/quiz-attempts", async (req, res) => {
+  // User rank
+  app.get("/api/user-rank", async (req, res) => {
     try {
-      res.json([]);
+      const userId = req.query.userId as string;
+      const timeFrame = req.query.timeFrame as string || 'all-time';
+      const category = req.query.category as string;
+      
+      if (!userId) {
+        return res.status(400).json({ error: "User ID is required" });
+      }
+      
+      const userRank = await dbStorage.getUserRank(userId, timeFrame, category);
+      
+      res.json(userRank);
+    } catch (error) {
+      console.error("Error fetching user rank:", error);
+      res.status(500).json({ error: "Failed to fetch user rank" });
+    }
+  });
+
+  // Quiz attempts
+  app.get("/api/quiz-attempts/:userId", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const limit = parseInt(req.query.limit as string) || 20;
+      
+      const attempts = await dbStorage.getQuizAttempts(userId, limit);
+      
+      res.json(attempts);
     } catch (error) {
       console.error("Error fetching quiz attempts:", error);
       res.status(500).json({ error: "Failed to fetch quiz attempts" });
+    }
+  });
+
+  // User badges
+  app.get("/api/badges/:userId", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const badges = await dbStorage.getUserBadges(userId);
+      
+      res.json(badges);
+    } catch (error) {
+      console.error("Error fetching user badges:", error);
+      res.status(500).json({ error: "Failed to fetch user badges" });
     }
   });
 

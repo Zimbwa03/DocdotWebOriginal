@@ -14,6 +14,8 @@ const client = postgres(connectionString);
 export const db = drizzle(client);
 
 export class DatabaseStorage {
+  private users = new Map<string, any>();
+  private quizAttempts = new Map<string, any>();
   async getUser(id: string): Promise<User | undefined> {
     try {
       const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
@@ -80,7 +82,7 @@ export class DatabaseStorage {
     try {
       // Try to get existing user
       const existingUser = await this.getUser(userData.id);
-      
+
       if (existingUser) {
         // Update existing user
         const updated = await this.updateUser(userData.id, {
@@ -129,19 +131,19 @@ export class DatabaseStorage {
 
       const result = await db.insert(quizAttempts).values(insertData).returning();
       const attempt = result[0];
-      
+
       // Update user stats after recording attempt
       await this.updateUserStats(insertData.userId, insertData.isCorrect, insertData.xpEarned, insertData.timeSpent);
-      
+
       // Update category stats
       await this.updateCategoryStats(insertData.userId, insertData.category, insertData.isCorrect, insertData.timeSpent);
-      
+
       // Update daily stats
       await this.updateDailyStats(insertData.userId, insertData.category, insertData.isCorrect, insertData.xpEarned);
-      
+
       // Update leaderboard
       await this.updateLeaderboard(insertData.userId);
-      
+
       return attempt;
     } catch (error) {
       console.error('Error recording quiz attempt:', error);
@@ -162,7 +164,7 @@ export class DatabaseStorage {
   async updateUserStats(userId: string, isCorrect: boolean, xpEarned: number, timeSpent: number): Promise<void> {
     try {
       const existing = await this.getUserStats(userId);
-      
+
       if (existing) {
         const newTotalQuestions = existing.totalQuestions + 1;
         const newCorrectAnswers = existing.correctAnswers + (isCorrect ? 1 : 0);
@@ -171,7 +173,7 @@ export class DatabaseStorage {
         const newLongestStreak = Math.max(existing.longestStreak, newStreak);
         const newTotalXP = existing.totalXP + xpEarned;
         const newLevel = Math.floor(newTotalXP / 1000) + 1;
-        
+
         await db.update(userStats)
           .set({
             totalQuestions: newTotalQuestions,
@@ -209,7 +211,7 @@ export class DatabaseStorage {
       const existing = await db.select().from(categoryStats)
         .where(and(eq(categoryStats.userId, userId), eq(categoryStats.category, category)))
         .limit(1);
-      
+
       if (existing.length > 0) {
         const stats = existing[0];
         const newQuestionsAttempted = stats.questionsAttempted + 1;
@@ -217,7 +219,7 @@ export class DatabaseStorage {
         const newAverageScore = Math.round((newCorrectAnswers / newQuestionsAttempted) * 100);
         const newAverageTime = Math.round(((stats.averageTime * stats.questionsAttempted) + timeSpent) / newQuestionsAttempted);
         const newMastery = Math.min(100, Math.max(0, newAverageScore - (newAverageTime > 30 ? 10 : 0)));
-        
+
         await db.update(categoryStats)
           .set({
             questionsAttempted: newQuestionsAttempted,
@@ -249,17 +251,17 @@ export class DatabaseStorage {
     try {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
+
       const existing = await db.select().from(dailyStats)
         .where(and(eq(dailyStats.userId, userId), gte(dailyStats.date, today)))
         .limit(1);
-      
+
       if (existing.length > 0) {
         const stats = existing[0];
         const newQuestionsAnswered = stats.questionsAnswered + 1;
         const newCorrectAnswers = stats.correctAnswers + (isCorrect ? 1 : 0);
         const categoriesStudied = Array.from(new Set([...(stats.categoriesStudied as string[] || []), category]));
-        
+
         await db.update(dailyStats)
           .set({
             questionsAnswered: newQuestionsAnswered,
@@ -288,13 +290,13 @@ export class DatabaseStorage {
     try {
       const userStatsData = await this.getUserStats(userId);
       if (!userStatsData) return;
-      
+
       // Check if leaderboard entry exists
       const existingEntry = await db.select()
         .from(leaderboard)
         .where(and(eq(leaderboard.userId, userId), sql`${leaderboard.category} IS NULL`))
         .limit(1);
-      
+
       if (existingEntry.length > 0) {
         // Update existing entry
         await db.update(leaderboard)
@@ -316,7 +318,7 @@ export class DatabaseStorage {
           accuracy: userStatsData.averageScore
         });
       }
-      
+
       // Update ranks for all users
       await this.updateLeaderboardRanks();
     } catch (error) {
@@ -329,7 +331,7 @@ export class DatabaseStorage {
       const entries = await db.select().from(leaderboard)
         .where(eq(leaderboard.category, null))
         .orderBy(desc(leaderboard.score));
-      
+
       for (let i = 0; i < entries.length; i++) {
         await db.update(leaderboard)
           .set({ rank: i + 1 })
@@ -345,7 +347,7 @@ export class DatabaseStorage {
       const query = db.select().from(leaderboard)
         .orderBy(desc(leaderboard.score))
         .limit(limit);
-      
+
       if (category) {
         return await query.where(eq(leaderboard.category, category));
       } else {
@@ -372,7 +374,7 @@ export class DatabaseStorage {
     try {
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - days);
-      
+
       return await db.select().from(dailyStats)
         .where(and(eq(dailyStats.userId, userId), gte(dailyStats.date, startDate)))
         .orderBy(desc(dailyStats.date));
@@ -425,7 +427,7 @@ export class DatabaseStorage {
         .limit(limit);
 
       const entries = await query;
-      
+
       // Add rank numbers and category list
       const rankedEntries = entries.map((entry, index) => ({
         ...entry,
@@ -484,7 +486,7 @@ export class DatabaseStorage {
     try {
       // Get all available badges
       const allBadges = await this.initializeBadges();
-      
+
       // Get user's earned badges
       const earnedBadges = await db
         .select({
@@ -502,7 +504,7 @@ export class DatabaseStorage {
         allBadges.map(async (badge) => {
           const isEarned = earnedBadgeIds.has(badge.id);
           const earnedBadge = earnedBadges.find(b => b.badgeId === badge.id);
-          
+
           let progress = 0;
           if (!isEarned) {
             progress = await this.calculateBadgeProgress(userId, badge);
@@ -531,7 +533,7 @@ export class DatabaseStorage {
   async initializeBadges() {
     try {
       const existingBadges = await db.select().from(badges);
-      
+
       if (existingBadges.length === 0) {
         const defaultBadges = [
           {
@@ -611,7 +613,7 @@ export class DatabaseStorage {
         await db.insert(badges).values(defaultBadges);
         return await db.select().from(badges);
       }
-      
+
       return existingBadges;
     } catch (error) {
       console.error('Error initializing badges:', error);
@@ -707,7 +709,7 @@ export class DatabaseStorage {
 
       for (const badge of allBadges) {
         const progress = await this.calculateBadgeProgress(userId, badge);
-        
+
         if (progress >= badge.requirement) {
           const result = await this.awardBadge(userId, badge.id, progress);
           if (result.success) {
