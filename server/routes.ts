@@ -217,6 +217,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Quiz attempts endpoint
+  app.get("/api/quiz-attempts/:userId", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const limit = parseInt(req.query.limit as string) || 20;
+      
+      const attempts = await dbStorage.getRecentQuizAttempts(userId, limit);
+      
+      res.json(attempts);
+    } catch (error) {
+      console.error("Error fetching quiz attempts:", error);
+      res.status(500).json({ error: "Failed to fetch quiz attempts" });
+    }
+  });
+
   // AI Chat Route
   app.post("/api/ai/chat", async (req, res) => {
     try {

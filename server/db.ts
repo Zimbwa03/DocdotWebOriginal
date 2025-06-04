@@ -386,14 +386,25 @@ export class DatabaseStorage {
 
   async getRecentQuizAttempts(userId: string, limit: number = 10): Promise<QuizAttempt[]> {
     try {
-      return await db
+      const attempts = await db
         .select()
         .from(quizAttempts)
         .where(eq(quizAttempts.userId, userId))
         .orderBy(desc(quizAttempts.attemptedAt))
         .limit(limit);
+      
+      return attempts;
     } catch (error) {
       console.error('Error getting recent quiz attempts:', error);
+      return [];
+    }
+  }
+
+  async getQuizAttempts(userId: string, limit: number = 20): Promise<QuizAttempt[]> {
+    try {
+      return await this.getRecentQuizAttempts(userId, limit);
+    } catch (error) {
+      console.error('Error getting quiz attempts:', error);
       return [];
     }
   }

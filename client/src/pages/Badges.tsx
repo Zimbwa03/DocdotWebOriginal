@@ -89,7 +89,7 @@ export default function Badges() {
 
   const getIconComponent = (iconName: string) => {
     const icons = {
-      Trophy, Award, Star, Crown, Target, Zap, Fire, Clock, Brain, Heart,
+      Trophy, Award, Star, Crown, Target, Zap, Flame, Clock, Brain, Heart,
       Shield, Gem, Medal, TrendingUp, Calendar, BookOpen, Users
     };
     return icons[iconName as keyof typeof icons] || Trophy;

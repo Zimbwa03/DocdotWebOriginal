@@ -286,13 +286,20 @@ export function Navigation() {
           <Link href="/home">
             <div className="flex items-center space-x-2 cursor-pointer">
               <img 
-                src="/attached_assets/logo.png" 
+                src="/attached_assets/DocDot Medical Student Logo.png" 
                 alt="DocDot Medical Student Logo" 
-                className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 object-contain rounded-lg"
+                className="h-10 w-auto"
+                onError={(e) => {
+                  // Fallback to icon if image fails to load
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  target.nextElementSibling?.classList.remove('hidden');
+                }}
               />
-              <span className="text-base sm:text-lg lg:text-xl font-bold text-[#1C1C1C] dark:text-white">
-                DocDot
-              </span>
+              <div className="p-2 rounded-lg hidden" style={{ backgroundColor: '#3399FF' }}>
+                <BookOpen className="h-6 w-6 text-white" />
+              </div>
+              <span className="text-xl font-bold" style={{ color: '#1C1C1C' }}>DocDot</span>
             </div>
           </Link>
 
