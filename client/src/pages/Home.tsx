@@ -380,22 +380,22 @@ export default function Home() {
             </Card>
 
             {/* Global Rank */}
-            <Card className="bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200">
+            <Card className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900 dark:to-purple-800 border-purple-200 dark:border-purple-700">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-purple-800 flex items-center">
-                  <Trophy className="w-4 h-4 mr-1 text-purple-600" />
+                <CardTitle className="text-sm font-medium text-purple-800 dark:text-purple-200 flex items-center">
+                  <Trophy className="w-4 h-4 mr-1 text-purple-600 dark:text-purple-400" />
                   Global Rank
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl lg:text-3xl font-bold text-purple-900">
+                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-purple-900 dark:text-purple-100">
                   #{String(userRank)}
                 </div>
-                <div className="text-sm text-purple-600">
+                <div className="text-sm text-purple-600 dark:text-purple-300">
                   {(userRank !== 'Unranked' && Number(userRank) <= 100) ? 'Top 100!' : 'Keep studying!'}
                 </div>
                 <Link href="/leaderboard">
-                  <Button variant="ghost" size="sm" className="mt-2 text-xs">
+                  <Button variant="ghost" size="sm" className="mt-2 text-xs w-full sm:w-auto">
                     View Leaderboard <ArrowRight className="w-3 h-3 ml-1" />
                   </Button>
                 </Link>
@@ -405,29 +405,29 @@ export default function Home() {
         </div>
 
         {/* Gamification Features */}
-        <div className="mb-8 lg:mb-12">
-          <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-6">
+        <div className="mb-6 sm:mb-8 lg:mb-12">
+          <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">
             Gamification Hub
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Badge Collection */}
-            <Card className="bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200 hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-yellow-800">
-                  <Award className="w-5 h-5 text-yellow-600" />
+            <Card className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900 dark:to-orange-900 border-yellow-200 dark:border-yellow-700 hover:shadow-lg transition-shadow">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-yellow-800 dark:text-yellow-200 text-base sm:text-lg">
+                  <Award className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 dark:text-yellow-400" />
                   Badge Collection
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-sm dark:text-gray-300">
                   Earn achievements for your study milestones
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-center mb-4">
-                  <div className="text-3xl font-bold text-yellow-600">
+                  <div className="text-2xl sm:text-3xl font-bold text-yellow-600 dark:text-yellow-400">
                     {String(badgeData?.earned?.length || 0)}
                   </div>
-                  <div className="text-sm text-yellow-700">
+                  <div className="text-sm text-yellow-700 dark:text-yellow-300">
                     Badges Earned
                   </div>
                 </div>
@@ -584,56 +584,56 @@ export default function Home() {
         </div>
 
         {/* Quick Action Cards */}
-        <div className="mb-8 lg:mb-12">
-          <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-6">
+        <div className="mb-6 sm:mb-8 lg:mb-12">
+          <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">
             Quick Actions
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <Link href="/quiz" data-tooltip-target="start-quiz">
-              <Card className="hover:shadow-lg transition-all cursor-pointer bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Play className="w-6 h-6 text-white" />
+              <Card className="hover:shadow-lg transition-all cursor-pointer bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 border-blue-200 dark:border-blue-700">
+                <CardContent className="p-3 sm:p-6 text-center">
+                  <div className="w-8 h-8 sm:w-12 sm:h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
+                    <Play className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                   </div>
-                  <h3 className="font-semibold text-blue-900 mb-1">Start Quiz</h3>
-                  <p className="text-sm text-blue-600">Test your knowledge</p>
+                  <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-1 text-sm sm:text-base">Start Quiz</h3>
+                  <p className="text-xs sm:text-sm text-blue-600 dark:text-blue-300">Test your knowledge</p>
                 </CardContent>
               </Card>
             </Link>
 
             <Link href="/badges">
-              <Card className="hover:shadow-lg transition-all cursor-pointer bg-gradient-to-r from-yellow-50 to-yellow-100 border-yellow-200">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Award className="w-6 h-6 text-white" />
+              <Card className="hover:shadow-lg transition-all cursor-pointer bg-gradient-to-r from-yellow-50 to-yellow-100 dark:from-yellow-900 dark:to-yellow-800 border-yellow-200 dark:border-yellow-700">
+                <CardContent className="p-3 sm:p-6 text-center">
+                  <div className="w-8 h-8 sm:w-12 sm:h-12 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
+                    <Award className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                   </div>
-                  <h3 className="font-semibold text-yellow-900 mb-1">Achievements</h3>
-                  <p className="text-sm text-yellow-600">View your badges</p>
+                  <h3 className="font-semibold text-yellow-900 dark:text-yellow-100 mb-1 text-sm sm:text-base">Achievements</h3>
+                  <p className="text-xs sm:text-sm text-yellow-600 dark:text-yellow-300">View your badges</p>
                 </CardContent>
               </Card>
             </Link>
 
             <Link href="/leaderboard">
-              <Card className="hover:shadow-lg transition-all cursor-pointer bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Trophy className="w-6 h-6 text-white" />
+              <Card className="hover:shadow-lg transition-all cursor-pointer bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900 dark:to-purple-800 border-purple-200 dark:border-purple-700">
+                <CardContent className="p-3 sm:p-6 text-center">
+                  <div className="w-8 h-8 sm:w-12 sm:h-12 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
+                    <Trophy className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                   </div>
-                  <h3 className="font-semibold text-purple-900 mb-1">Leaderboard</h3>
-                  <p className="text-sm text-purple-600">See rankings</p>
+                  <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-1 text-sm sm:text-base">Leaderboard</h3>
+                  <p className="text-xs sm:text-sm text-purple-600 dark:text-purple-300">See rankings</p>
                 </CardContent>
               </Card>
             </Link>
 
             <Link href="/analytics">
-              <Card className="hover:shadow-lg transition-all cursor-pointer bg-gradient-to-r from-green-50 to-green-100 border-green-200">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <BarChart3 className="w-6 h-6 text-white" />
+              <Card className="hover:shadow-lg transition-all cursor-pointer bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 border-green-200 dark:border-green-700">
+                <CardContent className="p-3 sm:p-6 text-center">
+                  <div className="w-8 h-8 sm:w-12 sm:h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
+                    <BarChart3 className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                   </div>
-                  <h3 className="font-semibold text-green-900 mb-1">Analytics</h3>
-                  <p className="text-sm text-green-600">Track progress</p>
+                  <h3 className="font-semibold text-green-900 dark:text-green-100 mb-1 text-sm sm:text-base">Analytics</h3>
+                  <p className="text-xs sm:text-sm text-green-600 dark:text-green-300">Track progress</p>
                 </CardContent>
               </Card>
             </Link>

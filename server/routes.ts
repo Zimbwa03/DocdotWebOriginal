@@ -156,11 +156,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Google Drive Routes
+  // Google Drive Routes - temporarily disabled
   app.get("/api/google-drive/books", async (req, res) => {
     try {
-      const books = await googleDriveService.listBooksInFolder();
-      res.json(books);
+      res.json([]);
     } catch (error: any) {
       console.error("Google Drive books error:", error);
       res.status(500).json({ 
@@ -172,9 +171,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/google-drive/file/:fileId", async (req, res) => {
     try {
-      const { fileId } = req.params;
-      const fileContent = await googleDriveService.getFileContent(fileId);
-      res.json({ content: fileContent });
+      res.json({ content: "" });
     } catch (error: any) {
       console.error("Google Drive file error:", error);
       res.status(500).json({ 
