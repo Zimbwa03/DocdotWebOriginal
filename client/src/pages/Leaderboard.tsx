@@ -200,7 +200,7 @@ export default function Leaderboard() {
 
                 <div>
                   <div className="font-semibold text-gray-900 flex items-center">
-                    {getUserDisplayName(entry.user)}</div>
+                    {getUserDisplayName(entry.user)}
                     {isCurrentUser && (
                       <Badge variant="secondary" className="ml-2 text-xs">You</Badge>
                     )}
@@ -306,6 +306,7 @@ export default function Leaderboard() {
             </CardContent>
           </Card>
         )}
+      </div>
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
