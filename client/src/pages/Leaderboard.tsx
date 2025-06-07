@@ -125,14 +125,37 @@ export default function Leaderboard() {
     return <ChevronDown className="w-4 h-4 text-red-500" />;
   };
 
-  const getInitials = (firstName?: string, lastName?: string, email?: string) => {
+  const getInitials = (firstName?: string, lastName?: string, fullName?: string, email?: string) => {
     if (firstName && lastName) {
       return `${firstName[0]}${lastName[0]}`.toUpperCase();
+    }
+    if (fullName && fullName.includes(' ')) {
+      const parts = fullName.split(' ');
+      return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+    }
+    if (firstName) {
+      return firstName.substring(0, 2).toUpperCase();
     }
     if (email) {
       return email.substring(0, 2).toUpperCase();
     }
     return 'U';
+  };
+
+  const getUserDisplayName = (user?: any) => {
+    if (user?.firstName && user?.lastName) {
+      return `${user.firstName} ${user.lastName}`;
+    }
+    if (user?.fullName) {
+      return user.fullName;
+    }
+    if (user?.firstName) {
+      return user.firstName;
+    }
+    if (user?.email) {
+      return user.email.split('@')[0];
+    }
+    return 'Anonymous User';
   };
 
   const renderLeaderboardEntry = (entry: LeaderboardEntry, index: number) => {
@@ -171,16 +194,13 @@ export default function Leaderboard() {
               <div className="flex items-center space-x-3">
                 <Avatar className="w-10 h-10">
                   <AvatarFallback className={isCurrentUser ? 'bg-blue-100 text-blue-700' : ''}>
-                    {getInitials(entry.user?.firstName, entry.user?.lastName, entry.user?.email)}
+                    {getInitials(entry.user?.firstName, entry.user?.lastName, entry.user?.fullName, entry.user?.email)}
                   </AvatarFallback>
                 </Avatar>
 
                 <div>
                   <div className="font-semibold text-gray-900 flex items-center">
-                    {entry.user?.firstName && entry.user?.lastName 
-                      ? `${entry.user.firstName} ${entry.user.lastName}`
-                      : entry.user?.email || 'Anonymous User'
-                    }
+                    {getUserDisplayName(entry.user)}</div>
                     {isCurrentUser && (
                       <Badge variant="secondary" className="ml-2 text-xs">You</Badge>
                     )}
@@ -346,9 +366,7 @@ export default function Leaderboard() {
             {entries[0] ? (
               <div>
                 <p className="font-semibold">
-                  {entries[0].user?.firstName && entries[0].user?.lastName 
-                    ? `${entries[0].user.firstName} ${entries[0].user.lastName}`
-                    : 'Anonymous'}
+                  {getUserDisplayName(entries[0].user)}
                 </p>
                 <p className="text-sm text-gray-600">{String(entries[0].totalXP)} XP</p>
               </div>

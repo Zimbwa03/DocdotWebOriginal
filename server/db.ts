@@ -338,7 +338,7 @@ export class DatabaseStorage {
   async updateLeaderboardRanks(): Promise<void> {
     try {
       const entries = await db.select().from(leaderboard)
-        .where(eq(leaderboard.category, null))
+        .where(sql`${leaderboard.category} IS NULL`)
         .orderBy(desc(leaderboard.score));
 
       for (let i = 0; i < entries.length; i++) {
@@ -348,6 +348,39 @@ export class DatabaseStorage {
       }
     } catch (error) {
       console.error('Error updating leaderboard ranks:', error);
+    }
+  }
+
+  async ensureAllUsersHaveStats(): Promise<void> {
+    try {
+      // Get all users from the users table
+      const allUsers = await db.select().from(users);
+      
+      console.log(`Found ${allUsers.length} users in database`);
+      
+      for (const user of allUsers) {
+        // Check if user has stats
+        const existingStats = await this.getUserStats(user.id);
+        
+        if (!existingStats) {
+          console.log(`Creating stats for user: ${user.id}`);
+          // Create basic stats for user
+          await db.insert(userStats).values({
+            userId: user.id,
+            totalQuestions: 0,
+            correctAnswers: 0,
+            averageScore: 0,
+            currentStreak: 0,
+            longestStreak: 0,
+            totalXP: 0,
+            currentLevel: 1,
+            totalStudyTime: 0,
+            rank: 0
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error ensuring all users have stats:', error);
     }
   }
 
@@ -745,6 +778,48 @@ export class DatabaseStorage {
     }
   }
 
+  async updateGlobalLeaderboard(): Promise<void> {
+    try {
+      // Update all user stats and ensure leaderboard entries exist
+      const allUserStats = await db.select().from(userStats);
+      
+      for (const userStat of allUserStats) {
+        // Ensure leaderboard entry exists for each user
+        const existingEntry = await db.select()
+          .from(leaderboard)
+          .where(and(eq(leaderboard.userId, userStat.userId), sql`${leaderboard.category} IS NULL`))
+          .limit(1);
+
+        if (existingEntry.length === 0) {
+          // Create leaderboard entry
+          await db.insert(leaderboard).values({
+            userId: userStat.userId,
+            category: null,
+            rank: 0,
+            score: userStat.totalXP,
+            totalQuestions: userStat.totalQuestions,
+            accuracy: userStat.averageScore
+          });
+        } else {
+          // Update existing entry
+          await db.update(leaderboard)
+            .set({
+              score: userStat.totalXP,
+              totalQuestions: userStat.totalQuestions,
+              accuracy: userStat.averageScore,
+              updatedAt: new Date()
+            })
+            .where(eq(leaderboard.id, existingEntry[0].id));
+        }
+      }
+
+      // Update ranks
+      await this.updateLeaderboardRanks();
+    } catch (error) {
+      console.error('Error updating global leaderboard:', error);
+    }
+  }
+
   async getLeaderboard(limit: number = 10, timeFrame: string = 'all-time', category?: string): Promise<any[]> {
     try {
       // First, refresh the leaderboard data
@@ -765,6 +840,7 @@ export class DatabaseStorage {
           user: {
             firstName: users.firstName,
             lastName: users.lastName,
+            fullName: users.fullName,
             email: users.email
           }
         })

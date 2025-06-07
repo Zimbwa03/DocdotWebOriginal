@@ -190,10 +190,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const timeFrame = req.query.timeFrame as string || 'all-time';
       const category = req.query.category as string;
       
+      console.log(`Fetching leaderboard - limit: ${limit}, timeFrame: ${timeFrame}, category: ${category}`);
+      
+      // First ensure all authenticated users have basic stats
+      await dbStorage.ensureAllUsersHaveStats();
+      
       // Update leaderboard data before fetching
       await dbStorage.updateGlobalLeaderboard();
       
       const leaderboard = await dbStorage.getLeaderboard(limit, timeFrame, category);
+      
+      console.log(`Leaderboard fetched: ${leaderboard.length} entries`);
       
       res.json({
         entries: leaderboard,
@@ -436,6 +443,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching quiz attempts:", error);
       res.status(500).json({ error: "Failed to fetch quiz attempts" });
+    }
+  });
+
+  // Initialize sample data for testing leaderboard
+  app.post("/api/initialize-sample-data", async (req, res) => {
+    try {
+      console.log("Initializing sample leaderboard data...");
+      
+      // Get all existing users
+      const allUsers = await db.select().from(users);
+      console.log(`Found ${allUsers.length} users to initialize`);
+      
+      if (allUsers.length === 0) {
+        return res.json({ message: "No users found to initialize", initialized: 0 });
+      }
+      
+      let initialized = 0;
+      for (const user of allUsers) {
+        // Generate some sample quiz performance data
+        const sampleData = {
+          totalQuestions: Math.floor(Math.random() * 50) + 10, // 10-60 questions
+          correctAnswers: 0,
+          totalXP: 0,
+          currentLevel: 1,
+          averageScore: 0
+        };
+        
+        // Calculate correct answers (60-95% accuracy)
+        const accuracy = Math.random() * 0.35 + 0.6; // 60-95%
+        sampleData.correctAnswers = Math.floor(sampleData.totalQuestions * accuracy);
+        sampleData.averageScore = Math.round((sampleData.correctAnswers / sampleData.totalQuestions) * 100);
+        sampleData.totalXP = sampleData.correctAnswers * 10 + (sampleData.totalQuestions - sampleData.correctAnswers) * 2;
+        sampleData.currentLevel = Math.floor(sampleData.totalXP / 100) + 1;
+        
+        // Update or create user stats
+        const existing = await dbStorage.getUserStats(user.id);
+        if (!existing || existing.totalQuestions === 0) {
+          if (existing) {
+            await db.update(userStats)
+              .set(sampleData)
+              .where(eq(userStats.userId, user.id));
+          } else {
+            await db.insert(userStats).values({
+              userId: user.id,
+              ...sampleData,
+              currentStreak: Math.floor(Math.random() * 10),
+              longestStreak: Math.floor(Math.random() * 15),
+              totalStudyTime: Math.floor(Math.random() * 500),
+              rank: 0
+            });
+          }
+          initialized++;
+        }
+      }
+      
+      // Update leaderboard
+      await dbStorage.updateGlobalLeaderboard();
+      
+      res.json({ 
+        message: `Initialized sample data for ${initialized} users`,
+        initialized,
+        totalUsers: allUsers.length
+      });
+    } catch (error) {
+      console.error("Error initializing sample data:", error);
+      res.status(500).json({ error: "Failed to initialize sample data" });
     }
   });
 
