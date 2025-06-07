@@ -363,18 +363,28 @@ export class DatabaseStorage {
         const existingStats = await this.getUserStats(user.id);
         
         if (!existingStats) {
-          console.log(`Creating stats for user: ${user.id}`);
-          // Create basic stats for user
+          console.log(`Creating initial stats for user: ${user.id}`);
+          
+          // Calculate actual stats from quiz attempts
+          const userAttempts = await db.select().from(quizAttempts)
+            .where(eq(quizAttempts.userId, user.id));
+          
+          let totalQuestions = userAttempts.length;
+          let correctAnswers = userAttempts.filter(attempt => attempt.isCorrect).length;
+          let totalXP = userAttempts.reduce((sum, attempt) => sum + (attempt.xpEarned || 0), 0);
+          let totalStudyTime = userAttempts.reduce((sum, attempt) => sum + (attempt.timeSpent || 0), 0);
+          
+          // Create stats based on actual performance
           await db.insert(userStats).values({
             userId: user.id,
-            totalQuestions: 0,
-            correctAnswers: 0,
-            averageScore: 0,
-            currentStreak: 0,
-            longestStreak: 0,
-            totalXP: 0,
-            currentLevel: 1,
-            totalStudyTime: 0,
+            totalQuestions,
+            correctAnswers,
+            averageScore: totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0,
+            currentStreak: 0, // Will be calculated properly on next quiz
+            longestStreak: 0, // Will be calculated properly on next quiz
+            totalXP,
+            currentLevel: Math.floor(totalXP / 1000) + 1,
+            totalStudyTime: Math.round(totalStudyTime / 60),
             rank: 0
           });
         }
@@ -829,7 +839,7 @@ export class DatabaseStorage {
         .select({
           id: userStats.id,
           userId: userStats.userId,
-          rank: sql<number>`ROW_NUMBER() OVER (ORDER BY ${userStats.totalXP} DESC)`.as('rank'),
+          rank: sql<number>`ROW_NUMBER() OVER (ORDER BY ${userStats.totalXP} DESC, ${userStats.averageScore} DESC)`.as('rank'),
           totalXP: userStats.totalXP,
           currentLevel: userStats.currentLevel,
           weeklyXP: sql<number>`COALESCE(${userStats.totalXP}, 0)`.as('weeklyXP'),
@@ -837,6 +847,7 @@ export class DatabaseStorage {
           averageAccuracy: userStats.averageScore,
           totalBadges: sql<number>`0`.as('totalBadges'),
           lastActive: userStats.updatedAt,
+          totalQuestions: userStats.totalQuestions,
           user: {
             firstName: users.firstName,
             lastName: users.lastName,
@@ -846,8 +857,11 @@ export class DatabaseStorage {
         })
         .from(userStats)
         .leftJoin(users, eq(userStats.userId, users.id))
-        .where(gt(userStats.totalQuestions, 0))
-        .orderBy(desc(userStats.totalXP))
+        .where(and(
+          gt(userStats.totalQuestions, 0), // Only users who have taken quizzes
+          isNotNull(users.id) // Only users that exist in users table
+        ))
+        .orderBy(desc(userStats.totalXP), desc(userStats.averageScore))
         .limit(limit);
 
       const results = await baseQuery;

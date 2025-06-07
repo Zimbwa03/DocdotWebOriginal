@@ -84,7 +84,7 @@ export default function Leaderboard() {
           userId = JSON.parse(userData).id;
         }
       }
-      
+
       if (!userId) return null;
 
       const params = new URLSearchParams({
@@ -278,6 +278,7 @@ export default function Leaderboard() {
 
         {/* Your Position Card */}
         {userRank && typeof userRank === 'object' && (
+          
           <Card className="max-w-md mx-auto mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg text-blue-900">Your Position</CardTitle>
@@ -296,17 +297,18 @@ export default function Leaderboard() {
                   </div>
                   <div className="text-sm text-purple-700">Total XP</div>
                 </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">
-                    {typeof userRank.averageAccuracy === 'number' ? String(Math.round(userRank.averageAccuracy)) : '0'}%
+                <div className="text-right">
+                      <div className="text-2xl font-bold text-green-600">
+                        {typeof userRank.averageAccuracy === 'number' ? String(Math.round(userRank.averageAccuracy)) : '0'}%
+                      </div>
+                      <div className="text-sm text-green-700">Accuracy</div>
+                    </div>
                   </div>
-                  <div className="text-sm text-green-700">Accuracy</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </div>
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4 justify-center">

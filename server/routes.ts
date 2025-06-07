@@ -192,8 +192,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`Fetching leaderboard - limit: ${limit}, timeFrame: ${timeFrame}, category: ${category}`);
       
-      // First ensure all authenticated users have basic stats
-      await dbStorage.ensureAllUsersHaveStats();
+      // Refresh user stats from actual quiz data
+      await fetch('/api/refresh-user-stats', { method: 'POST' });
       
       // Update leaderboard data before fetching
       await dbStorage.updateGlobalLeaderboard();
@@ -446,69 +446,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Initialize sample data for testing leaderboard
-  app.post("/api/initialize-sample-data", async (req, res) => {
+  // Refresh user stats from actual quiz data
+  app.post("/api/refresh-user-stats", async (req, res) => {
     try {
-      console.log("Initializing sample leaderboard data...");
+      console.log("Refreshing user stats from actual quiz data...");
       
-      // Get all existing users
-      const allUsers = await db.select().from(users);
-      console.log(`Found ${allUsers.length} users to initialize`);
+      // Get all users who have taken quizzes
+      const usersWithQuizzes = await db
+        .selectDistinct({ userId: quizAttempts.userId })
+        .from(quizAttempts);
       
-      if (allUsers.length === 0) {
-        return res.json({ message: "No users found to initialize", initialized: 0 });
-      }
+      console.log(`Found ${usersWithQuizzes.length} users with quiz attempts`);
       
-      let initialized = 0;
-      for (const user of allUsers) {
-        // Generate some sample quiz performance data
-        const sampleData = {
-          totalQuestions: Math.floor(Math.random() * 50) + 10, // 10-60 questions
-          correctAnswers: 0,
-          totalXP: 0,
-          currentLevel: 1,
-          averageScore: 0
-        };
+      let updated = 0;
+      for (const { userId } of usersWithQuizzes) {
+        // Get actual quiz performance
+        const userAttempts = await db.select().from(quizAttempts)
+          .where(eq(quizAttempts.userId, userId));
         
-        // Calculate correct answers (60-95% accuracy)
-        const accuracy = Math.random() * 0.35 + 0.6; // 60-95%
-        sampleData.correctAnswers = Math.floor(sampleData.totalQuestions * accuracy);
-        sampleData.averageScore = Math.round((sampleData.correctAnswers / sampleData.totalQuestions) * 100);
-        sampleData.totalXP = sampleData.correctAnswers * 10 + (sampleData.totalQuestions - sampleData.correctAnswers) * 2;
-        sampleData.currentLevel = Math.floor(sampleData.totalXP / 100) + 1;
-        
-        // Update or create user stats
-        const existing = await dbStorage.getUserStats(user.id);
-        if (!existing || existing.totalQuestions === 0) {
+        if (userAttempts.length > 0) {
+          const totalQuestions = userAttempts.length;
+          const correctAnswers = userAttempts.filter(attempt => attempt.isCorrect).length;
+          const totalXP = userAttempts.reduce((sum, attempt) => sum + (attempt.xpEarned || 0), 0);
+          const totalStudyTime = userAttempts.reduce((sum, attempt) => sum + (attempt.timeSpent || 0), 0);
+          
+          // Update or create user stats with actual data
+          const existing = await dbStorage.getUserStats(userId);
+          const statsData = {
+            totalQuestions,
+            correctAnswers,
+            averageScore: Math.round((correctAnswers / totalQuestions) * 100),
+            totalXP,
+            currentLevel: Math.floor(totalXP / 1000) + 1,
+            totalStudyTime: Math.round(totalStudyTime / 60),
+            updatedAt: new Date()
+          };
+          
           if (existing) {
             await db.update(userStats)
-              .set(sampleData)
-              .where(eq(userStats.userId, user.id));
+              .set(statsData)
+              .where(eq(userStats.userId, userId));
           } else {
             await db.insert(userStats).values({
-              userId: user.id,
-              ...sampleData,
-              currentStreak: Math.floor(Math.random() * 10),
-              longestStreak: Math.floor(Math.random() * 15),
-              totalStudyTime: Math.floor(Math.random() * 500),
+              userId,
+              ...statsData,
+              currentStreak: 0,
+              longestStreak: 0,
               rank: 0
             });
           }
-          initialized++;
+          updated++;
         }
       }
       
-      // Update leaderboard
+      // Update leaderboard with actual data
       await dbStorage.updateGlobalLeaderboard();
       
       res.json({ 
-        message: `Initialized sample data for ${initialized} users`,
-        initialized,
-        totalUsers: allUsers.length
+        message: `Refreshed stats for ${updated} users from actual quiz data`,
+        updated,
+        totalUsersWithQuizzes: usersWithQuizzes.length
       });
     } catch (error) {
-      console.error("Error initializing sample data:", error);
-      res.status(500).json({ error: "Failed to initialize sample data" });
+      console.error("Error refreshing user stats:", error);
+      res.status(500).json({ error: "Failed to refresh user stats" });
     }
   });
 

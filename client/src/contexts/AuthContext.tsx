@@ -92,29 +92,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const initializeUserData = async (userId: string) => {
     try {
-      // Initialize user stats if they don't exist, but don't create fake data
+      // Ensure user has stats entry (will be populated as they take quizzes)
       const statsResponse = await fetch(`/api/user-stats/${userId}`);
       
-      if (!statsResponse.ok || (await statsResponse.json()).totalQuestions === undefined) {
-        // Only initialize empty user stats if none exist
-        await fetch(`/api/user-stats/${userId}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ isCorrect: false, xpEarned: 0, timeSpent: 0 })
-        });
+      if (!statsResponse.ok) {
+        // Create empty stats entry - will be populated with real data as user takes quizzes
+        await dbStorage.updateUserStats(userId, false, 0, 0);
       }
       
-      // Initialize badges system without fake progress
-      await fetch(`/api/badges/${userId}/check`, {
-        method: 'POST'
-      });
+      // Refresh leaderboard to ensure user appears (even with 0 stats initially)
+      await fetch('/api/refresh-user-stats', { method: 'POST' });
       
-      // Update leaderboard position based on actual performance
-      await fetch(`/api/leaderboard/${userId}/update`, {
-        method: 'POST'
-      });
-      
-      console.log('User data initialized with actual performance data');
+      console.log('User data initialized - will populate with actual quiz performance');
     } catch (error) {
       console.error('Error initializing user data:', error);
     }
