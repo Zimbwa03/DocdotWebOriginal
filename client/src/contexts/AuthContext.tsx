@@ -62,7 +62,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const syncUserProfile = async (user: any) => {
     try {
-      // Create or update user profile in database
+      console.log('Syncing user profile with Supabase database...', user.id);
+      
+      // Create or update user profile in Supabase database
       const response = await fetch('/api/user', {
         method: 'POST',
         headers: {
@@ -71,22 +73,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify({
           id: user.id,
           email: user.email,
-          firstName: user.user_metadata?.firstName || user.user_metadata?.first_name,
-          lastName: user.user_metadata?.lastName || user.user_metadata?.last_name,
+          firstName: user.user_metadata?.firstName || user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0],
+          lastName: user.user_metadata?.lastName || user.user_metadata?.last_name || user.user_metadata?.full_name?.split(' ')[1],
+          fullName: user.user_metadata?.full_name || `${user.user_metadata?.first_name || ''} ${user.user_metadata?.last_name || ''}`.trim(),
         }),
       });
       
       if (response.ok) {
         const userData = await response.json();
+        console.log('User profile synced successfully with Supabase');
+        
         if (userData.profileCompleted) {
           localStorage.setItem('profileSetupComplete', 'true');
         }
         
         // Initialize user analytics and badge system automatically
         await initializeUserData(user.id);
+      } else {
+        console.error('Failed to sync user profile:', response.status);
       }
     } catch (error) {
-      console.error('Error syncing user profile:', error);
+      console.error('Error syncing user profile with Supabase:', error);
     }
   };
 

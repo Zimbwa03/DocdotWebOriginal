@@ -69,6 +69,8 @@ async function comprehensiveSupabaseTest() {
     await db.execute(sql`DELETE FROM ai_chats WHERE user_id = ${testUserId}`);
     await db.execute(sql`DELETE FROM ai_sessions WHERE user_id = ${testUserId}`);
     await db.execute(sql`DELETE FROM quiz_attempts WHERE user_id = ${testUserId}`);
+    await db.execute(sql`DELETE FROM category_stats WHERE user_id = ${testUserId}`);
+    await db.execute(sql`DELETE FROM daily_stats WHERE user_id = ${testUserId}`);
     await db.execute(sql`DELETE FROM user_stats WHERE user_id = ${testUserId}`);
     await db.execute(sql`DELETE FROM users WHERE id = ${testUserId}`);
     console.log('✅ Test cleanup completed');
