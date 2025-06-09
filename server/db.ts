@@ -10,16 +10,17 @@ import {
 } from '@shared/schema';
 import { eq, desc, sql, and, gte, isNotNull, lte, gt, lt, count, sum, avg } from 'drizzle-orm';
 
-// Supabase PostgreSQL connection
-const connectionString = process.env.DATABASE_URL!;
+// Use Supabase connection string - prioritize SUPABASE_DATABASE_URL
+const connectionString = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL!;
+
+if (!connectionString) {
+  throw new Error('Database connection string not found. Please set SUPABASE_DATABASE_URL or DATABASE_URL environment variable.');
+}
 
 console.log('Database connection details:');
 console.log('- URL configured:', !!connectionString);
-console.log('- URL starts with postgres:', connectionString?.startsWith('postgres'));
-
-if (!connectionString) {
-  throw new Error('DATABASE_URL environment variable is not set');
-}
+console.log('- URL starts with postgres:', connectionString.startsWith('postgres://'));
+console.log('- Using Supabase:', connectionString.includes('supabase.co'));
 
 const client = postgres(connectionString);
 export const db = drizzle(client);
@@ -322,7 +323,7 @@ export class DatabaseStorage {
         });
       }
 
-      await this.updateLeaderboardRanks();
+            await this.updateLeaderboardRanks();
     } catch (error) {
       console.error('Error updating leaderboard:', error);
     }
@@ -347,10 +348,10 @@ export class DatabaseStorage {
   async ensureUserHasStats(userId: string): Promise<void> {
     try {
       const existingStats = await this.getUserStats(userId);
-      
+
       if (!existingStats) {
         console.log(`Creating initial stats for new user: ${userId}`);
-        
+
         await db.insert(userStats).values({
           userId,
           totalQuestions: 0,
@@ -476,7 +477,7 @@ export class DatabaseStorage {
         createdAt: new Date(),
         updatedAt: new Date()
       }).returning();
-      
+
       return result[0];
     } catch (error) {
       console.error('Error creating AI session:', error);

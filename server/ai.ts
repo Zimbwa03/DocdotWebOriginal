@@ -17,10 +17,11 @@ class OpenRouterAI {
     this.apiKey = DEEPSEEK_API_KEY || null;
     this.responseCache = new Map();
     if (!this.apiKey) {
-      console.warn('DEEPSEEK_API_KEY is not configured - AI features will be disabled');
-      console.log('Available environment variables:', Object.keys(process.env).filter(key => key.includes('API')));
+      console.warn('❌ DEEPSEEK_API_KEY is not configured - AI features will be disabled');
+      console.log('Available API-related environment variables:', Object.keys(process.env).filter(key => key.includes('API')));
     } else {
-      console.log('AI service initialized successfully with caching');
+      console.log('✅ AI service initialized successfully with DeepSeek API');
+      console.log('API Key configured:', this.apiKey.substring(0, 8) + '...');
     }
   }
 
