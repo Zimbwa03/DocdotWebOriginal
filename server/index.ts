@@ -71,8 +71,10 @@ async function testDatabaseConnection() {
   // Test database connection before starting server
   await testDatabaseConnection();
   
-  // Run comprehensive Supabase integration test
-  await comprehensiveSupabaseTest();
+  // Run comprehensive Supabase integration test (only in development)
+  if (process.env.NODE_ENV === 'development') {
+    await comprehensiveSupabaseTest();
+  }
 
   const server = await registerRoutes(app);
 

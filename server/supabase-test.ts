@@ -65,7 +65,11 @@ async function comprehensiveSupabaseTest() {
     const messages = await storage.getAiMessages(aiSession.id);
     console.log(`✅ Retrieved ${messages.length} AI messages`);
     
-    // Cleanup test data
+    // Cleanup test data (respecting foreign key constraints)
+    await db.execute(sql`DELETE FROM ai_chats WHERE user_id = ${testUserId}`);
+    await db.execute(sql`DELETE FROM ai_sessions WHERE user_id = ${testUserId}`);
+    await db.execute(sql`DELETE FROM quiz_attempts WHERE user_id = ${testUserId}`);
+    await db.execute(sql`DELETE FROM user_stats WHERE user_id = ${testUserId}`);
     await db.execute(sql`DELETE FROM users WHERE id = ${testUserId}`);
     console.log('✅ Test cleanup completed');
     

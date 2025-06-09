@@ -587,16 +587,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI Chat Route for general chat
+  // AI Chat Route with full session tracking
   app.post("/api/ai/chat", async (req, res) => {
     try {
-      const { message, context } = req.body;
+      const { message, context, userId, sessionId, toolType = 'tutor' } = req.body;
 
       if (!message || typeof message !== 'string') {
         return res.status(400).json({ error: 'Message is required and must be a string' });
       }
 
-      // Check if DeepSeek API key is available
+      if (!userId) {
+        return res.status(400).json({ error: 'User ID is required' });
+      }
+
+      // Ensure user exists in our system
+      await dbStorage.ensureUserHasStats(userId);
+
+      let currentSessionId = sessionId;
+      
+      // Create new session if not provided
+      if (!currentSessionId) {
+        const newSession = await dbStorage.createAiSession(
+          userId, 
+          toolType, 
+          `AI ${toolType} session - ${new Date().toLocaleDateString()}`
+        );
+        currentSessionId = newSession.id;
+      }
+
+      // Save user message to database
+      await dbStorage.addAiMessage(currentSessionId, userId, 'user', message, toolType);
+
+      // Check if AI API key is available
       if (!process.env.DEEPSEEK_API_KEY) {
         console.error("DeepSeek API key not found in environment variables");
         return res.status(503).json({ 
@@ -609,7 +631,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const response = await openRouterAI.tutorResponse(message, context);
       console.log("AI response generated successfully");
 
-      res.json({ response, success: true });
+      // Save AI response to database
+      await dbStorage.addAiMessage(currentSessionId, userId, 'assistant', response, toolType);
+
+      res.json({ 
+        response, 
+        success: true, 
+        sessionId: currentSessionId 
+      });
     } catch (error: any) {
       console.error("AI Chat error details:", {
         message: error.message,
@@ -642,16 +671,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get AI chat sessions for a user
+  app.get("/api/ai/sessions/:userId", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const limit = parseInt(req.query.limit as string) || 10;
+
+      const sessions = await dbStorage.getAiSessions(userId, limit);
+      res.json({ sessions, success: true });
+    } catch (error: any) {
+      console.error("Error fetching AI sessions:", error);
+      res.status(500).json({ error: "Failed to fetch AI sessions" });
+    }
+  });
+
+  // Get messages for a specific AI session
+  app.get("/api/ai/sessions/:sessionId/messages", async (req, res) => {
+    try {
+      const sessionId = req.params.sessionId;
+      const messages = await dbStorage.getAiMessages(sessionId);
+      res.json({ messages, success: true });
+    } catch (error: any) {
+      console.error("Error fetching AI messages:", error);
+      res.status(500).json({ error: "Failed to fetch AI messages" });
+    }
+  });
+
+  // Create new AI session
+  app.post("/api/ai/sessions", async (req, res) => {
+    try {
+      const { userId, toolType, title } = req.body;
+
+      if (!userId || !toolType || !title) {
+        return res.status(400).json({ error: 'User ID, tool type, and title are required' });
+      }
+
+      const session = await dbStorage.createAiSession(userId, toolType, title);
+      res.json({ session, success: true });
+    } catch (error: any) {
+      console.error("Error creating AI session:", error);
+      res.status(500).json({ error: "Failed to create AI session" });
+    }
+  });
+
   // AI Study Plan Route
   app.post("/api/ai/study-plan", async (req, res) => {
     try {
-      const { goals, timeframe, currentLevel } = req.body;
+      const { goals, timeframe, currentLevel, userId } = req.body;
 
       if (!goals || !timeframe || !currentLevel) {
         return res.status(400).json({ error: 'Goals, timeframe, and current level are required' });
       }
 
       const studyPlan = await openRouterAI.generateStudyPlan(goals, timeframe, currentLevel);
+
+      // If userId provided, create session to track this interaction
+      if (userId) {
+        try {
+          const session = await dbStorage.createAiSession(userId, 'study_plan', 'AI Study Plan Generation');
+          await dbStorage.addAiMessage(session.id, userId, 'user', `Generate study plan: Goals: ${goals.join(', ')}, Timeframe: ${timeframe}, Level: ${currentLevel}`, 'study_plan');
+          await dbStorage.addAiMessage(session.id, userId, 'assistant', JSON.stringify(studyPlan), 'study_plan');
+        } catch (trackingError) {
+          console.error("Error tracking study plan session:", trackingError);
+        }
+      }
 
       res.json({ studyPlan, success: true });
     } catch (error: any) {
