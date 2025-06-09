@@ -23,6 +23,13 @@ async function comprehensiveSupabaseTest() {
     const testUserId = crypto.randomUUID(); // Generate proper UUID
     const testEmail = `test-${Date.now()}@docdot.app`;
     
+    // First insert into auth.users to satisfy foreign key constraint
+    await db.execute(sql`
+      INSERT INTO auth.users (id, email, created_at, updated_at)
+      VALUES (${testUserId}, ${testEmail}, NOW(), NOW())
+      ON CONFLICT (id) DO NOTHING
+    `);
+    
     const user = await storage.createUser({
       id: testUserId,
       email: testEmail,
