@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { openRouterAI } from "./ai";
 import { dbStorage, db } from "./db";
 import { sql, eq, desc, and } from 'drizzle-orm';
-import { insertQuizAttemptSchema, badges, studyPlannerSessions, studyGroups, studyGroupMembers, users } from "@shared/schema";
+import { insertQuizAttemptSchema, badges, studyPlannerSessions, studyGroups, studyGroupMembers, users, quizAttempts, userStats } from "@shared/schema";
 import { v4 as uuidv4 } from "uuid";
 import { readFileSync } from "fs";
 import { resolve } from "path";
@@ -1375,10 +1375,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           b.color,
           b.requirement,
           b.category,
-          b.rarity,
           b.created_at
         FROM badges b
-        ORDER BY b.rarity DESC, b.name ASC
+        ORDER BY b.name ASC
       `);
       
       res.json(allBadges);
@@ -1451,6 +1450,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error awarding badge:", error);
       res.status(500).json({ error: "Failed to award badge" });
+    }
+  });
+
+  // Initialize sample badges and data
+  app.post("/api/initialize-badges", async (req, res) => {
+    try {
+      // Insert sample badges without rarity column
+      await db.execute(sql`
+        INSERT INTO badges (name, description, icon, color, requirement, category) VALUES
+        ('First Steps', 'Complete your first quiz', '🎯', '#3B82F6', 'Complete 1 quiz', 'achievement'),
+        ('Quiz Master', 'Complete 10 quizzes', '🏆', '#F59E0B', 'Complete 10 quizzes', 'achievement'),
+        ('Anatomy Expert', 'Score 90% or higher in anatomy', '🧠', '#EF4444', 'Score 90%+ in anatomy', 'subject'),
+        ('Study Streak', 'Study for 7 consecutive days', '🔥', '#F97316', 'Study 7 days in a row', 'consistency'),
+        ('Night Owl', 'Study after 10 PM', '🦉', '#8B5CF6', 'Study after 10 PM', 'time'),
+        ('Early Bird', 'Study before 6 AM', '🌅', '#10B981', 'Study before 6 AM', 'time'),
+        ('Perfect Score', 'Get 100% on any quiz', '⭐', '#FFD700', 'Score 100% on a quiz', 'achievement'),
+        ('Collaborator', 'Join a study group', '👥', '#06B6D4', 'Join your first study group', 'social')
+        ON CONFLICT (name) DO NOTHING
+      `);
+
+      // Get count of badges inserted
+      const badgeCount = await db.execute(sql`SELECT COUNT(*) as count FROM badges`);
+      
+      res.json({ 
+        success: true, 
+        message: "Sample badges initialized successfully",
+        badgeCount: badgeCount[0]?.count || 0
+      });
+    } catch (error) {
+      console.error("Error initializing badges:", error);
+      res.status(500).json({ error: "Failed to initialize badges" });
     }
   });
 
