@@ -1,0 +1,103 @@
+ AI service initialized successfully with DeepSeek API
+API Key configured: sk-146ea...
+Database connection details:
+- URL configured: true
+- URL starts with postgres: false
+- Using Supabase: true
+🔗 Testing Supabase database connection...
+✅ Supabase connection successful!
+📊 Database tables found: 5 tables
+✅ Supabase schema is properly configured
+🧪 Running comprehensive Supabase integration test...
+✅ Basic database connection working
+📊 Found 34 tables in Supabase
+Error creating user: PostgresError: invalid input syntax for type uuid: "test-user-1749500043834"
+    at ErrorResponse (file:///home/runner/workspace/node_modules/postgres/src/connection.js:794:26)
+    at handle (file:///home/runner/workspace/node_modules/postgres/src/connection.js:480:6)
+    at TLSSocket.data (file:///home/runner/workspace/node_modules/postgres/src/connection.js:315:9)
+    at TLSSocket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '22P02',
+  where: "unnamed portal parameter $1 = '...'",
+  file: 'uuid.c',
+  line: '138',
+  routine: 'string_to_uuid'
+}
+❌ Supabase test failed: PostgresError: invalid input syntax for type uuid: "test-user-1749500043834"
+    at ErrorResponse (file:///home/runner/workspace/node_modules/postgres/src/connection.js:794:26)
+    at handle (file:///home/runner/workspace/node_modules/postgres/src/connection.js:480:6)
+    at TLSSocket.data (file:///home/runner/workspace/node_modules/postgres/src/connection.js:315:9)
+    at TLSSocket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '22P02',
+  where: "unnamed portal parameter $1 = '...'",
+  file: 'uuid.c',
+  line: '138',
+  routine: 'string_to_uuid'
+}
+8:14:03 PM [express] 🚀 Server running on port 5000
+8:14:03 PM [express] 📱 App available at: http://localhost:5000
+
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+✅ AI service initialized successfully with DeepSeek API
+API Key configured: sk-146ea...
+Database connection details:
+- URL configured: true
+- URL starts with postgres: false
+- Using Supabase: true
+🔗 Testing Supabase database connection...
+✅ Supabase connection successful!
+📊 Database tables found: 5 tables
+✅ Supabase schema is properly configured
+🧪 Running comprehensive Supabase integration test...
+✅ Basic database connection working
+📊 Found 34 tables in Supabase
+Error creating user: PostgresError: invalid input syntax for type uuid: "test-user-1749500043834"
+    at ErrorResponse (file:///home/runner/workspace/node_modules/postgres/src/connection.js:794:26)
+    at handle (file:///home/runner/workspace/node_modules/postgres/src/connection.js:480:6)
+    at TLSSocket.data (file:///home/runner/workspace/node_modules/postgres/src/connection.js:315:9)
+    at TLSSocket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '22P02',
+  where: "unnamed portal parameter $1 = '...'",
+  file: 'uuid.c',
+  line: '138',
+  routine: 'string_to_uuid'
+}
+❌ Supabase test failed: PostgresError: invalid input syntax for type uuid: "test-user-1749500043834"
+    at ErrorResponse (file:///home/runner/workspace/node_modules/postgres/src/connection.js:794:26)
+    at handle (file:///home/runner/workspace/node_modules/postgres/src/connection.js:480:6)
+    at TLSSocket.data (file:///home/runner/workspace/node_modules/postgres/src/connection.js:315:9)
+    at TLSSocket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23) {
+  severity_local: 'ERROR',
+  severity: 'ERROR',
+  code: '22P02',
+  where: "unnamed portal parameter $1 = '...'",
+  file: 'uuid.c',
+  line: '138',
+  routine: 'string_to_uuid'
+}
+8:14:03 PM [express] 🚀 Server running on port 5000
+8:14:03 PM [express] 📱 App available at: http://localhost:5000
+^C
