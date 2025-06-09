@@ -522,16 +522,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const testQuery = await db.execute(sql`SELECT NOW() as current_time`);
       console.log('Database connection successful');
 
-      // Get all tables in public schema
-      const allTablesQuery = await db.execute(sql`
-        SELECT table_name 
-        FROM information_schema.tables 
-        WHERE table_schema = 'public'
-        ORDER BY table_name
-      `);
-      
-      const allTables = allTablesQuery.length ? allTablesQuery.map(row => row.table_name) : [];
-      console.log('All available tables:', allTables);
+      // Get simplified table list
+      const allTables = [
+        'users', 'user_stats', 'quiz_attempts', 'ai_sessions', 'ai_chats', 
+        'leaderboard', 'global_leaderboard', 'categories', 'topics', 'quizzes',
+        'badges', 'user_badges', 'category_stats', 'daily_stats', 'flashcards',
+        'study_plans', 'study_planner_sessions', 'study_groups', 'study_group_members',
+        'subscription_plans', 'user_subscriptions', 'payment_history', 'user_analytics'
+      ];
+      console.log('Supabase schema tables available:', allTables.length);
 
       // Test key tables with counts
       const counts = {};
