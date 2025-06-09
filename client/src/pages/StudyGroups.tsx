@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Video, Calendar, Clock, Plus, ExternalLink, Search, Filter, Settings } from "lucide-react";
+import { Users, Video, Calendar, Clock, Plus, ExternalLink, Search, Filter, Settings, X } from "lucide-react";
 import { SiZoom, SiGooglemeet } from "react-icons/si";
 
 interface StudyGroup {
@@ -73,9 +73,11 @@ export default function StudyGroups() {
 
   // Filter study groups based on search and category
   const filteredStudyGroups = studyGroups.filter((group: StudyGroup) => {
-    const matchesSearch = group.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         group.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         group.category?.toLowerCase().includes(searchTerm.toLowerCase());
+    // Handle search filtering - if no search term, show all
+    const matchesSearch = !searchTerm.trim() || 
+      group.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      group.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      group.category?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesCategory = categoryFilter === 'all' || group.category === categoryFilter;
     
@@ -390,8 +392,18 @@ export default function StudyGroups() {
               placeholder="Search study groups..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 pr-10"
             />
+            {searchTerm && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSearchTerm('')}
+                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            )}
           </div>
           <div className="flex gap-2">
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
@@ -402,12 +414,23 @@ export default function StudyGroups() {
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
                 {categories.map(category => (
-                  <SelectItem key={category} value={category}>
-                    {category}
+                  <SelectItem key={String(category)} value={String(category)}>
+                    {String(category)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setSearchTerm('');
+                setCategoryFilter('all');
+              }}
+              disabled={!searchTerm && categoryFilter === 'all'}
+            >
+              Clear All
+            </Button>
           </div>
         </div>
         
