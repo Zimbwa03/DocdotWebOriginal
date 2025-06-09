@@ -179,6 +179,8 @@ export default function StudyGroups() {
     return timeDiff <= 0 && timeDiff > -3600000; // Active for 1 hour after start
   };
 
+
+
   const isMeetingPending = (scheduledTime: string) => {
     const now = new Date();
     const meetingTime = new Date(scheduledTime);
@@ -510,5 +512,117 @@ export default function StudyGroups() {
         </div>
       )}
     </div>
+
+    {/* Create Study Group Dialog */}
+    <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Create Study Group</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleCreateGroup} className="space-y-4">
+          <div>
+            <Label htmlFor="title">Group Title</Label>
+            <Input
+              id="title"
+              value={formData.title}
+              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+              placeholder="e.g., Anatomy Study Session"
+              required
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              placeholder="Brief description of the study session"
+              rows={3}
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="category">Category</Label>
+            <Input
+              id="category"
+              value={formData.category}
+              onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+              placeholder="e.g., Anatomy, Physiology"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="meetingType">Meeting Platform</Label>
+            <Select value={formData.meetingType} onValueChange={(value: 'zoom' | 'meet') => setFormData(prev => ({ ...prev, meetingType: value }))}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select platform" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="zoom">Zoom</SelectItem>
+                <SelectItem value="meet">Google Meet</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <Label htmlFor="meetingLink">Meeting Link</Label>
+            <Input
+              id="meetingLink"
+              value={formData.meetingLink}
+              onChange={(e) => setFormData(prev => ({ ...prev, meetingLink: e.target.value }))}
+              placeholder="https://zoom.us/j/... or https://meet.google.com/..."
+              required
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="scheduledTime">Scheduled Time</Label>
+            <Input
+              id="scheduledTime"
+              type="datetime-local"
+              value={formData.scheduledTime}
+              onChange={(e) => setFormData(prev => ({ ...prev, scheduledTime: e.target.value }))}
+              required
+            />
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="duration">Duration (minutes)</Label>
+              <Input
+                id="duration"
+                type="number"
+                value={formData.duration}
+                onChange={(e) => setFormData(prev => ({ ...prev, duration: parseInt(e.target.value) }))}
+                min="30"
+                max="240"
+              />
+            </div>
+            <div>
+              <Label htmlFor="maxMembers">Max Members</Label>
+              <Input
+                id="maxMembers"
+                type="number"
+                value={formData.maxMembers}
+                onChange={(e) => setFormData(prev => ({ ...prev, maxMembers: parseInt(e.target.value) }))}
+                min="2"
+                max="20"
+              />
+            </div>
+          </div>
+          
+          <div className="flex gap-2 pt-4">
+            <Button type="button" variant="outline" onClick={() => setShowCreateDialog(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={createGroupMutation.isPending}>
+              {createGroupMutation.isPending ? 'Creating...' : 'Create Group'}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  </div>
   );
 }

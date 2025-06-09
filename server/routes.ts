@@ -1305,6 +1305,155 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Enhanced Leaderboard API endpoint
+  app.get("/api/leaderboard", async (req, res) => {
+    try {
+      const { category, timeframe = 'all' } = req.query;
+      
+      // Calculate and update leaderboard rankings
+      const leaderboardQuery = await db.execute(sql`
+        WITH ranked_users AS (
+          SELECT 
+            us.user_id,
+            us.total_xp,
+            us.weekly_xp,
+            us.monthly_xp,
+            us.average_accuracy,
+            us.level,
+            us.streak,
+            us.updated_at,
+            u.first_name,
+            u.last_name,
+            u.email,
+            ROW_NUMBER() OVER (ORDER BY us.total_xp DESC, us.average_accuracy DESC) as rank,
+            (SELECT COUNT(*) FROM user_badges ub WHERE ub.user_id = us.user_id) as total_badges
+          FROM user_stats us
+          LEFT JOIN users u ON us.user_id = u.id
+          WHERE u.id IS NOT NULL
+          ORDER BY us.total_xp DESC, us.average_accuracy DESC
+          LIMIT 100
+        )
+        SELECT * FROM ranked_users
+      `);
+
+      const leaderboardData = leaderboardQuery.map(row => ({
+        id: row.rank,
+        userId: row.user_id,
+        rank: parseInt(row.rank),
+        totalXP: row.total_xp || 0,
+        currentLevel: row.level || 1,
+        weeklyXP: row.weekly_xp || 0,
+        monthlyXP: row.monthly_xp || 0,
+        averageAccuracy: row.average_accuracy || 0,
+        totalBadges: row.total_badges || 0,
+        category: category || 'overall',
+        lastActive: row.updated_at,
+        user: {
+          firstName: row.first_name,
+          lastName: row.last_name,
+          email: row.email
+        },
+        streak: row.streak || 0
+      }));
+      
+      res.json(leaderboardData);
+    } catch (error) {
+      console.error("Error fetching leaderboard:", error);
+      res.status(500).json({ error: "Failed to fetch leaderboard data" });
+    }
+  });
+
+  // User Badges API endpoint
+  app.get("/api/badges", async (req, res) => {
+    try {
+      const allBadges = await db.execute(sql`
+        SELECT 
+          b.id,
+          b.name,
+          b.description,
+          b.icon,
+          b.color,
+          b.requirement,
+          b.category,
+          b.rarity,
+          b.created_at
+        FROM badges b
+        ORDER BY b.rarity DESC, b.name ASC
+      `);
+      
+      res.json(allBadges);
+    } catch (error) {
+      console.error("Error fetching badges:", error);
+      res.status(500).json({ error: "Failed to fetch badges" });
+    }
+  });
+
+  // User's earned badges
+  app.get("/api/user/:userId/badges", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      
+      const userBadges = await db.execute(sql`
+        SELECT 
+          b.id,
+          b.name,
+          b.description,
+          b.icon,
+          b.color,
+          b.requirement,
+          b.category,
+          b.rarity,
+          ub.earned_at,
+          ub.progress
+        FROM user_badges ub
+        JOIN badges b ON ub.badge_id = b.id
+        WHERE ub.user_id = ${userId}
+        ORDER BY ub.earned_at DESC
+      `);
+      
+      res.json(userBadges);
+    } catch (error) {
+      console.error("Error fetching user badges:", error);
+      res.status(500).json({ error: "Failed to fetch user badges" });
+    }
+  });
+
+  // Award badge to user
+  app.post("/api/user/:userId/badges/:badgeId", async (req, res) => {
+    try {
+      const { userId, badgeId } = req.params;
+      const { progress = 100 } = req.body;
+      
+      // Check if user already has this badge
+      const existingBadge = await db.execute(sql`
+        SELECT id FROM user_badges 
+        WHERE user_id = ${userId} AND badge_id = ${parseInt(badgeId)}
+      `);
+      
+      if (existingBadge.length > 0) {
+        return res.status(400).json({ error: "Badge already earned" });
+      }
+      
+      // Award the badge
+      await db.execute(sql`
+        INSERT INTO user_badges (user_id, badge_id, progress, earned_at)
+        VALUES (${userId}, ${parseInt(badgeId)}, ${progress}, NOW())
+      `);
+      
+      // Update user stats
+      await db.execute(sql`
+        UPDATE user_stats 
+        SET total_badges = total_badges + 1
+        WHERE user_id = ${userId}
+      `);
+      
+      res.json({ success: true, message: "Badge awarded successfully" });
+    } catch (error) {
+      console.error("Error awarding badge:", error);
+      res.status(500).json({ error: "Failed to award badge" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
