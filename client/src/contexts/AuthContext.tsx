@@ -92,18 +92,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const initializeUserData = async (userId: string) => {
     try {
-      // Ensure user has stats entry (will be populated as they take quizzes)
-      const statsResponse = await fetch(`/api/user-stats/${userId}`);
+      // Initialize fresh user stats
+      await fetch('/api/ensure-user-stats', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+      });
       
-      if (!statsResponse.ok) {
-        // Create empty stats entry - will be populated with real data as user takes quizzes
-        await dbStorage.updateUserStats(userId, false, 0, 0);
-      }
-      
-      // Refresh leaderboard to ensure user appears (even with 0 stats initially)
-      await fetch('/api/refresh-user-stats', { method: 'POST' });
-      
-      console.log('User data initialized - will populate with actual quiz performance');
+      console.log('Fresh user data initialized for:', userId);
     } catch (error) {
       console.error('Error initializing user data:', error);
     }

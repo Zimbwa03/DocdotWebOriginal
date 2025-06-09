@@ -9,8 +9,8 @@ import {
 } from '@shared/schema';
 import { eq, desc, sql, and, gte, isNotNull, lte, gt, lt, count, sum, avg } from 'drizzle-orm';
 
-// Use Supabase connection string instead of Neon
-const connectionString = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL!;
+// Use Supabase PostgreSQL connection
+const connectionString = process.env.DATABASE_URL!;
 const client = postgres(connectionString);
 export const db = drizzle(client);
 
@@ -352,46 +352,29 @@ export class DatabaseStorage {
     }
   }
 
-  async ensureAllUsersHaveStats(): Promise<void> {
+  async ensureUserHasStats(userId: string): Promise<void> {
     try {
-      // Get all users from the users table
-      const allUsers = await db.select().from(users);
+      const existingStats = await this.getUserStats(userId);
       
-      console.log(`Found ${allUsers.length} users in database`);
-      
-      for (const user of allUsers) {
-        // Check if user has stats
-        const existingStats = await this.getUserStats(user.id);
+      if (!existingStats) {
+        console.log(`Creating initial stats for new user: ${userId}`);
         
-        if (!existingStats) {
-          console.log(`Creating initial stats for user: ${user.id}`);
-          
-          // Calculate actual stats from quiz attempts
-          const userAttempts = await db.select().from(quizAttempts)
-            .where(eq(quizAttempts.userId, user.id));
-          
-          let totalQuestions = userAttempts.length;
-          let correctAnswers = userAttempts.filter(attempt => attempt.isCorrect).length;
-          let totalXP = userAttempts.reduce((sum, attempt) => sum + (attempt.xpEarned || 0), 0);
-          let totalStudyTime = userAttempts.reduce((sum, attempt) => sum + (attempt.timeSpent || 0), 0);
-          
-          // Create stats based on actual performance
-          await db.insert(userStats).values({
-            userId: user.id,
-            totalQuestions,
-            correctAnswers,
-            averageScore: totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0,
-            currentStreak: 0, // Will be calculated properly on next quiz
-            longestStreak: 0, // Will be calculated properly on next quiz
-            totalXP,
-            currentLevel: Math.floor(totalXP / 1000) + 1,
-            totalStudyTime: Math.round(totalStudyTime / 60),
-            rank: 0
-          });
-        }
+        // Create fresh stats for new user
+        await db.insert(userStats).values({
+          userId,
+          totalQuestions: 0,
+          correctAnswers: 0,
+          averageScore: 0,
+          currentStreak: 0,
+          longestStreak: 0,
+          totalXP: 0,
+          currentLevel: 1,
+          totalStudyTime: 0,
+          rank: 0
+        });
       }
     } catch (error) {
-      console.error('Error ensuring all users have stats:', error);
+      console.error('Error ensuring user has stats:', error);
     }
   }
 

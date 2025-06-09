@@ -32,12 +32,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!userId) {
         return res.status(400).json({ error: "User ID is required" });
       }
-      
+
       const user = await dbStorage.getUser(userId);
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
-      
+
       res.json(user);
     } catch (userError) {
       console.error("Error fetching user:", userError);
@@ -67,7 +67,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         code: error.code,
         userData: { id: req.body.id, email: req.body.email }
       });
-      
+
       // Handle duplicate key error specifically
       if (error.code === '23505') {
         // User already exists, try to get the existing user
@@ -148,7 +148,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.params.userId;
       const userStats = await dbStorage.getUserStats(userId);
-      
+
       res.json(userStats);
     } catch (error) {
       console.error("Error fetching user stats:", error);
@@ -161,7 +161,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.params.userId;
       const categoryStats = await dbStorage.getCategoryStats(userId);
-      
+
       res.json(categoryStats);
     } catch (error) {
       console.error("Error fetching category stats:", error);
@@ -175,7 +175,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.params.userId;
       const days = parseInt(req.query.days as string) || 7;
       const dailyStats = await dbStorage.getDailyStats(userId, days);
-      
+
       res.json(dailyStats);
     } catch (error) {
       console.error("Error fetching daily stats:", error);
@@ -189,19 +189,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limit = parseInt(req.query.limit as string) || 50;
       const timeFrame = req.query.timeFrame as string || 'all-time';
       const category = req.query.category as string;
-      
+
       console.log(`Fetching leaderboard - limit: ${limit}, timeFrame: ${timeFrame}, category: ${category}`);
-      
+
       // Refresh user stats from actual quiz data
       await fetch('/api/refresh-user-stats', { method: 'POST' });
-      
+
       // Update leaderboard data before fetching
       await dbStorage.updateGlobalLeaderboard();
-      
+
       const leaderboard = await dbStorage.getLeaderboard(limit, timeFrame, category);
-      
+
       console.log(`Leaderboard fetched: ${leaderboard.length} entries`);
-      
+
       res.json({
         entries: leaderboard,
         categories: ['Anatomy - Upper Limb', 'Anatomy - Lower Limb', 'Anatomy - Thorax', 'Physiology - Cardiovascular System', 'Physiology - Respiratory System']
@@ -218,13 +218,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.query.userId as string;
       const timeFrame = req.query.timeFrame as string || 'all-time';
       const category = req.query.category as string;
-      
+
       if (!userId) {
         return res.status(400).json({ error: "User ID is required" });
       }
-      
+
       const userRank = await dbStorage.getUserRank(userId, timeFrame, category);
-      
+
       res.json(userRank);
     } catch (error) {
       console.error("Error fetching user rank:", error);
@@ -237,9 +237,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.params.userId;
       const limit = parseInt(req.query.limit as string) || 20;
-      
+
       const attempts = await dbStorage.getQuizAttempts(userId, limit);
-      
+
       res.json(attempts);
     } catch (error) {
       console.error("Error fetching quiz attempts:", error);
@@ -252,7 +252,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.params.userId;
       const badges = await dbStorage.getUserBadges(userId);
-      
+
       res.json(badges);
     } catch (error) {
       console.error("Error fetching user badges:", error);
@@ -270,7 +270,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const explanation = await openRouterAI.explainConcept(concept, level);
-      
+
       res.json({ explanation });
     } catch (error: any) {
       console.error("AI Explain Error:", error);
@@ -291,7 +291,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const questions = await openRouterAI.generateMedicalQuestions(topic, difficulty, count);
-      
+
       res.json({ questions });
     } catch (error: any) {
       console.error("AI Questions Error:", error);
@@ -312,7 +312,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const analysis = await openRouterAI.analyzeCaseStudy(caseDetails);
-      
+
       res.json({ analysis });
     } catch (error: any) {
       console.error("AI Case Analysis Error:", error);
@@ -333,7 +333,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const studyPlan = await openRouterAI.generateStudyPlan(goals, timeframe, currentLevel);
-      
+
       res.json({ studyPlan });
     } catch (error: any) {
       console.error("AI Study Plan Error:", error);
@@ -370,9 +370,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const questionCountNum = Math.min(Math.max(parseInt(questionCount) || 5, 1), 10); // Limit between 1-10
       console.log(`Generating ${questionCountNum} questions for topic: "${topic}", difficulty: ${difficulty}`);
-      
+
       const questions = await openRouterAI.generateMedicalQuestions(topic.trim(), difficulty, questionCountNum);
-      
+
       if (!questions || !Array.isArray(questions) || questions.length === 0) {
         console.error("No questions generated by AI");
         throw new Error("No questions were generated. Please try a different topic.");
@@ -404,11 +404,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         stack: error.stack?.substring(0, 500),
         topic: req.body?.topic
       });
-      
+
       // Provide specific error messages
       let errorMessage = "Failed to generate quiz questions";
       let statusCode = 500;
-      
+
       if (error.message?.includes('API key not configured')) {
         errorMessage = "AI service not configured properly";
         statusCode = 503;
@@ -422,7 +422,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         errorMessage = "API rate limit exceeded. Please try again in a moment.";
         statusCode = 429;
       }
-      
+
       res.status(statusCode).json({ 
         error: errorMessage,
         message: error.message || "Please try again later",
@@ -436,9 +436,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.params.userId;
       const limit = parseInt(req.query.limit as string) || 20;
-      
+
       const attempts = await dbStorage.getRecentQuizAttempts(userId, limit);
-      
+
       res.json(attempts);
     } catch (error) {
       console.error("Error fetching quiz attempts:", error);
@@ -450,26 +450,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/refresh-user-stats", async (req, res) => {
     try {
       console.log("Refreshing user stats from actual quiz data...");
-      
+
       // Get all users who have taken quizzes
       const usersWithQuizzes = await db
         .selectDistinct({ userId: quizAttempts.userId })
         .from(quizAttempts);
-      
+
       console.log(`Found ${usersWithQuizzes.length} users with quiz attempts`);
-      
+
       let updated = 0;
       for (const { userId } of usersWithQuizzes) {
         // Get actual quiz performance
         const userAttempts = await db.select().from(quizAttempts)
           .where(eq(quizAttempts.userId, userId));
-        
+
         if (userAttempts.length > 0) {
           const totalQuestions = userAttempts.length;
           const correctAnswers = userAttempts.filter(attempt => attempt.isCorrect).length;
           const totalXP = userAttempts.reduce((sum, attempt) => sum + (attempt.xpEarned || 0), 0);
           const totalStudyTime = userAttempts.reduce((sum, attempt) => sum + (attempt.timeSpent || 0), 0);
-          
+
           // Update or create user stats with actual data
           const existing = await dbStorage.getUserStats(userId);
           const statsData = {
@@ -481,7 +481,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             totalStudyTime: Math.round(totalStudyTime / 60),
             updatedAt: new Date()
           };
-          
+
           if (existing) {
             await db.update(userStats)
               .set(statsData)
@@ -498,10 +498,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           updated++;
         }
       }
-      
+
       // Update leaderboard with actual data
       await dbStorage.updateGlobalLeaderboard();
-      
+
       res.json({ 
         message: `Refreshed stats for ${updated} users from actual quiz data`,
         updated,
@@ -545,7 +545,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/ai/chat", async (req, res) => {
     try {
       const { message, context } = req.body;
-      
+
       if (!message || typeof message !== 'string') {
         return res.status(400).json({ error: 'Message is required and must be a string' });
       }
@@ -562,7 +562,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Processing AI chat request for message:", message.substring(0, 50) + "...");
       const response = await openRouterAI.tutorResponse(message, context);
       console.log("AI response generated successfully");
-      
+
       res.json({ response, success: true });
     } catch (error: any) {
       console.error("AI Chat error details:", {
@@ -570,7 +570,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         stack: error.stack,
         name: error.name
       });
-      
+
       // Provide more specific error messages
       if (error.message?.includes('API key not configured')) {
         res.status(503).json({ 
@@ -600,13 +600,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/ai/study-plan", async (req, res) => {
     try {
       const { goals, timeframe, currentLevel } = req.body;
-      
+
       if (!goals || !timeframe || !currentLevel) {
         return res.status(400).json({ error: 'Goals, timeframe, and current level are required' });
       }
 
       const studyPlan = await openRouterAI.generateStudyPlan(goals, timeframe, currentLevel);
-      
+
       res.json({ studyPlan, success: true });
     } catch (error: any) {
       console.error("AI Study Plan error:", error);
@@ -621,7 +621,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/ai/quiz-generator", async (req, res) => {
     try {
       const { topic, difficulty = 'intermediate', count = 5 } = req.body;
-      
+
       if (!topic) {
         return res.status(400).json({ error: 'Topic is required' });
       }
@@ -662,7 +662,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Ensure user has stats entry
+  app.post('/api/ensure-user-stats', async (req, res) => {
+    try {
+      const { userId } = req.body;
+      if (!userId) {
+        return res.status(400).json({ error: 'User ID required' });
+      }
+
+      await dbStorage.ensureUserHasStats(userId);
+      res.json({ success: true, message: 'User stats ensured' });
+    } catch (error) {
+      console.error('Error ensuring user stats:', error);
+      res.status(500).json({ error: 'Failed to ensure user stats' });
+    }
+  });
+
+  // Refresh user analytics and leaderboard
+  app.post('/api/refresh-user-stats', async (req, res) => {
+    try {
+      await dbStorage.updateGlobalLeaderboard();
+      res.json({ success: true, message: 'User stats refreshed successfully' });
+    } catch (error) {
+      console.error('Error refreshing user stats:', error);
+      res.status(500).json({ error: 'Failed to refresh user stats' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
-

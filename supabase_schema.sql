@@ -734,37 +734,6 @@ CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- Function to migrate existing auth users to public.users
-CREATE OR REPLACE FUNCTION public.migrate_existing_auth_users()
-RETURNS void AS $$
-BEGIN
-    INSERT INTO public.users (id, email, created_at, updated_at)
-    SELECT 
-        au.id,
-        au.email,
-        au.created_at,
-        NOW()
-    FROM auth.users au
-    LEFT JOIN public.users pu ON au.id = pu.id
-    WHERE pu.id IS NULL
-    ON CONFLICT (id) DO NOTHING;
-    
-    -- Initialize analytics for migrated users
-    INSERT INTO public.user_analytics (user_id)
-    SELECT u.id FROM public.users u
-    LEFT JOIN public.user_analytics ua ON u.id = ua.user_id
-    WHERE ua.user_id IS NULL
-    ON CONFLICT (user_id) DO NOTHING;
-    
-    -- Initialize stats for migrated users
-    INSERT INTO public.user_stats (user_id)
-    SELECT u.id FROM public.users u
-    LEFT JOIN public.user_stats us ON u.id = us.user_id
-    WHERE us.user_id IS NULL
-    ON CONFLICT (user_id) DO NOTHING;
-END;
-$$ LANGUAGE plpgsql;
-
 -- Function to calculate user rank
 CREATE OR REPLACE FUNCTION public.update_user_ranks()
 RETURNS void AS $$
