@@ -22,7 +22,16 @@ console.log('- URL configured:', !!connectionString);
 console.log('- URL starts with postgres:', connectionString.startsWith('postgres://'));
 console.log('- Using Supabase:', connectionString.includes('supabase.co'));
 
-const client = postgres(connectionString);
+// Configure postgres client with proper timeout and SSL settings for Supabase
+const client = postgres(connectionString, {
+  ssl: 'require',
+  connect_timeout: 60,
+  socket_timeout: 60,
+  idle_timeout: 60,
+  max: 10,
+  onnotice: () => {} // Suppress notices
+});
+
 export const db = drizzle(client);
 
 export class DatabaseStorage {
