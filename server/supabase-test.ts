@@ -105,8 +105,6 @@ async function comprehensiveSupabaseTest() {
     if (process.env.NODE_ENV === 'development') {
       console.log('ℹ️  Continuing with application startup despite test failure...');
     }
-  }
-}ror);
     return false;
   }
 }
