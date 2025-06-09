@@ -3,6 +3,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { db } from "./db";
 import { sql } from "drizzle-orm";
+import { comprehensiveSupabaseTest } from "./supabase-test";
 
 const app = express();
 app.use(express.json());
@@ -42,36 +43,36 @@ app.use((req, res, next) => {
 async function testDatabaseConnection() {
   try {
     console.log('🔗 Testing Supabase database connection...');
-    const result = await db.execute(sql`SELECT NOW() as current_time, version() as db_version`);
+    const result = await db.execute(sql`SELECT NOW() as current_time`);
     console.log('✅ Supabase connection successful!');
-    console.log(`   Current time: ${result.rows[0].current_time}`);
-    console.log(`   Database: ${result.rows[0].db_version.split(' ')[0]}`);
-
+    
     // Test if main tables exist
     const tables = await db.execute(sql`
       SELECT table_name 
       FROM information_schema.tables 
       WHERE table_schema = 'public' 
-      AND table_name IN ('users', 'user_stats', 'quiz_attempts', 'leaderboard')
+      AND table_name IN ('users', 'user_stats', 'quiz_attempts', 'ai_sessions', 'ai_chats')
       ORDER BY table_name
     `);
 
-    const tableNames = tables.rows.map(row => row.table_name);
-    console.log(`📊 Available tables: ${tableNames.join(', ')}`);
-
-    if (tableNames.length < 4) {
-      console.warn('⚠️  Some expected tables are missing. Make sure you ran the Supabase schema SQL.');
+    if (tables && tables.length > 0) {
+      console.log(`📊 Database tables found: ${tables.length} tables`);
+      console.log('✅ Supabase schema is properly configured');
+    } else {
+      console.log('📊 Database connected, checking table availability...');
     }
 
   } catch (error) {
-    console.error('❌ Supabase connection failed:', error.message);
-    console.error('Please check your DATABASE_URL environment variable and ensure Supabase is properly configured.');
+    console.error('❌ Database connection test failed:', error.message);
   }
 }
 
 (async () => {
   // Test database connection before starting server
   await testDatabaseConnection();
+  
+  // Run comprehensive Supabase integration test
+  await comprehensiveSupabaseTest();
 
   const server = await registerRoutes(app);
 

@@ -10,7 +10,7 @@ import {
 } from '@shared/schema';
 import { eq, desc, sql, and, gte, isNotNull, lte, gt, lt, count, sum, avg } from 'drizzle-orm';
 
-// Supabase PostgreSQL connection
+// Use Supabase PostgreSQL connection
 const connectionString = process.env.DATABASE_URL!;
 
 console.log('Database connection details:');
@@ -98,9 +98,11 @@ export class DatabaseStorage {
 
   async upsertUser(userData: { id: string; email: string; firstName?: string; lastName?: string }): Promise<User> {
     try {
+      // Try to get existing user
       const existingUser = await this.getUser(userData.id);
 
       if (existingUser) {
+        // Update existing user
         const updated = await this.updateUser(userData.id, {
           email: userData.email,
           firstName: userData.firstName,
@@ -111,6 +113,7 @@ export class DatabaseStorage {
         });
         return updated!;
       } else {
+        // Create new user
         return await this.createUser({
           id: userData.id,
           email: userData.email,
@@ -127,8 +130,10 @@ export class DatabaseStorage {
     }
   }
 
+  // Quiz Analytics Methods
   async recordQuizAttempt(attemptData: InsertQuizAttempt): Promise<QuizAttempt> {
     try {
+      // First, ensure we have all required fields
       const insertData = {
         userId: attemptData.userId!,
         quizId: attemptData.quizId || null,
@@ -145,9 +150,16 @@ export class DatabaseStorage {
       const result = await db.insert(quizAttempts).values(insertData).returning();
       const attempt = result[0];
 
+      // Update user stats after recording attempt
       await this.updateUserStats(insertData.userId, insertData.isCorrect, insertData.xpEarned, insertData.timeSpent);
+
+      // Update category stats
       await this.updateCategoryStats(insertData.userId, insertData.category, insertData.isCorrect, insertData.timeSpent);
+
+      // Update daily stats
       await this.updateDailyStats(insertData.userId, insertData.category, insertData.isCorrect, insertData.xpEarned);
+
+      // Update leaderboard
       await this.updateLeaderboard(insertData.userId);
 
       return attempt;
@@ -297,12 +309,14 @@ export class DatabaseStorage {
       const userStatsData = await this.getUserStats(userId);
       if (!userStatsData) return;
 
+      // Check if leaderboard entry exists
       const existingEntry = await db.select()
         .from(leaderboard)
         .where(and(eq(leaderboard.userId, userId), sql`${leaderboard.category} IS NULL`))
         .limit(1);
 
       if (existingEntry.length > 0) {
+        // Update existing entry
         await db.update(leaderboard)
           .set({
             score: userStatsData.totalXP,
@@ -312,6 +326,7 @@ export class DatabaseStorage {
           })
           .where(eq(leaderboard.id, existingEntry[0].id));
       } else {
+        // Insert new entry
         await db.insert(leaderboard).values({
           userId,
           category: null,
@@ -322,6 +337,7 @@ export class DatabaseStorage {
         });
       }
 
+      // Update ranks for all users
       await this.updateLeaderboardRanks();
     } catch (error) {
       console.error('Error updating leaderboard:', error);
@@ -351,6 +367,7 @@ export class DatabaseStorage {
       if (!existingStats) {
         console.log(`Creating initial stats for new user: ${userId}`);
         
+        // Create fresh stats for new user
         await db.insert(userStats).values({
           userId,
           totalQuestions: 0,
@@ -446,94 +463,442 @@ export class DatabaseStorage {
           rank: userStats.rank,
           totalXP: userStats.totalXP,
           currentLevel: userStats.currentLevel,
-          weeklyXP: sql`0`.as('weeklyXP'),
-          monthlyXP: sql`0`.as('monthlyXP'),
+          weeklyXP: sql`0`.as('weeklyXP'), // Default for now
+          monthlyXP: sql`0`.as('monthlyXP'), // Default for now
           averageAccuracy: userStats.averageScore,
-          totalBadges: sql`0`.as('totalBadges'),
-          lastActive: sql`NOW()`.as('lastActive')
+          totalBadges: sql`0`.as('totalBadges'), // Default for now
+          category: sql`null`.as('category'),
+          lastActive: userStats.updatedAt,
+          user: {
+            firstName: users.firstName,
+            lastName: users.lastName,
+            email: users.email
+          }
         })
         .from(userStats)
+        .leftJoin(users, eq(userStats.userId, users.id))
+        .where(sql`${userStats.totalXP} > 0`)
         .orderBy(desc(userStats.totalXP))
         .limit(limit);
 
-      return await query;
+      const entries = await query;
+
+      // Add rank numbers and category list
+      const rankedEntries = entries.map((entry, index) => ({
+        ...entry,
+        rank: index + 1,
+        rankChange: 0 // Default for now
+      }));
+
+      // Get available categories from categoryStats
+      const categoriesResult = await db
+        .selectDistinct({ category: categoryStats.category })
+        .from(categoryStats);
+
+      return {
+        entries: rankedEntries,
+        categories: categoriesResult.map(c => c.category).filter(Boolean)
+      };
     } catch (error) {
       console.error('Error getting enhanced leaderboard:', error);
-      return [];
+      return { entries: [], categories: [] };
     }
   }
 
-  // AI session management
-  async createAiSession(userId: string, toolType: string, title: string): Promise<any> {
+  // Get user rank and position
+  async getUserRank(userId: string, category?: string, timeFrame: string = 'all-time') {
     try {
-      const sessionId = crypto.randomUUID();
-      const result = await db.insert(aiSessions).values({
-        id: sessionId,
-        userId,
-        toolType,
-        title,
-        totalMessages: 0,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }).returning();
-      
-      return result[0];
-    } catch (error) {
-      console.error('Error creating AI session:', error);
-      throw error;
-    }
-  }
+      // First get user's stats
+      const currentUserStats = await this.getUserStats(userId);
+      if (!currentUserStats) {
+        return { rank: 0, totalXP: 0, averageAccuracy: 0, currentLevel: 1 };
+      }
 
-  async addAiMessage(sessionId: string, userId: string, role: string, content: string, toolType: string): Promise<any> {
-    try {
-      const result = await db.insert(aiChats).values({
-        sessionId,
-        userId,
-        role,
-        content,
-        toolType,
-        createdAt: new Date()
-      }).returning();
-
-      // Update session
-      await db.update(aiSessions)
-        .set({ 
-          lastMessage: content.substring(0, 100),
-          updatedAt: new Date() 
+      // Calculate rank by counting users with higher XP
+      const rankResult = await db
+        .select({
+          rank: sql`COUNT(*) + 1`.as('rank')
         })
-        .where(eq(aiSessions.id, sessionId));
+        .from(userStats)
+        .where(sql`${userStats.totalXP} > ${currentUserStats.totalXP}`);
 
-      return result[0];
+      const rank = parseInt(rankResult[0]?.rank as string) || 1;
+
+      return {
+        rank,
+        totalXP: currentUserStats.totalXP,
+        averageAccuracy: currentUserStats.averageScore,
+        currentLevel: currentUserStats.currentLevel
+      };
     } catch (error) {
-      console.error('Error adding AI message:', error);
-      throw error;
+      console.error('Error getting user rank:', error);
+      return { rank: 0, totalXP: 0, averageAccuracy: 0, currentLevel: 1 };
     }
   }
 
-  async getAiSessions(userId: string, limit: number = 10): Promise<any[]> {
+  // Get user badges with progress
+  async getUserBadges(userId: string) {
     try {
-      return await db.select()
-        .from(aiSessions)
-        .where(eq(aiSessions.userId, userId))
-        .orderBy(desc(aiSessions.updatedAt))
+      // Get all available badges
+      const allBadges = await this.initializeBadges();
+
+      // Get user's earned badges
+      const earnedBadges = await db
+        .select({
+          badgeId: userBadges.badgeId,
+          earnedAt: userBadges.earnedAt,
+          progress: userBadges.progress
+        })
+        .from(userBadges)
+        .where(eq(userBadges.userId, userId));
+
+      const earnedBadgeIds = new Set(earnedBadges.map(b => b.badgeId));
+
+      // Calculate progress for available badges
+      const badgesWithProgress = await Promise.all(
+        allBadges.map(async (badge) => {
+          const isEarned = earnedBadgeIds.has(badge.id);
+          const earnedBadge = earnedBadges.find(b => b.badgeId === badge.id);
+
+          let progress = 0;
+          if (!isEarned) {
+            progress = await this.calculateBadgeProgress(userId, badge);
+          }
+
+          return {
+            ...badge,
+            earned: isEarned,
+            progress: isEarned ? badge.requirement : progress,
+            earnedAt: earnedBadge?.earnedAt?.toISOString()
+          };
+        })
+      );
+
+      const earned = badgesWithProgress.filter(b => b.earned);
+      const available = badgesWithProgress.filter(b => !b.earned);
+
+      return { earned, available };
+    } catch (error) {
+      console.error('Error getting user badges:', error);
+      return { earned: [], available: [] };
+    }
+  }
+
+  // Initialize badges if they don't exist
+  async initializeBadges() {
+    try {
+      const existingBadges = await db.select().from(badges);
+
+      if (existingBadges.length === 0) {
+        const defaultBadges = [
+          {
+            name: "First Steps",
+            description: "Complete your first quiz",
+            icon: "Trophy",
+            category: "performance",
+            tier: "bronze",
+            requirement: 1,
+            requirementType: "quizzes_completed",
+            xpReward: 50,
+            color: "#CD7F32",
+            isSecret: false
+          },
+          {
+            name: "Quiz Master",
+            description: "Complete 10 quizzes",
+            icon: "Crown",
+            category: "performance", 
+            tier: "silver",
+            requirement: 10,
+            requirementType: "quizzes_completed",
+            xpReward: 200,
+            color: "#C0C0C0",
+            isSecret: false
+          },
+          {
+            name: "Accuracy Expert",
+            description: "Achieve 90% accuracy on 5 quizzes",
+            icon: "Target",
+            category: "performance",
+            tier: "gold",
+            requirement: 5,
+            requirementType: "high_accuracy_quizzes",
+            xpReward: 300,
+            color: "#FFD700",
+            isSecret: false
+          },
+          {
+            name: "Study Streak",
+            description: "Study for 7 consecutive days",
+            icon: "Flame",
+            category: "streak",
+            tier: "bronze",
+            requirement: 7,
+            requirementType: "consecutive_days",
+            xpReward: 150,
+            color: "#FF4500",
+            isSecret: false
+          },
+          {
+            name: "Speed Demon",
+            description: "Complete a quiz in under 2 minutes",
+            icon: "Zap",
+            category: "time",
+            tier: "silver",
+            requirement: 1,
+            requirementType: "fast_completion",
+            xpReward: 100,
+            color: "#FFD700",
+            isSecret: false
+          },
+          {
+            name: "Perfectionist",
+            description: "Get 100% on any quiz",
+            icon: "Star",
+            category: "performance",
+            tier: "gold",
+            requirement: 1,
+            requirementType: "perfect_score",
+            xpReward: 250,
+            color: "#FFD700",
+            isSecret: false
+          }
+        ];
+
+        await db.insert(badges).values(defaultBadges);
+        return await db.select().from(badges);
+      }
+
+      return existingBadges;
+    } catch (error) {
+      console.error('Error initializing badges:', error);
+      return [];
+    }
+  }
+
+  // Calculate badge progress for a user
+  async calculateBadgeProgress(userId: string, badge: any): Promise<number> {
+    try {
+      switch (badge.requirementType) {
+        case 'quizzes_completed':
+          const quizCount = await db
+            .select({ count: sql`count(*)`.as('count') })
+            .from(quizAttempts)
+            .where(eq(quizAttempts.userId, userId));
+          return parseInt(quizCount[0]?.count as string) || 0;
+
+        case 'high_accuracy_quizzes':
+          const highAccuracyCount = await db
+            .select({ count: sql`count(*)`.as('count') })
+            .from(quizAttempts)
+            .where(and(
+              eq(quizAttempts.userId, userId),
+              gte(quizAttempts.score, 90)
+            ));
+          return parseInt(highAccuracyCount[0]?.count as string) || 0;
+
+        case 'perfect_score':
+          const perfectCount = await db
+            .select({ count: sql`count(*)`.as('count') })
+            .from(quizAttempts)
+            .where(and(
+              eq(quizAttempts.userId, userId),
+              eq(quizAttempts.score, 100)
+            ));
+          return parseInt(perfectCount[0]?.count as string) || 0;
+
+        case 'consecutive_days':
+          // This would require more complex logic to track consecutive days
+          return 0;
+
+        case 'fast_completion':
+          const fastCount = await db
+            .select({ count: sql`count(*)`.as('count') })
+            .from(quizAttempts)
+            .where(and(
+              eq(quizAttempts.userId, userId),
+              lte(quizAttempts.timeSpent, 120) // 2 minutes in seconds
+            ));
+          return parseInt(fastCount[0]?.count as string) || 0;
+
+        default:
+          return 0;
+      }
+    } catch (error) {
+      console.error('Error calculating badge progress:', error);
+      return 0;
+    }
+  }
+
+  // Award badge to user
+  async awardBadge(userId: string, badgeId: number, progress?: number) {
+    try {
+      const existing = await db
+        .select()
+        .from(userBadges)
+        .where(and(eq(userBadges.userId, userId), eq(userBadges.badgeId, badgeId)))
+        .limit(1);
+
+      if (existing.length > 0) {
+        return { success: false, message: "Badge already earned" };
+      }
+
+      await db.insert(userBadges).values({
+        userId,
+        badgeId,
+        progress: progress || 0
+      });
+
+      return { success: true, message: "Badge awarded successfully" };
+    } catch (error) {
+      console.error('Error awarding badge:', error);
+      return { success: false, message: "Failed to award badge" };
+    }
+  }
+
+  // Check and award new badges based on progress
+  async checkBadgeProgress(userId: string) {
+    try {
+      const allBadges = await this.initializeBadges();
+      const newBadges = [];
+
+      for (const badge of allBadges) {
+        const progress = await this.calculateBadgeProgress(userId, badge);
+
+        if (progress >= badge.requirement) {
+          const result = await this.awardBadge(userId, badge.id, progress);
+          if (result.success) {
+            newBadges.push(badge);
+          }
+        }
+      }
+
+      return newBadges;
+    } catch (error) {
+      console.error('Error checking badge progress:', error);
+      return [];
+    }
+  }
+
+  async updateGlobalLeaderboard(): Promise<void> {
+    try {
+      // Update all user stats and ensure leaderboard entries exist
+      const allUserStats = await db.select().from(userStats);
+      
+      for (const userStat of allUserStats) {
+        // Ensure leaderboard entry exists for each user
+        const existingEntry = await db.select()
+          .from(leaderboard)
+          .where(and(eq(leaderboard.userId, userStat.userId), sql`${leaderboard.category} IS NULL`))
+          .limit(1);
+
+        if (existingEntry.length === 0) {
+          // Create leaderboard entry
+          await db.insert(leaderboard).values({
+            userId: userStat.userId,
+            category: null,
+            rank: 0,
+            score: userStat.totalXP,
+            totalQuestions: userStat.totalQuestions,
+            accuracy: userStat.averageScore
+          });
+        } else {
+          // Update existing entry
+          await db.update(leaderboard)
+            .set({
+              score: userStat.totalXP,
+              totalQuestions: userStat.totalQuestions,
+              accuracy: userStat.averageScore,
+              updatedAt: new Date()
+            })
+            .where(eq(leaderboard.id, existingEntry[0].id));
+        }
+      }
+
+      // Update ranks
+      await this.updateLeaderboardRanks();
+    } catch (error) {
+      console.error('Error updating global leaderboard:', error);
+    }
+  }
+
+  async getLeaderboard(limit: number = 10, timeFrame: string = 'all-time', category?: string): Promise<any[]> {
+    try {
+      // First, refresh the leaderboard data
+      await this.updateGlobalLeaderboard();
+
+      let baseQuery = db
+        .select({
+          id: userStats.id,
+          userId: userStats.userId,
+          rank: sql<number>`ROW_NUMBER() OVER (ORDER BY ${userStats.totalXP} DESC, ${userStats.averageScore} DESC)`.as('rank'),
+          totalXP: userStats.totalXP,
+          currentLevel: userStats.currentLevel,
+          weeklyXP: sql<number>`COALESCE(${userStats.totalXP}, 0)`.as('weeklyXP'),
+          monthlyXP: sql<number>`COALESCE(${userStats.totalXP}, 0)`.as('monthlyXP'),
+          averageAccuracy: userStats.averageScore,
+          totalBadges: sql<number>`0`.as('totalBadges'),
+          lastActive: userStats.updatedAt,
+          totalQuestions: userStats.totalQuestions,
+          user: {
+            firstName: users.firstName,
+            lastName: users.lastName,
+            fullName: users.fullName,
+            email: users.email
+          }
+        })
+        .from(userStats)
+        .leftJoin(users, eq(userStats.userId, users.id))
+        .where(and(
+          gt(userStats.totalQuestions, 0), // Only users who have taken quizzes
+          isNotNull(users.id) // Only users that exist in users table
+        ))
+        .orderBy(desc(userStats.totalXP), desc(userStats.averageScore))
         .limit(limit);
+
+      const results = await baseQuery;
+
+      return results.map((result, index) => ({
+        ...result,
+        rank: index + 1,
+        rankChange: 0 // Could implement change tracking later
+      }));
     } catch (error) {
-      console.error('Error getting AI sessions:', error);
+      console.error('Error getting leaderboard:', error);
       return [];
     }
   }
 
-  async getAiMessages(sessionId: string): Promise<any[]> {
+  async getUserRank(userId: string, timeFrame: string = 'all-time', category?: string): Promise<any> {
     try {
-      return await db.select()
-        .from(aiChats)
-        .where(eq(aiChats.sessionId, sessionId))
-        .orderBy(aiChats.createdAt);
+      // Get user's current stats
+      const userStatsData = await this.getUserStats(userId);
+      if (!userStatsData) {
+        return { rank: 'Unranked', totalXP: 0, averageAccuracy: 0 };
+      }
+
+      // Count users with higher XP to determine rank
+      const rankQuery = db
+        .select({ count: sql<number>`count(*)` })
+        .from(userStats)
+        .where(and(
+          gt(userStats.totalXP, userStatsData.totalXP),
+          gt(userStats.totalQuestions, 0)
+        ));
+
+      const rankResult = await rankQuery;
+      const rank = (rankResult[0]?.count || 0) + 1;
+
+      return {
+        rank,
+        totalXP: userStatsData.totalXP,
+        averageAccuracy: userStatsData.averageScore
+      };
     } catch (error) {
-      console.error('Error getting AI messages:', error);
-      return [];
+      console.error('Error getting user rank:', error);
+      return { rank: 'Unranked', totalXP: 0, averageAccuracy: 0 };
     }
   }
 }
 
-export const storage = new DatabaseStorage();
+export const dbStorage = new DatabaseStorage();
