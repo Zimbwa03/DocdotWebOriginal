@@ -1,6 +1,8 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { db } from "./db";
+import { sql } from "drizzle-orm";
 
 const app = express();
 app.use(express.json());
@@ -36,7 +38,41 @@ app.use((req, res, next) => {
   next();
 });
 
+// Test Supabase connection on startup
+async function testDatabaseConnection() {
+  try {
+    console.log('🔗 Testing Supabase database connection...');
+    const result = await db.execute(sql`SELECT NOW() as current_time, version() as db_version`);
+    console.log('✅ Supabase connection successful!');
+    console.log(`   Current time: ${result.rows[0].current_time}`);
+    console.log(`   Database: ${result.rows[0].db_version.split(' ')[0]}`);
+
+    // Test if main tables exist
+    const tables = await db.execute(sql`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      AND table_name IN ('users', 'user_stats', 'quiz_attempts', 'leaderboard')
+      ORDER BY table_name
+    `);
+
+    const tableNames = tables.rows.map(row => row.table_name);
+    console.log(`📊 Available tables: ${tableNames.join(', ')}`);
+
+    if (tableNames.length < 4) {
+      console.warn('⚠️  Some expected tables are missing. Make sure you ran the Supabase schema SQL.');
+    }
+
+  } catch (error) {
+    console.error('❌ Supabase connection failed:', error.message);
+    console.error('Please check your DATABASE_URL environment variable and ensure Supabase is properly configured.');
+  }
+}
+
 (async () => {
+  // Test database connection before starting server
+  await testDatabaseConnection();
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -65,6 +101,7 @@ app.use((req, res, next) => {
     host: "0.0.0.0",
     reusePort: true,
   }, () => {
-    log(`serving on port ${port}`);
+    log(`🚀 Server running on port ${port}`);
+    log(`📱 App available at: http://localhost:${port}`);
   });
 })();

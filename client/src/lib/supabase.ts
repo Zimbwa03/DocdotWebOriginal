@@ -13,7 +13,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    storage: window.localStorage,
+    storage: window?.localStorage,
     flowType: 'pkce'
   },
   global: {
@@ -26,4 +26,14 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       eventsPerSecond: 2,
     },
   },
+});
+
+// Test the connection immediately
+supabase.auth.getSession().then(({ data, error }) => {
+  if (error) {
+    console.error('Supabase auth error:', error);
+  } else {
+    console.log('✅ Supabase client initialized successfully');
+    console.log('Auth session:', data.session ? 'Active' : 'No session');
+  }
 });

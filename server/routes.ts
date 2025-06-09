@@ -513,6 +513,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test Supabase schema and tables
+  app.get("/api/test-supabase", async (req, res) => {
+    try {
+      console.log('Testing Supabase connection and schema...');
+      
+      // Test basic connection
+      const testQuery = await db.execute(sql`SELECT NOW() as current_time`);
+      console.log('Database connection successful');
+
+      // Test if our tables exist
+      const tablesQuery = await db.execute(sql`
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name IN ('users', 'user_stats', 'quiz_attempts', 'leaderboard')
+      `);
+      
+      const tables = tablesQuery.rows.map(row => row.table_name);
+      console.log('Available tables:', tables);
+
+      // Test user stats table
+      const userStatsCount = await db.execute(sql`SELECT COUNT(*) as count FROM user_stats`);
+      const usersCount = await db.execute(sql`SELECT COUNT(*) as count FROM users`);
+      const attemptsCount = await db.execute(sql`SELECT COUNT(*) as count FROM quiz_attempts`);
+
+      res.json({
+        success: true,
+        connection: 'Connected to Supabase PostgreSQL',
+        currentTime: testQuery.rows[0].current_time,
+        tables: tables,
+        counts: {
+          users: usersCount.rows[0].count,
+          userStats: userStatsCount.rows[0].count,
+          quizAttempts: attemptsCount.rows[0].count
+        }
+      });
+    } catch (error) {
+      console.error('Supabase test error:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message,
+        message: 'Failed to connect to Supabase or schema not properly set up'
+      });
+    }
+  });
+
   // Test DeepSeek API connection
   app.get("/api/ai/test", async (req, res) => {
     try {

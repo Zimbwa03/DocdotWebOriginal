@@ -11,6 +11,15 @@ import { eq, desc, sql, and, gte, isNotNull, lte, gt, lt, count, sum, avg } from
 
 // Use Supabase PostgreSQL connection
 const connectionString = process.env.DATABASE_URL!;
+
+console.log('Database connection details:');
+console.log('- URL configured:', !!connectionString);
+console.log('- URL starts with postgres:', connectionString?.startsWith('postgres'));
+
+if (!connectionString) {
+  throw new Error('DATABASE_URL environment variable is not set');
+}
+
 const client = postgres(connectionString);
 export const db = drizzle(client);
 
