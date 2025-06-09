@@ -19,8 +19,8 @@ async function comprehensiveSupabaseTest() {
     
     console.log(`📊 Found ${tables.length} tables in Supabase`);
     
-    // Test 3: Test user operations
-    const testUserId = 'test-user-' + Date.now();
+    // Test 3: Test user operations with proper UUID
+    const testUserId = crypto.randomUUID(); // Generate proper UUID
     const testEmail = `test-${Date.now()}@docdot.app`;
     
     const user = await storage.createUser({
@@ -43,6 +43,26 @@ async function comprehensiveSupabaseTest() {
     
     // Test 6: Test quiz attempt recording
     await storage.recordQuizAttempt({
+      userId: testUserId,
+      category: 'Anatomy - Upper Limb',
+      selectedAnswer: 'True',
+      correctAnswer: 'True',
+      isCorrect: true,
+      timeSpent: 15,
+      xpEarned: 10,
+      difficulty: 'medium'
+    });
+    console.log('✅ Quiz attempt recording successful');
+    
+    // Test 7: Clean up test data
+    await db.execute(sql`DELETE FROM ai_chats WHERE user_id = ${testUserId}`);
+    await db.execute(sql`DELETE FROM ai_sessions WHERE user_id = ${testUserId}`);
+    await db.execute(sql`DELETE FROM quiz_attempts WHERE user_id = ${testUserId}`);
+    await db.execute(sql`DELETE FROM user_stats WHERE user_id = ${testUserId}`);
+    await db.execute(sql`DELETE FROM users WHERE id = ${testUserId}`);
+    console.log('✅ Test cleanup successful');
+    
+    console.log('🎉 All Supabase integration tests passed!');dQuizAttempt({
       userId: testUserId,
       category: 'Anatomy',
       selectedAnswer: 'A',
@@ -79,7 +99,14 @@ async function comprehensiveSupabaseTest() {
     return true;
     
   } catch (error) {
-    console.error('❌ Supabase test failed:', error);
+    console.error('❌ Supabase test failed:', error.message);
+    
+    // Don't throw error in development, just log it
+    if (process.env.NODE_ENV === 'development') {
+      console.log('ℹ️  Continuing with application startup despite test failure...');
+    }
+  }
+}ror);
     return false;
   }
 }
