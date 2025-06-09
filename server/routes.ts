@@ -2,8 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { openRouterAI } from "./ai";
 import { dbStorage, db } from "./db";
-import { sql } from 'drizzle-orm';
-import { insertQuizAttemptSchema, badges } from "@shared/schema";
+import { sql, eq, desc, and } from 'drizzle-orm';
+import { insertQuizAttemptSchema, badges, studyPlannerSessions, studyGroups, studyGroupMembers, users } from "@shared/schema";
 import { v4 as uuidv4 } from "uuid";
 import { readFileSync } from "fs";
 import { resolve } from "path";
@@ -848,6 +848,267 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error refreshing user stats:', error);
       res.status(500).json({ error: 'Failed to refresh user stats' });
+    }
+  });
+
+  // Study Planner API Routes
+  app.get("/api/study-sessions", async (req, res) => {
+    try {
+      const { userId } = req.query;
+      
+      if (!userId) {
+        return res.status(400).json({ error: "User ID is required" });
+      }
+
+      const sessions = await db.select().from(studyPlannerSessions)
+        .where(eq(studyPlannerSessions.userId, userId as string))
+        .orderBy(desc(studyPlannerSessions.date));
+
+      res.json(sessions);
+    } catch (error) {
+      console.error("Error fetching study sessions:", error);
+      res.status(500).json({ error: "Failed to fetch study sessions" });
+    }
+  });
+
+  app.post("/api/study-sessions", async (req, res) => {
+    try {
+      const { userId, title, subject, topic, date, startTime, endTime, duration, notes } = req.body;
+
+      if (!userId || !title || !subject || !date || !startTime || !endTime) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const [newSession] = await db.insert(studyPlannerSessions).values({
+        userId,
+        title,
+        subject,
+        topic,
+        date: new Date(date),
+        startTime,
+        endTime,
+        duration: duration || 60,
+        notes,
+        status: 'planned'
+      }).returning();
+
+      res.json({ session: newSession, success: true });
+    } catch (error) {
+      console.error("Error creating study session:", error);
+      res.status(500).json({ error: "Failed to create study session" });
+    }
+  });
+
+  app.patch("/api/study-sessions/:id", async (req, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const updates = req.body;
+
+      const [updatedSession] = await db.update(studyPlannerSessions)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(eq(studyPlannerSessions.id, sessionId))
+        .returning();
+
+      res.json({ session: updatedSession, success: true });
+    } catch (error) {
+      console.error("Error updating study session:", error);
+      res.status(500).json({ error: "Failed to update study session" });
+    }
+  });
+
+  app.delete("/api/study-sessions/:id", async (req, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+
+      await db.delete(studyPlannerSessions)
+        .where(eq(studyPlannerSessions.id, sessionId));
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting study session:", error);
+      res.status(500).json({ error: "Failed to delete study session" });
+    }
+  });
+
+  // Study Groups API Routes
+  app.get("/api/study-groups", async (req, res) => {
+    try {
+      const groups = await db.select({
+        id: studyGroups.id,
+        title: studyGroups.title,
+        description: studyGroups.description,
+        meetingLink: studyGroups.meeting_link,
+        meetingType: studyGroups.meeting_type,
+        scheduledTime: studyGroups.scheduled_time,
+        duration: studyGroups.duration,
+        maxMembers: studyGroups.max_members,
+        currentMembers: studyGroups.current_members,
+        isActive: studyGroups.is_active,
+        category: studyGroups.category,
+        creatorId: studyGroups.creator_id,
+        createdAt: studyGroups.created_at,
+        creatorFirstName: users.firstName,
+        creatorLastName: users.lastName
+      })
+      .from(studyGroups)
+      .leftJoin(users, eq(studyGroups.creator_id, users.id))
+      .orderBy(desc(studyGroups.scheduled_time));
+
+      res.json(groups);
+    } catch (error) {
+      console.error("Error fetching study groups:", error);
+      res.status(500).json({ error: "Failed to fetch study groups" });
+    }
+  });
+
+  app.post("/api/study-groups", async (req, res) => {
+    try {
+      const { 
+        creatorId, 
+        title, 
+        description, 
+        meetingLink, 
+        meetingType, 
+        scheduledTime, 
+        duration, 
+        maxMembers,
+        category 
+      } = req.body;
+
+      if (!creatorId || !title || !meetingLink || !meetingType || !scheduledTime) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const [newGroup] = await db.insert(studyGroups).values({
+        creator_id: creatorId,
+        title,
+        description,
+        meeting_link: meetingLink,
+        meeting_type: meetingType,
+        scheduled_time: new Date(scheduledTime),
+        duration: duration || 60,
+        max_members: maxMembers || 10,
+        current_members: 1,
+        category,
+        is_active: false
+      }).returning();
+
+      // Auto-add creator as member
+      await db.insert(studyGroupMembers).values({
+        groupId: newGroup.id,
+        userId: creatorId
+      });
+
+      res.json({ group: newGroup, success: true });
+    } catch (error) {
+      console.error("Error creating study group:", error);
+      res.status(500).json({ error: "Failed to create study group" });
+    }
+  });
+
+  app.post("/api/study-groups/:id/join", async (req, res) => {
+    try {
+      const groupId = parseInt(req.params.id);
+      const { userId } = req.body;
+
+      if (!userId) {
+        return res.status(400).json({ error: "User ID is required" });
+      }
+
+      // Check if user is already a member
+      const existingMember = await db.select().from(studyGroupMembers)
+        .where(and(
+          eq(studyGroupMembers.groupId, groupId),
+          eq(studyGroupMembers.userId, userId)
+        ));
+
+      if (existingMember.length > 0) {
+        return res.status(400).json({ error: "Already a member of this group" });
+      }
+
+      // Check if group is full
+      const [group] = await db.select().from(studyGroups)
+        .where(eq(studyGroups.id, groupId));
+
+      if (!group) {
+        return res.status(404).json({ error: "Study group not found" });
+      }
+
+      if (group.current_members >= group.max_members) {
+        return res.status(400).json({ error: "Study group is full" });
+      }
+
+      // Add member
+      await db.insert(studyGroupMembers).values({
+        groupId,
+        userId
+      });
+
+      // Update member count
+      await db.update(studyGroups)
+        .set({ current_members: group.current_members + 1 })
+        .where(eq(studyGroups.id, groupId));
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error joining study group:", error);
+      res.status(500).json({ error: "Failed to join study group" });
+    }
+  });
+
+  app.post("/api/study-groups/:id/leave", async (req, res) => {
+    try {
+      const groupId = parseInt(req.params.id);
+      const { userId } = req.body;
+
+      if (!userId) {
+        return res.status(400).json({ error: "User ID is required" });
+      }
+
+      // Remove member
+      await db.delete(studyGroupMembers)
+        .where(and(
+          eq(studyGroupMembers.groupId, groupId),
+          eq(studyGroupMembers.userId, userId)
+        ));
+
+      // Update member count
+      const [group] = await db.select().from(studyGroups)
+        .where(eq(studyGroups.id, groupId));
+
+      if (group) {
+        await db.update(studyGroups)
+          .set({ current_members: Math.max(0, group.current_members - 1) })
+          .where(eq(studyGroups.id, groupId));
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error leaving study group:", error);
+      res.status(500).json({ error: "Failed to leave study group" });
+    }
+  });
+
+  app.get("/api/study-groups/:id/members", async (req, res) => {
+    try {
+      const groupId = parseInt(req.params.id);
+
+      const members = await db.select({
+        id: studyGroupMembers.id,
+        userId: studyGroupMembers.userId,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        joinedAt: studyGroupMembers.joinedAt,
+        hasJoinedMeeting: studyGroupMembers.hasJoinedMeeting
+      })
+      .from(studyGroupMembers)
+      .leftJoin(users, eq(studyGroupMembers.userId, users.id))
+      .where(eq(studyGroupMembers.groupId, groupId));
+
+      res.json(members);
+    } catch (error) {
+      console.error("Error fetching group members:", error);
+      res.status(500).json({ error: "Failed to fetch group members" });
     }
   });
 
