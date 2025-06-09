@@ -799,14 +799,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Google Drive Routes - temporarily disabled
-  app.get("/api/google-drive/books", async (req, res) => {
+  // Google Drive Routes
+  app.get("/api/google-drive/files", async (req, res) => {
     try {
-      res.json([]);
+      const { getFilesFromFolder } = await import('./googleDrive');
+      const files = await getFilesFromFolder();
+      console.log(`📚 Returning ${files.length} files from Google Drive`);
+      res.json(files);
     } catch (error: any) {
-      console.error("Google Drive books error:", error);
+      console.error("Google Drive files error:", error);
+      
+      // Return empty array instead of error to prevent UI breaking
+      if (error.code === 404 || error.message.includes('Folder not found')) {
+        console.log("📂 Google Drive folder not accessible, returning empty array");
+        res.json([]);
+      } else {
+        res.status(500).json({ 
+          error: "Failed to fetch files from Google Drive",
+          message: error.message || "Please try again later"
+        });
+      }
+    }
+  });
+
+  app.get("/api/google-drive/preview/:fileId", async (req, res) => {
+    try {
+      const fileId = req.params.fileId;
+      const previewUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+      res.json({ previewUrl });
+    } catch (error: any) {
+      console.error("Google Drive preview error:", error);
       res.status(500).json({ 
-        error: "Failed to fetch books",
+        error: "Failed to get preview URL",
         message: error.message || "Please try again later"
       });
     }
@@ -814,11 +838,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/google-drive/file/:fileId", async (req, res) => {
     try {
-      res.json({ content: "" });
+      const { getFileContent } = await import('./googleDrive');
+      const fileId = req.params.fileId;
+      const content = await getFileContent(fileId);
+      res.json({ content });
     } catch (error: any) {
       console.error("Google Drive file error:", error);
       res.status(500).json({ 
-        error: "Failed to fetch file",
+        error: "Failed to fetch file content",
         message: error.message || "Please try again later"
       });
     }

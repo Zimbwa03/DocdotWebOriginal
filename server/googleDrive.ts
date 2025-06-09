@@ -1,3 +1,4 @@
+
 import { google } from 'googleapis';
 
 // Service account credentials from environment variables
@@ -99,5 +100,48 @@ export async function checkFolderAccess(): Promise<boolean> {
   } catch (error) {
     console.error('Error accessing folder:', error);
     return false;
+  }
+}
+
+export async function getMedicalBooks() {
+  try {
+    console.log('Fetching medical books from Google Drive...');
+
+    const response = await drive.files.list({
+      q: `'${FOLDER_ID}' in parents and (mimeType='application/pdf' or mimeType='application/vnd.google-apps.document' or mimeType='application/msword' or mimeType='application/vnd.openxmlformats-officedocument.wordprocessingml.document') and trashed = false`,
+      fields: 'files(id, name, mimeType, createdTime, modifiedTime, size, webViewLink, thumbnailLink)',
+      pageSize: 100,
+      orderBy: 'modifiedTime desc'
+    });
+
+    console.log(`Found ${response.data.files?.length || 0} medical books`);
+    return response.data.files || [];
+  } catch (error) {
+    console.error('Error fetching medical books from Google Drive:', error);
+    throw new Error('Failed to fetch medical books from Google Drive');
+  }
+}
+
+export async function getFilePreview(fileId: string) {
+  try {
+    // For PDFs and documents, return Google Drive viewer URL
+    return `https://drive.google.com/file/d/${fileId}/preview`;
+  } catch (error) {
+    console.error('Error getting preview URL:', error);
+    throw new Error('Failed to get preview URL');
+  }
+}
+
+export async function downloadFile(fileId: string) {
+  try {
+    const response = await drive.files.get({
+      fileId,
+      alt: 'media'
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('Error downloading file:', error);
+    throw new Error('Failed to download file');
   }
 }

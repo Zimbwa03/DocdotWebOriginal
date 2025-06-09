@@ -24,14 +24,17 @@ export default function GoogleDriveResourcesGrid({ searchQuery }: GoogleDriveRes
       console.log('Fetching Google Drive files...');
       const res = await fetch('/api/google-drive/files');
       if (!res.ok) {
-        throw new Error('Failed to fetch files');
+        const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.error || 'Failed to fetch files');
       }
       const data = await res.json();
       console.log('Received Google Drive files:', data);
       return Array.isArray(data) ? data : [];
     },
-    retry: 3,
-    retryDelay: 1000
+    retry: 2,
+    retryDelay: 1500,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000 // 10 minutes
   });
 
   const filteredBooks = books?.filter(book => 
@@ -120,32 +123,39 @@ export default function GoogleDriveResourcesGrid({ searchQuery }: GoogleDriveRes
       )}
 
       {error && (
-        <div className="text-center py-8">
+        <div className="col-span-full text-center py-8">
           <Book className="w-16 h-16 text-red-400 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-red-600 mb-2">
-            Failed to load books
+            Google Drive Connection Issue
           </h3>
           <p className="text-red-500 mb-4">
-            There was an error loading the medical books from Google Drive.
+            {error.message || "There was an error loading the medical books from Google Drive."}
           </p>
-          <Button 
-            onClick={() => window.location.reload()} 
-            variant="outline"
-          >
-            Try Again
-          </Button>
+          <div className="space-x-2">
+            <Button 
+              onClick={() => window.location.reload()} 
+              variant="outline"
+            >
+              Refresh Page
+            </Button>
+          </div>
         </div>
       )}
 
       {!isLoading && !error && filteredBooks.length === 0 && (
-        <div className="text-center py-12">
+        <div className="col-span-full text-center py-12">
           <Book className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-600 mb-2">
             No books found
           </h3>
-          <p className="text-gray-500">
-            {searchQuery ? 'Try adjusting your search terms' : 'Connect your Google Drive to access your medical books'}
+          <p className="text-gray-500 mb-4">
+            {searchQuery ? 'Try adjusting your search terms' : 'No medical books available in the connected Google Drive folder'}
           </p>
+          {!searchQuery && (
+            <p className="text-sm text-gray-400">
+              Make sure your Google Drive folder contains PDF or document files
+            </p>
+          )}
         </div>
       )}
     </div>
