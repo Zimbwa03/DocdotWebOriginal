@@ -177,17 +177,17 @@ export class DatabaseStorage {
     }
   }
 
-  async updateUserStats(userId: string, isCorrect: boolean, xpEarned: number, timeSpent: number): Promise<void> {
+  async updateUserStats(userId: string, statsData: any): Promise<void> {
     try {
       const existing = await this.getUserStats(userId);
 
       if (existing) {
         const newTotalQuestions = existing.totalQuestions + 1;
-        const newCorrectAnswers = existing.correctAnswers + (isCorrect ? 1 : 0);
+        const newCorrectAnswers = existing.correctAnswers + (statsData.isCorrect ? 1 : 0);
         const newAverageScore = Math.round((newCorrectAnswers / newTotalQuestions) * 100);
-        const newStreak = isCorrect ? existing.currentStreak + 1 : 0;
+        const newStreak = statsData.isCorrect ? existing.currentStreak + 1 : 0;
         const newLongestStreak = Math.max(existing.longestStreak, newStreak);
-        const newTotalXP = existing.totalXP + xpEarned;
+        const newTotalXP = existing.totalXP + (statsData.xpEarned || 0);
         const newLevel = Math.floor(newTotalXP / 1000) + 1;
 
         await db.update(userStats)
@@ -199,7 +199,7 @@ export class DatabaseStorage {
             longestStreak: newLongestStreak,
             totalXP: newTotalXP,
             currentLevel: newLevel,
-            totalStudyTime: existing.totalStudyTime + Math.round(timeSpent / 60),
+            totalStudyTime: existing.totalStudyTime + Math.round((statsData.timeSpent || 0) / 60),
             updatedAt: new Date()
           })
           .where(eq(userStats.userId, userId));
@@ -207,13 +207,13 @@ export class DatabaseStorage {
         await db.insert(userStats).values({
           userId,
           totalQuestions: 1,
-          correctAnswers: isCorrect ? 1 : 0,
-          averageScore: isCorrect ? 100 : 0,
-          currentStreak: isCorrect ? 1 : 0,
-          longestStreak: isCorrect ? 1 : 0,
-          totalXP: xpEarned,
-          currentLevel: Math.floor(xpEarned / 1000) + 1,
-          totalStudyTime: Math.round(timeSpent / 60),
+          correctAnswers: statsData.isCorrect ? 1 : 0,
+          averageScore: statsData.isCorrect ? 100 : 0,
+          currentStreak: statsData.isCorrect ? 1 : 0,
+          longestStreak: statsData.isCorrect ? 1 : 0,
+          totalXP: statsData.xpEarned || 0,
+          currentLevel: Math.floor((statsData.xpEarned || 0) / 1000) + 1,
+          totalStudyTime: Math.round((statsData.timeSpent || 0) / 60),
           rank: 0
         });
       }
@@ -446,9 +446,11 @@ export class DatabaseStorage {
     }
   }
 
-  // Enhanced leaderboard with time frame support
-  async getEnhancedLeaderboard(limit: number = 50, category?: string, timeFrame: string = 'all-time') {
+  // Enhanced leaderboard with time frame support and user data
+  async getLeaderboard(limit: number = 50, timeFrame: string = 'all-time', category?: string) {
     try {
+      console.log(`Getting leaderboard: limit=${limit}, timeFrame=${timeFrame}, category=${category}`);
+      
       const query = db
         .select({
           id: userStats.id,
@@ -456,20 +458,127 @@ export class DatabaseStorage {
           rank: userStats.rank,
           totalXP: userStats.totalXP,
           currentLevel: userStats.currentLevel,
-          weeklyXP: sql`0`.as('weeklyXP'),
-          monthlyXP: sql`0`.as('monthlyXP'),
+          weeklyXP: sql<number>`0`.as('weeklyXP'),
+          monthlyXP: sql<number>`0`.as('monthlyXP'),
           averageAccuracy: userStats.averageScore,
-          totalBadges: sql`0`.as('totalBadges'),
-          lastActive: sql`NOW()`.as('lastActive')
+          totalBadges: sql<number>`0`.as('totalBadges'),
+          lastActive: userStats.updatedAt,
+          // User data
+          firstName: users.firstName,
+          lastName: users.lastName,
+          fullName: users.fullName,
+          email: users.email
         })
         .from(userStats)
-        .orderBy(desc(userStats.totalXP))
+        .leftJoin(users, eq(userStats.userId, users.id))
+        .where(gt(userStats.totalXP, 0)) // Only users with XP
+        .orderBy(desc(userStats.totalXP), desc(userStats.averageScore))
         .limit(limit);
 
-      return await query;
+      const results = await query;
+      
+      console.log(`Leaderboard query returned ${results.length} entries`);
+      
+      // Format for frontend
+      return results.map((entry, index) => ({
+        id: entry.id,
+        userId: entry.userId,
+        rank: index + 1, // Calculate rank based on order
+        totalXP: entry.totalXP,
+        currentLevel: entry.currentLevel,
+        weeklyXP: entry.weeklyXP,
+        monthlyXP: entry.monthlyXP,
+        averageAccuracy: entry.averageAccuracy,
+        totalBadges: entry.totalBadges,
+        lastActive: entry.lastActive?.toISOString() || new Date().toISOString(),
+        user: {
+          firstName: entry.firstName,
+          lastName: entry.lastName,
+          fullName: entry.fullName,
+          email: entry.email
+        }
+      }));
     } catch (error) {
-      console.error('Error getting enhanced leaderboard:', error);
+      console.error('Error getting leaderboard:', error);
       return [];
+    }
+  }
+
+  async getUserRank(userId: string, timeFrame: string = 'all-time', category?: string) {
+    try {
+      console.log(`Getting user rank for ${userId}`);
+      
+      const userStatsData = await this.getUserStats(userId);
+      if (!userStatsData) {
+        console.log(`No stats found for user ${userId}`);
+        return null;
+      }
+
+      // Count users with higher XP to determine rank
+      const [rankResult] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(userStats)
+        .where(gt(userStats.totalXP, userStatsData.totalXP));
+
+      const rank = (rankResult?.count || 0) + 1;
+
+      return {
+        rank,
+        totalXP: userStatsData.totalXP,
+        currentLevel: userStatsData.currentLevel,
+        averageAccuracy: userStatsData.averageScore,
+        totalQuestions: userStatsData.totalQuestions,
+        correctAnswers: userStatsData.correctAnswers
+      };
+    } catch (error) {
+      console.error('Error getting user rank:', error);
+      return null;
+    }
+  }
+
+  async updateGlobalLeaderboard(): Promise<void> {
+    try {
+      console.log('Updating global leaderboard...');
+      
+      // Get all users with stats ordered by XP
+      const allUsers = await db
+        .select({
+          userId: userStats.userId,
+          totalXP: userStats.totalXP,
+          currentLevel: userStats.currentLevel,
+          averageScore: userStats.averageScore
+        })
+        .from(userStats)
+        .where(gt(userStats.totalXP, 0))
+        .orderBy(desc(userStats.totalXP), desc(userStats.averageScore));
+
+      console.log(`Found ${allUsers.length} users to rank`);
+
+      // Update ranks in userStats table
+      for (let i = 0; i < allUsers.length; i++) {
+        await db.update(userStats)
+          .set({ rank: i + 1 })
+          .where(eq(userStats.userId, allUsers[i].userId));
+      }
+
+      // Update global leaderboard table
+      await db.delete(globalLeaderboard); // Clear existing entries
+
+      if (allUsers.length > 0) {
+        const leaderboardEntries = allUsers.map((user, index) => ({
+          userId: user.userId,
+          totalXP: user.totalXP,
+          currentLevel: user.currentLevel,
+          rank: index + 1,
+          updatedAt: new Date()
+        }));
+
+        await db.insert(globalLeaderboard).values(leaderboardEntries);
+      }
+
+      console.log(`Global leaderboard updated with ${allUsers.length} entries`);
+    } catch (error) {
+      console.error('Error updating global leaderboard:', error);
     }
   }
 

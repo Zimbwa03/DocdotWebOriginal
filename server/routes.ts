@@ -123,14 +123,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Store in database
       await dbStorage.recordQuizAttempt(attempt);
 
-      // Update user stats
-      await dbStorage.updateUserStats(userId, {
-        xpEarned: attempt.xpEarned,
-        isCorrect,
-        timeSpent,
-        category
-      });
-
       res.json({ 
         success: true, 
         attemptId, 
@@ -191,9 +183,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const category = req.query.category as string;
 
       console.log(`Fetching leaderboard - limit: ${limit}, timeFrame: ${timeFrame}, category: ${category}`);
-
-      // Refresh user stats from actual quiz data
-      await fetch('/api/refresh-user-stats', { method: 'POST' });
 
       // Update leaderboard data before fetching
       await dbStorage.updateGlobalLeaderboard();
@@ -921,6 +910,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error refreshing user stats:', error);
       res.status(500).json({ error: 'Failed to refresh user stats' });
+    }
+  });
+
+  // Create sample leaderboard data for testing
+  app.post('/api/create-sample-data', async (req, res) => {
+    try {
+      console.log('Creating sample leaderboard data...');
+      
+      const sampleUsers = [
+        { id: 'sample-user-1', email: 'alice@example.com', firstName: 'Alice', lastName: 'Johnson' },
+        { id: 'sample-user-2', email: 'bob@example.com', firstName: 'Bob', lastName: 'Smith' },
+        { id: 'sample-user-3', email: 'carol@example.com', firstName: 'Carol', lastName: 'Davis' },
+        { id: 'sample-user-4', email: 'david@example.com', firstName: 'David', lastName: 'Wilson' },
+        { id: 'sample-user-5', email: 'emma@example.com', firstName: 'Emma', lastName: 'Brown' }
+      ];
+
+      let created = 0;
+      for (const userData of sampleUsers) {
+        try {
+          // Create user if doesn't exist
+          const existingUser = await dbStorage.getUser(userData.id);
+          if (!existingUser) {
+            await dbStorage.createUser(userData);
+            console.log(`Created user: ${userData.firstName} ${userData.lastName}`);
+          }
+
+          // Create sample stats
+          const existingStats = await dbStorage.getUserStats(userData.id);
+          if (!existingStats) {
+            const xp = Math.floor(Math.random() * 5000) + 500; // 500-5500 XP
+            const totalQuestions = Math.floor(Math.random() * 200) + 50; // 50-250 questions
+            const correctAnswers = Math.floor(totalQuestions * (0.6 + Math.random() * 0.3)); // 60-90% accuracy
+
+            await db.insert(userStats).values({
+              userId: userData.id,
+              totalQuestions,
+              correctAnswers,
+              averageScore: Math.round((correctAnswers / totalQuestions) * 100),
+              currentStreak: Math.floor(Math.random() * 10),
+              longestStreak: Math.floor(Math.random() * 25),
+              totalXP: xp,
+              currentLevel: Math.floor(xp / 1000) + 1,
+              totalStudyTime: Math.floor(Math.random() * 100) + 20,
+              rank: 0
+            });
+            created++;
+            console.log(`Created stats for ${userData.firstName}: ${xp} XP, ${correctAnswers}/${totalQuestions} correct`);
+          }
+        } catch (error) {
+          console.error(`Error creating sample data for ${userData.firstName}:`, error);
+        }
+      }
+
+      // Update leaderboard
+      await dbStorage.updateGlobalLeaderboard();
+
+      res.json({ 
+        success: true, 
+        message: `Created sample data for ${created} users`,
+        created 
+      });
+    } catch (error) {
+      console.error('Error creating sample data:', error);
+      res.status(500).json({ error: 'Failed to create sample data' });
     }
   });
 
