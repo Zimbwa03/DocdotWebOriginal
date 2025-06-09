@@ -1010,7 +1010,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         title,
         subject,
         topic,
-        date: new Date(date),
+        date: typeof date === 'string' ? new Date(date + 'T00:00:00.000Z') : new Date(date),
         startTime,
         endTime,
         duration: duration || 60,

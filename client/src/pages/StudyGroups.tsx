@@ -207,15 +207,24 @@ export default function StudyGroups() {
   const getButtonText = (group: StudyGroup) => {
     const now = new Date();
     const meetingTime = new Date(group.scheduledTime);
-    const timeDiff = meetingTime.getTime() - now.getTime();
     
-    // Show "Join Now" for meetings within 6 hours of start time
-    if (timeDiff <= 21600000 && timeDiff > -7200000) { // 6 hours before to 2 hours after
-      return "Join Now";
-    } else if (timeDiff > 21600000) { // More than 6 hours in future
+    // Handle invalid dates
+    if (isNaN(meetingTime.getTime())) {
       return group.isMember ? "Joined" : "Join Group";
     }
-    return "Meeting Ended";
+    
+    const timeDiff = meetingTime.getTime() - now.getTime();
+    const hoursDiff = timeDiff / (1000 * 60 * 60);
+    
+    // Show "Join Now" for meetings within 1 hour of start time
+    if (hoursDiff <= 1 && hoursDiff > -2) { // 1 hour before to 2 hours after
+      return "Join Now";
+    } else if (hoursDiff > 1) { // More than 1 hour in future
+      return group.isMember ? "Joined" : "Join Group";
+    } else {
+      // Only show "Meeting Ended" for meetings that ended more than 2 hours ago
+      return "Meeting Ended";
+    }
   };
 
   const getButtonVariant = (group: StudyGroup) => {
