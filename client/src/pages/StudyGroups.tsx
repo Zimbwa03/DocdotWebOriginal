@@ -176,15 +176,16 @@ export default function StudyGroups() {
     const now = new Date();
     const meetingTime = new Date(scheduledTime);
     const timeDiff = meetingTime.getTime() - now.getTime();
-    return timeDiff <= 0 && timeDiff > -3600000; // Active for 1 hour after start
+    // Meeting is active if it's within 15 minutes before start time and 2 hours after start
+    return timeDiff <= 900000 && timeDiff > -7200000; // 15 min before to 2 hours after
   };
-
-
 
   const isMeetingPending = (scheduledTime: string) => {
     const now = new Date();
     const meetingTime = new Date(scheduledTime);
-    return meetingTime.getTime() > now.getTime();
+    const timeDiff = meetingTime.getTime() - now.getTime();
+    // Meeting is pending if it's more than 15 minutes in the future
+    return timeDiff > 900000;
   };
 
   const getMeetingIcon = (meetingType: string) => {
@@ -202,10 +203,15 @@ export default function StudyGroups() {
   };
 
   const getButtonText = (group: StudyGroup) => {
-    if (isGroupActive(group.scheduledTime)) {
+    const now = new Date();
+    const meetingTime = new Date(group.scheduledTime);
+    const timeDiff = meetingTime.getTime() - now.getTime();
+    
+    // Show "Join Now" for meetings within 6 hours of start time
+    if (timeDiff <= 21600000 && timeDiff > -7200000) { // 6 hours before to 2 hours after
       return "Join Now";
-    } else if (isMeetingPending(group.scheduledTime)) {
-      return group.isMember ? "Pending" : "Set Reminder";
+    } else if (timeDiff > 21600000) { // More than 6 hours in future
+      return group.isMember ? "Joined" : "Join Group";
     }
     return "Meeting Ended";
   };
