@@ -145,17 +145,13 @@ export default function Quiz() {
     }
   };
 
-  const handleAnswerSelect = (answer: string) => {
-    if (!isAnswered) {
-      setSelectedAnswer(answer);
-    }
-  };
+  const handleAnswerSelect = async (answer: string) => {
+    if (isAnswered) return;
 
-  const handleSubmitAnswer = async () => {
-    if (!selectedAnswer || isAnswered) return;
-
+    setSelectedAnswer(answer);
+    
     const currentQuestion = questions[currentQuestionIndex];
-    const isCorrect = selectedAnswer === currentQuestion.correct_answer;
+    const isCorrect = answer === currentQuestion.correct_answer;
     const timeSpent = questionStartTime ? Math.floor((Date.now() - questionStartTime) / 1000) : 0;
 
     setIsAnswered(true);
@@ -185,7 +181,7 @@ export default function Quiz() {
         body: JSON.stringify({
           userId: userId,
             category: selectedCategory,
-            selectedAnswer,
+            selectedAnswer: answer,
             correctAnswer: currentQuestion.correct_answer,
             isCorrect,
             timeSpent,
@@ -235,6 +231,36 @@ export default function Quiz() {
     setSelectedAnswer('');
     setIsAnswered(false);
     setQuestionStartTime(Date.now());
+  };
+
+  const handleNextQuestionAfterAnswer = () => {
+    if (currentQuestionIndex < questions.length - 1) {
+      const randomIndex = getRandomQuestionIndex();
+      setCurrentQuestionIndex(randomIndex);
+      setSelectedAnswer('');
+      setIsAnswered(false);
+      setQuestionStartTime(Date.now());
+    } else {
+      setQuizCompleted(true);
+
+      // Force refresh all stats after quiz completion
+      try {
+        const finalScore = score + (selectedAnswer === questions[currentQuestionIndex].correct_answer ? 1 : 0);
+        const totalTime = startTime ? Math.round((new Date().getTime() - startTime.getTime()) / 1000) : 0;
+
+        // Force refresh all stats after quiz completion
+        setTimeout(() => {
+          queryClient.invalidateQueries({ queryKey: ['/api/user-stats'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/quiz-attempts'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/category-stats'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/daily-stats'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/leaderboard'] });
+        }, 1000); // Delay to ensure database has processed all attempts
+
+      } catch (error) {
+        console.error('Error updating final stats:', error);
+      }
+    }
   };
 
   const handleNextQuestion = async () => {
@@ -727,7 +753,7 @@ export default function Quiz() {
                   <button
                     key={option}
                     className={buttonStyle}
-                    onClick={() => !isAnswered && handleAnswerSelect(option)}
+                    onClick={() => handleAnswerSelect(option)}
                     disabled={isAnswered}
                   >
                     <div className="flex items-center space-x-4">
@@ -780,25 +806,17 @@ export default function Quiz() {
             <div className="flex justify-between mt-6">
               <div className="flex gap-3">
                 {!isAnswered ? (
-                  <>
-                    <Button 
-                      onClick={handleSubmitAnswer}
-                      disabled={!selectedAnswer}
-                      style={{ backgroundColor: '#3399FF' }}
-                    >
-                      Submit Answer
-                    </Button>
-                    <Button 
-                      onClick={handleSkipQuestion}
-                      variant="outline"
-                      className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                    >
-                      Skip Question
-                    </Button>
-                  </>
+                  <Button 
+                    onClick={handleSkipQuestion}
+                    variant="outline"
+                    className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                  >
+                    Next Question
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
                 ) : (
                   <Button 
-                    onClick={handleNextQuestion}
+                    onClick={handleNextQuestionAfterAnswer}
                     style={{ backgroundColor: '#3399FF' }}
                   >
                     {currentQuestionIndex < questions.length - 1 ? (
