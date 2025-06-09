@@ -464,11 +464,16 @@ export default function StudyGroups() {
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Calendar className="w-4 h-4" />
-                  {new Date(group.scheduledTime).toLocaleDateString()} at{' '}
-                  {new Date(group.scheduledTime).toLocaleTimeString([], { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                  })}
+                  {(() => {
+                    const date = new Date(group.scheduledTime);
+                    if (isNaN(date.getTime())) {
+                      return "Date not set";
+                    }
+                    return `${date.toLocaleDateString()} at ${date.toLocaleTimeString([], { 
+                      hour: '2-digit', 
+                      minute: '2-digit' 
+                    })}`;
+                  })()}
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Clock className="w-4 h-4" />

@@ -18,6 +18,7 @@ import Pricing from "@/pages/Pricing";
 import StudyGuide from "@/pages/StudyGuide";
 import StudyGroups from "@/pages/StudyGroups";
 import StudyTimer from "@/pages/StudyTimer";
+import StudyPlanner from "@/pages/StudyPlanner";
 import Performance from "@/pages/Performance";
 import Analytics from "@/pages/Analytics";
 import EnhancedAnalytics from "@/pages/EnhancedAnalytics";
@@ -103,6 +104,12 @@ function Router() {
         <ProtectedRoute>
           <Navigation />
           <StudyGroups />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/study-planner">
+        <ProtectedRoute>
+          <Navigation />
+          <StudyPlanner />
         </ProtectedRoute>
       </Route>
       <Route path="/performance">
