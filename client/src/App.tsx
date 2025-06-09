@@ -9,7 +9,7 @@ import { TooltipGuideProvider } from "@/contexts/TooltipGuideContext";
 import { TooltipGuide } from "@/components/TooltipGuide";
 import { AuthForm } from "@/components/AuthForm";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { Navigation } from "@/components/Navigation";
+import { AppLayout } from "@/components/AppLayout";
 import Landing from "@/pages/Landing";
 import Home from "@/pages/Home";
 import Quiz from "@/pages/Quiz";
@@ -60,92 +60,107 @@ function Router() {
       <Route path="/profile-setup" component={ProfileSetup} />
       <Route path="/home">
         <ProtectedRoute>
-          <Navigation />
-          <Home />
+          <AppLayout>
+            <Home />
+          </AppLayout>
         </ProtectedRoute>
       </Route>
       <Route path="/quiz">
         <ProtectedRoute>
-          <Navigation />
-          <Quiz />
+          <AppLayout>
+            <Quiz />
+          </AppLayout>
         </ProtectedRoute>
       </Route>
       <Route path="/notes">
         <ProtectedRoute>
-          <Navigation />
-          <Notes />
+          <AppLayout>
+            <Notes />
+          </AppLayout>
         </ProtectedRoute>
       </Route>
       <Route path="/pricing">
         <ProtectedRoute>
-          <Navigation />
-          <Pricing />
+          <AppLayout>
+            <Pricing />
+          </AppLayout>
         </ProtectedRoute>
       </Route>
       <Route path="/study">
         <ProtectedRoute>
-          <Navigation />
-          <StudyGuide />
+          <AppLayout>
+            <StudyGuide />
+          </AppLayout>
         </ProtectedRoute>
       </Route>
       <Route path="/study-guide">
         <ProtectedRoute>
-          <Navigation />
-          <StudyGuide />
+          <AppLayout>
+            <StudyGuide />
+          </AppLayout>
         </ProtectedRoute>
       </Route>
       <Route path="/study-timer">
         <ProtectedRoute>
-          <Navigation />
-          <StudyTimer />
+          <AppLayout>
+            <StudyTimer />
+          </AppLayout>
         </ProtectedRoute>
       </Route>
       <Route path="/study-groups">
         <ProtectedRoute>
-          <Navigation />
-          <StudyGroups />
+          <AppLayout>
+            <StudyGroups />
+          </AppLayout>
         </ProtectedRoute>
       </Route>
       <Route path="/study-planner">
         <ProtectedRoute>
-          <Navigation />
-          <StudyPlanner />
+          <AppLayout>
+            <StudyPlanner />
+          </AppLayout>
         </ProtectedRoute>
       </Route>
       <Route path="/performance">
         <ProtectedRoute>
-          <Navigation />
-          <Performance />
+          <AppLayout>
+            <Performance />
+          </AppLayout>
         </ProtectedRoute>
       </Route>
       <Route path="/analytics">
         <ProtectedRoute>
-          <Navigation />
-          <EnhancedAnalytics />
+          <AppLayout>
+            <EnhancedAnalytics />
+          </AppLayout>
         </ProtectedRoute>
       </Route>
       <Route path="/badges">
         <ProtectedRoute>
-          <Navigation />
-          <Badges />
+          <AppLayout>
+            <Badges />
+          </AppLayout>
         </ProtectedRoute>
       </Route>
       <Route path="/leaderboard">
         <ProtectedRoute>
-          <Navigation />
-          <Leaderboard />
+          <AppLayout>
+            <Leaderboard />
+          </AppLayout>
         </ProtectedRoute>
       </Route>
       <Route path="/resources">
         <ProtectedRoute>
-          <Navigation />
-          <Resources />
+          <AppLayout>
+            <Resources />
+          </AppLayout>
         </ProtectedRoute>
       </Route>
       <Route path="/ai-tools">
         <ProtectedRoute>
-          <Navigation />
-          <AiTools />
+          <AppLayout>
+            <AiTools />
+          </AppLayout>
         </ProtectedRoute>
       </Route>
       <Route component={NotFound} />
