@@ -802,12 +802,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Google Drive Routes
   app.get("/api/google-drive/files", async (req, res) => {
     try {
+      console.log("🔍 Attempting to fetch Google Drive files...");
       const { getFilesFromFolder } = await import('./googleDrive');
       const files = await getFilesFromFolder();
-      console.log(`📚 Returning ${files.length} files from Google Drive`);
+      console.log(`📚 Successfully fetched ${files.length} files from Google Drive`);
+      
+      if (files.length > 0) {
+        console.log("📖 Sample file names:", files.slice(0, 3).map(f => f.name));
+      } else {
+        console.log("📂 No files found in Google Drive folder");
+      }
+      
       res.json(files);
     } catch (error: any) {
-      console.error("Google Drive files error:", error);
+      console.error("❌ Google Drive files error:", error.message);
+      console.error("Error details:", {
+        code: error.code,
+        status: error.status,
+        message: error.message
+      });
       
       // Return empty array instead of error to prevent UI breaking
       if (error.code === 404 || error.message.includes('Folder not found')) {
@@ -816,7 +829,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         res.status(500).json({ 
           error: "Failed to fetch files from Google Drive",
-          message: error.message || "Please try again later"
+          message: error.message || "Please try again later",
+          details: error.code || "UNKNOWN_ERROR"
         });
       }
     }
@@ -847,6 +861,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         error: "Failed to fetch file content",
         message: error.message || "Please try again later"
+      });
+    }
+  });
+
+  // Test Google Drive connection
+  app.get("/api/google-drive/test", async (req, res) => {
+    try {
+      console.log("🧪 Testing Google Drive connection...");
+      const { checkFolderAccess } = await import('./googleDrive');
+      const hasAccess = await checkFolderAccess();
+      
+      if (hasAccess) {
+        console.log("✅ Google Drive folder access confirmed");
+        res.json({ 
+          success: true, 
+          message: "Google Drive folder is accessible",
+          folderId: "1C3IdOlXofYJcUXuVRD8FHsLcPBjSTlEj"
+        });
+      } else {
+        console.log("❌ Google Drive folder access denied");
+        res.json({ 
+          success: false, 
+          message: "Cannot access Google Drive folder",
+          suggestion: "Ensure folder is shared with service account: docdot-drive-access@docdotwp.iam.gserviceaccount.com"
+        });
+      }
+    } catch (error: any) {
+      console.error("Google Drive test error:", error);
+      res.json({ 
+        success: false, 
+        error: error.message,
+        details: error.code || "UNKNOWN_ERROR"
       });
     }
   });
