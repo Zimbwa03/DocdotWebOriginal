@@ -177,17 +177,21 @@ export default function StudyGroups() {
   const isGroupActive = (scheduledTime: string) => {
     const now = new Date();
     const meetingTime = new Date(scheduledTime);
-    const timeDiff = meetingTime.getTime() - now.getTime();
-    // Meeting is active if it's within 15 minutes before start time and 2 hours after start
-    return timeDiff <= 900000 && timeDiff > -7200000; // 15 min before to 2 hours after
+    if (isNaN(meetingTime.getTime())) return false;
+    
+    const hoursDiff = (meetingTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+    // Meeting is active if it's within 1 hour before start and 2 hours after start
+    return hoursDiff <= 1 && hoursDiff > -2;
   };
 
   const isMeetingPending = (scheduledTime: string) => {
     const now = new Date();
     const meetingTime = new Date(scheduledTime);
-    const timeDiff = meetingTime.getTime() - now.getTime();
-    // Meeting is pending if it's more than 15 minutes in the future
-    return timeDiff > 900000;
+    if (isNaN(meetingTime.getTime())) return false;
+    
+    const hoursDiff = (meetingTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+    // Meeting is pending if it's more than 1 hour in the future
+    return hoursDiff > 1;
   };
 
   const getMeetingIcon = (meetingType: string) => {
@@ -228,9 +232,19 @@ export default function StudyGroups() {
   };
 
   const getButtonVariant = (group: StudyGroup) => {
-    if (isGroupActive(group.scheduledTime)) {
+    const now = new Date();
+    const meetingTime = new Date(group.scheduledTime);
+    
+    if (isNaN(meetingTime.getTime())) {
+      return "outline";
+    }
+    
+    const hoursDiff = (meetingTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+    
+    // Active button for meetings within 1 hour
+    if (hoursDiff <= 1 && hoursDiff > -2) {
       return "default";
-    } else if (isMeetingPending(group.scheduledTime)) {
+    } else if (hoursDiff > 1) {
       return group.isMember ? "secondary" : "outline";
     }
     return "ghost";
