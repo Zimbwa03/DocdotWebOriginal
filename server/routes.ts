@@ -1006,20 +1006,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Study Groups API Routes
   app.get("/api/study-groups", async (req, res) => {
     try {
+      console.log("📚 Fetching study groups...");
       const groups = await db.select({
         id: studyGroups.id,
         title: studyGroups.title,
         description: studyGroups.description,
-        meetingLink: studyGroups.meeting_link,
-        meetingType: studyGroups.meeting_type,
-        scheduledTime: studyGroups.scheduled_time,
+        meeting_link: studyGroups.meeting_link,
+        meeting_type: studyGroups.meeting_type,
+        scheduled_time: studyGroups.scheduled_time,
         duration: studyGroups.duration,
-        maxMembers: studyGroups.max_members,
-        currentMembers: studyGroups.current_members,
-        isActive: studyGroups.is_active,
+        max_members: studyGroups.max_members,
+        current_members: studyGroups.current_members,
+        is_active: studyGroups.is_active,
         category: studyGroups.category,
-        creatorId: studyGroups.creator_id,
-        createdAt: studyGroups.created_at,
+        creator_id: studyGroups.creator_id,
+        created_at: studyGroups.created_at,
         creatorFirstName: users.firstName,
         creatorLastName: users.lastName
       })
@@ -1027,7 +1028,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       .leftJoin(users, eq(studyGroups.creator_id, users.id))
       .orderBy(desc(studyGroups.scheduled_time));
 
-      res.json(groups);
+      // Map to frontend-expected format
+      const formattedGroups = groups.map(group => ({
+        id: group.id,
+        title: group.title,
+        description: group.description,
+        meetingLink: group.meeting_link,
+        meetingType: group.meeting_type,
+        scheduledTime: group.scheduled_time,
+        duration: group.duration,
+        maxMembers: group.max_members,
+        currentMembers: group.current_members,
+        isActive: group.is_active,
+        category: group.category,
+        creatorId: group.creator_id,
+        createdAt: group.created_at,
+        creator: group.creatorFirstName && group.creatorLastName ? {
+          firstName: group.creatorFirstName,
+          lastName: group.creatorLastName
+        } : undefined
+      }));
+
+      console.log(`📚 Found ${formattedGroups.length} study groups`);
+      res.json(formattedGroups);
     } catch (error) {
       console.error("Error fetching study groups:", error);
       res.status(500).json({ error: "Failed to fetch study groups" });
@@ -1036,46 +1059,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/study-groups", async (req, res) => {
     try {
+      console.log("🔧 Creating study group with data:", req.body);
+      
       const { 
         creatorId, 
         title, 
         description, 
-        meetingLink, 
-        meetingType, 
+        meeting_link, 
+        meetingLink,
+        meeting_type, 
+        meetingType,
+        scheduled_time,
         scheduledTime, 
         duration, 
+        max_members,
         maxMembers,
         category 
       } = req.body;
 
-      if (!creatorId || !title || !meetingLink || !meetingType || !scheduledTime) {
+      // Handle both camelCase and snake_case field names
+      const finalCreatorId = creatorId;
+      const finalMeetingLink = meeting_link || meetingLink;
+      const finalMeetingType = meeting_type || meetingType;
+      const finalScheduledTime = scheduled_time || scheduledTime;
+      const finalMaxMembers = max_members || maxMembers;
+
+      if (!finalCreatorId || !title || !finalMeetingLink || !finalMeetingType || !finalScheduledTime) {
+        console.error("Missing required fields:", {
+          creatorId: finalCreatorId,
+          title,
+          meetingLink: finalMeetingLink,
+          meetingType: finalMeetingType,
+          scheduledTime: finalScheduledTime
+        });
         return res.status(400).json({ error: "Missing required fields" });
       }
 
       const [newGroup] = await db.insert(studyGroups).values({
-        creator_id: creatorId,
+        creator_id: finalCreatorId,
         title,
-        description,
-        meeting_link: meetingLink,
-        meeting_type: meetingType,
-        scheduled_time: new Date(scheduledTime),
+        description: description || null,
+        meeting_link: finalMeetingLink,
+        meeting_type: finalMeetingType,
+        scheduled_time: new Date(finalScheduledTime),
         duration: duration || 60,
-        max_members: maxMembers || 10,
+        max_members: finalMaxMembers || 10,
         current_members: 1,
-        category,
+        category: category || null,
         is_active: false
       }).returning();
 
-      // Auto-add creator as member
-      await db.insert(studyGroupMembers).values({
-        groupId: newGroup.id,
-        userId: creatorId
-      });
+      console.log("✅ Study group created:", newGroup.id);
 
-      res.json({ group: newGroup, success: true });
+      // Auto-add creator as member
+      try {
+        await db.insert(studyGroupMembers).values({
+          groupId: newGroup.id,
+          userId: finalCreatorId
+        });
+        console.log("✅ Creator added as member");
+      } catch (memberError) {
+        console.error("Error adding creator as member:", memberError);
+      }
+
+      // Format response for frontend
+      const formattedGroup = {
+        id: newGroup.id,
+        title: newGroup.title,
+        description: newGroup.description,
+        meetingLink: newGroup.meeting_link,
+        meetingType: newGroup.meeting_type,
+        scheduledTime: newGroup.scheduled_time,
+        duration: newGroup.duration,
+        maxMembers: newGroup.max_members,
+        currentMembers: newGroup.current_members,
+        isActive: newGroup.is_active,
+        category: newGroup.category,
+        creatorId: newGroup.creator_id,
+        createdAt: newGroup.created_at
+      };
+
+      res.json({ group: formattedGroup, success: true });
     } catch (error) {
       console.error("Error creating study group:", error);
-      res.status(500).json({ error: "Failed to create study group" });
+      res.status(500).json({ error: "Failed to create study group", details: error.message });
     }
   });
 

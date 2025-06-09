@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Video, Calendar, Clock, Plus, ExternalLink } from "lucide-react";
+import { Users, Video, Calendar, Clock, Plus, ExternalLink, Search, Filter, Settings } from "lucide-react";
 import { SiZoom, SiGooglemeet } from "react-icons/si";
 
 interface StudyGroup {
@@ -41,6 +41,9 @@ export default function StudyGroups() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [showSettings, setShowSettings] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -56,28 +59,48 @@ export default function StudyGroups() {
   const { data: studyGroups = [], isLoading } = useQuery({
     queryKey: ['/api/study-groups'],
     queryFn: async () => {
+      console.log("🔍 Fetching study groups...");
       const response = await fetch('/api/study-groups');
-      if (!response.ok) return [];
-      return response.json();
+      if (!response.ok) {
+        console.error("Failed to fetch study groups:", response.status);
+        return [];
+      }
+      const data = await response.json();
+      console.log("📚 Study groups received:", data.length);
+      return data;
     },
   });
+
+  // Filter study groups based on search and category
+  const filteredStudyGroups = studyGroups.filter((group: StudyGroup) => {
+    const matchesSearch = group.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         group.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         group.category?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesCategory = categoryFilter === 'all' || group.category === categoryFilter;
+    
+    return matchesSearch && matchesCategory;
+  });
+
+  // Get unique categories for filter
+  const categories = Array.from(new Set(studyGroups.map((group: StudyGroup) => group.category).filter(Boolean)));
 
   // Create study group mutation
   const createGroupMutation = useMutation({
     mutationFn: async (data: any) => {
       const groupData = {
+        creatorId: user?.id,
         title: data.title,
         description: data.description,
-        meeting_link: data.meetingLink,
-        meeting_type: data.meetingType,
-        scheduled_time: new Date(data.scheduledTime).toISOString(),
+        meetingLink: data.meetingLink,
+        meetingType: data.meetingType,
+        scheduledTime: new Date(data.scheduledTime).toISOString(),
         duration: data.duration,
-        max_members: data.maxMembers,
-        category: data.category,
-        creatorId: user?.id
+        maxMembers: data.maxMembers,
+        category: data.category
       };
 
-      console.log('Sending study group data:', groupData);
+      console.log('🔧 Creating study group with data:', groupData);
 
       const response = await fetch('/api/study-groups', {
         method: 'POST',
@@ -87,10 +110,13 @@ export default function StudyGroups() {
       
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('Study group creation failed:', errorData);
         throw new Error(errorData.error || 'Failed to create group');
       }
       
-      return response.json();
+      const result = await response.json();
+      console.log('✅ Study group created successfully:', result);
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/study-groups'] });
@@ -218,13 +244,38 @@ export default function StudyGroups() {
           <p className="text-gray-600 mt-2">Join collaborative study sessions with fellow medical students</p>
         </div>
         
-        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Create Group
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Dialog open={showSettings} onOpenChange={setShowSettings}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Settings className="w-4 h-4 mr-2" />
+                Settings
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Study Group Settings</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label>Notification Preferences</Label>
+                  <p className="text-sm text-gray-500">Manage how you receive study group notifications</p>
+                </div>
+                <div>
+                  <Label>Privacy Settings</Label>
+                  <p className="text-sm text-gray-500">Control who can see your study group activity</p>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          
+          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Create Group
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Create Study Group</DialogTitle>
@@ -322,8 +373,45 @@ export default function StudyGroups() {
         </Dialog>
       </div>
 
+      {/* Search and Filter Section */}
+      <div className="mb-6 space-y-4">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              placeholder="Search study groups..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <div className="flex gap-2">
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="w-[180px]">
+                <Filter className="w-4 h-4 mr-2" />
+                <SelectValue placeholder="Filter by category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map(category => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        
+        {searchTerm && (
+          <div className="text-sm text-gray-500">
+            {filteredStudyGroups.length} group(s) found for "{searchTerm}"
+          </div>
+        )}
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {studyGroups.map((group: StudyGroup) => (
+        {filteredStudyGroups.map((group: StudyGroup) => (
           <Card key={group.id} className="relative">
             <CardHeader>
               <div className="flex items-start justify-between">
@@ -392,15 +480,33 @@ export default function StudyGroups() {
         ))}
       </div>
 
-      {studyGroups.length === 0 && (
-        <div className="text-center py-12">
+      {filteredStudyGroups.length === 0 && (
+        <div className="text-center py-12 col-span-full">
           <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">No study groups yet</h3>
-          <p className="text-gray-600 mb-4">Be the first to create a study group and start collaborating!</p>
-          <Button onClick={() => setShowCreateDialog(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Create Your First Group
-          </Button>
+          {studyGroups.length === 0 ? (
+            <>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No study groups yet</h3>
+              <p className="text-gray-600 mb-4">Be the first to create a study group and start collaborating!</p>
+              <Button onClick={() => setShowCreateDialog(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Create Your First Group
+              </Button>
+            </>
+          ) : (
+            <>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No groups match your search</h3>
+              <p className="text-gray-600 mb-4">Try adjusting your search terms or create a new group.</p>
+              <div className="flex gap-2 justify-center">
+                <Button variant="outline" onClick={() => setSearchTerm('')}>
+                  Clear Search
+                </Button>
+                <Button onClick={() => setShowCreateDialog(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Group
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>
