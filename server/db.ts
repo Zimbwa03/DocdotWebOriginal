@@ -9,7 +9,8 @@ import {
 } from '@shared/schema';
 import { eq, desc, sql, and, gte, isNotNull, lte, gt, lt, count, sum, avg } from 'drizzle-orm';
 
-const connectionString = process.env.DATABASE_URL!;
+// Use Supabase connection string instead of Neon
+const connectionString = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL!;
 const client = postgres(connectionString);
 export const db = drizzle(client);
 
