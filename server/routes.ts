@@ -986,13 +986,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "User ID is required" });
       }
 
-      console.log("Fetching study sessions for user:", userId);
-
       const sessions = await db.select().from(studyPlannerSessions)
         .where(eq(studyPlannerSessions.userId, userId as string))
         .orderBy(desc(studyPlannerSessions.date));
 
-      console.log(`Found ${sessions.length} study sessions for user ${userId}`);
       res.json(sessions);
     } catch (error) {
       console.error("Error fetching study sessions:", error);
@@ -1004,51 +1001,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { userId, title, subject, topic, date, startTime, endTime, duration, notes } = req.body;
 
-      console.log("Creating study session with data:", { userId, title, subject, date, startTime, endTime });
-
       if (!userId || !title || !subject || !date || !startTime || !endTime) {
-        console.error("Missing required fields:", { userId, title, subject, date, startTime, endTime });
-        return res.status(400).json({ 
-          error: "Missing required fields",
-          received: { userId: !!userId, title: !!title, subject: !!subject, date: !!date, startTime: !!startTime, endTime: !!endTime }
-        });
+        return res.status(400).json({ error: "Missing required fields" });
       }
 
-      // Parse date properly
-      let sessionDate;
-      if (typeof date === 'string') {
-        // Handle both ISO date strings and YYYY-MM-DD format
-        sessionDate = date.includes('T') ? new Date(date) : new Date(date + 'T00:00:00.000Z');
-      } else {
-        sessionDate = new Date(date);
-      }
-
-      const sessionData = {
+      const [newSession] = await db.insert(studyPlannerSessions).values({
         userId,
         title,
         subject,
-        topic: topic || null,
-        date: sessionDate,
+        topic,
+        date: typeof date === 'string' ? new Date(date + 'T00:00:00.000Z') : new Date(date),
         startTime,
         endTime,
         duration: duration || 60,
-        notes: notes || null,
+        notes,
         status: 'planned'
-      };
+      }).returning();
 
-      console.log("Inserting session data:", sessionData);
-
-      const [newSession] = await db.insert(studyPlannerSessions).values(sessionData).returning();
-
-      console.log("✅ Study session created successfully:", newSession.id);
       res.json({ session: newSession, success: true });
     } catch (error) {
       console.error("Error creating study session:", error);
-      res.status(500).json({ 
-        error: "Failed to create study session", 
-        details: error.message,
-        stack: error.stack?.substring(0, 500)
-      });
+      res.status(500).json({ error: "Failed to create study session" });
     }
   });
 
@@ -1086,9 +1059,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Study Groups API Routes
   app.get("/api/study-groups", async (req, res) => {
     try {
-      const { userId } = req.query;
-      console.log("📚 Fetching study groups for user:", userId);
-
+      console.log("📚 Fetching study groups...");
       const groups = await db.select({
         id: studyGroups.id,
         title: studyGroups.title,
@@ -1110,15 +1081,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       .leftJoin(users, eq(studyGroups.creator_id, users.id))
       .orderBy(desc(studyGroups.scheduled_time));
 
-      // Get user memberships if userId provided
-      let userMemberships = [];
-      if (userId) {
-        userMemberships = await db.select({ groupId: studyGroupMembers.groupId })
-          .from(studyGroupMembers)
-          .where(eq(studyGroupMembers.userId, userId as string));
-      }
-      const memberGroupIds = new Set(userMemberships.map(m => m.groupId));
-
       // Map to frontend-expected format
       const formattedGroups = groups.map(group => ({
         id: group.id,
@@ -1134,14 +1096,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         category: group.category,
         creatorId: group.creator_id,
         createdAt: group.created_at,
-        isMember: memberGroupIds.has(group.id),
         creator: group.creatorFirstName && group.creatorLastName ? {
           firstName: group.creatorFirstName,
           lastName: group.creatorLastName
         } : undefined
       }));
 
-      console.log(`📚 Found ${formattedGroups.length} study groups, user is member of ${memberGroupIds.size} groups`);
+      console.log(`📚 Found ${formattedGroups.length} study groups`);
       res.json(formattedGroups);
     } catch (error) {
       console.error("Error fetching study groups:", error);
@@ -1187,39 +1148,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Missing required fields" });
       }
 
-      // Validate meeting link format
-      if (!finalMeetingLink.startsWith('http')) {
-        return res.status(400).json({ error: "Meeting link must be a valid URL" });
-      }
-
-      // Validate scheduled time is in the future
-      const scheduledDate = new Date(finalScheduledTime);
-      if (scheduledDate <= new Date()) {
-        return res.status(400).json({ error: "Scheduled time must be in the future" });
-      }
-
       const [newGroup] = await db.insert(studyGroups).values({
         creator_id: finalCreatorId,
         title,
         description: description || null,
         meeting_link: finalMeetingLink,
         meeting_type: finalMeetingType,
-        scheduled_time: scheduledDate,
+        scheduled_time: new Date(finalScheduledTime),
         duration: duration || 60,
         max_members: finalMaxMembers || 10,
         current_members: 1,
         category: category || null,
-        is_active: true
+        is_active: false
       }).returning();
 
       console.log("✅ Study group created:", newGroup.id);
 
       // Auto-add creator as member
-      await db.insert(studyGroupMembers).values({
-        groupId: newGroup.id,
-        userId: finalCreatorId
-      });
-      console.log("✅ Creator added as member");
+      try {
+        await db.insert(studyGroupMembers).values({
+          groupId: newGroup.id,
+          userId: finalCreatorId
+        });
+        console.log("✅ Creator added as member");
+      } catch (memberError) {
+        console.error("Error adding creator as member:", memberError);
+      }
 
       // Format response for frontend
       const formattedGroup = {
@@ -1235,11 +1189,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isActive: newGroup.is_active,
         category: newGroup.category,
         creatorId: newGroup.creator_id,
-        createdAt: newGroup.created_at,
-        isMember: true
+        createdAt: newGroup.created_at
       };
 
-      res.json(formattedGroup);
+      res.json({ group: formattedGroup, success: true });
     } catch (error) {
       console.error("Error creating study group:", error);
       res.status(500).json({ error: "Failed to create study group", details: error.message });

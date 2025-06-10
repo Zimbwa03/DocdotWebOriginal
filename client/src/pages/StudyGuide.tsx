@@ -25,11 +25,9 @@ import StudyGroups from "./StudyGroups";
 import StudyTimer from "./StudyTimer";
 import StudyPlanner from "./StudyPlanner";
 import GoogleDriveResourcesGrid from "@/components/GoogleDriveResourcesGrid";
-import { useStudyState } from "@/contexts/StudyStateContext";
 
 export default function StudyGuide() {
   const [searchQuery, setSearchQuery] = useState("");
-  const { activeTab, setActiveTab } = useStudyState();
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -45,7 +43,7 @@ export default function StudyGuide() {
         </div>
 
         {/* Main Content */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs defaultValue="timer" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="timer" className="flex items-center gap-2">
               <Timer className="w-4 h-4" />

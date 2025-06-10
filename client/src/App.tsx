@@ -6,7 +6,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { TooltipGuideProvider } from "@/contexts/TooltipGuideContext";
-import { StudyStateProvider } from "@/contexts/StudyStateContext";
 import { TooltipGuide } from "@/components/TooltipGuide";
 import { AuthForm } from "@/components/AuthForm";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -159,15 +158,13 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
-          <StudyStateProvider>
-            <TooltipGuideProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Router />
-                <TooltipGuide />
-              </TooltipProvider>
-            </TooltipGuideProvider>
-          </StudyStateProvider>
+          <TooltipGuideProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Router />
+              <TooltipGuide />
+            </TooltipProvider>
+          </TooltipGuideProvider>
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
