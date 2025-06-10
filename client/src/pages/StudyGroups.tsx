@@ -142,17 +142,26 @@ export default function StudyGroups() {
   // Create study group mutation
   const createGroupMutation = useMutation({
     mutationFn: async (data: any) => {
+      console.log("Creating group with data:", data);
+      
       const groupData = {
-        creator_id: user?.id,
-        title: data.title,
-        description: data.description,
-        meeting_link: data.meeting_link,
+        creatorId: user?.id,
+        creator_id: user?.id, // Include both formats for compatibility
+        title: data.title.trim(),
+        description: data.description?.trim() || null,
+        meetingLink: data.meeting_link.trim(),
+        meeting_link: data.meeting_link.trim(),
+        meetingType: data.meeting_type,
         meeting_type: data.meeting_type,
+        scheduledTime: new Date(data.scheduled_time).toISOString(),
         scheduled_time: new Date(data.scheduled_time).toISOString(),
-        duration: data.duration,
-        max_members: data.max_members,
-        category: data.category
+        duration: data.duration || 90,
+        maxMembers: data.max_members || 10,
+        max_members: data.max_members || 10,
+        category: data.category.trim()
       };
+
+      console.log("Sending request with data:", groupData);
 
       const response = await fetch('/api/study-groups', {
         method: 'POST',
@@ -162,12 +171,14 @@ export default function StudyGroups() {
       
       if (!response.ok) {
         const errorData = await response.json();
+        console.error("Server error:", errorData);
         throw new Error(errorData.error || 'Failed to create group');
       }
       
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("Group created successfully:", data);
       queryClient.invalidateQueries({ queryKey: ['/api/study-groups'] });
       setShowCreateDialog(false);
       resetForm();
@@ -177,6 +188,7 @@ export default function StudyGroups() {
       });
     },
     onError: (error: any) => {
+      console.error("Error creating group:", error);
       toast({
         title: "Error creating study group",
         description: error.message || "Please try again later.",
@@ -251,10 +263,23 @@ export default function StudyGroups() {
   };
 
   const handleCreateGroup = () => {
-    if (!formData.title || !formData.meeting_link || !formData.scheduled_time || !formData.category) {
+    console.log("Form data before validation:", formData);
+    
+    // Check all required fields
+    const requiredFields = [
+      { field: 'title', name: 'Title' },
+      { field: 'meeting_link', name: 'Meeting link' },
+      { field: 'scheduled_time', name: 'Scheduled time' },
+      { field: 'category', name: 'Category' }
+    ];
+
+    const missingFields = requiredFields.filter(({ field }) => !formData[field] || formData[field].trim() === '');
+    
+    if (missingFields.length > 0) {
+      const missingFieldNames = missingFields.map(({ name }) => name).join(', ');
       toast({
-        title: "Please fill in all required fields",
-        description: "Title, meeting link, time, and category are required.",
+        title: "Missing required fields",
+        description: `Please fill in: ${missingFieldNames}`,
         variant: "destructive"
       });
       return;
@@ -271,6 +296,18 @@ export default function StudyGroups() {
       return;
     }
 
+    // Validate meeting link format
+    const linkPattern = /^https?:\/\/.+/;
+    if (!linkPattern.test(formData.meeting_link)) {
+      toast({
+        title: "Invalid meeting link",
+        description: "Please enter a valid URL starting with http:// or https://",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    console.log("Creating group with validated data:", formData);
     createGroupMutation.mutate(formData);
   };
 
@@ -371,8 +408,12 @@ export default function StudyGroups() {
                     value={formData.title}
                     onChange={(e) => setFormData({...formData, title: e.target.value})}
                     placeholder="e.g., Cardiovascular Physiology Study Session"
-                    className="mt-1"
+                    className={`mt-1 ${!formData.title.trim() ? 'border-red-300' : ''}`}
+                    required
                   />
+                  {!formData.title.trim() && (
+                    <p className="text-xs text-red-500 mt-1">Title is required</p>
+                  )}
                 </div>
 
                 <div>
@@ -389,8 +430,11 @@ export default function StudyGroups() {
 
                 <div>
                   <Label htmlFor="category">Medical Subject *</Label>
-                  <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})}>
-                    <SelectTrigger className="mt-1">
+                  <Select value={formData.category} onValueChange={(value) => {
+                    console.log("Category selected:", value);
+                    setFormData({...formData, category: value});
+                  }}>
+                    <SelectTrigger className={`mt-1 ${!formData.category ? 'border-red-300' : ''}`}>
                       <SelectValue placeholder="Select a medical subject" />
                     </SelectTrigger>
                     <SelectContent>
@@ -399,6 +443,9 @@ export default function StudyGroups() {
                       ))}
                     </SelectContent>
                   </Select>
+                  {!formData.category && (
+                    <p className="text-xs text-red-500 mt-1">Please select a medical subject</p>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -454,8 +501,12 @@ export default function StudyGroups() {
                     value={formData.meeting_link}
                     onChange={(e) => setFormData({...formData, meeting_link: e.target.value})}
                     placeholder="https://zoom.us/j/... or https://meet.google.com/..."
-                    className="mt-1"
+                    className={`mt-1 ${!formData.meeting_link.trim() ? 'border-red-300' : ''}`}
+                    required
                   />
+                  {!formData.meeting_link.trim() && (
+                    <p className="text-xs text-red-500 mt-1">Meeting link is required</p>
+                  )}
                 </div>
 
                 <div>
@@ -465,9 +516,13 @@ export default function StudyGroups() {
                     type="datetime-local"
                     value={formData.scheduled_time}
                     onChange={(e) => setFormData({...formData, scheduled_time: e.target.value})}
-                    className="mt-1"
+                    className={`mt-1 ${!formData.scheduled_time ? 'border-red-300' : ''}`}
                     min={new Date().toISOString().slice(0, 16)}
+                    required
                   />
+                  {!formData.scheduled_time && (
+                    <p className="text-xs text-red-500 mt-1">Please select a date and time</p>
+                  )}
                 </div>
 
                 <div>
