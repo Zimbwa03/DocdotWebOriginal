@@ -29,6 +29,10 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { apiRequest } from "@/lib/queryClient";
 
+// Timer persistence keys
+const TIMER_STORAGE_KEY = 'docdot_study_timer_state';
+const TIMER_START_TIME_KEY = 'docdot_timer_start_time';
+
 // Enhanced music tracks for different study environments
 const MUSIC_TRACKS = [
   { name: "Focus Music for Reading", url: "https://youtu.be/WPni755-Krg", genre: "Ambient Study", duration: "Extended" },
@@ -53,25 +57,74 @@ const MOTIVATIONAL_QUOTES = [
   "Your limitation—it's only your imagination.",
 ];
 
+// Helper functions for state persistence
+const saveTimerState = (state: any) => {
+  try {
+    localStorage.setItem(TIMER_STORAGE_KEY, JSON.stringify(state));
+  } catch (error) {
+    console.error('Failed to save timer state:', error);
+  }
+};
+
+const loadTimerState = () => {
+  try {
+    const saved = localStorage.getItem(TIMER_STORAGE_KEY);
+    return saved ? JSON.parse(saved) : null;
+  } catch (error) {
+    console.error('Failed to load timer state:', error);
+    return null;
+  }
+};
+
+const saveTimerStartTime = (startTime: number) => {
+  try {
+    localStorage.setItem(TIMER_START_TIME_KEY, startTime.toString());
+  } catch (error) {
+    console.error('Failed to save timer start time:', error);
+  }
+};
+
+const loadTimerStartTime = () => {
+  try {
+    const saved = localStorage.getItem(TIMER_START_TIME_KEY);
+    return saved ? parseInt(saved, 10) : null;
+  } catch (error) {
+    console.error('Failed to load timer start time:', error);
+    return null;
+  }
+};
+
+const clearTimerStorage = () => {
+  try {
+    localStorage.removeItem(TIMER_STORAGE_KEY);
+    localStorage.removeItem(TIMER_START_TIME_KEY);
+  } catch (error) {
+    console.error('Failed to clear timer storage:', error);
+  }
+};
+
 export default function StudyTimer() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Timer states
-  const [studyGoal, setStudyGoal] = useState(25);
-  const [shortBreak, setShortBreak] = useState(5);
-  const [longBreak, setLongBreak] = useState(15);
-  const [isRunning, setIsRunning] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(studyGoal * 60);
-  const [isPomodoroMode, setIsPomodoroMode] = useState(true);
-  const [currentPhase, setCurrentPhase] = useState<'study' | 'shortBreak' | 'longBreak'>('study');
-  const [pomodoroCount, setPomodoroCount] = useState(0);
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [notes, setNotes] = useState("");
-  const [totalTimeStudied, setTotalTimeStudied] = useState(0);
-  const [dailyGoal, setDailyGoal] = useState(120); // minutes
-  const [streakCount, setStreakCount] = useState(0);
+  // Load saved state or use defaults
+  const savedState = loadTimerState();
+  
+  // Timer states with persistence
+  const [studyGoal, setStudyGoal] = useState(savedState?.studyGoal || 25);
+  const [shortBreak, setShortBreak] = useState(savedState?.shortBreak || 5);
+  const [longBreak, setLongBreak] = useState(savedState?.longBreak || 15);
+  const [isRunning, setIsRunning] = useState(savedState?.isRunning || false);
+  const [timeLeft, setTimeLeft] = useState(savedState?.timeLeft || (savedState?.studyGoal || 25) * 60);
+  const [isPomodoroMode, setIsPomodoroMode] = useState(savedState?.isPomodoroMode ?? true);
+  const [currentPhase, setCurrentPhase] = useState<'study' | 'shortBreak' | 'longBreak'>(savedState?.currentPhase || 'study');
+  const [pomodoroCount, setPomodoroCount] = useState(savedState?.pomodoroCount || 0);
+  const [selectedCategory, setSelectedCategory] = useState(savedState?.selectedCategory || "");
+  const [notes, setNotes] = useState(savedState?.notes || "");
+  const [totalTimeStudied, setTotalTimeStudied] = useState(savedState?.totalTimeStudied || 0);
+  const [dailyGoal, setDailyGoal] = useState(savedState?.dailyGoal || 120);
+  const [streakCount, setStreakCount] = useState(savedState?.streakCount || 0);
 
   // Music and sound states
   const [isBackgroundMusicOn, setIsBackgroundMusicOn] = useState(false);
@@ -92,7 +145,7 @@ export default function StudyTimer() {
     queryKey: ['/api/note-categories'],
   });
 
-  // Initialize audio and motivational quote
+  // Initialize audio, motivational quote, and restore timer state
   useEffect(() => {
     // Note: YouTube URLs require iframe embed for proper playback
     // Initialize notification sound for timer alerts
@@ -101,12 +154,54 @@ export default function StudyTimer() {
     // Set initial motivational quote
     setMotivationalQuote(MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)]);
     
+    // Restore timer if it was running
+    if (savedState?.isRunning) {
+      const startTime = loadTimerStartTime();
+      if (startTime) {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const newTimeLeft = Math.max(0, savedState.timeLeft - elapsed);
+        
+        if (newTimeLeft > 0) {
+          setTimeLeft(newTimeLeft);
+          setIsRunning(true);
+        } else {
+          // Timer has finished while away
+          handlePhaseComplete();
+        }
+      }
+    }
+    
     return () => {
       if (notificationAudioRef.current) {
         notificationAudioRef.current.src = "";
       }
     };
   }, []);
+
+  // Save state whenever important values change
+  useEffect(() => {
+    const currentState = {
+      studyGoal,
+      shortBreak,
+      longBreak,
+      isRunning,
+      timeLeft,
+      isPomodoroMode,
+      currentPhase,
+      pomodoroCount,
+      selectedCategory,
+      notes,
+      totalTimeStudied,
+      dailyGoal,
+      streakCount
+    };
+    
+    saveTimerState(currentState);
+    
+    if (isRunning) {
+      saveTimerStartTime(Date.now() - ((getCurrentPhaseDuration() * 60 - timeLeft) * 1000));
+    }
+  }, [studyGoal, shortBreak, longBreak, isRunning, timeLeft, isPomodoroMode, currentPhase, pomodoroCount, selectedCategory, notes, totalTimeStudied, dailyGoal, streakCount]);
 
   // Track changes trigger iframe reload for YouTube integration
   useEffect(() => {
@@ -194,6 +289,7 @@ export default function StudyTimer() {
     } else {
       setTotalTimeStudied(prev => prev + studyGoal);
       setStreakCount(prev => prev + 1);
+      clearTimerStorage(); // Clear storage when session is complete
       toast({
         title: "Session Complete!",
         description: `Excellent! You studied for ${studyGoal} minutes.`,
@@ -204,6 +300,7 @@ export default function StudyTimer() {
   // Control functions
   const startTimer = () => {
     setIsRunning(true);
+    saveTimerStartTime(Date.now() - ((getCurrentPhaseDuration() * 60 - timeLeft) * 1000));
     // YouTube iframe will handle autoplay based on isRunning state
   };
 
@@ -218,6 +315,7 @@ export default function StudyTimer() {
     setCurrentPhase('study');
     const duration = getCurrentPhaseDuration();
     setTimeLeft(duration * 60);
+    clearTimerStorage();
     // YouTube iframe will handle stopping
   };
 
