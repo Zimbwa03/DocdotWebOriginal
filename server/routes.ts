@@ -1300,9 +1300,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (reminderTime > new Date()) {
         try {
           await db.insert(meetingReminders).values({
-            groupId,
-            userId,
-            reminderTime
+            groupId: groupId,
+            userId: userId,
+            reminderTime: reminderTime
           });
           console.log(`📧 Reminder scheduled for ${userData.email} at ${reminderTime.toISOString()}`);
         } catch (reminderError) {

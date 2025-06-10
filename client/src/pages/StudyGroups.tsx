@@ -102,12 +102,14 @@ export default function StudyGroups() {
 
   // Fetch study groups
   const { data: studyGroups = [], isLoading, refetch } = useQuery({
-    queryKey: ['/api/study-groups'],
+    queryKey: ['/api/study-groups', user?.id],
     queryFn: async () => {
-      const response = await fetch('/api/study-groups');
+      const url = user?.id ? `/api/study-groups?userId=${user.id}` : '/api/study-groups';
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch study groups');
       return response.json();
     },
+    enabled: !!user,
   });
 
   // Filter study groups
