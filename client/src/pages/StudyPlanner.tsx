@@ -53,7 +53,7 @@ export default function StudyPlanner() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { selectedDate, setSelectedDate } = useStudyState();
-  
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const form = useForm<SessionFormData>({
@@ -85,7 +85,7 @@ export default function StudyPlanner() {
   const createSessionMutation = useMutation({
     mutationFn: async (sessionData: SessionFormData) => {
       if (!user) throw new Error('User not authenticated');
-      
+
       const payload = {
         userId: user.id,
         title: sessionData.title,
@@ -109,7 +109,7 @@ export default function StudyPlanner() {
         title: "Study session created!",
         description: "Your study session has been scheduled successfully.",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/study-sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/study-sessions', user?.id] });
       form.reset();
       setIsDialogOpen(false);
     },
@@ -134,7 +134,7 @@ export default function StudyPlanner() {
         title: "Session deleted",
         description: "The study session has been removed.",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/study-sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/study-sessions', user?.id] });
     },
     onError: (error: any) => {
       console.error('Error deleting session:', error);
@@ -156,7 +156,7 @@ export default function StudyPlanner() {
 
   const getSessionsForDate = (date: Date) => {
     if (!Array.isArray(sessions)) return [];
-    
+
     const dateString = date.toISOString().split('T')[0];
     return sessions.filter((session: StudySession) => 
       session.date === dateString

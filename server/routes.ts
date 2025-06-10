@@ -986,10 +986,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "User ID is required" });
       }
 
+      console.log("Fetching study sessions for user:", userId);
+
       const sessions = await db.select().from(studyPlannerSessions)
         .where(eq(studyPlannerSessions.userId, userId as string))
         .orderBy(desc(studyPlannerSessions.date));
 
+      console.log(`Found ${sessions.length} study sessions for user ${userId}`);
       res.json(sessions);
     } catch (error) {
       console.error("Error fetching study sessions:", error);
@@ -1001,27 +1004,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { userId, title, subject, topic, date, startTime, endTime, duration, notes } = req.body;
 
+      console.log("Creating study session with data:", { userId, title, subject, date, startTime, endTime });
+
       if (!userId || !title || !subject || !date || !startTime || !endTime) {
-        return res.status(400).json({ error: "Missing required fields" });
+        console.error("Missing required fields:", { userId, title, subject, date, startTime, endTime });
+        return res.status(400).json({ 
+          error: "Missing required fields",
+          received: { userId: !!userId, title: !!title, subject: !!subject, date: !!date, startTime: !!startTime, endTime: !!endTime }
+        });
       }
 
-      const [newSession] = await db.insert(studyPlannerSessions).values({
+      // Parse date properly
+      let sessionDate;
+      if (typeof date === 'string') {
+        // Handle both ISO date strings and YYYY-MM-DD format
+        sessionDate = date.includes('T') ? new Date(date) : new Date(date + 'T00:00:00.000Z');
+      } else {
+        sessionDate = new Date(date);
+      }
+
+      const sessionData = {
         userId,
         title,
         subject,
-        topic,
-        date: typeof date === 'string' ? new Date(date + 'T00:00:00.000Z') : new Date(date),
+        topic: topic || null,
+        date: sessionDate,
         startTime,
         endTime,
         duration: duration || 60,
-        notes,
+        notes: notes || null,
         status: 'planned'
-      }).returning();
+      };
 
+      console.log("Inserting session data:", sessionData);
+
+      const [newSession] = await db.insert(studyPlannerSessions).values(sessionData).returning();
+
+      console.log("✅ Study session created successfully:", newSession.id);
       res.json({ session: newSession, success: true });
     } catch (error) {
       console.error("Error creating study session:", error);
-      res.status(500).json({ error: "Failed to create study session" });
+      res.status(500).json({ 
+        error: "Failed to create study session", 
+        details: error.message,
+        stack: error.stack?.substring(0, 500)
+      });
     }
   });
 
