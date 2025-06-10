@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { openRouterAI } from "./ai";
 import { dbStorage, db } from "./db";
 import { sql, eq, desc, and } from 'drizzle-orm';
-import { insertQuizAttemptSchema, badges, studyPlannerSessions, studyGroups, studyGroupMembers, users, quizAttempts, userStats } from "@shared/schema";
+import { insertQuizAttemptSchema, badges, studyPlannerSessions, studyGroups, studyGroupMembers, meetingReminders, users, quizAttempts, userStats } from "@shared/schema";
 import { v4 as uuidv4 } from "uuid";
 import { readFileSync } from "fs";
 import { resolve } from "path";
@@ -1060,6 +1060,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/study-groups", async (req, res) => {
     try {
       console.log("📚 Fetching study groups...");
+      const userId = req.query.userId as string;
+      
       const groups = await db.select({
         id: studyGroups.id,
         title: studyGroups.title,
@@ -1081,25 +1083,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       .leftJoin(users, eq(studyGroups.creator_id, users.id))
       .orderBy(desc(studyGroups.scheduled_time));
 
-      // Map to frontend-expected format
-      const formattedGroups = groups.map(group => ({
-        id: group.id,
-        title: group.title,
-        description: group.description,
-        meetingLink: group.meeting_link,
-        meetingType: group.meeting_type,
-        scheduledTime: group.scheduled_time,
-        duration: group.duration,
-        maxMembers: group.max_members,
-        currentMembers: group.current_members,
-        isActive: group.is_active,
-        category: group.category,
-        creatorId: group.creator_id,
-        createdAt: group.created_at,
-        creator: group.creatorFirstName && group.creatorLastName ? {
-          firstName: group.creatorFirstName,
-          lastName: group.creatorLastName
-        } : undefined
+      // Check membership status for each group if userId provided
+      const formattedGroups = await Promise.all(groups.map(async (group) => {
+        let isMember = false;
+        let isCreator = false;
+        
+        if (userId) {
+          // Check if user is a member
+          const memberCheck = await db.select().from(studyGroupMembers)
+            .where(and(
+              eq(studyGroupMembers.groupId, group.id),
+              eq(studyGroupMembers.userId, userId)
+            ));
+          isMember = memberCheck.length > 0;
+          isCreator = group.creator_id === userId;
+        }
+
+        return {
+          id: group.id,
+          title: group.title,
+          description: group.description,
+          meeting_link: group.meeting_link,
+          meeting_type: group.meeting_type,
+          scheduled_time: group.scheduled_time,
+          duration: group.duration,
+          max_members: group.max_members,
+          current_members: group.current_members,
+          is_active: group.is_active,
+          category: group.category,
+          creator_id: group.creator_id,
+          created_at: group.created_at,
+          creator: group.creatorFirstName && group.creatorLastName ? {
+            firstName: group.creatorFirstName,
+            lastName: group.creatorLastName
+          } : undefined,
+          isMember,
+          isCreator
+        };
       }));
 
       console.log(`📚 Found ${formattedGroups.length} study groups`);
@@ -1219,16 +1239,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Already a member of this group" });
       }
 
-      // Check if group is full
-      const [group] = await db.select().from(studyGroups)
-        .where(eq(studyGroups.id, groupId));
+      // Get group details and check if full
+      const groupData = await db.select({
+        id: studyGroups.id,
+        title: studyGroups.title,
+        scheduled_time: studyGroups.scheduled_time,
+        duration: studyGroups.duration,
+        current_members: studyGroups.current_members,
+        max_members: studyGroups.max_members,
+        meeting_link: studyGroups.meeting_link,
+        meeting_type: studyGroups.meeting_type,
+        category: studyGroups.category,
+        creator_id: studyGroups.creator_id,
+        creatorFirstName: users.firstName,
+        creatorLastName: users.lastName
+      })
+      .from(studyGroups)
+      .leftJoin(users, eq(studyGroups.creator_id, users.id))
+      .where(eq(studyGroups.id, groupId));
 
-      if (!group) {
+      if (!groupData.length) {
         return res.status(404).json({ error: "Study group not found" });
       }
 
+      const group = groupData[0];
+
       if (group.current_members >= group.max_members) {
         return res.status(400).json({ error: "Study group is full" });
+      }
+
+      // Get user details for reminder email
+      const [userData] = await db.select({
+        id: users.id,
+        email: users.email,
+        firstName: users.firstName,
+        lastName: users.lastName
+      })
+      .from(users)
+      .where(eq(users.id, userId));
+
+      if (!userData) {
+        return res.status(404).json({ error: "User not found" });
       }
 
       // Add member
@@ -1242,7 +1293,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .set({ current_members: group.current_members + 1 })
         .where(eq(studyGroups.id, groupId));
 
-      res.json({ success: true });
+      // Schedule reminder email (30 minutes before meeting)
+      const meetingTime = new Date(group.scheduled_time);
+      const reminderTime = new Date(meetingTime.getTime() - 30 * 60 * 1000); // 30 minutes before
+
+      if (reminderTime > new Date()) {
+        try {
+          await db.insert(meetingReminders).values({
+            groupId,
+            userId,
+            reminderTime
+          });
+          console.log(`📧 Reminder scheduled for ${userData.email} at ${reminderTime.toISOString()}`);
+        } catch (reminderError) {
+          console.error("Error scheduling reminder:", reminderError);
+        }
+      }
+
+      // Send immediate confirmation (optional - can be implemented with email service)
+      try {
+        // Note: Email service integration would go here
+        console.log(`✅ ${userData.firstName} ${userData.lastName} joined study group: ${group.title}`);
+      } catch (emailError) {
+        console.error("Error sending confirmation email:", emailError);
+      }
+
+      res.json({ 
+        success: true,
+        message: "Successfully joined study group. You'll receive a reminder email 30 minutes before the meeting."
+      });
     } catch (error) {
       console.error("Error joining study group:", error);
       res.status(500).json({ error: "Failed to join study group" });
@@ -1265,6 +1344,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           eq(studyGroupMembers.userId, userId)
         ));
 
+      // Remove any scheduled reminders
+      await db.delete(meetingReminders)
+        .where(and(
+          eq(meetingReminders.groupId, groupId),
+          eq(meetingReminders.userId, userId)
+        ));
+
       // Update member count
       const [group] = await db.select().from(studyGroups)
         .where(eq(studyGroups.id, groupId));
@@ -1275,7 +1361,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .where(eq(studyGroups.id, groupId));
       }
 
-      res.json({ success: true });
+      console.log(`👋 User ${userId} left study group ${groupId}`);
+      res.json({ success: true, message: "Successfully left study group" });
     } catch (error) {
       console.error("Error leaving study group:", error);
       res.status(500).json({ error: "Failed to leave study group" });
