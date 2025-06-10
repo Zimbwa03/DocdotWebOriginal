@@ -609,6 +609,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Comprehensive system debug endpoint
+  app.get("/api/debug/system", async (req, res) => {
+    try {
+      // Test database connection
+      const dbTest = await db.execute(sql`SELECT NOW() as current_time`);
+      
+      // Test key tables
+      const userCount = await db.execute(sql`SELECT COUNT(*) as count FROM users`);
+      const statsCount = await db.execute(sql`SELECT COUNT(*) as count FROM user_stats`);
+      const quizCount = await db.execute(sql`SELECT COUNT(*) as count FROM quiz_attempts`);
+      
+      // Test AI service
+      let aiStatus = 'Not configured';
+      if (process.env.DEEPSEEK_API_KEY) {
+        try {
+          await openRouterAI.generateResponse([
+            { role: 'user', content: 'Test' }
+          ], 0.1);
+          aiStatus = 'Working';
+        } catch (error) {
+          aiStatus = `Error: ${error.message}`;
+        }
+      }
+
+      // Test Google Drive
+      let driveStatus = 'Not tested';
+      try {
+        const { checkFolderAccess } = await import('./googleDrive');
+        const hasAccess = await checkFolderAccess();
+        driveStatus = hasAccess ? 'Working' : 'No access';
+      } catch (error: any) {
+        driveStatus = `Error: ${error.message}`;
+      }
+
+      res.json({
+        success: true,
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || 'development',
+        database: {
+          status: 'Connected',
+          users: userCount[0]?.count || 0,
+          userStats: statsCount[0]?.count || 0,
+          quizAttempts: quizCount[0]?.count || 0
+        },
+        ai: {
+          status: aiStatus,
+          provider: 'DeepSeek'
+        },
+        googleDrive: {
+          status: driveStatus
+        },
+        server: {
+          port: 5000,
+          uptime: process.uptime(),
+          memory: process.memoryUsage()
+        }
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        error: error.message,
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
   // AI Chat Route with full session tracking
   app.post("/api/ai/chat", async (req, res) => {
     try {

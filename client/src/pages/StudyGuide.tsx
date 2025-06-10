@@ -8,6 +8,7 @@ import StudyTimer from "./StudyTimer";
 import StudyPlanner from "./StudyPlanner";
 import StudyGroups from "./StudyGroups";
 import GoogleDriveResourcesGrid from "@/components/GoogleDriveResourcesGrid";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 export default function StudyGuide() {
   const [activeTab, setActiveTab] = useState("timer");
@@ -17,7 +18,10 @@ export default function StudyGuide() {
     averageSession: 25,
     currentStreak: 7
   });
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Debug logging
+  console.log('StudyGuide searchQuery:', searchQuery);
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -127,7 +131,9 @@ export default function StudyGuide() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <GoogleDriveResourcesGrid searchQuery={searchQuery} />
+                  <ErrorBoundary>
+                    <GoogleDriveResourcesGrid searchQuery={searchQuery} />
+                  </ErrorBoundary>
                 </CardContent>
               </Card>
             </div>
