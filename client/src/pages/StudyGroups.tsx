@@ -61,14 +61,16 @@ export default function StudyGroups() {
 
   // Fetch study groups
   const { data: studyGroups = [], isLoading } = useQuery({
-    queryKey: ['/api/study-groups'],
+    queryKey: ['/api/study-groups', user?.id],
     queryFn: async () => {
-      const response = await fetch('/api/study-groups');
+      const url = user?.id ? `/api/study-groups?userId=${user.id}` : '/api/study-groups';
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error('Failed to fetch study groups');
       }
       return response.json();
     },
+    enabled: !!user
   });
 
   // Filter study groups
@@ -98,15 +100,23 @@ export default function StudyGroups() {
         scheduledTime: new Date(data.scheduledTime).toISOString(),
         duration: data.duration,
         maxMembers: data.maxMembers,
-        category: data.category,
-        isActive: true,
-        currentMembers: 1
+        category: data.category
       };
 
-      return apiRequest('/api/study-groups', {
+      const response = await fetch('/api/study-groups', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(groupData),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create study group');
+      }
+
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -139,10 +149,20 @@ export default function StudyGroups() {
   // Join group mutation
   const joinGroupMutation = useMutation({
     mutationFn: async (groupId: number) => {
-      return apiRequest(`/api/study-groups/${groupId}/join`, {
+      const response = await fetch(`/api/study-groups/${groupId}/join`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ userId: user?.id }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to join study group');
+      }
+
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -155,7 +175,7 @@ export default function StudyGroups() {
       console.error('Error joining study group:', error);
       toast({
         title: "Error",
-        description: "Failed to join study group. Please try again.",
+        description: error.message || "Failed to join study group. Please try again.",
         variant: "destructive",
       });
     },
@@ -164,10 +184,20 @@ export default function StudyGroups() {
   // Leave group mutation
   const leaveGroupMutation = useMutation({
     mutationFn: async (groupId: number) => {
-      return apiRequest(`/api/study-groups/${groupId}/leave`, {
+      const response = await fetch(`/api/study-groups/${groupId}/leave`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ userId: user?.id }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to leave study group');
+      }
+
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -180,7 +210,7 @@ export default function StudyGroups() {
       console.error('Error leaving study group:', error);
       toast({
         title: "Error",
-        description: "Failed to leave study group. Please try again.",
+        description: error.message || "Failed to leave study group. Please try again.",
         variant: "destructive",
       });
     },
