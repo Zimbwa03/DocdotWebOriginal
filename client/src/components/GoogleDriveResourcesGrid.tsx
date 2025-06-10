@@ -37,7 +37,10 @@ export default function GoogleDriveResourcesGrid({ searchQuery }: GoogleDriveRes
     cacheTime: 10 * 60 * 1000 // 10 minutes
   });
 
-  const filteredBooks = books?.filter(book => 
+  // Ensure we have valid data
+  const validBooks = (books || []).filter(book => book && book.id && book.name);
+
+  const filteredBooks = validBooks.filter(book => 
     book.name.toLowerCase().includes(searchQuery.toLowerCase())
   ) || [];
 
@@ -81,7 +84,7 @@ export default function GoogleDriveResourcesGrid({ searchQuery }: GoogleDriveRes
 
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {filteredBooks.map((book) => (
+      {filteredBooks.map((book: DriveFile) => (
         <Card key={book.id} className="overflow-hidden hover:shadow-lg transition-shadow">
           <CardHeader>
             <CardTitle className="truncate text-lg">{book.name}</CardTitle>

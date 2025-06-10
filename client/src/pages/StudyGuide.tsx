@@ -127,7 +127,7 @@ export default function StudyGuide() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <GoogleDriveResourcesGrid />
+                  <GoogleDriveResourcesGrid searchQuery={searchQuery} />
                 </CardContent>
               </Card>
             </div>
