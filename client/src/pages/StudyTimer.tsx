@@ -27,19 +27,14 @@ import {
   RotateCcw
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useStudyState } from "@/contexts/StudyStateContext";
 import { apiRequest } from "@/lib/queryClient";
 
-// Enhanced music tracks for different study environments
 const MUSIC_TRACKS = [
   { name: "Focus Music for Reading", url: "https://youtu.be/WPni755-Krg", genre: "Ambient Study", duration: "Extended" },
   { name: "Deep Study Focus Music", url: "https://youtu.be/0NzMAHxWzII", genre: "Focus Music", duration: "Long" },
   { name: "Relaxing Study Music", url: "https://youtu.be/lkkGlVWvkLk", genre: "Relaxing", duration: "Extended" },
   { name: "Music for Concentration", url: "https://youtu.be/SjiSEvh6fJs", genre: "Focus Music", duration: "Extended" },
-  { name: "Calming Study Atmosphere", url: "https://youtu.be/acQS2Fef8tU", genre: "Ambient", duration: "Long" },
-  { name: "Productive Study Session", url: "https://youtu.be/KYC99Ev2sz4", genre: "Study Music", duration: "Extended" },
-  { name: "Deep Work Focus", url: "https://youtu.be/zV9ZOFks68Q", genre: "Focus Music", duration: "Long" },
-  { name: "Concentration Enhancement", url: "https://youtu.be/5LXhPbmoHmU", genre: "Brain Music", duration: "Extended" },
-  { name: "Ultimate Study Flow", url: "https://youtu.be/9mXd3XEnRn8", genre: "Flow State", duration: "Long" },
 ];
 
 const MOTIVATIONAL_QUOTES = [
@@ -48,41 +43,24 @@ const MOTIVATIONAL_QUOTES = [
   "The expert in anything was once a beginner.",
   "Don't watch the clock; do what it does. Keep going.",
   "Education is the most powerful weapon you can use to change the world.",
-  "The beautiful thing about learning is that no one can take it away from you.",
-  "Study while others are sleeping; work while others are loafing.",
-  "Your limitation—it's only your imagination.",
 ];
 
 export default function StudyTimer() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { timerState, setTimerState } = useStudyState();
 
-  // Timer states
-  const [studyGoal, setStudyGoal] = useState(25);
-  const [shortBreak, setShortBreak] = useState(5);
-  const [longBreak, setLongBreak] = useState(15);
-  const [isRunning, setIsRunning] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(studyGoal * 60);
-  const [isPomodoroMode, setIsPomodoroMode] = useState(true);
-  const [currentPhase, setCurrentPhase] = useState<'study' | 'shortBreak' | 'longBreak'>('study');
-  const [pomodoroCount, setPomodoroCount] = useState(0);
+  // Local states for UI
   const [selectedCategory, setSelectedCategory] = useState("");
   const [notes, setNotes] = useState("");
-  const [totalTimeStudied, setTotalTimeStudied] = useState(0);
-  const [dailyGoal, setDailyGoal] = useState(120); // minutes
-  const [streakCount, setStreakCount] = useState(0);
-
-  // Music and sound states
+  const [dailyGoal, setDailyGoal] = useState(120);
   const [isBackgroundMusicOn, setIsBackgroundMusicOn] = useState(false);
   const [currentTrack, setCurrentTrack] = useState(0);
   const [volume, setVolume] = useState(50);
   const [isMuted, setIsMuted] = useState(false);
-
-  // UI states
   const [showSettings, setShowSettings] = useState(false);
   const [motivationalQuote, setMotivationalQuote] = useState("");
-  const [showProgress, setShowProgress] = useState(true);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -92,44 +70,59 @@ export default function StudyTimer() {
     queryKey: ['/api/note-categories'],
   });
 
-  // Initialize audio and motivational quote
-  useEffect(() => {
-    // Note: YouTube URLs require iframe embed for proper playback
-    // Initialize notification sound for timer alerts
-    notificationAudioRef.current = new Audio("data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvGIcBjiS2O7Pcz+LJpzS8Nnz+LLI1dnS+6fO1LLVzPK1+rK9z8/OvPawye7t+7C+zLu9");
+  // Calculate time left based on current state
+  const getCurrentDuration = () => {
+    if (timerState.isBreak) {
+      return timerState.session % 4 === 0 ? 15 * 60 : 5 * 60; // Long break every 4th session
+    }
+    return 25 * 60; // Study session
+  };
 
-    // Set initial motivational quote
-    setMotivationalQuote(MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)]);
-    
-    return () => {
-      if (notificationAudioRef.current) {
-        notificationAudioRef.current.src = "";
-      }
-    };
+  const timeLeft = (timerState.minutes * 60) + timerState.seconds;
+  const totalDuration = getCurrentDuration();
+  const progress = ((totalDuration - timeLeft) / totalDuration) * 100;
+
+  // Initialize motivational quote
+  useEffect(() => {
+    const randomQuote = MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)];
+    setMotivationalQuote(randomQuote);
   }, []);
 
-  // Track changes trigger iframe reload for YouTube integration
+  // Timer effect
   useEffect(() => {
-    // YouTube player will be updated through iframe src changes
-    // Volume control is handled by YouTube player itself
-  }, [currentTrack, volume, isMuted]);
-
-  // Reset timer when settings change
-  useEffect(() => {
-    if (!isRunning) {
-      const duration = getCurrentPhaseDuration();
-      setTimeLeft(duration * 60);
-    }
-  }, [studyGoal, shortBreak, longBreak, currentPhase, isRunning]);
-
-  // Timer countdown logic with enhanced features
-  useEffect(() => {
-    if (isRunning && timeLeft > 0) {
+    if (timerState.isRunning) {
       timerRef.current = setInterval(() => {
-        setTimeLeft(prev => prev - 1);
+        setTimerState(prevState => {
+          let newMinutes = prevState.minutes;
+          let newSeconds = prevState.seconds;
+
+          if (newSeconds > 0) {
+            newSeconds--;
+          } else if (newMinutes > 0) {
+            newMinutes--;
+            newSeconds = 59;
+          } else {
+            // Timer finished
+            handleTimerComplete();
+            return {
+              ...prevState,
+              isRunning: false,
+              minutes: 0,
+              seconds: 0
+            };
+          }
+
+          return {
+            ...prevState,
+            minutes: newMinutes,
+            seconds: newSeconds
+          };
+        });
       }, 1000);
-    } else if (timeLeft === 0) {
-      handlePhaseComplete();
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
     }
 
     return () => {
@@ -137,427 +130,312 @@ export default function StudyTimer() {
         clearInterval(timerRef.current);
       }
     };
-  }, [isRunning, timeLeft]);
+  }, [timerState.isRunning]);
 
-  // Functions
-  const getCurrentPhaseDuration = () => {
-    switch (currentPhase) {
-      case 'study': return studyGoal;
-      case 'shortBreak': return shortBreak;
-      case 'longBreak': return longBreak;
-      default: return studyGoal;
-    }
-  };
-
-  const handlePhaseComplete = () => {
-    setIsRunning(false);
-    
+  const handleTimerComplete = () => {
     // Play notification sound
     if (notificationAudioRef.current) {
       notificationAudioRef.current.play().catch(console.error);
     }
 
-    if (isPomodoroMode) {
-      if (currentPhase === 'study') {
-        const newCount = pomodoroCount + 1;
-        setPomodoroCount(newCount);
-        setTotalTimeStudied(prev => prev + studyGoal);
-        setStreakCount(prev => prev + 1);
-
-        // Determine next phase
-        if (newCount % 4 === 0) {
-          setCurrentPhase('longBreak');
-          setTimeLeft(longBreak * 60);
-          toast({
-            title: "Excellent Work!",
-            description: `You've completed ${newCount} Pomodoros! Time for a long break.`,
-          });
-        } else {
-          setCurrentPhase('shortBreak');
-          setTimeLeft(shortBreak * 60);
-          toast({
-            title: "Pomodoro Complete!",
-            description: `Great focus! Take a short break. Pomodoros: ${newCount}`,
-          });
-        }
-      } else {
-        // Break finished
-        setCurrentPhase('study');
-        setTimeLeft(studyGoal * 60);
-        // Set new motivational quote
-        setMotivationalQuote(MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)]);
+    setTimerState(prevState => {
+      if (prevState.isBreak) {
+        // Break ended, start new study session
         toast({
-          title: "Ready to Focus!",
-          description: "Break's over! Let's get back to productive studying.",
+          title: "Break Complete!",
+          description: "Ready for your next study session?",
         });
+        return {
+          ...prevState,
+          isBreak: false,
+          minutes: 25,
+          seconds: 0,
+          isRunning: false
+        };
+      } else {
+        // Study session ended, start break
+        const newSession = prevState.session + 1;
+        const isLongBreak = newSession % 4 === 0;
+        const breakDuration = isLongBreak ? 15 : 5;
+        
+        toast({
+          title: "Study Session Complete!",
+          description: isLongBreak ? "Time for a long break!" : "Time for a short break!",
+        });
+
+        return {
+          ...prevState,
+          isBreak: true,
+          session: newSession,
+          minutes: breakDuration,
+          seconds: 0,
+          isRunning: false,
+          totalStudyTime: prevState.totalStudyTime + 25
+        };
       }
-    } else {
-      setTotalTimeStudied(prev => prev + studyGoal);
-      setStreakCount(prev => prev + 1);
-      toast({
-        title: "Session Complete!",
-        description: `Excellent! You studied for ${studyGoal} minutes.`,
+    });
+  };
+
+  const startTimer = useCallback((e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    setTimerState(prevState => ({ ...prevState, isRunning: true }));
+  }, [setTimerState]);
+
+  const pauseTimer = useCallback((e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    setTimerState(prevState => ({ ...prevState, isRunning: false }));
+  }, [setTimerState]);
+
+  const resetTimer = useCallback((e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    setTimerState({
+      minutes: 25,
+      seconds: 0,
+      isRunning: false,
+      isBreak: false,
+      session: 1,
+      totalStudyTime: timerState.totalStudyTime
+    });
+  }, [setTimerState, timerState.totalStudyTime]);
+
+  const skipToNextPhase = useCallback((e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    handleTimerComplete();
+  }, []);
+
+  const formatTime = (minutes: number, seconds: number) => {
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const saveStudySessionMutation = useMutation({
+    mutationFn: async (sessionData: any) => {
+      return apiRequest('/api/study-sessions', {
+        method: 'POST',
+        body: JSON.stringify(sessionData),
       });
-    }
-  };
+    },
+    onSuccess: () => {
+      toast({
+        title: "Study session saved!",
+        description: "Your progress has been recorded.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/study-sessions'] });
+    },
+    onError: (error) => {
+      console.error('Error saving study session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save study session. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
-  // Control functions
-  const startTimer = () => {
-    setIsRunning(true);
-    // YouTube iframe will handle autoplay based on isRunning state
-  };
+  const handleSaveSession = () => {
+    if (!user) return;
 
-  const pauseTimer = () => {
-    setIsRunning(false);
-    // YouTube iframe will stop autoplay when isRunning is false
-  };
+    const sessionData = {
+      userId: user.id,
+      duration: 25 - timerState.minutes,
+      category: selectedCategory || 'General',
+      notes: notes,
+      completedAt: new Date().toISOString(),
+    };
 
-  const resetTimer = () => {
-    setIsRunning(false);
-    setPomodoroCount(0);
-    setCurrentPhase('study');
-    const duration = getCurrentPhaseDuration();
-    setTimeLeft(duration * 60);
-    // YouTube iframe will handle stopping
+    saveStudySessionMutation.mutate(sessionData);
   };
-
-  const skipPhase = () => {
-    if (isPomodoroMode) {
-      handlePhaseComplete();
-    } else {
-      resetTimer();
-    }
-  };
-
-  const toggleMusic = () => {
-    const newMusicState = !isBackgroundMusicOn;
-    setIsBackgroundMusicOn(newMusicState);
-    // YouTube iframe will be shown/hidden based on isBackgroundMusicOn state
-  };
-
-  const nextTrack = () => {
-    setCurrentTrack((prev) => (prev + 1) % MUSIC_TRACKS.length);
-  };
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const getPhaseIcon = () => {
-    switch (currentPhase) {
-      case 'study': return <Brain className="w-5 h-5" />;
-      case 'shortBreak': return <Coffee className="w-5 h-5" />;
-      case 'longBreak': return <Coffee className="w-5 h-5" />;
-      default: return <Brain className="w-5 h-5" />;
-    }
-  };
-
-  const getPhaseColor = () => {
-    switch (currentPhase) {
-      case 'study': return '#3399FF';
-      case 'shortBreak': return '#10B981';
-      case 'longBreak': return '#8B5CF6';
-      default: return '#3399FF';
-    }
-  };
-
-  const progressPercentage = ((getCurrentPhaseDuration() * 60 - timeLeft) / (getCurrentPhaseDuration() * 60)) * 100;
-  const dailyProgressPercentage = (totalTimeStudied / dailyGoal) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header with Stats */}
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Advanced Study Timer
-          </h1>
-          <div className="flex justify-center space-x-6">
-            <div className="flex items-center space-x-2">
-              <Flame className="w-5 h-5 text-orange-500" />
-              <span className="text-sm text-gray-600 dark:text-gray-300">Streak: {streakCount}</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Trophy className="w-5 h-5 text-yellow-500" />
-              <span className="text-sm text-gray-600 dark:text-gray-300">Pomodoros: {pomodoroCount}</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Target className="w-5 h-5 text-green-500" />
-              <span className="text-sm text-gray-600 dark:text-gray-300">Today: {totalTimeStudied}min</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Timer Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="space-y-6">
+      {/* Main Timer Display */}
+      <Card className="text-center">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-center gap-2">
+            {timerState.isBreak ? <Coffee className="w-6 h-6" /> : <Brain className="w-6 h-6" />}
+            {timerState.isBreak ? 'Break Time' : 'Study Session'} #{timerState.session}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
           {/* Timer Display */}
-          <Card className="lg:col-span-2">
-            <CardHeader className="text-center">
-              <div className="flex items-center justify-center space-x-2 mb-2">
-                {getPhaseIcon()}
-                <CardTitle style={{ color: getPhaseColor() }}>
-                  {currentPhase === 'study' ? 'Focus Time' : 
-                   currentPhase === 'shortBreak' ? 'Short Break' : 'Long Break'}
-                </CardTitle>
-              </div>
-              {motivationalQuote && (
-                <p className="text-sm text-gray-600 dark:text-gray-300 italic">
-                  "{motivationalQuote}"
-                </p>
-              )}
-            </CardHeader>
-            <CardContent className="text-center space-y-6">
-              {/* Circular Progress Timer */}
-              <div className="relative w-64 h-64 mx-auto">
-                <svg className="w-64 h-64 transform -rotate-90" viewBox="0 0 100 100">
-                  {/* Background circle */}
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="45"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    className="text-gray-200 dark:text-gray-700"
-                  />
-                  {/* Progress circle */}
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="45"
-                    fill="none"
-                    stroke={getPhaseColor()}
-                    strokeWidth="4"
-                    strokeLinecap="round"
-                    strokeDasharray={`${progressPercentage * 2.827} 283`}
-                    className="transition-all duration-1000 ease-out"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-gray-900 dark:text-gray-100">
-                      {formatTime(timeLeft)}
-                    </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      {Math.floor(progressPercentage)}% complete
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Control Buttons */}
-              <div className="flex justify-center space-x-4">
-                <Button
-                  onClick={isRunning ? pauseTimer : startTimer}
-                  size="lg"
-                  className="px-8"
-                  style={{ backgroundColor: getPhaseColor() }}
-                >
-                  {isRunning ? (
-                    <><Pause className="w-5 h-5 mr-2" /> Pause</>
-                  ) : (
-                    <><Play className="w-5 h-5 mr-2" /> Start</>
-                  )}
-                </Button>
-                <Button onClick={resetTimer} variant="outline" size="lg">
-                  <RotateCcw className="w-5 h-5 mr-2" /> Reset
-                </Button>
-                {isPomodoroMode && (
-                  <Button onClick={skipPhase} variant="outline" size="lg">
-                    <SkipForward className="w-5 h-5 mr-2" /> Skip
-                  </Button>
-                )}
-              </div>
-
-              {/* Daily Progress */}
-              {showProgress && (
-                <div className="mt-6">
-                  <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-2">
-                    <span>Daily Goal Progress</span>
-                    <span>{totalTimeStudied}/{dailyGoal} minutes</span>
-                  </div>
-                  <Progress value={dailyProgressPercentage} className="h-2" />
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Settings and Music Panel */}
-          <div className="space-y-6">
-            {/* Music Controls */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Music className="w-5 h-5" />
-                  <span>Background Music</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label>Enable Music</Label>
-                  <Switch checked={isBackgroundMusicOn} onCheckedChange={toggleMusic} />
-                </div>
-                
-                {isBackgroundMusicOn && (
-                  <>
-                    <div className="space-y-2">
-                      <Label>Select Music Track</Label>
-                      <Select value={currentTrack.toString()} onValueChange={(value) => setCurrentTrack(parseInt(value))}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Choose a music track" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-60">
-                          {MUSIC_TRACKS.map((track, index) => (
-                            <SelectItem key={index} value={index.toString()}>
-                              <div className="flex flex-col">
-                                <span className="font-medium">{track.name}</span>
-                                <span className="text-xs text-gray-500">{track.genre} • {track.duration}</span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <div className="flex items-center justify-between mt-2">
-                        <div className="text-xs text-gray-600 dark:text-gray-400">
-                          {MUSIC_TRACKS[currentTrack].genre} • {MUSIC_TRACKS[currentTrack].duration}
-                        </div>
-                        <Button onClick={nextTrack} variant="outline" size="sm">
-                          <SkipForward className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* YouTube Player Embed */}
-                    {isBackgroundMusicOn && (
-                      <div className="space-y-2">
-                        <Label>Now Playing</Label>
-                        <div className="w-full h-32 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
-                          <iframe
-                            width="100%"
-                            height="128"
-                            src={`https://www.youtube.com/embed/${MUSIC_TRACKS[currentTrack].url.split('youtu.be/')[1]?.split('?')[0] || MUSIC_TRACKS[currentTrack].url.split('watch?v=')[1]?.split('&')[0]}?autoplay=${isRunning ? 1 : 0}&loop=1&playlist=${MUSIC_TRACKS[currentTrack].url.split('youtu.be/')[1]?.split('?')[0] || MUSIC_TRACKS[currentTrack].url.split('watch?v=')[1]?.split('&')[0]}`}
-                            title={MUSIC_TRACKS[currentTrack].name}
-                            frameBorder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                            className="rounded-lg"
-                          ></iframe>
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Timer Settings */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Settings className="w-5 h-5" />
-                  <span>Timer Settings</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label>Pomodoro Mode</Label>
-                  <Switch checked={isPomodoroMode} onCheckedChange={setIsPomodoroMode} />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Study Duration: {studyGoal} minutes</Label>
-                  <Slider
-                    value={[studyGoal]}
-                    onValueChange={(value) => setStudyGoal(value[0])}
-                    min={1}
-                    max={120}
-                    step={1}
-                    disabled={isRunning}
-                  />
-                </div>
-
-                {isPomodoroMode && (
-                  <>
-                    <div className="space-y-2">
-                      <Label>Short Break: {shortBreak} minutes</Label>
-                      <Slider
-                        value={[shortBreak]}
-                        onValueChange={(value) => setShortBreak(value[0])}
-                        min={1}
-                        max={30}
-                        step={1}
-                        disabled={isRunning}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Long Break: {longBreak} minutes</Label>
-                      <Slider
-                        value={[longBreak]}
-                        onValueChange={(value) => setLongBreak(value[0])}
-                        min={5}
-                        max={60}
-                        step={1}
-                        disabled={isRunning}
-                      />
-                    </div>
-                  </>
-                )}
-
-                <div className="space-y-2">
-                  <Label>Daily Goal: {dailyGoal} minutes</Label>
-                  <Slider
-                    value={[dailyGoal]}
-                    onValueChange={(value) => setDailyGoal(value[0])}
-                    min={30}
-                    max={600}
-                    step={30}
-                  />
-                </div>
-              </CardContent>
-            </Card>
+          <div className="text-6xl font-mono font-bold text-primary">
+            {formatTime(timerState.minutes, timerState.seconds)}
           </div>
-        </div>
 
-        {/* Study Notes Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Study Session Notes</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Progress Bar */}
+          <div className="space-y-2">
+            <Progress value={progress} className="h-3" />
+            <p className="text-sm text-muted-foreground">
+              {Math.round(progress)}% complete
+            </p>
+          </div>
+
+          {/* Control Buttons */}
+          <div className="flex justify-center gap-4">
+            {!timerState.isRunning ? (
+              <Button onClick={startTimer} size="lg" className="px-8">
+                <Play className="w-5 h-5 mr-2" />
+                Start
+              </Button>
+            ) : (
+              <Button onClick={pauseTimer} size="lg" className="px-8" variant="secondary">
+                <Pause className="w-5 h-5 mr-2" />
+                Pause
+              </Button>
+            )}
+            <Button onClick={resetTimer} variant="outline" size="lg">
+              <RotateCcw className="w-5 h-5 mr-2" />
+              Reset
+            </Button>
+            <Button onClick={skipToNextPhase} variant="outline" size="lg">
+              <SkipForward className="w-5 h-5 mr-2" />
+              Skip
+            </Button>
+          </div>
+
+          {/* Session Stats */}
+          <div className="grid grid-cols-3 gap-4 mt-6">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary">{timerState.session}</div>
+              <div className="text-sm text-muted-foreground">Sessions</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary">{timerState.totalStudyTime}</div>
+              <div className="text-sm text-muted-foreground">Minutes Studied</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary">{Math.round((timerState.totalStudyTime / dailyGoal) * 100)}%</div>
+              <div className="text-sm text-muted-foreground">Daily Goal</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Study Notes and Category */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="w-5 h-5" />
+            Study Focus
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="category">Study Category</Label>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="anatomy">Anatomy</SelectItem>
+                <SelectItem value="physiology">Physiology</SelectItem>
+                <SelectItem value="pathology">Pathology</SelectItem>
+                <SelectItem value="pharmacology">Pharmacology</SelectItem>
+                <SelectItem value="general">General</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="notes">Session Notes</Label>
+            <Textarea
+              id="notes"
+              placeholder="What are you studying today?"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          </div>
+
+          {user && (
+            <Button 
+              onClick={handleSaveSession} 
+              disabled={saveStudySessionMutation.isPending}
+              className="w-full"
+            >
+              {saveStudySessionMutation.isPending ? "Saving..." : "Save Session"}
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Motivational Quote */}
+      <Card>
+        <CardContent className="pt-6">
+          <blockquote className="text-center italic text-muted-foreground">
+            "{motivationalQuote}"
+          </blockquote>
+        </CardContent>
+      </Card>
+
+      {/* Background Music */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Music className="w-5 h-5" />
+            Study Music
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-4">
+            <Switch
+              checked={isBackgroundMusicOn}
+              onCheckedChange={setIsBackgroundMusicOn}
+            />
+            <span>Enable background music</span>
+          </div>
+
+          {isBackgroundMusicOn && (
+            <div className="space-y-4">
+              <Select value={currentTrack.toString()} onValueChange={(value) => setCurrentTrack(Number(value))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {MUSIC_TRACKS.map((track, index) => (
+                    <SelectItem key={index} value={index.toString()}>
+                      {track.name} - {track.genre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
               <div className="space-y-2">
-                <Label htmlFor="category">Study Category</Label>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger id="category">
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="uncategorized">Uncategorized</SelectItem>
-                    {categories && Array.isArray(categories) && categories.map((category: any) => (
-                      <SelectItem key={category.id} value={category.id.toString()}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center gap-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsMuted(!isMuted)}
+                  >
+                    {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                  </Button>
+                  <Slider
+                    value={[isMuted ? 0 : volume]}
+                    onValueChange={(value) => setVolume(value[0])}
+                    max={100}
+                    step={1}
+                    className="flex-1"
+                  />
+                  <span className="text-sm w-12">{isMuted ? 0 : volume}%</span>
+                </div>
+              </div>
+
+              <div className="p-4 bg-muted rounded-lg">
+                <p className="text-sm font-medium">{MUSIC_TRACKS[currentTrack].name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {MUSIC_TRACKS[currentTrack].genre} • {MUSIC_TRACKS[currentTrack].duration}
+                </p>
+                <Button
+                  variant="link"
+                  size="sm"
+                  onClick={() => window.open(MUSIC_TRACKS[currentTrack].url, '_blank')}
+                  className="p-0 h-auto"
+                >
+                  Open in YouTube
+                </Button>
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="notes">Session Notes</Label>
-              <Textarea
-                id="notes"
-                placeholder="What are you studying today? Track your progress and thoughts..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                rows={4}
-              />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

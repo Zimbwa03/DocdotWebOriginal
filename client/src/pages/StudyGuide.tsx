@@ -19,15 +19,19 @@ import {
   Search,
   Users,
   Target,
-  Timer
+  Timer,
+  Brain
 } from "lucide-react";
 import StudyGroups from "./StudyGroups";
 import StudyTimer from "./StudyTimer";
 import StudyPlanner from "./StudyPlanner";
+import AITutor from "./AITutor";
 import GoogleDriveResourcesGrid from "@/components/GoogleDriveResourcesGrid";
+import { useStudyState } from "@/contexts/StudyStateContext";
 
 export default function StudyGuide() {
   const [searchQuery, setSearchQuery] = useState("");
+  const { activeTab, setActiveTab } = useStudyState();
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -43,8 +47,8 @@ export default function StudyGuide() {
         </div>
 
         {/* Main Content */}
-        <Tabs defaultValue="timer" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="timer" className="flex items-center gap-2">
               <Timer className="w-4 h-4" />
               Study Timer
@@ -56,6 +60,10 @@ export default function StudyGuide() {
             <TabsTrigger value="groups" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               Study Groups
+            </TabsTrigger>
+            <TabsTrigger value="ai-tutor" className="flex items-center gap-2">
+              <Brain className="w-4 h-4" />
+              AI Tutor
             </TabsTrigger>
             <TabsTrigger value="resources" className="flex items-center gap-2">
               <Book className="w-4 h-4" />
@@ -113,6 +121,24 @@ export default function StudyGuide() {
               </CardHeader>
               <CardContent>
                 <StudyGroups />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* AI Tutor Tab */}
+          <TabsContent value="ai-tutor" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Brain className="w-5 h-5" />
+                  AI Medical Tutor
+                </CardTitle>
+                <CardDescription>
+                  Get personalized help and explanations from your AI tutor
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AITutor />
               </CardContent>
             </Card>
           </TabsContent>
