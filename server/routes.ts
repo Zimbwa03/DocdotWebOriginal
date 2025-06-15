@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { openRouterAI } from "./ai";
 import { dbStorage, db } from "./db";
 import { sql, eq, desc, and } from 'drizzle-orm';
-import { insertQuizAttemptSchema, badges, studyPlannerSessions, studyGroups, studyGroupMembers, meetingReminders, users, quizAttempts, userStats } from "@shared/schema";
+import { insertQuizAttemptSchema, badges, studyPlannerSessions, studyGroups, studyGroupMembers, meetingReminders, users, quizAttempts, userStats, quizzes } from "@shared/schema";
 import { v4 as uuidv4 } from "uuid";
 import { readFileSync } from "fs";
 import { resolve } from "path";
@@ -369,22 +369,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`Successfully generated ${questions.length} questions`);
 
-      const formattedQuestions = questions.map((q: any, index: number) => ({
-        id: index + 1,
-        question: q.question || `Sample question ${index + 1} about ${topic}`,
-        options: ['True', 'False'],
-        correct_answer: q.correctAnswer || q.correct_answer || 'True',
-        explanation: q.explanation || `This is an explanation for the question about ${topic}`,
-        ai_explanation: q.explanation || `AI-generated explanation for ${topic}`,
-        reference_data: q.reference_data || '',
-        category: topic,
-        difficulty: difficulty
-      }));
+      // Store questions in database and format for response
+      const formattedQuestions = [];
+      
+      for (let index = 0; index < questions.length; index++) {
+        const q = questions[index];
+        const questionData = {
+          question: q.question || `Sample question ${index + 1} about ${topic}`,
+          options: ['True', 'False'],
+          correctAnswer: q.correctAnswer || q.correct_answer || 'True',
+          explanation: q.explanation || `This is an explanation for the question about ${topic}`,
+          difficulty: difficulty,
+          category: topic,
+          type: 'ai_generated',
+          aiGenerated: true,
+          createdAt: new Date()
+        };
+
+        try {
+          // Store in database using the quizzes table structure
+          const [savedQuestion] = await db.insert(quizzes).values({
+            question: questionData.question,
+            options: questionData.options,
+            correctAnswer: questionData.options.indexOf(questionData.correctAnswer),
+            explanation: questionData.explanation,
+            difficulty: questionData.difficulty,
+            xpReward: difficulty === 'easy' ? 5 : difficulty === 'medium' ? 10 : 15,
+            topicId: null // Can be linked to topic later if needed
+          }).returning();
+
+          console.log(`Saved AI question to database with ID: ${savedQuestion.id}`);
+
+          // Format for frontend response
+          formattedQuestions.push({
+            id: savedQuestion.id,
+            question: savedQuestion.question,
+            options: savedQuestion.options,
+            correct_answer: questionData.correctAnswer,
+            explanation: savedQuestion.explanation,
+            ai_explanation: questionData.explanation,
+            reference_data: '',
+            category: topic,
+            difficulty: difficulty,
+            aiGenerated: true,
+            dbId: savedQuestion.id
+          });
+        } catch (dbError) {
+          console.error(`Error saving question ${index + 1} to database:`, dbError);
+          
+          // Still include in response even if DB save failed
+          formattedQuestions.push({
+            id: index + 1,
+            question: questionData.question,
+            options: questionData.options,
+            correct_answer: questionData.correctAnswer,
+            explanation: questionData.explanation,
+            ai_explanation: questionData.explanation,
+            reference_data: '',
+            category: topic,
+            difficulty: difficulty,
+            aiGenerated: true,
+            dbSaveError: true
+          });
+        }
+      }
 
       res.json({ 
         success: true,
         questions: formattedQuestions,
-        message: `Generated ${formattedQuestions.length} questions about ${topic}`
+        message: `Generated and saved ${formattedQuestions.length} questions about ${topic}`,
+        savedToDatabase: formattedQuestions.filter(q => !q.dbSaveError).length
       });
     } catch (error: any) {
       console.error("AI Quiz Generator Error details:", {
@@ -915,6 +969,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Google Drive file error:", error);
       res.status(500).json({ 
         error: "Failed to fetch file content",
+        message: error.message || "Please try again later"
+      });
+    }
+  });
+
+  // Get AI-generated questions from database
+  app.get("/api/ai-questions", async (req, res) => {
+    try {
+      const { category, difficulty, limit = 20 } = req.query;
+      
+      let query = db.select().from(quizzes).orderBy(desc(quizzes.id));
+      
+      // Apply filters if provided
+      if (limit) {
+        query = query.limit(parseInt(limit as string));
+      }
+      
+      const aiQuestions = await query;
+      
+      // Format for frontend
+      const formattedQuestions = aiQuestions.map(q => ({
+        id: q.id,
+        question: q.question,
+        options: q.options,
+        correct_answer: q.options[q.correctAnswer],
+        explanation: q.explanation,
+        ai_explanation: q.explanation,
+        category: category || 'AI Generated',
+        difficulty: q.difficulty,
+        xpReward: q.xpReward,
+        aiGenerated: true
+      }));
+      
+      res.json({
+        success: true,
+        questions: formattedQuestions,
+        total: aiQuestions.length,
+        filters: { category, difficulty, limit }
+      });
+    } catch (error) {
+      console.error("Error fetching AI questions:", error);
+      res.status(500).json({ 
+        error: "Failed to fetch AI-generated questions",
+        message: error.message || "Please try again later"
+      });
+    }
+  });
+
+  // Get AI questions by specific criteria
+  app.get("/api/ai-questions/by-category/:category", async (req, res) => {
+    try {
+      const category = req.params.category;
+      const { difficulty, limit = 10 } = req.query;
+      
+      let query = db.select().from(quizzes);
+      
+      // Since we don't have a direct category field in quizzes table,
+      // we'll search in the question content for now
+      // In a production app, you'd want to add a category field to the quizzes table
+      
+      if (difficulty) {
+        query = query.where(eq(quizzes.difficulty, difficulty as string));
+      }
+      
+      query = query.orderBy(desc(quizzes.id)).limit(parseInt(limit as string));
+      
+      const questions = await query;
+      
+      // Filter by category in question content (temporary solution)
+      const categoryQuestions = questions.filter(q => 
+        q.question.toLowerCase().includes(category.toLowerCase())
+      );
+      
+      const formattedQuestions = categoryQuestions.map(q => ({
+        id: q.id,
+        question: q.question,
+        options: q.options,
+        correct_answer: q.options[q.correctAnswer],
+        explanation: q.explanation,
+        category: category,
+        difficulty: q.difficulty,
+        aiGenerated: true
+      }));
+      
+      res.json({
+        success: true,
+        questions: formattedQuestions,
+        category,
+        total: categoryQuestions.length
+      });
+    } catch (error) {
+      console.error("Error fetching category AI questions:", error);
+      res.status(500).json({ 
+        error: "Failed to fetch category questions",
         message: error.message || "Please try again later"
       });
     }

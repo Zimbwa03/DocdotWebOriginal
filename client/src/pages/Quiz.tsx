@@ -28,7 +28,9 @@ import {
   Award,
   ArrowRight,
   ArrowLeft,
-  Play
+  Play,
+  Database,
+  Zap
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
@@ -149,7 +151,7 @@ export default function Quiz() {
     if (isAnswered) return;
 
     setSelectedAnswer(answer);
-    
+
     const currentQuestion = questions[currentQuestionIndex];
     const isCorrect = answer === currentQuestion.correct_answer;
     const timeSpent = questionStartTime ? Math.floor((Date.now() - questionStartTime) / 1000) : 0;
@@ -324,7 +326,7 @@ export default function Quiz() {
 
     try {
       console.log('Generating AI quiz for topic:', aiPrompt);
-      
+
       // Generate questions using AI with better error handling
       const response = await fetch('/api/ai/quiz-generator', {
         method: 'POST',
@@ -340,7 +342,7 @@ export default function Quiz() {
       });
 
       console.log('Response status:', response.status);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('API Error Response:', errorText);
@@ -349,7 +351,7 @@ export default function Quiz() {
 
       const data = await response.json();
       console.log('AI Response data:', data);
-      
+
       if (data.success && data.questions && Array.isArray(data.questions) && data.questions.length > 0) {
         // Set the generated questions for quiz taking
         setQuestions(data.questions);
@@ -367,7 +369,7 @@ export default function Quiz() {
           content: `🎯 **Quiz Generated Successfully!** \n\nI've created **${data.questions.length} medical questions** about "${aiPrompt}". \n\n✨ **Features:**\n• True/False format\n• Detailed explanations\n• Instant feedback\n• Progress tracking\n\n🚀 **Ready to start?** Your personalized quiz is loaded and ready to go! Click "Start Quiz" below to begin practicing.`
         };
         setAiMessages(prev => [...prev, aiResponse]);
-        
+
         toast({
           title: "🎉 Quiz Generated!",
           description: `Successfully created ${data.questions.length} questions about ${aiPrompt}`,
@@ -378,7 +380,7 @@ export default function Quiz() {
       }
     } catch (error: any) {
       console.error('AI Quiz Generation Error:', error);
-      
+
       let errorMessage = "Failed to generate quiz. Please try again.";
       if (error.message?.includes('503')) {
         errorMessage = "AI service is not configured. Please check DeepSeek API key.";
@@ -387,13 +389,13 @@ export default function Quiz() {
       } else if (error.message?.includes('timeout')) {
         errorMessage = "Request timed out. Please try a shorter topic.";
       }
-      
+
       const errorResponse = { 
         role: 'assistant' as const, 
         content: `❌ **Sorry, I couldn't generate the quiz.** \n\n**Error:** ${errorMessage}\n\nPlease try:\n\n• **Different topic**: Try a more specific medical topic\n• **Simpler request**: Use clear, medical terminology\n• **Check connection**: Ensure you have internet access\n\n💡 **Example topics:**\n• "Cardiovascular anatomy"\n• "Diabetes pathophysiology"\n• "Respiratory physiology"\n• "Cell biology basics"`
       };
       setAiMessages(prev => [...prev, errorResponse]);
-      
+
       toast({
         variant: "destructive",
         title: "Generation Failed",
@@ -738,7 +740,7 @@ export default function Quiz() {
                     buttonStyle += 'border-green-500 bg-green-50 text-green-900';
                   } else if (isSelected && !isCorrect) {
                     buttonStyle += 'border-red-500 bg-red-50 text-red-900';
-                  } else {
+                  }else {
                     buttonStyle += 'border-gray-200 bg-gray-50 text-gray-700';
                   }
                 } else {
@@ -928,7 +930,7 @@ export default function Quiz() {
                   <Send className="w-4 h-4" />
                 </Button>
               </div>
-              
+
               {questions.length > 0 && (
                 <div className="text-center">
                   <Button 
@@ -1013,6 +1015,90 @@ export default function Quiz() {
     </div>
   );
 
+  const loadQuestions = async (category: string) => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/questions');
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const allQuestions = await response.json();
+      console.log('All questions loaded:', allQuestions?.length || 0);
+
+      let filteredQuestions = [];
+
+      if (category === 'all') {
+        filteredQuestions = allQuestions;
+      } else {
+        filteredQuestions = allQuestions.filter((q: Question) => 
+          q.category.toLowerCase().includes(category.toLowerCase())
+        );
+      }
+
+      if (filteredQuestions.length === 0) {
+        alert(`No questions found for category: ${category}. Showing all questions instead.`);
+        filteredQuestions = allQuestions.slice(0, 10);
+      }
+
+      console.log(`Filtered questions for ${category}:`, filteredQuestions.length);
+
+      const shuffled = filteredQuestions.sort(() => 0.5 - Math.random());
+      const selectedQuestions = shuffled.slice(0, Math.min(10, shuffled.length));
+
+      setQuestions(selectedQuestions);
+      setCurrentQuestionIndex(0);
+      setScore(0);
+      setSelectedAnswer('');
+      setIsAnswered(false);
+      setQuizCompleted(false);
+      setStartTime(new Date());
+      setQuestionStartTime(Date.now());
+    } catch (error) {
+      console.error('Error loading questions:', error);
+      alert('Failed to load questions. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadAIQuestionsFromDB = async (category?: string, difficulty?: string) => {
+    setLoading(true);
+    try {
+      let url = '/api/ai-questions?limit=10';
+      if (category) url += `&category=${encodeURIComponent(category)}`;
+      if (difficulty) url += `&difficulty=${encodeURIComponent(difficulty)}`;
+
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('AI questions loaded from DB:', data.questions?.length || 0);
+
+      if (data.success && data.questions.length > 0) {
+        setQuestions(data.questions);
+        setCurrentQuestionIndex(0);
+        setScore(0);
+        setSelectedAnswer('');
+        setIsAnswered(false);
+        setQuizCompleted(false);
+        setStartTime(new Date());
+        setQuestionStartTime(Date.now());
+      } else {
+        alert('No AI-generated questions found in database. Try generating some first.');
+      }
+    } catch (error) {
+      console.error('Error loading AI questions from database:', error);
+      alert('Failed to load AI questions from database. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // MCQ Quiz Flow
   if (selectedQuizType === 'mcq' && !selectedMCQSubject) {
     return (
@@ -1092,6 +1178,28 @@ export default function Quiz() {
             <Microscope className="w-16 h-16 mx-auto mb-4" style={{ color: '#3399FF' }} />
             <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Histology Slide Quiz</h2>
             <p className="text-gray-700 dark:text-gray-300">Coming soon! Practice with microscopic anatomy images.</p>
+            <Button 
+              onClick={() => setSelectedQuizType(null)}
+              className="mt-4"
+              variant="outline"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Quiz Types
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (selectedQuizType === 'ai-database') {
+    return (
+      <div className="min-h-screen bg-white dark:bg-gray-900">
+        <div className="max-w-6xl mx-auto px-8 py-12">
+          <div className="text-center py-20">
+            <Database className="w-16 h-16 mx-auto mb-4" style={{ color: '#3399FF' }} />
+            <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">AI Generated Questions</h2>
+            <p className="text-gray-700 dark:text-gray-300">Coming soon! Practice with AI generated questions.</p>
             <Button 
               onClick={() => setSelectedQuizType(null)}
               className="mt-4"
