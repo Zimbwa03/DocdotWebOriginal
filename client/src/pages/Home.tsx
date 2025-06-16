@@ -634,49 +634,14 @@ export default function Home() {
               </Card>
             </Link>
           </div>
-        ```
-This update adds a consistent logo to the home page header.
-<replit_final_file>
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { 
-  GraduationCap, 
-  BookOpen, 
-  Trophy, 
-  Target, 
-  Clock, 
-  TrendingUp, 
-  Star,
-  Play,
-  Brain,
-  FileText,
-  Heart,
-  Activity,
-  Zap,
-  Calendar,
-  Award,
-  BarChart3,
-  ChevronRight,
-  Timer,
-  Users,
-  Plus,
-  CheckCircle,
-  XCircle,
-  Shield,
-  Crown,
-  Flame,
-  ArrowRight,
-  Medal,
-  Sparkles
-} from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { Link } from 'wouter';
-import { useAuth } from '@/contexts/AuthContext';
-import { useQuery } from '@tanstack/react-query';
-import { useTooltipGuide } from '@/contexts/TooltipGuideContext';
+        </div>
+
+        {/* Main Quiz Section */}
+        <QuizSection />
+      </div>
+    </div>
+  );
+}
 
 function QuizSection() {
   const categories = {
