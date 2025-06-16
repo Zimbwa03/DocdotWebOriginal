@@ -67,8 +67,9 @@ export default function StudyPlanner() {
         return [];
       }
       const data = await response.json();
-      console.log("📚 Study sessions received:", data.length);
-      return data;
+      console.log("📚 Study sessions received:", data?.length || 0);
+      // Ensure we return an array and filter out any null/invalid entries
+      return Array.isArray(data) ? data.filter(session => session && session.id) : [];
     },
     enabled: !!user?.id,
   });
@@ -212,7 +213,7 @@ export default function StudyPlanner() {
   const getSessionsForDate = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
     return sessions.filter((session: StudySession) => 
-      session.date.startsWith(dateStr)
+      session && session.date && session.date.startsWith(dateStr)
     );
   };
 
@@ -423,15 +424,15 @@ export default function StudyPlanner() {
               </div>
             ) : (
               <div className="space-y-4">
-                {selectedDateSessions.map((session: StudySession) => (
+                {selectedDateSessions.filter(session => session && session.id).map((session: StudySession) => (
                   <div 
                     key={session.id}
                     className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors"
                   >
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
-                        <h4 className="font-semibold text-gray-900">{session.title}</h4>
-                        <p className="text-sm text-gray-600">{session.subject}</p>
+                        <h4 className="font-semibold text-gray-900">{session.title || 'Untitled Session'}</h4>
+                        <p className="text-sm text-gray-600">{session.subject || 'No Subject'}</p>
                         {session.topic && (
                           <Badge variant="secondary" className="mt-1">
                             {session.topic}
@@ -488,20 +489,20 @@ export default function StudyPlanner() {
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600">
-                  {sessions.reduce((total: number, session: StudySession) => total + session.duration, 0)}
+                  {sessions.filter(session => session && typeof session.duration === 'number').reduce((total: number, session: StudySession) => total + session.duration, 0)}
                 </div>
                 <div className="text-sm text-gray-600">Total Minutes</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-purple-600">
-                  {new Set(sessions.map((session: StudySession) => session.subject)).size}
+                  {new Set(sessions.filter(session => session && session.subject).map((session: StudySession) => session.subject)).size}
                 </div>
                 <div className="text-sm text-gray-600">Subjects</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-orange-600">
                   {sessions.filter((session: StudySession) => 
-                    new Date(session.date) >= new Date(new Date().setDate(new Date().getDate() - 7))
+                    session && session.date && new Date(session.date) >= new Date(new Date().setDate(new Date().getDate() - 7))
                   ).length}
                 </div>
                 <div className="text-sm text-gray-600">This Week</div>
