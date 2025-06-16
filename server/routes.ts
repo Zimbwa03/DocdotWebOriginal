@@ -563,7 +563,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (const { userId } of usersWithQuizzes) {
         // Get actual quiz performance
         const userAttempts = await db.select().from(quizAttempts)
-          .where(eq(quizAttempts.userId, userId));
+          .where(eq(quizAttempts.userId, userId || ''));
 
         if (userAttempts.length > 0) {
           const totalQuestions = userAttempts.length;
@@ -572,7 +572,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const totalStudyTime = userAttempts.reduce((sum, attempt) => sum + (attempt.timeSpent || 0), 0);
 
           // Update or create user stats with actual data
-          const existing = await dbStorage.getUserStats(userId);
+          const existing = await dbStorage.getUserStats(userId || '');
           const statsData = {
             totalQuestions,
             correctAnswers,
@@ -586,7 +586,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (existing) {
             await db.update(userStats)
               .set(statsData)
-              .where(eq(userStats.userId, userId));
+              .where(eq(userStats.userId, userId || ''));
           } else {
             await db.insert(userStats).values({
               userId,
