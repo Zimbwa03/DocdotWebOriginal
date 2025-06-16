@@ -10,7 +10,7 @@ import { TooltipGuide } from "@/components/TooltipGuide";
 import { AuthForm } from "@/components/AuthForm";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Navigation } from "@/components/Navigation";
-import Landing from "@/pages/Landing";
+import SimpleLanding from "@/pages/SimpleLanding";
 import Home from "@/pages/Home";
 import Quiz from "@/pages/Quiz";
 import Notes from "@/pages/Notes";
@@ -55,7 +55,7 @@ function AuthRedirect() {
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Landing} />
+      <Route path="/" component={SimpleLanding} />
       <Route path="/auth" component={AuthForm} />
       <Route path="/profile-setup" component={ProfileSetup} />
       <Route path="/home">
