@@ -60,6 +60,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Creating user with data:", { id: req.body.id, email: req.body.email });
       const result = await dbStorage.createUser(req.body);
       console.log("User created successfully:", result.id);
+
+      // Auto-initialize user profile for new users
+      try {
+        console.log("Auto-initializing profile for new user:", result.id);
+        await dbStorage.ensureUserHasStats(result.id);
+        await dbStorage.initializeBadges();
+        await dbStorage.checkAndAwardBadges(result.id);
+        console.log("User profile initialization completed");
+      } catch (initError) {
+        console.error("Error initializing user profile:", initError);
+        // Don't fail user creation if profile init fails
+      }
+
       res.json(result);
     } catch (error: any) {
       console.error("Error creating user:", {
@@ -75,6 +88,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log("User already exists, fetching existing user");
           const existingUser = await dbStorage.getUser(req.body.id);
           if (existingUser) {
+            // Ensure existing user has complete profile
+            try {
+              await dbStorage.ensureUserHasStats(req.body.id);
+              await dbStorage.checkAndAwardBadges(req.body.id);
+            } catch (profileError) {
+              console.error("Error ensuring existing user profile:", profileError);
+            }
             res.json(existingUser);
           } else {
             res.status(409).json({ error: "User already exists but could not retrieve" });
@@ -143,6 +163,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/user-stats/:userId", async (req, res) => {
     try {
       const userId = req.params.userId;
+      
+      // Ensure user has stats entry
+      await dbStorage.ensureUserHasStats(userId);
+      
       const userStats = await dbStorage.getUserStats(userId);
 
       res.json(userStats);
@@ -255,6 +279,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/badges/:userId", async (req, res) => {
     try {
       const userId = req.params.userId;
+      
+      // Ensure user has stats and badges are initialized
+      await dbStorage.ensureUserHasStats(userId);
+      await dbStorage.initializeBadges();
       
       // Check for new badges before returning current ones
       await dbStorage.checkAndAwardBadges(userId);
@@ -1146,6 +1174,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Initialize complete user profile (stats + badges)
+  app.post('/api/initialize-user', async (req, res) => {
+    try {
+      const { userId } = req.body;
+      if (!userId) {
+        return res.status(400).json({ error: 'User ID required' });
+      }
+
+      console.log(`Initializing complete profile for user: ${userId}`);
+
+      // Ensure user has stats
+      await dbStorage.ensureUserHasStats(userId);
+      
+      // Initialize badges if not done already
+      await dbStorage.initializeBadges();
+      
+      // Check and award initial badges
+      const badges = await dbStorage.checkAndAwardBadges(userId);
+      
+      // Get user stats to verify
+      const userStats = await dbStorage.getUserStats(userId);
+      
+      res.json({ 
+        success: true, 
+        message: 'User profile initialized successfully',
+        stats: userStats,
+        badgesAwarded: badges.length
+      });
+    } catch (error) {
+      console.error('Error initializing user profile:', error);
+      res.status(500).json({ error: 'Failed to initialize user profile' });
+    }
+  });
+
   // Refresh user analytics and leaderboard
   app.post('/api/refresh-user-stats', async (req, res) => {
     try {
@@ -1165,12 +1227,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Initialize badges first
       await dbStorage.initializeBadges();
       
-      // Get all users with stats
-      const allUsers = await db.select({ userId: userStats.userId }).from(userStats);
+      // Get all users (not just those with stats)
+      const allUsers = await db.select({ id: users.id }).from(users);
       
       let activated = 0;
-      for (const { userId } of allUsers) {
+      let statsCreated = 0;
+      
+      for (const { id: userId } of allUsers) {
         try {
+          // Ensure user has stats entry
+          await dbStorage.ensureUserHasStats(userId);
+          statsCreated++;
+          
+          // Check and award badges
           const newBadges = await dbStorage.checkAndAwardBadges(userId);
           if (newBadges.length > 0) {
             console.log(`Activated ${newBadges.length} badges for user ${userId}`);
@@ -1181,11 +1250,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      // Update global leaderboard
+      await dbStorage.updateGlobalLeaderboard();
+      
       res.json({ 
         success: true, 
-        message: `Badge system activated for ${activated} users`,
+        message: `Badge system activated for ${activated} users, stats created for ${statsCreated} users`,
         totalUsers: allUsers.length,
-        activated 
+        activated,
+        statsCreated
       });
     } catch (error) {
       console.error('Error activating badge system:', error);
@@ -1848,6 +1921,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error initializing badges:", error);
       res.status(500).json({ error: "Failed to initialize badges" });
+    }
+  });
+
+  // Initialize complete system (badges + all user profiles)
+  app.post("/api/initialize-system", async (req, res) => {
+    try {
+      console.log('Initializing complete system...');
+      
+      // Initialize badges first
+      await dbStorage.initializeBadges();
+      
+      // Get all users
+      const allUsers = await db.select({ id: users.id }).from(users);
+      console.log(`Found ${allUsers.length} users to initialize`);
+      
+      let statsCreated = 0;
+      let badgesAwarded = 0;
+      
+      // Initialize each user
+      for (const { id: userId } of allUsers) {
+        try {
+          // Ensure user has stats
+          await dbStorage.ensureUserHasStats(userId);
+          statsCreated++;
+          
+          // Award badges
+          const newBadges = await dbStorage.checkAndAwardBadges(userId);
+          if (newBadges.length > 0) {
+            badgesAwarded += newBadges.length;
+            console.log(`Awarded ${newBadges.length} badges to user ${userId}`);
+          }
+        } catch (userError) {
+          console.error(`Error initializing user ${userId}:`, userError);
+        }
+      }
+      
+      // Update leaderboard
+      await dbStorage.updateGlobalLeaderboard();
+      
+      res.json({
+        success: true,
+        message: `System initialized successfully`,
+        totalUsers: allUsers.length,
+        statsCreated,
+        badgesAwarded,
+        leaderboardUpdated: true
+      });
+    } catch (error) {
+      console.error('Error initializing system:', error);
+      res.status(500).json({ error: 'Failed to initialize system' });
     }
   });
 

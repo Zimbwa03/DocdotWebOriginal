@@ -169,6 +169,17 @@ export default function Quiz() {
     }
     const userId = user.id;
 
+    // Ensure user profile is fully initialized
+    try {
+      await fetch('/api/initialize-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+      });
+    } catch (initError) {
+      console.error('Error ensuring user initialization:', initError);
+    }
+
     try {
       // Calculate XP based on correctness and streak (like the Python code)
       const baseXP = isCorrect ? 10 : 2;
