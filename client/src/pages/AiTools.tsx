@@ -162,7 +162,7 @@ export default function AiTools() {
       const response = await fetch('/api/ai/explain', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ concept, level })
+        body: JSON.stringify({ concept, level, userId: user?.id })
       });
       if (!response.ok) throw new Error('Failed to explain concept');
       return response.json();
@@ -181,10 +181,10 @@ export default function AiTools() {
 
   const questionsMutation = useMutation({
     mutationFn: async ({ topic, difficulty, count }: { topic: string; difficulty: string; count: number }) => {
-      const response = await fetch('/api/ai/generate-questions', {
+      const response = await fetch('/api/ai/questions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, difficulty, count })
+        body: JSON.stringify({ topic, difficulty, count, userId: user?.id })
       });
       if (!response.ok) throw new Error('Failed to generate questions');
       return response.json();
@@ -203,10 +203,10 @@ export default function AiTools() {
 
   const caseAnalysisMutation = useMutation({
     mutationFn: async (caseDetails: string) => {
-      const response = await fetch('/api/ai/analyze-case', {
+      const response = await fetch('/api/ai/case-study', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ caseDetails })
+        body: JSON.stringify({ caseDetails, userId: user?.id })
       });
       if (!response.ok) throw new Error('Failed to analyze case');
       return response.json();
@@ -228,7 +228,7 @@ export default function AiTools() {
       const response = await fetch('/api/ai/study-plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ goals, timeframe, currentLevel: level })
+        body: JSON.stringify({ goals, timeframe, currentLevel: level, userId: user?.id })
       });
       if (!response.ok) throw new Error('Failed to generate study plan');
       return response.json();
@@ -248,8 +248,14 @@ export default function AiTools() {
   // Helper functions
   const sendChatMessage = () => {
     if (!currentMessage.trim()) return;
-    setChatMessages(prev => [...prev, { role: 'user', content: currentMessage }]);
-    tutorMutation.mutate(currentMessage);
+    
+    const userMessage = { role: 'user' as const, content: currentMessage };
+    setChatMessages(prev => [...prev, userMessage]);
+    
+    tutorMutation.mutate({
+      message: currentMessage,
+      sessionId: currentSessionId
+    });
     setCurrentMessage('');
   };
 
