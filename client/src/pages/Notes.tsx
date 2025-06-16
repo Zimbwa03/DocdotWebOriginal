@@ -986,7 +986,7 @@ The cardiovascular system consists of the heart and blood vessels, each with dis
 
   const canAccessContent = (accessTier: 'free' | 'starter' | 'premium') => {
     if (accessTier === 'free') return true;
-    if (accessTier === 'starter') return userTier === 'starter' || userTier === 'premium';
+    if (accessTier === 'starter') return ['starter', 'premium'].includes(userTier);
     if (accessTier === 'premium') return userTier === 'premium';
     return false;
   };
