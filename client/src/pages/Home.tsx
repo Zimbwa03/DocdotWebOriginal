@@ -467,14 +467,14 @@ export default function Home() {
         {/* Analytics Dashboard with Advanced Animations */}
         <div className="mb-12">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent dark:from-white dark:to-gray-300">
+            <h2 className="text-3xl font-bold text-heading">
               Analytics Dashboard
             </h2>
-            <Button variant="outline" className="group relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
-              <BarChart3 className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform duration-300" />
-              <span>Detailed Analytics</span>
-              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+            <Button variant="outline" className="group relative overflow-hidden border-primary-docdot hover:bg-docdot-navbar-alt">
+              <div className="absolute inset-0 bg-gradient-to-r from-[#3399FF] to-[#66CCFF] opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+              <BarChart3 className="w-4 h-4 mr-2 text-primary-docdot group-hover:rotate-12 transition-transform duration-300" />
+              <span className="text-heading">Detailed Analytics</span>
+              <ArrowRight className="w-4 h-4 ml-2 text-primary-docdot group-hover:translate-x-1 transition-transform duration-300" />
             </Button>
           </div>
 
@@ -487,8 +487,7 @@ export default function Home() {
                 progress: 45,
                 progressText: '180 XP to next level',
                 icon: Zap,
-                gradient: 'from-blue-500 to-cyan-600',
-                bgGradient: 'from-blue-50 to-cyan-50'
+                bgColor: '#D1E8F9'
               },
               {
                 title: 'Study Streak',
@@ -496,16 +495,14 @@ export default function Home() {
                 subtitle: 'days active',
                 extraText: 'Best: 2 days',
                 icon: Calendar,
-                gradient: 'from-orange-500 to-red-600',
-                bgGradient: 'from-orange-50 to-red-50'
+                bgColor: '#D1E8F9'
               },
               {
                 title: 'Overall Accuracy',
                 value: `${stats.averageScore}%`,
                 subtitle: '57 of 60 correct',
                 icon: Target,
-                gradient: 'from-green-500 to-emerald-600',
-                bgGradient: 'from-green-50 to-emerald-50'
+                bgColor: '#D1E8F9'
               },
               {
                 title: 'Global Rank',
@@ -513,8 +510,7 @@ export default function Home() {
                 subtitle: 'Top 100!',
                 hasButton: true,
                 icon: Trophy,
-                gradient: 'from-purple-500 to-pink-600',
-                bgGradient: 'from-purple-50 to-pink-50'
+                bgColor: '#D1E8F9'
               }
             ].map((item, index) => {
               const IconComponent = item.icon;
@@ -527,40 +523,43 @@ export default function Home() {
                     animation: isLoaded ? 'fadeInScale 0.8s ease-out forwards' : 'none'
                   }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl blur-xl"
-                       style={{
-                         background: `linear-gradient(135deg, ${item.gradient.split(' ')[1]}, ${item.gradient.split(' ')[3]})`
-                       }}></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#3399FF] to-[#66CCFF] opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-2xl blur-xl"></div>
                   
-                  <Card className={`relative bg-gradient-to-br ${item.bgGradient} dark:from-gray-800 dark:to-gray-700 border-2 hover:border-transparent transform hover:-translate-y-2 hover:shadow-2xl transition-all duration-500 group-hover:scale-105`}>
+                  <Card 
+                    className="card-docdot relative border-2 hover:border-primary-docdot transform hover:-translate-y-2 hover:shadow-docdot-lg transition-all duration-500 group-hover:scale-105"
+                    style={{ backgroundColor: item.bgColor }}
+                  >
                     <CardContent className="p-6">
                       <div className="flex items-center mb-4">
-                        <div className={`p-2 rounded-xl bg-gradient-to-r ${item.gradient} mr-3 transform group-hover:rotate-12 transition-transform duration-300 shadow-lg`}>
+                        <div 
+                          className="p-2 rounded-xl mr-3 transform group-hover:rotate-12 transition-transform duration-300 shadow-lg"
+                          style={{ backgroundColor: '#3399FF' }}
+                        >
                           <IconComponent className="w-5 h-5 text-white" />
                         </div>
-                        <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">{item.title}</span>
+                        <span className="text-sm font-semibold text-body">{item.title}</span>
                       </div>
                       
-                      <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                      <div className="text-3xl font-bold text-heading mb-2">
                         {typeof item.value === 'number' ? <AnimatedCounter value={item.value} /> : item.value}
                       </div>
                       
-                      <div className="text-sm text-gray-700 dark:text-gray-300 mb-3">{item.subtitle}</div>
+                      <div className="text-sm text-body mb-3">{item.subtitle}</div>
                       
                       {item.progress && (
                         <>
                           <Progress value={item.progress} className="h-2 mb-2" />
-                          <div className="text-xs text-gray-600 dark:text-gray-400">{item.progressText}</div>
+                          <div className="text-xs text-body">{item.progressText}</div>
                         </>
                       )}
                       
                       {item.extraText && (
-                        <div className="text-xs text-gray-600 dark:text-gray-400">{item.extraText}</div>
+                        <div className="text-xs text-body">{item.extraText}</div>
                       )}
                       
                       {item.hasButton && (
                         <Link href="/leaderboard">
-                          <Button variant="ghost" size="sm" className="mt-2 p-0 h-auto text-purple-600 dark:text-purple-400 hover:text-purple-800 group/btn">
+                          <Button variant="ghost" size="sm" className="mt-2 p-0 h-auto text-primary-docdot hover:text-primary-docdot/80 group/btn">
                             View Leaderboard 
                             <ArrowRight className="w-3 h-3 ml-1 group-hover/btn:translate-x-1 transition-transform duration-200" />
                           </Button>
@@ -576,7 +575,7 @@ export default function Home() {
 
         {/* Gamification Hub with Interactive Elements */}
         <div className="mb-12">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent dark:from-white dark:to-gray-300 mb-8">
+          <h2 className="text-3xl font-bold text-heading mb-8">
             Gamification Hub
           </h2>
           
@@ -588,8 +587,6 @@ export default function Home() {
                 value: earnedBadges.length,
                 valueLabel: 'Badges Earned',
                 icon: Award,
-                gradient: 'from-yellow-500 to-orange-600',
-                bgGradient: 'from-yellow-50 to-orange-50',
                 badges: true
               },
               {
@@ -597,17 +594,13 @@ export default function Home() {
                 description: 'Compete with fellow medical students',
                 value: `#${stats.rank}`,
                 valueLabel: 'Global Rank',
-                icon: Trophy,
-                gradient: 'from-purple-500 to-pink-600',
-                bgGradient: 'from-purple-50 to-pink-50'
+                icon: Trophy
               },
               {
                 title: 'Study Motivation',
                 description: 'Keep your learning streak alive',
                 hasWelcome: true,
-                icon: Brain,
-                gradient: 'from-green-500 to-emerald-600',
-                bgGradient: 'from-green-50 to-emerald-50'
+                icon: Brain
               }
             ].map((item, index) => {
               const IconComponent = item.icon;
@@ -620,28 +613,31 @@ export default function Home() {
                     animation: isLoaded ? 'slideInRight 0.8s ease-out forwards' : 'none'
                   }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl blur-xl"
-                       style={{
-                         background: `linear-gradient(135deg, ${item.gradient.split(' ')[1]}, ${item.gradient.split(' ')[3]})`
-                       }}></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#3399FF] to-[#66CCFF] opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-2xl blur-xl"></div>
                   
-                  <Card className={`relative bg-gradient-to-br ${item.bgGradient} dark:from-gray-800 dark:to-gray-700 border-2 hover:border-transparent transform hover:-translate-y-2 hover:shadow-2xl transition-all duration-500 group-hover:scale-105 h-full`}>
+                  <Card 
+                    className="card-docdot relative border-2 hover:border-primary-docdot transform hover:-translate-y-2 hover:shadow-docdot-lg transition-all duration-500 group-hover:scale-105 h-full"
+                    style={{ backgroundColor: '#D1E8F9' }}
+                  >
                     <CardContent className="p-6">
                       <div className="flex items-center mb-4">
-                        <div className={`p-3 rounded-xl bg-gradient-to-r ${item.gradient} mr-3 transform group-hover:rotate-12 transition-transform duration-300 shadow-lg`}>
+                        <div 
+                          className="p-3 rounded-xl mr-3 transform group-hover:rotate-12 transition-transform duration-300 shadow-lg"
+                          style={{ backgroundColor: '#3399FF' }}
+                        >
                           <IconComponent className="w-6 h-6 text-white" />
                         </div>
-                        <span className="text-lg font-bold text-gray-900 dark:text-white">{item.title}</span>
+                        <span className="text-lg font-bold text-heading">{item.title}</span>
                       </div>
                       
-                      <p className="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">{item.description}</p>
+                      <p className="text-body mb-6 leading-relaxed">{item.description}</p>
                       
                       {item.value && (
                         <div className="text-center">
-                          <div className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+                          <div className="text-4xl font-bold text-heading mb-2">
                             {typeof item.value === 'number' ? <AnimatedCounter value={item.value} /> : item.value}
                           </div>
-                          <div className="text-sm text-gray-700 dark:text-gray-300 mb-4">{item.valueLabel}</div>
+                          <div className="text-sm text-body mb-4">{item.valueLabel}</div>
                         </div>
                       )}
                       
@@ -650,8 +646,9 @@ export default function Home() {
                           {[1,2,3,4].map(i => (
                             <div 
                               key={i} 
-                              className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full shadow-lg transform hover:scale-125 transition-transform duration-200 cursor-pointer"
+                              className="w-8 h-8 rounded-full shadow-lg transform hover:scale-125 transition-transform duration-200 cursor-pointer"
                               style={{
+                                backgroundColor: '#3399FF',
                                 animationDelay: `${i * 100}ms`,
                                 animation: 'bounceIn 0.6s ease-out forwards'
                               }}
@@ -661,12 +658,12 @@ export default function Home() {
                       )}
                       
                       {item.hasWelcome && (
-                        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-4 border border-white/40">
+                        <div className="bg-docdot-white/80 backdrop-blur-sm rounded-xl p-4 border border-[#D1E8F9]">
                           <div className="flex items-center space-x-2 mb-2">
-                            <CheckCircle className="w-5 h-5 text-green-500" />
-                            <span className="font-semibold text-gray-900 dark:text-white">Welcome to Docdot!</span>
+                            <CheckCircle className="w-5 h-5 text-primary-docdot" />
+                            <span className="font-semibold text-heading">Welcome to Docdot!</span>
                           </div>
-                          <div className="text-sm text-gray-700 dark:text-gray-300">You have successfully signed in.</div>
+                          <div className="text-sm text-body">You have successfully signed in.</div>
                         </div>
                       )}
                     </CardContent>
@@ -679,16 +676,16 @@ export default function Home() {
 
         {/* Quick Actions with Enhanced Interactions */}
         <div className="mb-12">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent dark:from-white dark:to-gray-300 mb-8">
+          <h2 className="text-3xl font-bold text-heading mb-8">
             Quick Actions
           </h2>
           
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
             {[
-              { title: 'Start Quiz', description: 'Test your knowledge', icon: Play, href: '/quiz', gradient: 'from-blue-500 to-cyan-600', bgGradient: 'from-blue-50 to-cyan-50' },
-              { title: 'Achievements', description: 'View your badges', icon: Award, href: '/badges', gradient: 'from-yellow-500 to-orange-600', bgGradient: 'from-yellow-50 to-orange-50' },
-              { title: 'Leaderboard', description: 'See rankings', icon: Trophy, href: '/leaderboard', gradient: 'from-purple-500 to-pink-600', bgGradient: 'from-purple-50 to-pink-50' },
-              { title: 'Analytics', description: 'Track progress', icon: BarChart3, href: '/analytics', gradient: 'from-green-500 to-emerald-600', bgGradient: 'from-green-50 to-emerald-50' }
+              { title: 'Start Quiz', description: 'Test your knowledge', icon: Play, href: '/quiz' },
+              { title: 'Achievements', description: 'View your badges', icon: Award, href: '/badges' },
+              { title: 'Leaderboard', description: 'See rankings', icon: Trophy, href: '/leaderboard' },
+              { title: 'Analytics', description: 'Track progress', icon: BarChart3, href: '/analytics' }
             ].map((action, index) => {
               const IconComponent = action.icon;
               return (
@@ -700,23 +697,26 @@ export default function Home() {
                     animation: isLoaded ? 'zoomIn 0.6s ease-out forwards' : 'none'
                   }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl blur-xl"
-                       style={{
-                         background: `linear-gradient(135deg, ${action.gradient.split(' ')[1]}, ${action.gradient.split(' ')[3]})`
-                       }}></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#3399FF] to-[#66CCFF] opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-2xl blur-xl"></div>
                   
                   <Link href={action.href}>
-                    <Card className={`relative hover:shadow-2xl transition-all duration-500 cursor-pointer bg-gradient-to-br ${action.bgGradient} dark:from-gray-800 dark:to-gray-700 border-2 hover:border-transparent transform hover:-translate-y-3 group-hover:scale-110`}>
+                    <Card 
+                      className="card-docdot relative hover:shadow-docdot-lg transition-all duration-500 cursor-pointer border-2 hover:border-primary-docdot transform hover:-translate-y-3 group-hover:scale-110"
+                      style={{ backgroundColor: '#D1E8F9' }}
+                    >
                       <CardContent className="p-6 text-center">
-                        <div className={`w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-r ${action.gradient} flex items-center justify-center transform group-hover:rotate-12 transition-all duration-500 shadow-xl group-hover:shadow-2xl`}>
+                        <div 
+                          className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center transform group-hover:rotate-12 transition-all duration-500 shadow-xl group-hover:shadow-2xl"
+                          style={{ backgroundColor: '#3399FF' }}
+                        >
                           <IconComponent className="w-8 h-8 text-white" />
                         </div>
-                        <h3 className="font-bold text-gray-900 dark:text-white mb-2 text-lg">{action.title}</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-300">
+                        <h3 className="font-bold text-heading mb-2 text-lg">{action.title}</h3>
+                        <p className="text-sm text-body group-hover:text-heading transition-colors duration-300">
                           {action.description}
                         </p>
                         <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <ArrowRight className="w-5 h-5 mx-auto text-gray-600 dark:text-gray-400" />
+                          <ArrowRight className="w-5 h-5 mx-auto text-primary-docdot" />
                         </div>
                       </CardContent>
                     </Card>
