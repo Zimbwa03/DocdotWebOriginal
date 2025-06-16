@@ -92,12 +92,14 @@ export default function Landing() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left Content */}
             <div>
-              <div className="flex items-center space-x-2 mb-6">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#3399FF' }}>
-                  <GraduationCap className="w-6 h-6 text-white" />
-                </div>
+              <div className="flex items-center space-x-3 mb-6">
+                <img 
+                  src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview-removebg-preview_1750075531418.png" 
+                  alt="DocDot Medical Student Logo" 
+                  className="h-12 w-auto"
+                />
                 <span className="text-2xl font-bold" style={{ color: '#1C1C1C' }}>
-                  Docdot
+                  DocDot
                 </span>
               </div>
               
@@ -278,16 +280,18 @@ export default function Landing() {
       {/* Footer */}
       <footer className="py-12 px-8" style={{ backgroundColor: '#1C1C1C' }}>
         <div className="max-w-7xl mx-auto text-center">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#3399FF' }}>
-              <GraduationCap className="w-5 h-5 text-white" />
-            </div>
+          <div className="flex items-center justify-center space-x-3 mb-4">
+            <img 
+              src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview-removebg-preview_1750075531418.png" 
+              alt="DocDot Medical Student Logo" 
+              className="h-8 w-auto filter brightness-0 invert"
+            />
             <span className="text-xl font-bold text-white">
-              Docdot
+              DocDot
             </span>
           </div>
           <p className="text-gray-400">
-            © 2024 Docdot. Empowering medical education worldwide.
+            © 2024 DocDot. Empowering medical education worldwide.
           </p>
         </div>
       </footer>

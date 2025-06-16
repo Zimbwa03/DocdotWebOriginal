@@ -700,8 +700,18 @@ export default function AiTools() {
     <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
       <div className="max-w-6xl mx-auto py-8 px-4">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-4" style={{ color: '#1C1C1C' }}>AI Medical Learning Tools</h1>
-          <p className="text-xl mb-4" style={{ color: '#2E2E2E' }}>Powered by advanced AI to enhance your medical education</p>
+          <div className="flex items-center justify-center space-x-3 mb-6">
+            <img 
+              src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview-removebg-preview_1750075531418.png" 
+              alt="DocDot Medical Student Logo" 
+              className="h-16 w-auto"
+            />
+            <div>
+              <h1 className="text-3xl font-bold" style={{ color: '#1C1C1C' }}>AI Medical Learning Tools</h1>
+              <p className="text-lg" style={{ color: '#2E2E2E' }}>Powered by DocDot AI</p>
+            </div>
+          </div>
+          <p className="text-xl mb-4" style={{ color: '#2E2E2E' }}>Advanced AI to enhance your medical education</p>
           <Badge className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white">
             🚀 DeepSeek R1 - Premium API Integration
           </Badge>
