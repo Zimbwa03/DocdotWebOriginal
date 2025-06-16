@@ -805,7 +805,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       let currentSessionId = sessionId;
       
-      // Create new session if not provided
+      // Validate sessionId is a valid UUID if provided, otherwise create new session
+      if (currentSessionId) {
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(currentSessionId)) {
+          console.log(`Invalid sessionId format: ${currentSessionId}, creating new session`);
+          currentSessionId = null;
+        }
+      }
+      
+      // Create new session if not provided or invalid
       if (!currentSessionId) {
         const newSession = await dbStorage.createAiSession(
           userId, 
@@ -813,6 +822,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           `AI ${toolType} session - ${new Date().toLocaleDateString()}`
         );
         currentSessionId = newSession.id;
+        console.log(`Created new AI session: ${currentSessionId}`);
       }
 
       // Save user message to database
