@@ -276,8 +276,8 @@ export default function Badges() {
                 Earned Badges
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {earnedBadges.map(badge => (
-                <Card key={`earned-${badge.id}`} className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200 hover:shadow-lg transition-shadow">
+                {earnedBadges.map((badge, index) => (
+                  <Card key={badge.badgeId || `earned-${index}`} className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200 hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2 text-yellow-800">
@@ -313,8 +313,8 @@ export default function Badges() {
                 Available Badges
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {availableBadges.map(badge => (
-                <Card key={`available-${badge.id}`} className="bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 hover:shadow-lg transition-shadow">
+                {availableBadges.map((badge, index) => (
+                  <Card key={badge.id || `available-${index}`} className="bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2 text-gray-800">
