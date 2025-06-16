@@ -826,8 +826,7 @@ The lower limb is designed for weight-bearing, locomotion, and stability. Select
         },
         {
           id: 'foot-anatomy',
-          name: 'Foot (This update ensures the logo is correctly displayed in the Notes component.
-Dorsum and Sole)',
+          name: 'Foot (Dorsum and Sole)',
           description: 'Foot muscles, arches, and weight-bearing'
         },
         {
