@@ -74,9 +74,9 @@ export default function Badges() {
           userId = JSON.parse(userData).id;
         }
       }
-      
+
       if (!userId) return { earned: [], available: [] };
-      
+
       const response = await fetch(`/api/badges/${userId}`);
       if (!response.ok) return { earned: [], available: [] };
       return response.json();
@@ -102,7 +102,7 @@ export default function Badges() {
   const renderBadge = (badge: BadgeData, earned = false) => {
     const IconComponent = getIconComponent(badge.icon);
     const isLocked = badge.isSecret && !earned;
-    
+
     return (
       <Card key={badge.id} className={`relative overflow-hidden transition-all duration-300 ${
         earned ? 'bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200' : 'hover:shadow-md'
@@ -112,7 +112,7 @@ export default function Badges() {
             <CheckCircle className="w-5 h-5 text-green-500" />
           </div>
         )}
-        
+
         <CardHeader className="text-center pb-2">
           <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-3 ${
             earned ? 'bg-gradient-to-br from-yellow-100 to-yellow-200' : 'bg-gray-100'
@@ -129,11 +129,11 @@ export default function Badges() {
               />
             )}
           </div>
-          
+
           <CardTitle className={`text-lg ${earned ? 'text-gray-900' : 'text-gray-600'}`}>
             {isLocked ? '???' : badge.name}
           </CardTitle>
-          
+
           <div className="flex items-center justify-center gap-2 mb-2">
             <Badge 
               variant="secondary" 
@@ -153,12 +153,12 @@ export default function Badges() {
             )}
           </div>
         </CardHeader>
-        
+
         <CardContent>
           <CardDescription className="text-center mb-3 min-h-[40px]">
             {isLocked ? 'Complete more challenges to unlock this secret badge!' : badge.description}
           </CardDescription>
-          
+
           {!earned && !isLocked && badge.progress !== undefined && (
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
@@ -171,7 +171,7 @@ export default function Badges() {
               />
             </div>
           )}
-          
+
           {badge.xpReward > 0 && (
             <div className="flex items-center justify-center mt-3 text-sm text-blue-600">
               <Zap className="w-4 h-4 mr-1" />
@@ -189,7 +189,7 @@ export default function Badges() {
         <div className="text-center">
           <div className="flex items-center justify-center space-x-3 mb-4">
             <img 
-              src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview-removebg-preview_1750075531418.png" 
+              src="/DocDot Medical Student Logo.png" 
               alt="DocDot Medical Student Logo" 
               className="h-12 w-auto"
             />
@@ -229,7 +229,7 @@ export default function Badges() {
       <div className="text-center">
         <div className="flex items-center justify-center space-x-3 mb-4">
           <img 
-            src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview-removebg-preview_1750075531418.png" 
+            src="/DocDot Medical Student Logo.png" 
             alt="DocDot Medical Student Logo" 
             className="h-12 w-auto"
           />
@@ -238,7 +238,7 @@ export default function Badges() {
         <p className="text-gray-600 mb-6">
           Earn badges by completing challenges and reaching milestones in your medical studies
         </p>
-        
+
         <div className="flex justify-center gap-6 text-center">
           <div>
             <div className="text-2xl font-bold text-blue-600">{earnedBadges.length}</div>
@@ -280,7 +280,7 @@ export default function Badges() {
               </div>
             </div>
           )}
-          
+
           {availableBadges.length > 0 && (
             <div>
               <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
@@ -305,11 +305,11 @@ export default function Badges() {
                   {category} Badges
                 </h2>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {badges.map(badge => renderBadge(badge, badge.earned))}
               </div>
-              
+
               {badges.length === 0 && (
                 <div className="text-center py-12">
                   <div className="text-gray-400 mb-2">No badges in this category yet</div>

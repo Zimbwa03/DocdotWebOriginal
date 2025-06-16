@@ -702,7 +702,7 @@ export default function AiTools() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center space-x-3 mb-6">
             <img 
-              src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview-removebg-preview_1750075531418.png" 
+              src="/DocDot Medical Student Logo.png" 
               alt="DocDot Medical Student Logo" 
               className="h-16 w-auto"
             />

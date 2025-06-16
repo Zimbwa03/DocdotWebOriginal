@@ -69,7 +69,7 @@ export default function Analytics() {
         setLoading(false);
         return;
       }
-      
+
       const user = JSON.parse(userData);
       const userId = user.id;
 
@@ -128,7 +128,7 @@ export default function Analytics() {
       <div className="text-center">
         <div className="flex items-center justify-center space-x-3 mb-4">
           <img 
-            src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview-removebg-preview_1750075531418.png" 
+            src="/DocDot Medical Student Logo.png" 
             alt="DocDot Medical Student Logo" 
             className="h-14 w-auto"
           />

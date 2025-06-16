@@ -59,7 +59,7 @@ export default function StudyPlanner() {
     queryKey: ['/api/study-sessions', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      
+
       console.log("🔍 Fetching study sessions for user:", user.id);
       const response = await fetch(`/api/study-sessions?userId=${user.id}`);
       if (!response.ok) {
@@ -113,13 +113,13 @@ export default function StudyPlanner() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(sessionData)
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         console.error('Study session creation failed:', errorData);
         throw new Error(errorData.error || 'Failed to create session');
       }
-      
+
       const result = await response.json();
       console.log('✅ Study session created successfully:', result);
       return result;
@@ -234,7 +234,7 @@ export default function StudyPlanner() {
           <h1 className="text-3xl font-bold text-gray-900">Study Planner</h1>
           <p className="text-gray-600 mt-2">Schedule and organize your study sessions</p>
         </div>
-        
+
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
           <DialogTrigger asChild>
             <Button onClick={() => {

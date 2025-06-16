@@ -129,12 +129,18 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen bg-docdot-bg">
-      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        {/* Header */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-docdot-heading mb-4">
-            Choose Your Learning Plan
-          </h1>
+          <div className="flex items-center justify-center space-x-3 mb-6">
+            <img 
+              src="/DocDot Medical Student Logo.png" 
+              alt="DocDot Medical Student Logo" 
+              className="h-16 w-auto"
+            />
+            <div>
+              <h1 className="text-4xl font-bold" style={{ color: '#1C1C1C' }}>Choose Your Plan</h1>
+            </div>
+          </div>
           <p className="text-xl text-docdot-text max-w-2xl mx-auto">
             Unlock advanced features and accelerate your medical education journey with our comprehensive plans
           </p>
@@ -149,7 +155,7 @@ export default function Pricing() {
             <h3 className="font-semibold text-docdot-heading mb-2">Comprehensive Notes</h3>
             <p className="text-docdot-text text-sm">Access detailed study materials across all medical subjects</p>
           </div>
-          
+
           <div className="text-center">
             <div className="p-4 bg-green-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
               <Zap className="text-green-600" size={24} />
@@ -157,7 +163,7 @@ export default function Pricing() {
             <h3 className="font-semibold text-docdot-heading mb-2">Interactive Quizzes</h3>
             <p className="text-docdot-text text-sm">Test your knowledge with unlimited practice questions</p>
           </div>
-          
+
           <div className="text-center">
             <div className="p-4 bg-purple-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
               <Bot className="text-purple-600" size={24} />
@@ -165,7 +171,7 @@ export default function Pricing() {
             <h3 className="font-semibold text-docdot-heading mb-2">AI-Powered Learning</h3>
             <p className="text-docdot-text text-sm">Get personalized tutoring and AI-generated study aids</p>
           </div>
-          
+
           <div className="text-center">
             <div className="p-4 bg-orange-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
               <Calendar className="text-orange-600" size={24} />
@@ -187,7 +193,7 @@ export default function Pricing() {
                   </Badge>
                 </div>
               )}
-              
+
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl text-docdot-heading mb-2">
                   {tier.name}
@@ -202,7 +208,7 @@ export default function Pricing() {
                 </div>
                 <p className="text-docdot-text">{tier.description}</p>
               </CardHeader>
-              
+
               <CardContent>
                 <div className="space-y-4 mb-8">
                   {tier.features.map((feature, index) => (
@@ -223,7 +229,7 @@ export default function Pricing() {
                     </div>
                   ))}
                 </div>
-                
+
                 <Button 
                   className={`w-full ${getButtonStyle(tier)}`}
                   disabled={tier.name === 'Free'}
@@ -240,7 +246,7 @@ export default function Pricing() {
           <h2 className="text-2xl font-bold text-docdot-heading text-center mb-8">
             Frequently Asked Questions
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
               <h3 className="font-semibold text-docdot-heading mb-2">
@@ -250,7 +256,7 @@ export default function Pricing() {
                 Yes, you can change your subscription plan at any time. Changes will be reflected in your next billing cycle.
               </p>
             </div>
-            
+
             <div>
               <h3 className="font-semibold text-docdot-heading mb-2">
                 What payment methods do you accept?
@@ -259,7 +265,7 @@ export default function Pricing() {
                 We accept all major credit cards, PayPal, and EcoCash for local payments in Zimbabwe.
               </p>
             </div>
-            
+
             <div>
               <h3 className="font-semibold text-docdot-heading mb-2">
                 Is there a student discount available?
@@ -268,7 +274,7 @@ export default function Pricing() {
                 Yes! Medical students can get 50% off any plan with valid student ID verification.
               </p>
             </div>
-            
+
             <div>
               <h3 className="font-semibold text-docdot-heading mb-2">
                 What happens to my data if I cancel?

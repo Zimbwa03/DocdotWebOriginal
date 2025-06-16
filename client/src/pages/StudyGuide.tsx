@@ -35,7 +35,7 @@ export default function StudyGuide() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <img 
-              src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview-removebg-preview_1750075531418.png" 
+              src="/DocDot Medical Student Logo.png" 
               alt="DocDot Medical Student Logo" 
               className="h-12 w-auto"
             />
@@ -135,7 +135,7 @@ export default function StudyGuide() {
                   Access our comprehensive collection of medical textbooks and resources.
                 </p>
               </div>
-              
+
               <div className="mb-8 max-w-md mx-auto">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
