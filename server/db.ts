@@ -170,6 +170,24 @@ export class DatabaseStorage {
   async getUserStats(userId: string): Promise<UserStats | undefined> {
     try {
       const result = await db.select().from(userStats).where(eq(userStats.userId, userId)).limit(1);
+      
+      if (result[0]) {
+        // Calculate today's study time
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const todayStats = await db.select().from(dailyStats)
+          .where(and(eq(dailyStats.userId, userId), gte(dailyStats.date, today)))
+          .limit(1);
+        
+        const studyTimeToday = todayStats.length > 0 ? Math.round((todayStats[0].studyTime || 0) / 60) : 0;
+        
+        return {
+          ...result[0],
+          studyTimeToday
+        };
+      }
+      
       return result[0];
     } catch (error) {
       console.error('Error getting user stats:', error);

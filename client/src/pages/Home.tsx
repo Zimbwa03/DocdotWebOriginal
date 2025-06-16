@@ -315,6 +315,18 @@ export default function Home() {
     refetchInterval: 30000,
   });
 
+  // Fetch daily study time
+  const { data: dailyStats } = useQuery({
+    queryKey: ['/api/daily-stats', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const response = await fetch(`/api/daily-stats/${user.id}?days=1`);
+      if (!response.ok) return [];
+      return response.json();
+    },
+    enabled: !!user?.id,
+  });
+
   // Fetch badges
   const { data: badgeData } = useQuery({
     queryKey: ['/api/badges', user?.id],
@@ -394,13 +406,22 @@ export default function Home() {
     );
   }
 
+  // Calculate today's study time from daily stats
+  const todayStudyTime = dailyStats && dailyStats.length > 0 
+    ? Math.round((dailyStats[0].studyTime || 0) / 60) // Convert seconds to minutes
+    : 0;
+
   const stats = userStats || {
-    totalQuizzes: 0,
-    averageScore: 95,
+    totalQuestions: 0,
+    correctAnswers: 0,
+    averageScore: 0,
     currentStreak: 0,
-    totalXP: 3820,
-    level: 4,
-    rank: userRankResponse?.rank || 11
+    longestStreak: 0,
+    totalXP: 0,
+    currentLevel: 1,
+    totalStudyTime: 0,
+    rank: userRankResponse?.rank || 11,
+    studyTimeToday: todayStudyTime
   };
 
   const greeting = getGreeting();
@@ -462,10 +483,10 @@ export default function Home() {
         {/* Animated Stats Overview */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-12">
           {[
-            { label: 'Minutes Today', value: userStats?.studyTimeToday || 0, icon: Clock, color: '#3399FF' },
-            { label: 'Day Streak', value: userStats?.currentStreak || stats.currentStreak, icon: Flame, color: '#3399FF' },
-            { label: 'Total XP', value: userStats?.totalXP || stats.totalXP, icon: Star, color: '#3399FF' },
-            { label: `Level ${userStats?.currentLevel || stats.level}`, value: '', icon: Crown, color: '#3399FF' }
+            { label: 'Minutes Today', value: todayStudyTime, icon: Clock, color: '#3399FF' },
+            { label: 'Day Streak', value: stats.currentStreak, icon: Flame, color: '#3399FF' },
+            { label: 'Total XP', value: stats.totalXP, icon: Star, color: '#3399FF' },
+            { label: `Level ${stats.currentLevel}`, value: '', icon: Crown, color: '#3399FF' }
           ].map((stat, index) => {
             const IconComponent = stat.icon;
             return (
@@ -519,9 +540,9 @@ export default function Home() {
               {
                 title: 'XP & Level',
                 value: stats.totalXP.toLocaleString(),
-                subtitle: `Level ${stats.level}`,
-                progress: 45,
-                progressText: '180 XP to next level',
+                subtitle: `Level ${stats.currentLevel}`,
+                progress: ((stats.totalXP % 1000) / 1000) * 100,
+                progressText: `${1000 - (stats.totalXP % 1000)} XP to next level`,
                 icon: Zap,
                 bgColor: '#D1E8F9'
               },
@@ -529,14 +550,14 @@ export default function Home() {
                 title: 'Study Streak',
                 value: stats.currentStreak,
                 subtitle: 'days active',
-                extraText: 'Best: 2 days',
+                extraText: `Best: ${stats.longestStreak} days`,
                 icon: Calendar,
                 bgColor: '#D1E8F9'
               },
               {
                 title: 'Overall Accuracy',
                 value: `${stats.averageScore}%`,
-                subtitle: '57 of 60 correct',
+                subtitle: `${stats.correctAnswers} of ${stats.totalQuestions} correct`,
                 icon: Target,
                 bgColor: '#D1E8F9'
               },
@@ -683,7 +704,7 @@ export default function Home() {
                           <div className="flex justify-center space-x-2 cursor-pointer">
                             {earnedBadges.slice(0, 4).map((badge, i) => (
                               <div 
-                                key={i} 
+                                key={`badge-${badge.badgeId || i}`} 
                                 className="w-8 h-8 rounded-full shadow-lg transform hover:scale-125 transition-transform duration-200 cursor-pointer flex items-center justify-center text-white text-xs font-bold"
                                 style={{
                                   backgroundColor: badge.color || '#3399FF',
@@ -692,11 +713,11 @@ export default function Home() {
                                 }}
                                 title={badge.name}
                               >
-                                {badge.name.charAt(0)}
+                                {badge.name?.charAt(0) || '🏆'}
                               </div>
                             ))}
                             {earnedBadges.length === 0 && (
-                              <div className="text-sm text-gray-500">No badges yet</div>
+                              <div className="text-sm text-gray-500">No badges yet - start quizzing!</div>
                             )}
                           </div>
                         </Link>
