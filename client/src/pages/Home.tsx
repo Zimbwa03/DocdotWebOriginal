@@ -259,9 +259,30 @@ export default function Home() {
     setIsLoaded(true);
   }, []);
 
+  // Fetch user profile for greeting
+  const { data: userProfile } = useQuery({
+    queryKey: ['/api/user', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const response = await fetch(`/api/user/${user.id}`);
+      if (!response.ok) return null;
+      return response.json();
+    },
+    enabled: !!user?.id,
+  });
+
   const getGreeting = () => {
     const hour = new Date().getHours();
-    const firstName = user?.user_metadata?.first_name || user?.email?.split('@')[0] || 'Dr Student';
+    let firstName = 'Dr Student';
+    
+    // Use saved profile name first, then fallback to user metadata or email
+    if (userProfile?.firstName) {
+      firstName = userProfile.firstName;
+    } else if (user?.user_metadata?.first_name) {
+      firstName = user.user_metadata.first_name;
+    } else if (user?.email) {
+      firstName = user.email.split('@')[0];
+    }
     
     if (hour >= 5 && hour < 12) {
       return { text: `Good Morning, ${firstName}!`, emoji: '☀️', gradient: 'from-yellow-400 to-orange-500' };
@@ -312,6 +333,18 @@ export default function Home() {
         rank: Number(data.rank) || 11,
         totalUsers: Number(data.totalUsers) || 100
       };
+    },
+    enabled: !!user?.id,
+  });
+
+  // Fetch recent quiz attempts
+  const { data: recentQuizzes } = useQuery({
+    queryKey: ['/api/quiz-attempts/recent', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const response = await fetch(`/api/quiz-attempts/recent/${user.id}`);
+      if (!response.ok) return [];
+      return response.json();
     },
     enabled: !!user?.id,
   });
@@ -426,10 +459,10 @@ export default function Home() {
         {/* Animated Stats Overview */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-12">
           {[
-            { label: 'Minutes Today', value: stats.currentStreak, icon: Clock, color: '#3399FF' },
-            { label: 'Day Streak', value: stats.currentStreak, icon: Flame, color: '#3399FF' },
-            { label: 'Total XP', value: stats.totalXP, icon: Star, color: '#3399FF' },
-            { label: `Level ${stats.level}`, value: '', icon: Crown, color: '#3399FF' }
+            { label: 'Minutes Today', value: userStats?.studyTimeToday || 0, icon: Clock, color: '#3399FF' },
+            { label: 'Day Streak', value: userStats?.currentStreak || stats.currentStreak, icon: Flame, color: '#3399FF' },
+            { label: 'Total XP', value: userStats?.totalXP || stats.totalXP, icon: Star, color: '#3399FF' },
+            { label: `Level ${userStats?.currentLevel || stats.level}`, value: '', icon: Crown, color: '#3399FF' }
           ].map((stat, index) => {
             const IconComponent = stat.icon;
             return (
@@ -587,7 +620,8 @@ export default function Home() {
                 value: earnedBadges.length,
                 valueLabel: 'Badges Earned',
                 icon: Award,
-                badges: true
+                badges: true,
+                link: '/badges'
               },
               {
                 title: 'Leaderboard',
@@ -642,19 +676,27 @@ export default function Home() {
                       )}
                       
                       {item.badges && (
-                        <div className="flex justify-center space-x-2">
-                          {[1,2,3,4].map(i => (
-                            <div 
-                              key={i} 
-                              className="w-8 h-8 rounded-full shadow-lg transform hover:scale-125 transition-transform duration-200 cursor-pointer"
-                              style={{
-                                backgroundColor: '#3399FF',
-                                animationDelay: `${i * 100}ms`,
-                                animation: 'bounceIn 0.6s ease-out forwards'
-                              }}
-                            ></div>
-                          ))}
-                        </div>
+                        <Link href="/badges">
+                          <div className="flex justify-center space-x-2 cursor-pointer">
+                            {earnedBadges.slice(0, 4).map((badge, i) => (
+                              <div 
+                                key={i} 
+                                className="w-8 h-8 rounded-full shadow-lg transform hover:scale-125 transition-transform duration-200 cursor-pointer flex items-center justify-center text-white text-xs font-bold"
+                                style={{
+                                  backgroundColor: badge.color || '#3399FF',
+                                  animationDelay: `${i * 100}ms`,
+                                  animation: 'bounceIn 0.6s ease-out forwards'
+                                }}
+                                title={badge.name}
+                              >
+                                {badge.name.charAt(0)}
+                              </div>
+                            ))}
+                            {earnedBadges.length === 0 && (
+                              <div className="text-sm text-gray-500">No badges yet</div>
+                            )}
+                          </div>
+                        </Link>
                       )}
                       
                       {item.hasWelcome && (
@@ -725,6 +767,59 @@ export default function Home() {
               );
             })}
           </div>
+        </div>
+
+        {/* Recent Activity */}
+        <div className="mb-12">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 lg:mb-6 gap-3 sm:gap-0">
+            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
+              Recent Activity
+            </h2>
+          </div>
+
+          <Card className="bg-white dark:bg-gray-800">
+            <CardContent className="p-4 sm:p-6">
+              {recentQuizzes && recentQuizzes.length > 0 ? (
+                <div className="space-y-3">
+                  {recentQuizzes.slice(0, 5).map((quiz: any, index: number) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                          quiz.score >= 70 ? 'bg-green-100 dark:bg-green-900' : 'bg-orange-100 dark:bg-orange-900'
+                        }`}>
+                          {quiz.score >= 70 ? 
+                            <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" /> : 
+                            <XCircle className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                          }
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900 dark:text-white">{quiz.category || 'Quiz'}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Score: {quiz.score || 0}% • {new Date(quiz.attempted_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge variant={quiz.score >= 70 ? "default" : "secondary"}>
+                        {quiz.score >= 70 ? 'Passed' : 'Review'}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <BookOpen className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Recent Activity</h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">Start taking quizzes to see your activity here</p>
+                  <Link href="/quiz">
+                    <Button>
+                      <Play className="w-4 h-4 mr-2" />
+                      Take Your First Quiz
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Enhanced Quiz Section */}

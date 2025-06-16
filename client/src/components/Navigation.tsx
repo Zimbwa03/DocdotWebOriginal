@@ -284,7 +284,7 @@ export function Navigation() {
         <div className="flex items-center justify-between h-14 sm:h-16">
           {/* Logo */}
           <Link href="/home">
-            <div className="flex items-center space-x-2 cursor-pointer">
+            <div className="flex items-center cursor-pointer">
               <img 
                 src="/DocDot Medical Student Logo.png" 
                 alt="DocDot Medical Student Logo" 
@@ -299,7 +299,6 @@ export function Navigation() {
               <div className="p-2 rounded-lg hidden" style={{ backgroundColor: '#3399FF' }}>
                 <BookOpen className="h-6 w-6 text-white" />
               </div>
-              <span className="text-xl font-bold" style={{ color: '#1C1C1C' }}>DocDot</span>
             </div>
           </Link>
 
@@ -338,12 +337,6 @@ export function Navigation() {
 
             {/* Desktop Quick Actions */}
             <div className="hidden lg:flex items-center space-x-2">
-              {/* Notifications */}
-              <Button variant="ghost" size="sm" className="relative">
-                <Bell className="w-4 h-4" style={{ color: '#2E2E2E' }} />
-                <Badge className="absolute -top-1 -right-1 w-2 h-2 p-0" style={{ backgroundColor: '#3399FF' }}></Badge>
-              </Button>
-
               {/* Theme Toggle */}
               <Button variant="ghost" size="sm" onClick={toggleTheme} data-tooltip="theme-toggle">
                 {theme === 'light' ? (
