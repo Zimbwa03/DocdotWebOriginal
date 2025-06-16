@@ -271,7 +271,14 @@ export default function Leaderboard() {
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Leaderboard</h1>
+        <div className="flex items-center justify-center space-x-3 mb-4">
+          <img 
+            src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview-removebg-preview_1750075531418.png" 
+            alt="DocDot Medical Student Logo" 
+            className="h-12 w-auto"
+          />
+          <h1 className="text-3xl font-bold text-gray-900">Leaderboard</h1>
+        </div>
         <p className="text-gray-600 mb-6">
           Compete with fellow medical students and track your progress
         </p>

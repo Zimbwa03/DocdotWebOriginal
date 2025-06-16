@@ -187,7 +187,14 @@ export default function Badges() {
     return (
       <div className="space-y-6">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Achievement Badges</h1>
+          <div className="flex items-center justify-center space-x-3 mb-4">
+            <img 
+              src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview-removebg-preview_1750075531418.png" 
+              alt="DocDot Medical Student Logo" 
+              className="h-12 w-auto"
+            />
+            <h1 className="text-3xl font-bold text-gray-900">Achievement Badges</h1>
+          </div>
           <p className="text-gray-600">Loading your achievements...</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -220,7 +227,14 @@ export default function Badges() {
     <div className="space-y-6">
       {/* Header Section */}
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Achievement Badges</h1>
+        <div className="flex items-center justify-center space-x-3 mb-4">
+          <img 
+            src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview-removebg-preview_1750075531418.png" 
+            alt="DocDot Medical Student Logo" 
+            className="h-12 w-auto"
+          />
+          <h1 className="text-3xl font-bold text-gray-900">Achievement Badges</h1>
+        </div>
         <p className="text-gray-600 mb-6">
           Earn badges by completing challenges and reaching milestones in your medical studies
         </p>

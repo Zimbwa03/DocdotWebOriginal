@@ -33,11 +33,18 @@ export default function StudyGuide() {
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Study Guide</h1>
-            <p className="text-gray-600 mt-1">
-              Comprehensive medical education resources and study tools
-            </p>
+          <div className="flex items-center space-x-4">
+            <img 
+              src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview-removebg-preview_1750075531418.png" 
+              alt="DocDot Medical Student Logo" 
+              className="h-12 w-auto"
+            />
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Study Guide</h1>
+              <p className="text-gray-600 mt-1">
+                Comprehensive medical education resources and study tools
+              </p>
+            </div>
           </div>
         </div>
 
