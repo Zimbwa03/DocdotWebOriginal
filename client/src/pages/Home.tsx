@@ -37,7 +37,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Link } from 'wouter';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
-import { useTooltipGuide } from '@/contexts/TooltipGuideContext';
+
 
 function QuizSection() {
   const categories = {

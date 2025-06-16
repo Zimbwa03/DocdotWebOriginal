@@ -53,7 +53,7 @@ export default function Notes() {
   const [activeTab, setActiveTab] = useState('gross_anatomy');
 
   // Mock user subscription - in production this would come from auth context
-  const userTier = 'free'; // free, starter, premium
+  const userTier = 'premium' as 'free' | 'starter' | 'premium';
 
   const categories: Category[] = [
     {
@@ -984,14 +984,14 @@ The cardiovascular system consists of the heart and blood vessels, each with dis
     }
   ];
 
-  const canAccessContent = (accessTier: string) => {
+  const canAccessContent = (accessTier: 'free' | 'starter' | 'premium') => {
     if (accessTier === 'free') return true;
-    if (accessTier === 'starter' && (userTier === 'starter' || userTier === 'premium')) return true;
-    if (accessTier === 'premium' && userTier === 'premium') return true;
+    if (accessTier === 'starter') return userTier === 'starter' || userTier === 'premium';
+    if (accessTier === 'premium') return userTier === 'premium';
     return false;
   };
 
-  const getAccessBadge = (tier: string) => {
+  const getAccessBadge = (tier: 'free' | 'starter' | 'premium') => {
     switch (tier) {
       case 'premium':
         return <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">Premium</Badge>;
