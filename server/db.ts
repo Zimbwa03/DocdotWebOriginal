@@ -177,17 +177,20 @@ export class DatabaseStorage {
     }
   }
 
-  async updateUserStats(userId: string, statsData: any): Promise<void> {
+  async updateUserStats(userId: string, isCorrect: boolean, xpEarned: number, timeSpent: number): Promise<void> {
     try {
       const existing = await this.getUserStats(userId);
 
       if (existing) {
         const newTotalQuestions = existing.totalQuestions + 1;
-        const newCorrectAnswers = existing.correctAnswers + (statsData.isCorrect ? 1 : 0);
+        const newCorrectAnswers = existing.correctAnswers + (isCorrect ? 1 : 0);
         const newAverageScore = Math.round((newCorrectAnswers / newTotalQuestions) * 100);
-        const newStreak = statsData.isCorrect ? existing.currentStreak + 1 : 0;
+        
+        // Calculate streak: increment if correct, reset if wrong
+        const newStreak = isCorrect ? existing.currentStreak + 1 : 0;
         const newLongestStreak = Math.max(existing.longestStreak, newStreak);
-        const newTotalXP = existing.totalXP + (statsData.xpEarned || 0);
+        
+        const newTotalXP = existing.totalXP + (xpEarned || 0);
         const newLevel = Math.floor(newTotalXP / 1000) + 1;
 
         await db.update(userStats)
@@ -199,7 +202,7 @@ export class DatabaseStorage {
             longestStreak: newLongestStreak,
             totalXP: newTotalXP,
             currentLevel: newLevel,
-            totalStudyTime: existing.totalStudyTime + Math.round((statsData.timeSpent || 0) / 60),
+            totalStudyTime: existing.totalStudyTime + Math.round((timeSpent || 0) / 60),
             updatedAt: new Date()
           })
           .where(eq(userStats.userId, userId));
@@ -207,16 +210,18 @@ export class DatabaseStorage {
         await db.insert(userStats).values({
           userId,
           totalQuestions: 1,
-          correctAnswers: statsData.isCorrect ? 1 : 0,
-          averageScore: statsData.isCorrect ? 100 : 0,
-          currentStreak: statsData.isCorrect ? 1 : 0,
-          longestStreak: statsData.isCorrect ? 1 : 0,
-          totalXP: statsData.xpEarned || 0,
-          currentLevel: Math.floor((statsData.xpEarned || 0) / 1000) + 1,
-          totalStudyTime: Math.round((statsData.timeSpent || 0) / 60),
+          correctAnswers: isCorrect ? 1 : 0,
+          averageScore: isCorrect ? 100 : 0,
+          currentStreak: isCorrect ? 1 : 0,
+          longestStreak: isCorrect ? 1 : 0,
+          totalXP: xpEarned || 0,
+          currentLevel: Math.floor((xpEarned || 0) / 1000) + 1,
+          totalStudyTime: Math.round((timeSpent || 0) / 60),
           rank: 0
         });
       }
+
+      console.log(`Updated stats for user ${userId}: ${newTotalQuestions} questions, ${newCorrectAnswers} correct, ${newAverageScore}% accuracy, ${newTotalXP} XP, Level ${newLevel}, Streak ${newStreak}`);
     } catch (error) {
       console.error('Error updating user stats:', error);
     }
@@ -373,9 +378,77 @@ export class DatabaseStorage {
           totalStudyTime: 0,
           rank: 0
         });
+      } else {
+        // Recalculate stats from actual quiz data to ensure accuracy
+        await this.recalculateUserStats(userId);
       }
     } catch (error) {
       console.error('Error ensuring user has stats:', error);
+    }
+  }
+
+  async recalculateUserStats(userId: string): Promise<void> {
+    try {
+      console.log(`Recalculating stats for user ${userId} from quiz attempts...`);
+      
+      // Get all quiz attempts for this user
+      const attempts = await db.select().from(quizAttempts)
+        .where(eq(quizAttempts.userId, userId))
+        .orderBy(quizAttempts.attemptedAt);
+
+      if (attempts.length === 0) {
+        console.log(`No quiz attempts found for user ${userId}`);
+        return;
+      }
+
+      // Calculate actual stats from attempts
+      const totalQuestions = attempts.length;
+      const correctAnswers = attempts.filter(attempt => attempt.isCorrect).length;
+      const averageScore = Math.round((correctAnswers / totalQuestions) * 100);
+      const totalXP = attempts.reduce((sum, attempt) => sum + (attempt.xpEarned || 0), 0);
+      const currentLevel = Math.floor(totalXP / 1000) + 1;
+      const totalStudyTime = Math.round(attempts.reduce((sum, attempt) => sum + (attempt.timeSpent || 0), 0) / 60);
+
+      // Calculate current streak (consecutive correct answers from the end)
+      let currentStreak = 0;
+      for (let i = attempts.length - 1; i >= 0; i--) {
+        if (attempts[i].isCorrect) {
+          currentStreak++;
+        } else {
+          break;
+        }
+      }
+
+      // Calculate longest streak
+      let longestStreak = 0;
+      let tempStreak = 0;
+      for (const attempt of attempts) {
+        if (attempt.isCorrect) {
+          tempStreak++;
+          longestStreak = Math.max(longestStreak, tempStreak);
+        } else {
+          tempStreak = 0;
+        }
+      }
+
+      // Update user stats with calculated values
+      await db.update(userStats)
+        .set({
+          totalQuestions,
+          correctAnswers,
+          averageScore,
+          currentStreak,
+          longestStreak,
+          totalXP,
+          currentLevel,
+          totalStudyTime,
+          updatedAt: new Date()
+        })
+        .where(eq(userStats.userId, userId));
+
+      console.log(`Recalculated stats for user ${userId}: ${totalQuestions} questions, ${correctAnswers} correct (${averageScore}%), ${totalXP} XP, Level ${currentLevel}, Streak ${currentStreak}/${longestStreak}`);
+    } catch (error) {
+      console.error('Error recalculating user stats:', error);
     }
   }
 

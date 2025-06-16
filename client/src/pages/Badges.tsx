@@ -276,7 +276,32 @@ export default function Badges() {
                 Earned Badges
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {earnedBadges.map(badge => renderBadge(badge, true))}
+                {earnedBadges.map(badge => (
+                <Card key={`earned-${badge.id}`} className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200 hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2 text-yellow-800">
+                        <Trophy className="w-5 h-5" />
+                        {badge.name}
+                      </CardTitle>
+                      <Badge variant="secondary" className="bg-yellow-200 text-yellow-800">
+                        Earned
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-yellow-700 mb-4">{badge.description}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-yellow-600">
+                        Earned: {new Date(badge.earnedAt).toLocaleDateString()}
+                      </span>
+                      <span className="text-lg font-bold text-yellow-600">
+                        +{badge.xpReward} XP
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
               </div>
             </div>
           )}
@@ -288,7 +313,44 @@ export default function Badges() {
                 Available Badges
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {availableBadges.map(badge => renderBadge(badge, false))}
+                {availableBadges.map(badge => (
+                <Card key={`available-${badge.id}`} className="bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2 text-gray-800">
+                        <Award className="w-5 h-5" />
+                        {badge.name}
+                      </CardTitle>
+                      <Badge variant="outline" className="text-gray-600">
+                        Available
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-700 mb-4">{badge.description}</p>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Progress</span>
+                        <span className="text-gray-600">
+                          {badge.progress}/{badge.requirement}
+                        </span>
+                      </div>
+                      <Progress 
+                        value={(badge.progress / badge.requirement) * 100} 
+                        className="h-2"
+                      />
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-500">
+                          {badge.category}
+                        </span>
+                        <span className="text-sm font-bold text-gray-600">
+                          +{badge.xpReward} XP
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
               </div>
             </div>
           )}

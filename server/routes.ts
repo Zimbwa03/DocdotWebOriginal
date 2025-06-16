@@ -1229,6 +1229,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Fix user stats by recalculating from quiz data
+  app.post('/api/fix-user-stats/:userId', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      
+      console.log(`Fixing stats calculation for user: ${userId}`);
+      
+      // Recalculate stats from actual quiz data
+      await dbStorage.recalculateUserStats(userId);
+      
+      // Get updated stats
+      const updatedStats = await dbStorage.getUserStats(userId);
+      
+      res.json({ 
+        success: true, 
+        message: 'User stats fixed successfully',
+        stats: updatedStats
+      });
+    } catch (error) {
+      console.error('Error fixing user stats:', error);
+      res.status(500).json({ error: 'Failed to fix user stats' });
+    }
+  });
+
   // Activate badge system for all existing users
   app.post('/api/activate-badges', async (req, res) => {
     try {

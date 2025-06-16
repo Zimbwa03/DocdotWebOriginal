@@ -610,7 +610,7 @@ export default function Quiz() {
 
   const renderMCQCategories = () => {
     let categories, subjectTitle;
-    
+
     if (selectedMCQSubject === 'anatomy') {
       categories = anatomyCategories;
       subjectTitle = 'Anatomy';
@@ -1149,6 +1149,12 @@ export default function Quiz() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Function to handle category selection
+  const handleCategorySelect = (category: string) => {
+      setSelectedCategory(category);
+      fetchQuestions(category);
   };
 
   // MCQ Quiz Flow

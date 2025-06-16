@@ -73,7 +73,7 @@ const pulseAnimation = {
 
 function AnimatedCounter({ value, duration = 2000 }: { value: number | string; duration?: number }) {
   const [count, setCount] = useState(0);
-  
+
   useEffect(() => {
     let start = 0;
     const end = parseInt(String(value));
@@ -187,7 +187,7 @@ function QuizSection() {
               }}
             >
               <div className="absolute inset-0 bg-gradient-to-r from-[#3399FF] to-[#66CCFF] opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-2xl blur-xl"></div>
-              
+
               <Link href={`/quiz?category=${encodeURIComponent(mainCategory)}`}>
                 <Card 
                   className="card-docdot relative hover:shadow-docdot-lg transition-all duration-500 cursor-pointer border-2 hover:border-primary-docdot h-full transform hover:-translate-y-2 group-hover:scale-105"
@@ -219,7 +219,7 @@ function QuizSection() {
                       </div>
                     </CardDescription>
                   </CardHeader>
-                  
+
                   <CardContent className="pt-0">
                     <div className="space-y-3 mb-6">
                       {categoryData.subcategories.slice(0, 3).map((subcategory, idx) => (
@@ -237,7 +237,7 @@ function QuizSection() {
                         </div>
                       )}
                     </div>
-                    
+
                     <Button 
                       className="btn-primary w-full hover:shadow-lg transform hover:scale-105 transition-all duration-300 font-semibold py-3"
                       style={{ backgroundColor: categoryData.color }}
@@ -280,7 +280,7 @@ export default function Home() {
   const getGreeting = () => {
     const hour = new Date().getHours();
     let firstName = 'Dr Student';
-    
+
     // Use saved profile name first, then fallback to user metadata or email
     if (userProfile?.firstName) {
       firstName = userProfile.firstName;
@@ -289,7 +289,7 @@ export default function Home() {
     } else if (user?.email) {
       firstName = user.email.split('@')[0];
     }
-    
+
     if (hour >= 5 && hour < 12) {
       return { text: `Good Morning, ${firstName}!`, emoji: '☀️', gradient: 'from-yellow-400 to-orange-500' };
     } else if (hour >= 12 && hour < 17) {
@@ -387,7 +387,7 @@ export default function Home() {
               Please sign in to access your personalized dashboard and continue your medical studies.
             </p>
           </div>
-          
+
           <QuizSection />
         </div>
       </div>
@@ -419,7 +419,7 @@ export default function Home() {
               <p className="text-xl text-body mb-6">
                 Ready to continue your medical learning journey?
               </p>
-              
+
               <Button variant="outline" className="group relative overflow-hidden bg-docdot-white/80 backdrop-blur-sm hover:bg-docdot-white transition-all duration-300 border-primary-docdot">
                 <div className="absolute inset-0 bg-gradient-to-r from-[#3399FF] to-[#66CCFF] opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
                 <Star className="w-4 h-4 mr-2 text-primary-docdot group-hover:rotate-180 transition-transform duration-500" />
@@ -478,7 +478,7 @@ export default function Home() {
                 }}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-[#3399FF] to-[#66CCFF] opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-2xl blur-xl"></div>
-                
+
                 <Card className="card-docdot relative text-center transform hover:-translate-y-2 hover:shadow-docdot-lg transition-all duration-500 group-hover:scale-105 border-[#D1E8F9]">
                   <CardContent className="p-6">
                     <div 
@@ -560,7 +560,7 @@ export default function Home() {
                   }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-[#3399FF] to-[#66CCFF] opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-2xl blur-xl"></div>
-                  
+
                   <Card 
                     className="card-docdot relative border-2 hover:border-primary-docdot transform hover:-translate-y-2 hover:shadow-docdot-lg transition-all duration-500 group-hover:scale-105"
                     style={{ backgroundColor: item.bgColor }}
@@ -575,24 +575,24 @@ export default function Home() {
                         </div>
                         <span className="text-sm font-semibold text-body">{item.title}</span>
                       </div>
-                      
+
                       <div className="text-3xl font-bold text-heading mb-2">
                         {typeof item.value === 'number' ? <AnimatedCounter value={item.value} /> : item.value}
                       </div>
-                      
+
                       <div className="text-sm text-body mb-3">{item.subtitle}</div>
-                      
+
                       {item.progress && (
                         <>
                           <Progress value={item.progress} className="h-2 mb-2" />
                           <div className="text-xs text-body">{item.progressText}</div>
                         </>
                       )}
-                      
+
                       {item.extraText && (
                         <div className="text-xs text-body">{item.extraText}</div>
                       )}
-                      
+
                       {item.hasButton && (
                         <Link href="/leaderboard">
                           <Button variant="ghost" size="sm" className="mt-2 p-0 h-auto text-primary-docdot hover:text-primary-docdot/80 group/btn">
@@ -614,7 +614,7 @@ export default function Home() {
           <h2 className="text-3xl font-bold text-heading mb-8">
             Gamification Hub
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
@@ -651,7 +651,7 @@ export default function Home() {
                   }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-[#3399FF] to-[#66CCFF] opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-2xl blur-xl"></div>
-                  
+
                   <Card 
                     className="card-docdot relative border-2 hover:border-primary-docdot transform hover:-translate-y-2 hover:shadow-docdot-lg transition-all duration-500 group-hover:scale-105 h-full"
                     style={{ backgroundColor: '#D1E8F9' }}
@@ -666,9 +666,9 @@ export default function Home() {
                         </div>
                         <span className="text-lg font-bold text-heading">{item.title}</span>
                       </div>
-                      
+
                       <p className="text-body mb-6 leading-relaxed">{item.description}</p>
-                      
+
                       {item.value && (
                         <div className="text-center">
                           <div className="text-4xl font-bold text-heading mb-2">
@@ -677,7 +677,7 @@ export default function Home() {
                           <div className="text-sm text-body mb-4">{item.valueLabel}</div>
                         </div>
                       )}
-                      
+
                       {item.badges && (
                         <Link href="/badges">
                           <div className="flex justify-center space-x-2 cursor-pointer">
@@ -701,7 +701,7 @@ export default function Home() {
                           </div>
                         </Link>
                       )}
-                      
+
                       {item.hasWelcome && (
                         <div className="bg-docdot-white/80 backdrop-blur-sm rounded-xl p-4 border border-[#D1E8F9]">
                           <div className="flex items-center space-x-2 mb-2">
@@ -724,12 +724,13 @@ export default function Home() {
           <h2 className="text-3xl font-bold text-heading mb-8">
             Quick Actions
           </h2>
-          
+
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
             {[
               { title: 'Start Quiz', description: 'Test your knowledge', icon: Play, href: '/quiz' },
               { title: 'Achievements', description: 'View your badges', icon: Award, href: '/badges' },
               { title: 'Leaderboard', description: 'See rankings', icon: Trophy, href: '/leaderboard' },
+```python
               { title: 'Analytics', description: 'Track progress', icon: BarChart3, href: '/analytics' }
             ].map((action, index) => {
               const IconComponent = action.icon;
@@ -743,7 +744,7 @@ export default function Home() {
                   }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-[#3399FF] to-[#66CCFF] opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-2xl blur-xl"></div>
-                  
+
                   <Link href={action.href}>
                     <Card 
                       className="card-docdot relative hover:shadow-docdot-lg transition-all duration-500 cursor-pointer border-2 hover:border-primary-docdot transform hover:-translate-y-3 group-hover:scale-110"
