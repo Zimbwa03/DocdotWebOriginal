@@ -1259,7 +1259,14 @@ The cardiovascular system consists of the heart and blood vessels, each with dis
       <div className="max-w-6xl mx-auto py-8 px-4">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-docdot-heading mb-4">Study Notes</h1>
+          <div className="flex items-center justify-center space-x-3 mb-4">
+            <img 
+              src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview-removebg-preview_1750075531418.png" 
+              alt="DocDot Medical Student Logo" 
+              className="h-12 w-auto"
+            />
+            <h1 className="text-3xl font-bold text-docdot-heading">Study Notes</h1>
+          </div>
           <p className="text-xl text-docdot-text">Comprehensive medical education materials</p>
         </div>
 
