@@ -425,7 +425,7 @@ export default function Home() {
               <CardContent>
                 <div className="text-center mb-4">
                   <div className="text-2xl sm:text-3xl font-bold text-yellow-600 dark:text-yellow-400">
-                    {String(badgeData?.earned?.length || 0)}
+                    {badgeData?.earned?.length || 0}
                   </div>
                   <div className="text-sm text-yellow-700 dark:text-yellow-300">
                     Badges Earned
@@ -434,17 +434,17 @@ export default function Home() {
                 <div className="flex justify-center gap-1 mb-4">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <div 
-                      key={i} 
+                      key={i}
                       className={`w-6 h-6 rounded-full flex items-center justify-center ${
                         i < (badgeData?.earned?.length || 0) 
                           ? 'bg-yellow-400' 
-                          : 'bg-yellow-200'
+                          : 'bg-gray-200 dark:bg-gray-600'
                       }`}
                     >
                       <Star className={`w-3 h-3 ${
                         i < (badgeData?.earned?.length || 0) 
                           ? 'text-white' 
-                          : 'text-yellow-400'
+                          : 'text-gray-400'
                       }`} />
                     </div>
                   ))}

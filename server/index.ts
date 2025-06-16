@@ -45,7 +45,7 @@ async function testDatabaseConnection() {
     console.log('🔗 Testing Supabase database connection...');
     const result = await db.execute(sql`SELECT NOW() as current_time`);
     console.log('✅ Supabase connection successful!');
-    
+
     // Test if main tables exist
     const tables = await db.execute(sql`
       SELECT table_name 
@@ -70,7 +70,7 @@ async function testDatabaseConnection() {
 (async () => {
   // Test database connection before starting server
   await testDatabaseConnection();
-  
+
   // Run comprehensive Supabase integration test (only in development)
   if (process.env.NODE_ENV === 'development') {
     await comprehensiveSupabaseTest();
@@ -99,7 +99,7 @@ async function testDatabaseConnection() {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = 5000;
-  
+
   server.on('error', (err: any) => {
     if (err.code === 'EADDRINUSE') {
       console.error(`❌ Port ${port} is already in use. Please stop any existing processes on this port.`);

@@ -123,10 +123,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Store in database
       await dbStorage.recordQuizAttempt(attempt);
 
+      // Check for new badges after quiz attempt
+      const newBadges = await dbStorage.checkAndAwardBadges(userId);
+
       res.json({ 
         success: true, 
         attemptId, 
         xpEarned: attempt.xpEarned,
+        newBadges: newBadges,
         message: "Quiz attempt recorded successfully" 
       });
     } catch (error) {
@@ -236,16 +240,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Initialize badges system
+  app.post("/api/badges/initialize", async (req, res) => {
+    try {
+      await dbStorage.initializeBadges();
+      res.json({ success: true, message: "Badges initialized successfully" });
+    } catch (error) {
+      console.error("Error initializing badges:", error);
+      res.status(500).json({ error: "Failed to initialize badges" });
+    }
+  });
+
   // User badges
   app.get("/api/badges/:userId", async (req, res) => {
     try {
       const userId = req.params.userId;
+      
+      // Check for new badges before returning current ones
+      await dbStorage.checkAndAwardBadges(userId);
+      
       const badges = await dbStorage.getUserBadges(userId);
-
       res.json(badges);
     } catch (error) {
       console.error("Error fetching user badges:", error);
       res.status(500).json({ error: "Failed to fetch user badges" });
+    }
+  });
+
+  // Award badge manually (for testing)
+  app.post("/api/badges/:userId/award/:badgeId", async (req, res) => {
+    try {
+      const { userId, badgeId } = req.params;
+      const result = await dbStorage.awardBadge(userId, parseInt(badgeId));
+      res.json(result);
+    } catch (error) {
+      console.error("Error awarding badge:", error);
+      res.status(500).json({ error: "Failed to award badge" });
     }
   });
 
@@ -1124,6 +1154,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error refreshing user stats:', error);
       res.status(500).json({ error: 'Failed to refresh user stats' });
+    }
+  });
+
+  // Activate badge system for all existing users
+  app.post('/api/activate-badges', async (req, res) => {
+    try {
+      console.log('Activating badge system for all users...');
+      
+      // Initialize badges first
+      await dbStorage.initializeBadges();
+      
+      // Get all users with stats
+      const allUsers = await db.select({ userId: userStats.userId }).from(userStats);
+      
+      let activated = 0;
+      for (const { userId } of allUsers) {
+        try {
+          const newBadges = await dbStorage.checkAndAwardBadges(userId);
+          if (newBadges.length > 0) {
+            console.log(`Activated ${newBadges.length} badges for user ${userId}`);
+            activated++;
+          }
+        } catch (error) {
+          console.error(`Error activating badges for user ${userId}:`, error);
+        }
+      }
+      
+      res.json({ 
+        success: true, 
+        message: `Badge system activated for ${activated} users`,
+        totalUsers: allUsers.length,
+        activated 
+      });
+    } catch (error) {
+      console.error('Error activating badge system:', error);
+      res.status(500).json({ error: 'Failed to activate badge system' });
     }
   });
 
