@@ -105,6 +105,10 @@ export default function Quiz() {
     'Neurophysiology'
   ];
 
+  const histologyEmbryologyCategories = [
+    'Histology and Embryology'
+  ];
+
   // Fetch questions from Supabase based on category
   const fetchQuestions = async (category: string) => {
     setLoading(true);
@@ -534,7 +538,7 @@ export default function Quiz() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
         {/* Anatomy */}
         <Card 
           className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300"
@@ -578,13 +582,45 @@ export default function Quiz() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Histology and Embryology */}
+        <Card 
+          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300"
+          style={{ backgroundColor: '#F7FAFC' }}
+          onClick={() => setSelectedMCQSubject('histology-embryology')}
+        >
+          <CardHeader className="text-center">
+            <Microscope className="w-16 h-16 mx-auto mb-4" style={{ color: '#3399FF' }} />
+            <CardTitle className="text-2xl" style={{ color: '#1C1C1C' }}>Histology & Embryology</CardTitle>
+            <CardDescription style={{ color: '#2E2E2E' }}>
+              Microscopic anatomy and developmental biology
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Badge variant="secondary">Microscopic Structure</Badge>
+              <Badge variant="secondary">Development</Badge>
+              <Badge variant="secondary">Cell Biology</Badge>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
 
   const renderMCQCategories = () => {
-    const categories = selectedMCQSubject === 'anatomy' ? anatomyCategories : physiologyCategories;
-    const subjectTitle = selectedMCQSubject === 'anatomy' ? 'Anatomy' : 'Physiology';
+    let categories, subjectTitle;
+    
+    if (selectedMCQSubject === 'anatomy') {
+      categories = anatomyCategories;
+      subjectTitle = 'Anatomy';
+    } else if (selectedMCQSubject === 'physiology') {
+      categories = physiologyCategories;
+      subjectTitle = 'Physiology';
+    } else if (selectedMCQSubject === 'histology-embryology') {
+      categories = histologyEmbryologyCategories;
+      subjectTitle = 'Histology & Embryology';
+    }
 
     return (
       <div className="space-y-6">
@@ -790,6 +826,25 @@ export default function Quiz() {
 
             {isAnswered && (
               <div className="mt-6 space-y-4">
+                {/* Next Question Button - Moved above explanations */}
+                <div className="flex justify-center">
+                  <Button 
+                    onClick={handleNextQuestionAfterAnswer}
+                    style={{ backgroundColor: '#3399FF' }}
+                    size="lg"
+                  >
+                    {currentQuestionIndex < questions.length - 1 ? (
+                      <>
+                        Next Question
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </>
+                    ) : (
+                      'Complete Quiz'
+                    )}
+                  </Button>
+                </div>
+
+                {/* Answer Explanations */}
                 <div className="p-4 border rounded-lg" style={{ backgroundColor: '#F0F8FF', borderColor: '#3399FF' }}>
                   <h4 className="font-medium mb-2" style={{ color: '#1C1C1C' }}>
                     Answer: {selectedAnswer === currentQuestion.correct_answer ? 'Correct' : 'Incorrect'}
@@ -818,7 +873,7 @@ export default function Quiz() {
 
             <div className="flex justify-between mt-6">
               <div className="flex gap-3">
-                {!isAnswered ? (
+                {!isAnswered && (
                   <Button 
                     onClick={handleSkipQuestion}
                     variant="outline"
@@ -826,20 +881,6 @@ export default function Quiz() {
                   >
                     Next Question
                     <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                ) : (
-                  <Button 
-                    onClick={handleNextQuestionAfterAnswer}
-                    style={{ backgroundColor: '#3399FF' }}
-                  >
-                    {currentQuestionIndex < questions.length - 1 ? (
-                      <>
-                        Next Question
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </>
-                    ) : (
-                      'Complete Quiz'
-                    )}
                   </Button>
                 )}
               </div>
