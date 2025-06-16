@@ -71,15 +71,15 @@ const pulseAnimation = {
   }
 };
 
-function AnimatedCounter({ value, duration = 2000 }) {
+function AnimatedCounter({ value, duration = 2000 }: { value: number | string; duration?: number }) {
   const [count, setCount] = useState(0);
   
   useEffect(() => {
     let start = 0;
-    const end = parseInt(value);
+    const end = parseInt(String(value));
     if (start === end) return;
 
-    let totalMilSecDur = parseInt(duration);
+    let totalMilSecDur = parseInt(String(duration));
     let incrementTime = (totalMilSecDur / end) * 1000;
 
     let timer = setInterval(() => {
@@ -368,27 +368,27 @@ export default function Home() {
   const earnedBadges = badgeData?.earned || [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-docdot-light dark:bg-docdot-light">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Animated Header */}
         <div className={`text-center mb-12 ${isLoaded ? 'animate-fade-in' : 'opacity-0'}`}>
           <div className="relative">
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className={`w-96 h-96 bg-gradient-to-r ${greeting.gradient} rounded-full opacity-10 animate-pulse`}></div>
+              <div className="w-96 h-96 bg-gradient-to-r from-[#3399FF] to-[#66CCFF] rounded-full opacity-10 animate-pulse"></div>
             </div>
             <div className="relative z-10">
-              <h1 className={`text-4xl sm:text-5xl font-bold bg-gradient-to-r ${greeting.gradient} bg-clip-text text-transparent mb-4 transform hover:scale-105 transition-transform duration-300`}>
+              <h1 className="text-4xl sm:text-5xl font-bold text-heading mb-4 transform hover:scale-105 transition-transform duration-300">
                 {greeting.text} <span className="text-6xl">{greeting.emoji}</span>
               </h1>
-              <p className="text-xl text-gray-600 dark:text-gray-300 mb-6">
+              <p className="text-xl text-body mb-6">
                 Ready to continue your medical learning journey?
               </p>
               
-              <Button variant="outline" className="group relative overflow-hidden bg-white/80 backdrop-blur-sm hover:bg-white transition-all duration-300">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
-                <Star className="w-4 h-4 mr-2 text-yellow-500 group-hover:rotate-180 transition-transform duration-500" />
-                <span>Take a Quick Tour</span>
-                <Lightbulb className="w-4 h-4 ml-2 text-yellow-500 group-hover:animate-pulse" />
+              <Button variant="outline" className="group relative overflow-hidden bg-docdot-white/80 backdrop-blur-sm hover:bg-docdot-white transition-all duration-300 border-primary-docdot">
+                <div className="absolute inset-0 bg-gradient-to-r from-[#3399FF] to-[#66CCFF] opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+                <Star className="w-4 h-4 mr-2 text-primary-docdot group-hover:rotate-180 transition-transform duration-500" />
+                <span className="text-heading">Take a Quick Tour</span>
+                <Lightbulb className="w-4 h-4 ml-2 text-primary-docdot group-hover:animate-pulse" />
               </Button>
             </div>
           </div>
@@ -397,10 +397,10 @@ export default function Home() {
         {/* Docdot Platform Badge with Animation */}
         <div className="flex items-center justify-center mb-12">
           <div className="group relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl blur-lg opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
-            <div className="relative flex items-center bg-white/90 dark:bg-gray-800/90 backdrop-blur-lg rounded-2xl px-8 py-4 shadow-xl border border-white/20 transform hover:scale-105 transition-all duration-300">
+            <div className="absolute inset-0 bg-gradient-to-r from-[#3399FF] to-[#66CCFF] rounded-2xl blur-lg opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
+            <div className="relative flex items-center bg-docdot-white/90 backdrop-blur-lg rounded-2xl px-8 py-4 shadow-docdot-lg border border-[#D1E8F9] transform hover:scale-105 transition-all duration-300">
               <div className="relative mr-4">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full blur animate-pulse"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#3399FF] to-[#66CCFF] rounded-full blur animate-pulse"></div>
                 <img 
                   src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview-removebg-preview_1750075531418.png" 
                   alt="DocDot Medical Student Logo" 
@@ -411,11 +411,11 @@ export default function Home() {
                 />
               </div>
               <div>
-                <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <h3 className="text-xl font-bold text-heading">
                   Docdot Medical Platform
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 flex items-center space-x-2">
-                  <Shield className="w-4 h-4 text-green-500" />
+                <p className="text-body flex items-center space-x-2">
+                  <Shield className="w-4 h-4 text-primary-docdot" />
                   <span>Authentic questions from authoritative medical textbooks</span>
                 </p>
               </div>
@@ -426,10 +426,10 @@ export default function Home() {
         {/* Animated Stats Overview */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-12">
           {[
-            { label: 'Minutes Today', value: stats.currentStreak, icon: Clock, color: 'from-blue-500 to-cyan-600', bgColor: 'from-blue-50 to-cyan-50' },
-            { label: 'Day Streak', value: stats.currentStreak, icon: Flame, color: 'from-orange-500 to-red-600', bgColor: 'from-orange-50 to-red-50' },
-            { label: 'Total XP', value: stats.totalXP, icon: Star, color: 'from-purple-500 to-pink-600', bgColor: 'from-purple-50 to-pink-50' },
-            { label: `Level ${stats.level}`, value: '', icon: Crown, color: 'from-yellow-500 to-orange-600', bgColor: 'from-yellow-50 to-orange-50' }
+            { label: 'Minutes Today', value: stats.currentStreak, icon: Clock, color: '#3399FF' },
+            { label: 'Day Streak', value: stats.currentStreak, icon: Flame, color: '#3399FF' },
+            { label: 'Total XP', value: stats.totalXP, icon: Star, color: '#3399FF' },
+            { label: `Level ${stats.level}`, value: '', icon: Crown, color: '#3399FF' }
           ].map((stat, index) => {
             const IconComponent = stat.icon;
             return (
@@ -441,20 +441,20 @@ export default function Home() {
                   animation: isLoaded ? 'slideInUp 0.6s ease-out forwards' : 'none'
                 }}
               >
-                <div className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl blur-xl"
-                     style={{
-                       background: `linear-gradient(135deg, ${stat.color.split(' ')[1]}, ${stat.color.split(' ')[3]})`
-                     }}></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#3399FF] to-[#66CCFF] opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-2xl blur-xl"></div>
                 
-                <Card className={`relative text-center transform hover:-translate-y-2 hover:shadow-2xl transition-all duration-500 bg-gradient-to-br ${stat.bgColor} dark:from-gray-800 dark:to-gray-700 border-2 hover:border-transparent group-hover:scale-105`}>
+                <Card className="card-docdot relative text-center transform hover:-translate-y-2 hover:shadow-docdot-lg transition-all duration-500 group-hover:scale-105 border-[#D1E8F9]">
                   <CardContent className="p-6">
-                    <div className={`w-12 h-12 mx-auto mb-4 rounded-full bg-gradient-to-r ${stat.color} flex items-center justify-center transform group-hover:rotate-180 transition-transform duration-500 shadow-lg`}>
+                    <div 
+                      className="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center transform group-hover:rotate-180 transition-transform duration-500 shadow-lg"
+                      style={{ backgroundColor: stat.color }}
+                    >
                       <IconComponent className="w-6 h-6 text-white" />
                     </div>
-                    <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                    <div className="text-3xl font-bold text-heading mb-2">
                       {stat.value ? <AnimatedCounter value={stat.value} /> : stat.label}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                    <div className="text-sm text-body font-medium">
                       {stat.value ? stat.label : 'Your Level'}
                     </div>
                   </CardContent>
@@ -731,7 +731,7 @@ export default function Home() {
         <QuizSection />
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes fadeInUp {
           from {
             opacity: 0;
