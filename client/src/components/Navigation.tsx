@@ -282,15 +282,14 @@ export function Navigation() {
       <nav className="border-b bg-[#D1E8F9] dark:bg-gray-800 dark:border-gray-700 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
         <div className="flex items-center justify-between h-14 sm:h-16">
-          {/* Logo */}
+          {/* Logo Only */}
           <Link href="/home">
-            <div className="flex items-center cursor-pointer">
+            <div className="cursor-pointer">
               <img 
-                src="/DocDot Medical Student Logo.png" 
+                src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview-removebg-preview_1750075531418.png" 
                 alt="DocDot Medical Student Logo" 
-                className="h-10 w-auto transform hover:scale-105 transition-transform duration-200"
+                className="h-12 w-auto transform hover:scale-105 transition-transform duration-200"
                 onError={(e) => {
-                  // Fallback to icon if image fails to load
                   const target = e.target as HTMLImageElement;
                   target.style.display = 'none';
                   target.nextElementSibling?.classList.remove('hidden');

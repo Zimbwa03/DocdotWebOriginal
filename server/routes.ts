@@ -1381,7 +1381,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: 'planned'
       }).returning();
 
-      res.json({ session: newSession, success: true });
+      console.log("✅ Study session created successfully:", newSession);
+      res.json(newSession);
     } catch (error) {
       console.error("Error creating study session:", error);
       res.status(500).json({ error: "Failed to create study session" });
