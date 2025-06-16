@@ -147,3 +147,4 @@ Changelog:
   * Footer components with inverted logo for dark backgrounds
   * Interactive elements with proper scaling and transitions
   * Maintained fallback support for all logo implementations
+- June 16, 2025. Restored original Home page design - Reverted Home component to original marketing-focused layout with hero section, features grid, and call-to-action per user request
