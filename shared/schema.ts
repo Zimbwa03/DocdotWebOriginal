@@ -157,7 +157,6 @@ export const userStats = pgTable("user_stats", {
   averageScore: integer("average_score").default(0), // percentage
   totalStudyTime: integer("total_study_time").default(0), // minutes
   rank: integer("rank").default(0),
-  createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
@@ -177,10 +176,12 @@ export const dailyStats = pgTable("daily_stats", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   userId: text("user_id").references(() => users.id),
   date: text("date").notNull(), // YYYY-MM-DD format
+  category: text("category"),
   questionsAnswered: integer("questions_answered").default(0),
   correctAnswers: integer("correct_answers").default(0),
   xpEarned: integer("xp_earned").default(0),
   studyTime: integer("study_time").default(0), // minutes
+  createdAt: timestamp("created_at").defaultNow(),
   topicsStudied: json("topics_studied"), // Array of topic names
 });
 
