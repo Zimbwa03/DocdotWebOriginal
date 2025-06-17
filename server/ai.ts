@@ -444,11 +444,48 @@ class OpenRouterAI {
     // Force DeepSeek AI generation - no fallback templates
     console.log(`🤖 Calling DeepSeek AI for ${validStemCount} ${examType} exam stems on topics: ${topics.join(', ')}`);
     
-    const systemPrompt = `You are a medical education expert creating professional ${examType} exam stems.
+    const systemPrompt = `You are a medical education expert creating professional ${examType} exam stems based on authoritative medical sources.
+
+AUTHORITATIVE SOURCES TO REFERENCE:
+For Anatomy:
+- Snell's Clinical Anatomy (Richard S. Snell)
+- Gray's Anatomy for Students (Drake, Vogl, Mitchell)
+- Clinically Oriented Anatomy (Keith L. Moore)
+- TeachMeAnatomy.info educational content
+- Kenhub.com anatomy resources
+
+For Physiology:
+- Guyton and Hall Textbook of Medical Physiology
+- Ganong's Review of Medical Physiology
+- Boron & Boulpaep Medical Physiology
+- TeachMePhysiology.com educational content
+- Kenhub.com physiology resources
 
 Generate ${validStemCount} exam stems for: ${topics.join(', ')}
 
-FORMAT: Each stem follows "Concerning the [specific anatomical/physiological aspect]" with 2 true/false options.
+CONTENT REQUIREMENTS:
+- Base all facts on the authoritative sources listed above
+- For ANATOMY regional topics, include diverse subtopics:
+  * If "thorax": cover ribs, sternum, thoracic vertebrae, intercostal spaces, pleura, lungs, heart, mediastinum, diaphragm, pericardium
+  * If "upper limb": cover bones, joints, muscles, nerves (brachial plexus), vessels, fascial compartments, clinical correlations
+  * If "lower limb": cover bones, joints, muscles, nerves (lumbar/sacral plexus), vessels, fascial compartments, arches of foot
+  * If "head & neck": cover skull, cervical vertebrae, muscles, cranial nerves, vessels, organs, triangles of neck
+  * If "abdomen": cover peritoneum, organs, vessels, muscles, inguinal region, posterior abdominal wall
+  * If "pelvis": cover bones, joints, muscles, organs, vessels, pelvic floor, perineum
+
+- For PHYSIOLOGY system topics, include diverse subtopics:
+  * If "cardiovascular": cover cardiac cycle, ECG, blood pressure regulation, heart sounds, circulation pathways
+  * If "respiratory": cover ventilation mechanics, gas exchange, oxygen transport, acid-base balance, control of breathing
+  * If "renal": cover filtration, reabsorption, secretion, acid-base regulation, fluid balance, hormonal control
+  * If "nervous": cover action potentials, synaptic transmission, reflexes, CNS functions, autonomic nervous system
+  * If "endocrine": cover hormone mechanisms, feedback loops, specific gland functions, metabolic regulation
+  * If "gastrointestinal": cover motility, secretion, digestion, absorption, liver functions, pancreatic functions
+
+- Each stem should test different concepts within the topic area
+- Include clinically relevant relationships and correlations
+- Reference standard terminology (Terminologia Anatomica for anatomy)
+
+FORMAT: Each stem follows "Concerning the [specific anatomical aspect]" with 2 true/false options.
 
 REQUIRED JSON OUTPUT:
 {
@@ -463,25 +500,43 @@ REQUIRED JSON OUTPUT:
           "optionLetter": "A", 
           "statement": "The clavicle is the most commonly fractured bone in falls",
           "answer": true,
-          "explanation": "Clavicle fractures occur frequently during falls"
+          "explanation": "According to Snell's Clinical Anatomy, clavicle fractures are indeed the most common upper limb fracture in falls"
         },
         {
           "id": "option_1_b",
           "optionLetter": "B",
           "statement": "The radius is located medial to the ulna",
           "answer": false,
-          "explanation": "Radius is lateral to ulna in anatomical position"
+          "explanation": "As described in Gray's Anatomy, the radius is lateral to the ulna in the standard anatomical position"
         }
       ]
     }
   ]
 }
 
-Generate ${validStemCount} medically accurate stems. Return ONLY valid JSON.`;
+Generate ${validStemCount} medically accurate stems from authoritative sources. Ensure diverse subtopic coverage. Return ONLY valid JSON.`;
 
     const messages: AIMessage[] = [
       { role: 'system', content: systemPrompt },
-      { role: 'user', content: `Create ${validStemCount} professional ${examType} exam stems covering ${topics.join(', ')}. Use "Concerning the..." format with True/False medical statements.` }
+      { role: 'user', content: `Create ${validStemCount} professional ${examType} exam stems covering ${topics.join(', ')}. 
+
+SPECIFIC REQUIREMENTS:
+- For ANATOMY: Reference facts from Snell's Clinical Anatomy, Gray's Anatomy, Keith Moore's Clinically Oriented Anatomy, TeachMeAnatomy.info, and Kenhub.com
+- For PHYSIOLOGY: Reference facts from Guyton & Hall Medical Physiology, Ganong's Review, Boron & Boulpaep, TeachMePhysiology.com, and Kenhub.com
+- Cover DIVERSE subtopics within each topic area (e.g., thorax: ribs, sternum, vertebrae, intercostals, pleura, lungs, heart, mediastinum)
+- Include clinical correlations and functional relationships from these authoritative sources
+- Each stem should test different concepts within the topic area
+- Use "Concerning the..." format with True/False medical statements
+- Cite specific source material in explanations:
+  * "According to Snell's Clinical Anatomy..."
+  * "As described in Gray's Anatomy..."
+  * "Keith Moore's Clinically Oriented Anatomy states..."
+  * "Per Guyton & Hall Medical Physiology..."
+  * "Ganong's Review indicates..."
+  * "TeachMeAnatomy/TeachMePhysiology explains..."
+  * "Kenhub resources describe..."
+
+Generate medically accurate content exclusively from these trusted educational resources.` }
     ];
 
     console.log('🔄 Sending request to DeepSeek API...');
