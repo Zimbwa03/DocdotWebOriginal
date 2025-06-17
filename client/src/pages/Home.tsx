@@ -751,7 +751,6 @@ export default function Home() {
               { title: 'Start Quiz', description: 'Test your knowledge', icon: Play, href: '/quiz' },
               { title: 'Achievements', description: 'View your badges', icon: Award, href: '/badges' },
               { title: 'Leaderboard', description: 'See rankings', icon: Trophy, href: '/leaderboard' },
-```python
               { title: 'Analytics', description: 'Track progress', icon: BarChart3, href: '/analytics' }
             ].map((action, index) => {
               const IconComponent = action.icon;
