@@ -827,11 +827,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         examType,
         topicIds: topics.map(name => {
           // Map topic names to IDs for compatibility
-          const anatomyTopicMap = {
+          const anatomyTopicMap: { [key: string]: number } = {
             'Upper Limb': 1, 'Thorax': 2, 'Head and Neck': 3, 
             'Lower Limb': 4, 'Abdomen': 5, 'Neuroanatomy': 6
           };
-          const physiologyTopicMap = {
+          const physiologyTopicMap: { [key: string]: number } = {
             'Cell Physiology': 7, 'Nerve and Muscle': 8, 'Blood': 9,
             'Endocrine': 10, 'Cardiovascular System': 11, 'Respiration': 12
           };
@@ -842,15 +842,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         durationSeconds,
         stems: examData.stems,
         createdAt: new Date(),
-        userId
+        userId: anonymousUserId
       };
 
-      console.log(`Successfully generated custom exam with ${customExam.stems.length} stems`);
+      console.log(`Successfully generated custom exam with ${examData.stems.length} stems`);
 
       res.json({
         success: true,
-        ...customExam,
-        message: `Generated custom ${examType} exam with ${customExam.stems.length} stems`
+        ...storedExam,
+        message: `Generated custom ${examType} exam with ${examData.stems.length} stems`
       });
 
     } catch (error) {
