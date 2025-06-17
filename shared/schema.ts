@@ -51,7 +51,7 @@ export const customExams = pgTable("custom_exams", {
   userId: text("user_id").notNull().references(() => users.id),
   examType: text("exam_type").notNull(), // 'anatomy', 'physiology'
   title: text("title").notNull(),
-  topics: json("topics").notNull(), // Array of topic names
+  topics: text("topics").array().notNull(), // Array of topic names
   stemCount: integer("stem_count").notNull().default(5),
   durationSeconds: integer("duration_seconds").notNull().default(450),
   difficulty: text("difficulty").default("intermediate"),
@@ -105,7 +105,7 @@ export const examGenerationHistory = pgTable("exam_generation_history", {
   id: text("id").primaryKey(), // UUID
   userId: text("user_id").notNull().references(() => users.id),
   examType: text("exam_type").notNull(),
-  topics: json("topics").notNull(),
+  topics: text("topics").array().notNull(),
   requestedStemCount: integer("requested_stem_count").notNull(),
   actualStemCount: integer("actual_stem_count"),
   generationStatus: text("generation_status").default("pending"), // 'pending', 'success', 'failed'

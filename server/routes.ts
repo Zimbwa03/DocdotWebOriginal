@@ -737,7 +737,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         id: generationId,
         userId: anonymousUserId,
         examType,
-        topics,
+        topics, // Pass array directly - schema now uses TEXT[] array type
         requestedStemCount: stemCount,
         generationStatus: 'pending',
         aiProvider: 'deepseek'
@@ -770,17 +770,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId: anonymousUserId,
         examType,
         title: `${examType.charAt(0).toUpperCase() + examType.slice(1)} Exam - ${topics.join(', ')}`,
-        topics,
+        topics: JSON.stringify(topics), // Convert array to JSON string for database storage
         stemCount: examData.stems.length,
         durationSeconds,
         difficulty: 'intermediate',
         status: 'active',
         aiGenerated: true,
-        metadata: { 
+        metadata: JSON.stringify({ 
           aiProvider: 'deepseek',
           generationTime: Date.now() - generationStartTime,
           requestedTopics: topics
-        }
+        })
       }).returning();
 
       // Insert stems and options
