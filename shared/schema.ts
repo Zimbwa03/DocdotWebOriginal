@@ -38,10 +38,54 @@ export const topics = pgTable("topics", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   categoryId: integer("category_id").references(() => categories.id),
   name: text("name").notNull(),
+  slug: text("slug").notNull().unique(), // e.g. "upperlimb", "thorax"
   description: text("description"),
   type: text("type").notNull(), // gross_anatomy, histology, embryology
   content: text("content"),
   accessTier: text("access_tier").notNull().default("free"), // free, starter, premium
+});
+
+// Custom Exam System
+export const customExams = pgTable("custom_exams", {
+  id: text("id").primaryKey(), // UUID
+  userId: text("user_id").references(() => users.id).notNull(),
+  examType: text("exam_type").notNull(), // 'anatomy' or 'physiology'
+  topicIds: json("topic_ids").notNull(), // Array of topic IDs
+  stemCount: integer("stem_count").notNull(),
+  startedAt: timestamp("started_at").defaultNow(),
+  endedAt: timestamp("ended_at"),
+  score: integer("score").default(0),
+  maxScore: integer("max_score").default(0),
+  durationSeconds: integer("duration_seconds").notNull(),
+  isSubmitted: boolean("is_submitted").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const examStems = pgTable("exam_stems", {
+  id: text("id").primaryKey(), // UUID
+  examId: text("exam_id").references(() => customExams.id, { onDelete: "cascade" }).notNull(),
+  topicId: integer("topic_id").references(() => topics.id),
+  stemText: text("stem_text").notNull(),
+  orderIndex: integer("order_index").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const stemOptions = pgTable("stem_options", {
+  id: text("id").primaryKey(), // UUID
+  stemId: text("stem_id").references(() => examStems.id, { onDelete: "cascade" }).notNull(),
+  optionLetter: text("option_letter").notNull(), // 'a', 'b', 'c', 'd', 'e'
+  statement: text("statement").notNull(),
+  answer: boolean("answer").notNull(), // true or false
+  explanation: text("explanation").notNull(),
+});
+
+export const studentAnswers = pgTable("student_answers", {
+  id: text("id").primaryKey(), // UUID
+  examId: text("exam_id").references(() => customExams.id, { onDelete: "cascade" }).notNull(),
+  stemOptionId: text("stem_option_id").references(() => stemOptions.id, { onDelete: "cascade" }).notNull(),
+  studentAnswer: boolean("student_answer"), // null = unanswered
+  isCorrect: boolean("is_correct"),
+  answeredAt: timestamp("answered_at").defaultNow(),
 });
 
 // Quiz system
@@ -341,12 +385,22 @@ export const insertStudyGroupMemberSchema = createInsertSchema(studyGroupMembers
 export const insertMeetingReminderSchema = createInsertSchema(meetingReminders).omit({ id: true, createdAt: true, emailSent: true });
 export const insertUserAnalyticsSchema = createInsertSchema(userAnalytics).omit({ id: true, updatedAt: true });
 
+// Custom exam schemas
+export const insertCustomExamSchema = createInsertSchema(customExams).omit({ id: true, createdAt: true });
+export const insertExamStemSchema = createInsertSchema(examStems).omit({ id: true, createdAt: true });
+export const insertStemOptionSchema = createInsertSchema(stemOptions).omit({ id: true });
+export const insertStudentAnswerSchema = createInsertSchema(studentAnswers).omit({ id: true, answeredAt: true });
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertQuizAttempt = z.infer<typeof insertQuizAttemptSchema>;
 export type InsertUserStats = z.infer<typeof insertUserStatsSchema>;
 export type InsertCategoryStats = z.infer<typeof insertCategoryStatsSchema>;
 export type InsertDailyStats = z.infer<typeof insertDailyStatsSchema>;
 export type InsertLeaderboard = z.infer<typeof insertLeaderboardSchema>;
+export type InsertCustomExam = z.infer<typeof insertCustomExamSchema>;
+export type InsertExamStem = z.infer<typeof insertExamStemSchema>;
+export type InsertStemOption = z.infer<typeof insertStemOptionSchema>;
+export type InsertStudentAnswer = z.infer<typeof insertStudentAnswerSchema>;
 
 export type User = typeof users.$inferSelect;
 export type Category = typeof categories.$inferSelect;

@@ -1,0 +1,101 @@
+Here’s a full **Supabase SQL schema** tailored to support your “Customize Exam” feature in your **MCQ system**, covering:
+
+* Topics
+* Exams
+* Stems
+* Stem Options
+* Student Answers
+* Student Scores
+
+---
+
+### ✅ **Supabase SQL Schema**
+
+```sql
+-- 1. Table: topics
+CREATE TABLE topics (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL -- e.g. "upperlimb", "thorax"
+);
+
+-- 2. Table: exams
+CREATE TABLE exams (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  topic_ids UUID[] NOT NULL, -- references multiple topics
+  stem_count INTEGER NOT NULL,
+  started_at TIMESTAMPTZ DEFAULT now(),
+  ended_at TIMESTAMPTZ,
+  score INTEGER DEFAULT 0,
+  max_score INTEGER DEFAULT 0,
+  duration_seconds INTEGER NOT NULL,
+  is_submitted BOOLEAN DEFAULT false
+);
+
+-- 3. Table: stems
+CREATE TABLE stems (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  exam_id UUID REFERENCES exams(id) ON DELETE CASCADE,
+  topic_id UUID REFERENCES topics(id),
+  stem_text TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- 4. Table: stem_options
+CREATE TABLE stem_options (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  stem_id UUID REFERENCES stems(id) ON DELETE CASCADE,
+  option_letter TEXT CHECK (option_letter IN ('a', 'b', 'c', 'd', 'e')),
+  statement TEXT NOT NULL,
+  answer BOOLEAN NOT NULL, -- True or False
+  explanation TEXT NOT NULL
+);
+
+-- 5. Table: student_answers
+CREATE TABLE student_answers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  exam_id UUID REFERENCES exams(id) ON DELETE CASCADE,
+  stem_option_id UUID REFERENCES stem_options(id) ON DELETE CASCADE,
+  student_answer BOOLEAN, -- NULL = unanswered
+  is_correct BOOLEAN,
+  answered_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- 6. View: exam_scores (optional)
+CREATE VIEW exam_scores AS
+SELECT
+  e.id AS exam_id,
+  e.user_id,
+  COUNT(sa.*) FILTER (WHERE sa.is_correct IS TRUE) AS correct_count,
+  COUNT(sa.*) FILTER (WHERE sa.is_correct IS FALSE) AS incorrect_count,
+  COUNT(sa.*) FILTER (WHERE sa.student_answer IS NULL) AS unanswered_count,
+  (COUNT(sa.*) FILTER (WHERE sa.is_correct IS TRUE) - COUNT(sa.*) FILTER (WHERE sa.is_correct IS FALSE)) AS net_score,
+  ((COUNT(sa.*) FILTER (WHERE sa.is_correct IS TRUE) - COUNT(sa.*) FILTER (WHERE sa.is_correct IS FALSE)) * 100.0) / NULLIF(COUNT(so.*), 0) AS percentage_score
+FROM exams e
+LEFT JOIN stems s ON s.exam_id = e.id
+LEFT JOIN stem_options so ON so.stem_id = s.id
+LEFT JOIN student_answers sa ON sa.stem_option_id = so.id AND sa.exam_id = e.id
+GROUP BY e.id;
+```
+
+---
+
+### ✅ Notes:
+
+* The `topics` table lets you easily manage Upper Limb, Thorax, etc.
+* `exams` store each student's generated session.
+* `stems` hold question stems.
+* `stem_options` store a–e options with correct answers and explanations.
+* `student_answers` tracks what the student answered, allowing for skipped questions (NULL).
+* `exam_scores` is a view to help with real-time score reporting.
+
+---
+
+Would you like:
+
+* A `Supabase JavaScript/TypeScript` API to insert and fetch this data?
+* The `admin interface` to review or manage stems?
+* Or direct Replit integration code examples using `Supabase JS Client`?
+
+Let me know, and I’ll generate it.
