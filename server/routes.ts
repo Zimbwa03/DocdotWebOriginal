@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { openRouterAI } from "./ai";
 import { dbStorage, db } from "./db";
 import { sql, eq, desc, and } from 'drizzle-orm';
-import { insertQuizAttemptSchema, badges, studyPlannerSessions, studyGroups, studyGroupMembers, meetingReminders, users, quizAttempts, userStats, quizzes } from "@shared/schema";
+import { insertQuizAttemptSchema, badges, studyPlannerSessions, studyGroups, studyGroupMembers, meetingReminders, users, quizAttempts, userStats, quizzes, customExams, customExamStems, stemOptions, examGenerationHistory } from "@shared/schema";
 import { v4 as uuidv4 } from "uuid";
 import { readFileSync } from "fs";
 import { resolve } from "path";
@@ -730,11 +730,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Track generation attempt
       const generationStartTime = Date.now();
       const generationId = uuidv4();
+      const anonymousUserId = '00000000-0000-0000-0000-000000000000'; // UUID format for anonymous users
       
       // Log generation request
       await db.insert(examGenerationHistory).values({
         id: generationId,
-        userId: 'anonymous', // Will be updated when user auth is implemented
+        userId: anonymousUserId,
         examType,
         topics,
         requestedStemCount: stemCount,
@@ -766,7 +767,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Insert custom exam
       const [customExam] = await db.insert(customExams).values({
         id: examId,
-        userId: 'anonymous', // Will be updated when user auth is implemented
+        userId: anonymousUserId,
         examType,
         title: `${examType.charAt(0).toUpperCase() + examType.slice(1)} Exam - ${topics.join(', ')}`,
         topics,
