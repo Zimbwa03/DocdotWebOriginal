@@ -1084,8 +1084,8 @@ export class DatabaseStorage {
         if (userStatsData) {
           await db.update(userStats)
             .set({ 
-              totalXP: userStatsData.totalXP + badge[0].xpReward,
-              currentLevel: Math.floor((userStatsData.totalXP + badge[0].xpReward) / 1000) + 1,
+              totalXp: userStatsData.totalXp + badge[0].xpReward,
+              currentLevel: Math.floor((userStatsData.totalXp + badge[0].xpReward) / 1000) + 1,
               updatedAt: new Date()
             })
             .where(eq(userStats.userId, userId));
