@@ -45,50 +45,80 @@ export const topics = pgTable("topics", {
   accessTier: text("access_tier").notNull().default("free"), // free, starter, premium
 });
 
-// Custom Exam System
+// Custom Exam System - AI Generated Medical Exams
 export const customExams = pgTable("custom_exams", {
   id: text("id").primaryKey(), // UUID
-  userId: text("user_id").references(() => users.id).notNull(),
-  examType: text("exam_type").notNull(), // 'anatomy' or 'physiology'
-  topicIds: json("topic_ids").notNull(), // Array of topic IDs
-  stemCount: integer("stem_count").notNull(),
-  startedAt: timestamp("started_at").defaultNow(),
-  endedAt: timestamp("ended_at"),
-  score: integer("score").default(0),
-  maxScore: integer("max_score").default(0),
-  durationSeconds: integer("duration_seconds").notNull(),
-  isSubmitted: boolean("is_submitted").default(false),
+  userId: text("user_id").notNull().references(() => users.id),
+  examType: text("exam_type").notNull(), // 'anatomy', 'physiology'
+  title: text("title").notNull(),
+  topics: json("topics").notNull(), // Array of topic names
+  stemCount: integer("stem_count").notNull().default(5),
+  durationSeconds: integer("duration_seconds").notNull().default(450),
+  difficulty: text("difficulty").default("intermediate"),
+  status: text("status").default("active"), // 'active', 'completed', 'archived'
+  aiGenerated: boolean("ai_generated").default(true),
+  metadata: json("metadata").default({}),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export const examStems = pgTable("exam_stems", {
+export const customExamStems = pgTable("custom_exam_stems", {
   id: text("id").primaryKey(), // UUID
-  examId: text("exam_id").references(() => customExams.id, { onDelete: "cascade" }).notNull(),
-  topicId: integer("topic_id").references(() => topics.id),
+  customExamId: text("custom_exam_id").notNull().references(() => customExams.id, { onDelete: "cascade" }),
   stemText: text("stem_text").notNull(),
   orderIndex: integer("order_index").notNull(),
+  topic: text("topic"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  uniqueStemOrder: unique().on(table.customExamId, table.orderIndex),
+}));
 
 export const stemOptions = pgTable("stem_options", {
   id: text("id").primaryKey(), // UUID
-  stemId: text("stem_id").references(() => examStems.id, { onDelete: "cascade" }).notNull(),
-  optionLetter: text("option_letter").notNull(), // 'a', 'b', 'c', 'd', 'e'
+  stemId: text("stem_id").notNull().references(() => customExamStems.id, { onDelete: "cascade" }),
+  optionLetter: text("option_letter").notNull(), // 'A' or 'B'
   statement: text("statement").notNull(),
-  answer: boolean("answer").notNull(), // true or false
-  explanation: text("explanation").notNull(),
-});
+  isCorrect: boolean("is_correct").notNull(),
+  explanation: text("explanation"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  uniqueOptionPerStem: unique().on(table.stemId, table.optionLetter),
+}));
 
-export const studentAnswers = pgTable("student_answers", {
+export const customExamAttempts = pgTable("custom_exam_attempts", {
   id: text("id").primaryKey(), // UUID
-  examId: text("exam_id").references(() => customExams.id, { onDelete: "cascade" }).notNull(),
-  stemOptionId: text("stem_option_id").references(() => stemOptions.id, { onDelete: "cascade" }).notNull(),
-  studentAnswer: boolean("student_answer"), // null = unanswered
-  isCorrect: boolean("is_correct"),
-  answeredAt: timestamp("answered_at").defaultNow(),
+  customExamId: text("custom_exam_id").notNull().references(() => customExams.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => users.id),
+  startedAt: timestamp("started_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+  timeSpentSeconds: integer("time_spent_seconds"),
+  totalStems: integer("total_stems").notNull(),
+  correctAnswers: integer("correct_answers").default(0),
+  incorrectAnswers: integer("incorrect_answers").default(0),
+  scorePercentage: integer("score_percentage"), // Using integer for percentage (0-100)
+  answers: json("answers").default({}),
+  xpEarned: integer("xp_earned").default(0),
+  status: text("status").default("in_progress"), // 'in_progress', 'completed', 'abandoned'
 });
 
-// Quiz system
+export const examGenerationHistory = pgTable("exam_generation_history", {
+  id: text("id").primaryKey(), // UUID
+  userId: text("user_id").notNull().references(() => users.id),
+  examType: text("exam_type").notNull(),
+  topics: json("topics").notNull(),
+  requestedStemCount: integer("requested_stem_count").notNull(),
+  actualStemCount: integer("actual_stem_count"),
+  generationStatus: text("generation_status").default("pending"), // 'pending', 'success', 'failed'
+  aiProvider: text("ai_provider").default("deepseek"),
+  generationTimeMs: integer("generation_time_ms"),
+  errorMessage: text("error_message"),
+  customExamId: text("custom_exam_id").references(() => customExams.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Insert schemas for custom exam tables will be defined later with other schemas
+
+// Quiz system (existing)  
 export const quizzes = pgTable("quizzes", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   topicId: integer("topic_id").references(() => topics.id),

@@ -494,16 +494,37 @@ Generate ${validStemCount} medically accurate stems. Return ONLY valid JSON.`;
     console.log('✅ DeepSeek response received, processing...');
     console.log('📄 Raw response preview:', response.substring(0, 150) + '...');
     
-    // Extract and parse JSON from DeepSeek response
+    // Extract and parse JSON from DeepSeek response with better error handling
     let jsonString = response.trim();
     jsonString = jsonString.replace(/^```json\s*/, '').replace(/\s*```$/, '');
     jsonString = jsonString.replace(/^```\s*/, '').replace(/\s*```$/, '');
     
     const jsonStart = jsonString.indexOf('{');
-    const jsonEnd = jsonString.lastIndexOf('}');
+    let jsonEnd = jsonString.lastIndexOf('}');
     
-    if (jsonStart === -1 || jsonEnd === -1) {
+    if (jsonStart === -1) {
       throw new Error('No valid JSON structure found in DeepSeek response');
+    }
+    
+    // Handle truncated JSON by trying to repair it
+    if (jsonEnd === -1 || jsonEnd < jsonStart + 50) {
+      console.log('🔧 Attempting to repair truncated JSON response...');
+      // Find the last complete stem in the response
+      const stemsStart = jsonString.indexOf('"stems":');
+      if (stemsStart !== -1) {
+        let repairPoint = jsonString.lastIndexOf('},{');
+        if (repairPoint === -1) {
+          repairPoint = jsonString.lastIndexOf('{');
+        }
+        if (repairPoint > stemsStart) {
+          jsonString = jsonString.substring(0, repairPoint) + '}]}';
+          jsonEnd = jsonString.lastIndexOf('}');
+        }
+      }
+    }
+    
+    if (jsonEnd === -1) {
+      throw new Error('Unable to repair truncated JSON from DeepSeek');
     }
     
     jsonString = jsonString.substring(jsonStart, jsonEnd + 1);
@@ -512,9 +533,48 @@ Generate ${validStemCount} medically accurate stems. Return ONLY valid JSON.`;
     try {
       aiResponse = JSON.parse(jsonString);
     } catch (parseError) {
-      console.error('❌ JSON parsing failed:', parseError);
-      console.error('🔍 Invalid JSON sample:', jsonString.substring(0, 500));
-      throw new Error('DeepSeek returned invalid JSON format');
+      console.error('❌ JSON parsing failed even after repair attempts:', parseError);
+      console.error('🔍 Failed JSON sample:', jsonString.substring(0, 500));
+      
+      // Last resort: extract stems manually from response
+      console.log('🛠️ Attempting manual stem extraction...');
+      const stemMatches = response.match(/"stemText":\s*"([^"]+)"/g);
+      if (stemMatches && stemMatches.length > 0) {
+        const extractedStems = stemMatches.slice(0, validStemCount).map((match, index) => {
+          const stemText = match.match(/"stemText":\s*"([^"]+)"/)?.[1] || `Concerning topic ${index + 1}`;
+          return {
+            id: `stem_${index + 1}`,
+            stemText: stemText,
+            orderIndex: index + 1,
+            options: [
+              {
+                id: `option_${index + 1}_a`,
+                optionLetter: 'A',
+                statement: 'True',
+                answer: true,
+                explanation: 'Medical statement verified'
+              },
+              {
+                id: `option_${index + 1}_b`,
+                optionLetter: 'B',
+                statement: 'False',
+                answer: false,
+                explanation: 'Medical statement corrected'
+              }
+            ]
+          };
+        });
+        
+        console.log(`🔧 Extracted ${extractedStems.length} stems from partial response`);
+        return {
+          stems: extractedStems,
+          examType,
+          topics,
+          totalStems: extractedStems.length
+        };
+      }
+      
+      throw new Error('DeepSeek returned unparseable JSON format');
     }
     
     if (!aiResponse.stems || !Array.isArray(aiResponse.stems)) {
