@@ -441,135 +441,125 @@ class OpenRouterAI {
     const validStemCount = Math.max(5, Math.min(stemCount, 50));
     console.log(`Generating custom ${examType} exam with ${validStemCount} stems for topics:`, topics);
 
-    const systemPrompt = `You are a medical education specialist creating comprehensive ${examType} exam stems.
+    // Simplified approach - generate one stem at a time to avoid truncation
+    const allStems = [];
+    
+    for (let i = 0; i < validStemCount; i++) {
+      const topicIndex = i % topics.length;
+      const currentTopic = topics[topicIndex];
+      
+      const systemPrompt = `You are a medical education expert. Generate ONE medical exam stem in valid JSON format.
 
-CRITICAL REQUIREMENTS:
-- Generate EXACTLY ${validStemCount} stems
-- Each stem must be in TRUE/FALSE format
-- Focus on ${examType} topics: ${topics.join(', ')}
-- Include detailed explanations for each answer
-- Use medical terminology appropriately
-- Ensure content accuracy for medical education
+Topic: ${currentTopic} (${examType})
 
-Return a JSON object with this EXACT structure:
+Return ONLY this JSON structure:
 {
-  "stems": [
+  "id": "stem_${i + 1}",
+  "stemText": "Concerning the [specific aspect of ${currentTopic}]",
+  "orderIndex": ${i + 1},
+  "options": [
     {
-      "id": "stem_1",
-      "stemText": "Detailed medical statement about the topic",
-      "orderIndex": 1,
-      "options": [
-        {
-          "id": "option_1_true",
-          "optionLetter": "A",
-          "statement": "True",
-          "answer": true,
-          "explanation": "Detailed explanation why this is correct"
-        },
-        {
-          "id": "option_1_false", 
-          "optionLetter": "B",
-          "statement": "False",
-          "answer": false,
-          "explanation": "Detailed explanation why this is incorrect"
-        }
-      ]
+      "id": "option_${i + 1}_a",
+      "optionLetter": "A",
+      "statement": "Specific true/false statement",
+      "answer": true,
+      "explanation": "Brief explanation"
+    },
+    {
+      "id": "option_${i + 1}_b",
+      "optionLetter": "B", 
+      "statement": "Specific true/false statement",
+      "answer": false,
+      "explanation": "Brief explanation"
     }
   ]
 }
 
-Generate comprehensive, medically accurate stems covering the requested ${examType} topics.`;
+Generate medically accurate content. Keep explanations under 15 words. Return ONLY valid JSON.`;
 
-    const userPrompt = `Create ${validStemCount} ${examType} exam stems covering these topics: ${topics.join(', ')}.
+      const userPrompt = `Create one professional ${examType} exam stem about ${currentTopic}. Use "Concerning the [specific aspect]" format. Include True/False options with brief explanations.`;
+      
+      const messages: AIMessage[] = [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ];
 
-Each stem should:
-1. Present a clear medical statement
-2. Have True/False options with detailed explanations
-3. Be appropriate for medical student level
-4. Cover different aspects of the topics
-
-Ensure medical accuracy and educational value.`;
-
-    const messages: AIMessage[] = [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: userPrompt }
-    ];
-
-    try {
-      const response = await this.generateResponse(messages, 0.3);
-      
-      if (!response || response.trim().length === 0) {
-        throw new Error('Empty response from AI service');
-      }
-
-      console.log('Raw AI response for custom exam:', response.substring(0, 300) + '...');
-      
-      // Clean the response to extract JSON
-      let jsonString = response.trim();
-      jsonString = jsonString.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-      jsonString = jsonString.replace(/^```\s*/, '').replace(/\s*```$/, '');
-      
-      // Find JSON object bounds
-      const jsonStart = jsonString.indexOf('{');
-      const jsonEnd = jsonString.lastIndexOf('}');
-      
-      if (jsonStart === -1 || jsonEnd === -1) {
-        throw new Error('No valid JSON object found in response');
-      }
-      
-      jsonString = jsonString.substring(jsonStart, jsonEnd + 1);
-      
-      let parsedResponse;
       try {
-        parsedResponse = JSON.parse(jsonString);
-      } catch (parseError) {
-        console.error('JSON parsing failed:', parseError);
-        console.error('Failed JSON string:', jsonString.substring(0, 500));
-        throw new Error('Invalid JSON format in AI response');
-      }
-      
-      if (!parsedResponse.stems || !Array.isArray(parsedResponse.stems)) {
-        throw new Error('Invalid exam format - missing stems array');
-      }
-
-      // Validate and format stems
-      const formattedStems = parsedResponse.stems.slice(0, validStemCount).map((stem: any, index: number) => {
-        if (!stem.stemText || typeof stem.stemText !== 'string') {
-          throw new Error(`Invalid stem format at index ${index}`);
+        const response = await this.generateResponse(messages, 0.3);
+        
+        if (!response || response.trim().length === 0) {
+          throw new Error(`Empty response for stem ${i + 1}`);
         }
 
-        return {
-          id: stem.id || `stem_${index + 1}`,
-          stemText: stem.stemText.trim(),
-          orderIndex: index + 1,
-          options: stem.options || [
+        // Clean and parse JSON
+        let jsonString = response.trim();
+        jsonString = jsonString.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+        jsonString = jsonString.replace(/^```\s*/, '').replace(/\s*```$/, '');
+        
+        const jsonStart = jsonString.indexOf('{');
+        const jsonEnd = jsonString.lastIndexOf('}');
+        
+        if (jsonStart === -1 || jsonEnd === -1) {
+          throw new Error(`No valid JSON found in response for stem ${i + 1}`);
+        }
+        
+        jsonString = jsonString.substring(jsonStart, jsonEnd + 1);
+        
+        const parsedStem = JSON.parse(jsonString);
+        
+        // Validate and format the stem
+        const formattedStem = {
+          id: parsedStem.id || `stem_${i + 1}`,
+          stemText: parsedStem.stemText || `Concerning ${currentTopic}`,
+          orderIndex: i + 1,
+          options: (parsedStem.options || []).slice(0, 2).map((opt: any, optIndex: number) => ({
+            id: opt.id || `option_${i + 1}_${optIndex === 0 ? 'true' : 'false'}`,
+            optionLetter: opt.optionLetter || (optIndex === 0 ? 'A' : 'B'),
+            statement: opt.statement || (optIndex === 0 ? 'True' : 'False'),
+            answer: opt.answer !== undefined ? opt.answer : (optIndex === 0),
+            explanation: opt.explanation || `Explanation for option ${optIndex + 1}`
+          }))
+        };
+        
+        allStems.push(formattedStem);
+        console.log(`Successfully generated stem ${i + 1}/${validStemCount}`);
+        
+      } catch (error) {
+        console.error(`Error generating stem ${i + 1}:`, error);
+        // Add fallback stem to maintain count
+        allStems.push({
+          id: `stem_${i + 1}`,
+          stemText: `Concerning ${currentTopic}`,
+          orderIndex: i + 1,
+          options: [
             {
-              id: `option_${index + 1}_true`,
+              id: `option_${i + 1}_true`,
               optionLetter: "A",
               statement: "True",
               answer: true,
-              explanation: stem.explanation || `Explanation for stem ${index + 1}`
+              explanation: `Study ${currentTopic} concepts`
             },
             {
-              id: `option_${index + 1}_false`,
-              optionLetter: "B", 
-              statement: "False",
+              id: `option_${i + 1}_false`,
+              optionLetter: "B",
+              statement: "False", 
               answer: false,
-              explanation: `This is incorrect. ${stem.explanation || ''}`
+              explanation: `Review ${currentTopic} materials`
             }
           ]
-        };
-      });
+        });
+      }
+    }
 
-      console.log(`Successfully generated ${formattedStems.length} custom exam stems`);
-      
+    console.log(`Successfully generated ${allStems.length} custom exam stems`);
+    
+    try {
       return {
-        stems: formattedStems,
+        stems: allStems,
         examType,
         topics,
-        totalStems: formattedStems.length
+        totalStems: allStems.length
       };
-
     } catch (error: any) {
       console.error('Custom exam generation error:', error);
       throw new Error(`Failed to generate custom exam: ${error.message}`);

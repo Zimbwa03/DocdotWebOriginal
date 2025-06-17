@@ -1,0 +1,144 @@
+Here is a complete **prompt for Replit** (or any AI agent like DeepSeek running in Replit) that describes the **Customize Exam** feature under the **Quiz Page → MCQs** section. You can paste or adjust this as needed for your Replit agent or developer interface:
+
+---
+
+### ✅ Prompt for Replit AI Agent – Customize Exam Feature for DocDot Quiz Page
+
+**Task:**
+Add a new feature under the MCQs section on the Quiz Page called **"Customize Exam!"**
+
+---
+
+### 🎯 Main Features:
+
+When "Customize Exam!" is clicked, show:
+
+1. **Two buttons**:
+
+   * 🧠 Anatomy Standard Exam
+   * 🩺 Physiology Standard Exam
+
+2. If "Anatomy Standard Exam" is selected:
+
+   * Show **checkboxes or multi-select** options for topics:
+
+     * Upper Limb
+     * Thorax
+     * Head and Neck
+     * Lower Limb
+     * Abdomen
+     * Neurophysiology
+
+3. User then selects the **number of stems** for the exam:
+
+   * 10, 20, 40, 75 (Professional)
+
+4. Then they click: **Start Exam**
+
+---
+
+### 🧠 Stem Generation Logic:
+
+* Use **DeepSeek AI** to generate each stem from selected topics.
+* Each stem is structured like this:
+
+```text
+1. Concerning the bones of the upper Limb
+a) Clavicle is a vertical long bone
+b) Radius tapers distally
+c) Humerus is the longest bone in the body
+d) Ulna bone has attachment site for bicep brachii
+e) Capitate is the first bone to ossify.
+```
+
+* Each stem should be randomly generated from the **chosen topics**.
+
+* Use these **reference sources** for accurate, high-standard question generation:
+
+  * Snell Clinical Anatomy
+  * Gray’s Anatomy
+  * Keith Moore
+  * TeachMeAnatomy.com
+  * Kenhub.com
+
+* Behind the scenes, store the full answer and explanation in Supabase like this:
+
+```json
+{
+  "stem": "Concerning the bones of the upper Limb",
+  "topic": "upperlimb",
+  "items": [
+    {
+      "option": "a",
+      "statement": "Clavicle is a vertical long bone",
+      "answer": "False",
+      "explanation": "Clavicle is a horizontal bone"
+    },
+    ...
+  ]
+}
+```
+
+* But **only show the questions** to students without answers.
+
+---
+
+### 🧪 Exam Interface:
+
+* Display each stem like a **professional exam paper**.
+* For each option (a–e), add **T (True)** and **F (False)** toggle buttons.
+* Timer: **2 minutes per stem**.
+
+  * If 10 stems selected, total exam time = 20 minutes.
+  * After time elapses, auto-submit and grade based on answered questions only.
+
+---
+
+### ✅ Marking Logic:
+
+* +1 for every correct response
+* –1 for every incorrect response
+* 0 for skipped (no selection)
+* Final score = `(Correct – Incorrect) / Total options answered × 100%`
+
+🧮 **Example Calculation:**
+
+```text
+1. Concerning the bones of the upper Limb
+F a) Clavicle is a vertical long bone (+1)
+T b) Radius tapers distally (–1)
+-- c) Humerus is the longest bone in the body (0)
+T d) Ulna bone has attachment site for bicep brachii (–1)
+T e) Capitate is the first bone to ossify (+1)
+
+Score: (2 – 2) = 0, Total options attempted = 4
+Percentage: 0 / 5 * 100 = 0%
+```
+
+---
+
+### 📄 After Exam Submission:
+
+1. Display student’s final score and time spent.
+2. Add a **"Review Exam"** button:
+
+   * For each wrong answer, show:
+
+     ```text
+     Question:
+     b) Radius tapers distally
+     Answer: False
+     Explanation: Radius widens distally
+     ```
+
+---
+
+### 🔧 Backend:
+
+* Store all generated stems with answers and explanations in Supabase.
+* Use topic tags like `"upperlimb"`, `"thorax"`, `"abdomen"`, etc.
+* Ensure stem quality matches professional standards such as provided in "Head and Neck Inclass" file.
+
+---
+
+Let me know if you'd like this converted into actual React + Supabase + DeepSeek code structure or a working prototype in Replit.
