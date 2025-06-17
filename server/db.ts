@@ -139,20 +139,24 @@ export class DatabaseStorage {
     }
   }
 
-  async recordQuizAttempt(attemptData: InsertQuizAttempt): Promise<QuizAttempt> {
+  async recordQuizAttempt(attemptData: any): Promise<QuizAttempt> {
     try {
+      console.log('🔍 Raw attempt data received:', attemptData);
+      
       const insertData = {
         userId: attemptData.userId!,
-        quizId: attemptData.quizId || null,
-        questionIdentifier: attemptData.questionIdentifier || null,
-        category: attemptData.category,
-        selectedAnswer: attemptData.selectedAnswer,
-        correctAnswer: attemptData.correctAnswer,
-        isCorrect: attemptData.isCorrect,
+        quizId: attemptData.quizId && typeof attemptData.quizId === 'number' ? attemptData.quizId : null,
+        questionIdentifier: attemptData.questionIdentifier || attemptData.questionId || null,
+        category: attemptData.category || 'general',
+        selectedAnswer: attemptData.selectedAnswer || '',
+        correctAnswer: attemptData.correctAnswer || '',
+        isCorrect: attemptData.isCorrect || false,
         timeSpent: attemptData.timeSpent || 0,
         difficulty: attemptData.difficulty || 'medium',
         xpEarned: attemptData.xpEarned || 0
       };
+      
+      console.log('📝 Mapped insert data:', insertData);
 
       const result = await db.insert(quizAttempts).values(insertData).returning();
       const attempt = result[0];

@@ -134,9 +134,12 @@ export const quizAttempts = pgTable("quiz_attempts", {
   userId: text("user_id").references(() => users.id),
   quizId: integer("quiz_id").references(() => quizzes.id),
   questionIdentifier: text("question_identifier"), // For tracking questions from JSON files
-  selectedAnswer: integer("selected_answer"),
-  isCorrect: boolean("is_correct"),
+  category: text("category").notNull(),
+  selectedAnswer: text("selected_answer").notNull(),
+  correctAnswer: text("correct_answer").notNull(),
+  isCorrect: boolean("is_correct").notNull(),
   timeSpent: integer("time_spent"), // seconds
+  difficulty: text("difficulty"),
   xpEarned: integer("xp_earned").default(0),
   attemptedAt: timestamp("attempted_at").defaultNow(),
 });
