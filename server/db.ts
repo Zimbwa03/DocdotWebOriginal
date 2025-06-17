@@ -234,7 +234,7 @@ export class DatabaseStorage {
           averageScore: isCorrect ? 100 : 0,
           currentStreak: isCorrect ? 1 : 0,
           longestStreak: isCorrect ? 1 : 0,
-          totalXP: xpEarned || 0,
+          totalXp: xpEarned || 0,
           currentLevel: Math.floor((xpEarned || 0) / 1000) + 1,
           totalStudyTime: Math.round((timeSpent || 0) / 60),
           rank: 0
@@ -246,18 +246,18 @@ export class DatabaseStorage {
         correctAnswers: existing.correctAnswers + (isCorrect ? 1 : 0),
         averageScore: Math.round(((existing.correctAnswers + (isCorrect ? 1 : 0)) / (existing.totalQuestions + 1)) * 100),
         currentStreak: isCorrect ? existing.currentStreak + 1 : 0,
-        totalXP: existing.totalXP + (xpEarned || 0),
-        currentLevel: Math.floor((existing.totalXP + (xpEarned || 0)) / 1000) + 1
+        totalXp: existing.totalXp + (xpEarned || 0),
+        currentLevel: Math.floor((existing.totalXp + (xpEarned || 0)) / 1000) + 1
       } : {
         totalQuestions: 1,
         correctAnswers: isCorrect ? 1 : 0,
         averageScore: isCorrect ? 100 : 0,
         currentStreak: isCorrect ? 1 : 0,
-        totalXP: xpEarned || 0,
+        totalXp: xpEarned || 0,
         currentLevel: Math.floor((xpEarned || 0) / 1000) + 1
       };
       
-      console.log(`Updated stats for user ${userId}: ${finalStats.totalQuestions} questions, ${finalStats.correctAnswers} correct, ${finalStats.averageScore}% accuracy, ${finalStats.totalXP} XP, Level ${finalStats.currentLevel}, Streak ${finalStats.currentStreak}`);
+      console.log(`Updated stats for user ${userId}: ${finalStats.totalQuestions} questions, ${finalStats.correctAnswers} correct, ${finalStats.averageScore}% accuracy, ${finalStats.totalXp} XP, Level ${finalStats.currentLevel}, Streak ${finalStats.currentStreak}`);
     } catch (error) {
       console.error('Error updating user stats:', error);
     }
@@ -627,7 +627,7 @@ export class DatabaseStorage {
       const [rankResult] = await db
         .select({ count: sql<number>`count(*)` })
         .from(userStats)
-        .where(gt(userStats.totalXP, userStatsData.totalXP));
+        .where(gt(userStats.totalXp, userStatsData.totalXp));
 
       // Count total users with stats
       const [totalUsersResult] = await db
@@ -641,7 +641,7 @@ export class DatabaseStorage {
       return {
         rank,
         totalUsers,
-        totalXP: userStatsData.totalXP,
+        totalXp: userStatsData.totalXp,
         currentLevel: userStatsData.currentLevel,
         averageAccuracy: userStatsData.averageScore,
         totalQuestions: userStatsData.totalQuestions,
@@ -661,13 +661,13 @@ export class DatabaseStorage {
       const allUsers = await db
         .select({
           userId: userStats.userId,
-          totalXP: userStats.totalXP,
+          totalXp: userStats.totalXp,
           currentLevel: userStats.currentLevel,
           averageScore: userStats.averageScore
         })
         .from(userStats)
-        .where(gt(userStats.totalXP, 0))
-        .orderBy(desc(userStats.totalXP), desc(userStats.averageScore));
+        .where(gt(userStats.totalXp, 0))
+        .orderBy(desc(userStats.totalXp), desc(userStats.averageScore));
 
       console.log(`Found ${allUsers.length} users to rank`);
 
@@ -684,7 +684,7 @@ export class DatabaseStorage {
       if (allUsers.length > 0) {
         const leaderboardEntries = allUsers.map((user, index) => ({
           userId: user.userId,
-          totalXP: user.totalXP,
+          totalXp: user.totalXp,
           currentLevel: user.currentLevel,
           rank: index + 1,
           updatedAt: new Date()
@@ -929,8 +929,8 @@ export class DatabaseStorage {
           if (badge.xpReward > 0) {
             await db.update(userStats)
               .set({ 
-                totalXP: userStatsData.totalXP + badge.xpReward,
-                currentLevel: Math.floor((userStatsData.totalXP + badge.xpReward) / 1000) + 1,
+                totalXp: userStatsData.totalXp + badge.xpReward,
+                currentLevel: Math.floor((userStatsData.totalXp + badge.xpReward) / 1000) + 1,
                 updatedAt: new Date()
               })
               .where(eq(userStats.userId, userId));
