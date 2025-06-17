@@ -210,8 +210,8 @@ export class DatabaseStorage {
         const newStreak = isCorrect ? existing.currentStreak + 1 : 0;
         const newLongestStreak = Math.max(existing.longestStreak, newStreak);
         
-        const newTotalXP = existing.totalXP + (xpEarned || 0);
-        const newLevel = Math.floor(newTotalXP / 1000) + 1;
+        const newTotalXp = existing.totalXp + (xpEarned || 0);
+        const newLevel = Math.floor(newTotalXp / 1000) + 1;
 
         await db.update(userStats)
           .set({
@@ -220,7 +220,7 @@ export class DatabaseStorage {
             averageScore: newAverageScore,
             currentStreak: newStreak,
             longestStreak: newLongestStreak,
-            totalXP: newTotalXP,
+            totalXp: newTotalXp,
             currentLevel: newLevel,
             totalStudyTime: existing.totalStudyTime + Math.round((timeSpent || 0) / 60),
             updatedAt: new Date()
@@ -241,7 +241,23 @@ export class DatabaseStorage {
         });
       }
 
-      console.log(`Updated stats for user ${userId}: ${newTotalQuestions} questions, ${newCorrectAnswers} correct, ${newAverageScore}% accuracy, ${newTotalXP} XP, Level ${newLevel}, Streak ${newStreak}`);
+      const finalStats = existing ? {
+        totalQuestions: existing.totalQuestions + 1,
+        correctAnswers: existing.correctAnswers + (isCorrect ? 1 : 0),
+        averageScore: Math.round(((existing.correctAnswers + (isCorrect ? 1 : 0)) / (existing.totalQuestions + 1)) * 100),
+        currentStreak: isCorrect ? existing.currentStreak + 1 : 0,
+        totalXP: existing.totalXP + (xpEarned || 0),
+        currentLevel: Math.floor((existing.totalXP + (xpEarned || 0)) / 1000) + 1
+      } : {
+        totalQuestions: 1,
+        correctAnswers: isCorrect ? 1 : 0,
+        averageScore: isCorrect ? 100 : 0,
+        currentStreak: isCorrect ? 1 : 0,
+        totalXP: xpEarned || 0,
+        currentLevel: Math.floor((xpEarned || 0) / 1000) + 1
+      };
+      
+      console.log(`Updated stats for user ${userId}: ${finalStats.totalQuestions} questions, ${finalStats.correctAnswers} correct, ${finalStats.averageScore}% accuracy, ${finalStats.totalXP} XP, Level ${finalStats.currentLevel}, Streak ${finalStats.currentStreak}`);
     } catch (error) {
       console.error('Error updating user stats:', error);
     }
@@ -604,7 +620,7 @@ export class DatabaseStorage {
       const userStatsData = await this.getUserStats(userId);
       if (!userStatsData) {
         console.log(`No stats found for user ${userId}`);
-        return null;
+        return { rank: 1, totalUsers: 1 };
       }
 
       // Count users with higher XP to determine rank
@@ -613,10 +629,18 @@ export class DatabaseStorage {
         .from(userStats)
         .where(gt(userStats.totalXP, userStatsData.totalXP));
 
+      // Count total users with stats
+      const [totalUsersResult] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(userStats)
+        .where(gt(userStats.totalQuestions, 0));
+
       const rank = (rankResult?.count || 0) + 1;
+      const totalUsers = totalUsersResult?.count || 1;
 
       return {
         rank,
+        totalUsers,
         totalXP: userStatsData.totalXP,
         currentLevel: userStatsData.currentLevel,
         averageAccuracy: userStatsData.averageScore,
@@ -625,7 +649,7 @@ export class DatabaseStorage {
       };
     } catch (error) {
       console.error('Error getting user rank:', error);
-      return null;
+      return { rank: 1, totalUsers: 1 };
     }
   }
 

@@ -230,9 +230,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User rank
-  app.get("/api/user-rank", async (req, res) => {
+  app.get("/api/user-rank/:userId", async (req, res) => {
     try {
-      const userId = req.query.userId as string;
+      const userId = req.params.userId;
       const timeFrame = req.query.timeFrame as string || 'all-time';
       const category = req.query.category as string;
 
@@ -255,12 +255,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.params.userId;
       const limit = parseInt(req.query.limit as string) || 20;
 
-      const attempts = await dbStorage.getQuizAttempts(userId, limit);
+      const attempts = await dbStorage.getRecentQuizAttempts(userId, limit);
 
       res.json(attempts);
     } catch (error) {
       console.error("Error fetching quiz attempts:", error);
       res.status(500).json({ error: "Failed to fetch quiz attempts" });
+    }
+  });
+
+  // Recent quiz attempts (specific endpoint for dashboard)
+  app.get("/api/quiz-attempts/recent/:userId", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const limit = parseInt(req.query.limit as string) || 5;
+
+      const attempts = await dbStorage.getRecentQuizAttempts(userId, limit);
+
+      res.json(attempts);
+    } catch (error) {
+      console.error("Error fetching recent quiz attempts:", error);
+      res.status(500).json({ error: "Failed to fetch recent quiz attempts" });
     }
   });
 
