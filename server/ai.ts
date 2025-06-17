@@ -441,136 +441,109 @@ class OpenRouterAI {
     const validStemCount = Math.max(5, Math.min(stemCount, 50));
     console.log(`Generating custom ${examType} exam with ${validStemCount} stems for topics:`, topics);
 
-    // Professional medical exam stems template - immediate response while AI optimization continues
-    const stemTemplates = {
-      anatomy: {
-        "Upper Limb": [
-          {
-            stemText: "Concerning the bones of the upper limb",
-            options: [
-              { statement: "The clavicle is the most commonly fractured bone", answer: true, explanation: "Clavicle fractures are very common in falls" },
-              { statement: "The radius is located medial to the ulna", answer: false, explanation: "Radius is lateral to ulna in anatomical position" }
-            ]
-          },
-          {
-            stemText: "Concerning the muscles of the upper limb",
-            options: [
-              { statement: "The biceps brachii has two heads of origin", answer: true, explanation: "Long head and short head origins" },
-              { statement: "The triceps brachii has two heads", answer: false, explanation: "Triceps has three heads: long, lateral, medial" }
-            ]
-          },
-          {
-            stemText: "Concerning the nerves of the upper limb",
-            options: [
-              { statement: "The median nerve passes through the carpal tunnel", answer: true, explanation: "Median nerve compression causes carpal tunnel syndrome" },
-              { statement: "The radial nerve supplies all flexor muscles", answer: false, explanation: "Radial nerve mainly supplies extensor muscles" }
-            ]
-          }
-        ],
-        "Thorax": [
-          {
-            stemText: "Concerning the thoracic cage",
-            options: [
-              { statement: "There are 12 pairs of ribs", answer: true, explanation: "Standard human anatomy has 12 rib pairs" },
-              { statement: "All ribs attach directly to the sternum", answer: false, explanation: "Only true ribs (1-7) attach directly" }
-            ]
-          },
-          {
-            stemText: "Concerning the heart anatomy",
-            options: [
-              { statement: "The heart has four chambers", answer: true, explanation: "Two atria and two ventricles" },
-              { statement: "The right ventricle pumps oxygenated blood", answer: false, explanation: "Right ventricle pumps deoxygenated blood to lungs" }
-            ]
-          }
-        ],
-        "Lower Limb": [
-          {
-            stemText: "Concerning the bones of the lower limb",
-            options: [
-              { statement: "The femur is the longest bone in the body", answer: true, explanation: "Femur is the largest and strongest bone" },
-              { statement: "The fibula bears most of the body weight", answer: false, explanation: "Tibia bears most weight, fibula provides stability" }
-            ]
-          },
-          {
-            stemText: "Concerning the muscles of the lower limb",
-            options: [
-              { statement: "The quadriceps femoris has four parts", answer: true, explanation: "Rectus femoris, vastus lateralis, medialis, intermedius" },
-              { statement: "The hamstrings are primary hip flexors", answer: false, explanation: "Hamstrings are hip extensors and knee flexors" }
-            ]
-          }
-        ]
-      },
-      physiology: {
-        "Cell Physiology": [
-          {
-            stemText: "Concerning cellular transport mechanisms",
-            options: [
-              { statement: "Active transport requires energy", answer: true, explanation: "ATP is needed for active transport" },
-              { statement: "Osmosis requires membrane proteins", answer: false, explanation: "Osmosis is passive movement through membrane" }
-            ]
-          }
-        ],
-        "Nerve and Muscle": [
-          {
-            stemText: "Concerning nerve conduction",
-            options: [
-              { statement: "Myelinated fibers conduct faster than unmyelinated", answer: true, explanation: "Myelin increases conduction velocity" },
-              { statement: "Action potentials decrease in amplitude along axons", answer: false, explanation: "Action potentials maintain constant amplitude" }
-            ]
-          }
-        ]
-      }
-    };
-
-    // Generate stems from templates
-    const availableTemplates = stemTemplates[examType] || {};
-    const allAvailableStems: any[] = [];
+    // Force DeepSeek AI generation - no fallback templates
+    console.log(`🤖 Calling DeepSeek AI for ${validStemCount} ${examType} exam stems on topics: ${topics.join(', ')}`);
     
-    topics.forEach(topic => {
-      const topicStems = availableTemplates[topic] || [];
-      allAvailableStems.push(...topicStems);
+    const systemPrompt = `You are a medical education expert creating professional ${examType} exam stems.
+
+Generate ${validStemCount} exam stems for: ${topics.join(', ')}
+
+FORMAT: Each stem follows "Concerning the [specific anatomical/physiological aspect]" with 2 true/false options.
+
+REQUIRED JSON OUTPUT:
+{
+  "stems": [
+    {
+      "id": "stem_1",
+      "stemText": "Concerning the bones of the upper limb",
+      "orderIndex": 1,
+      "options": [
+        {
+          "id": "option_1_a",
+          "optionLetter": "A", 
+          "statement": "The clavicle is the most commonly fractured bone in falls",
+          "answer": true,
+          "explanation": "Clavicle fractures occur frequently during falls"
+        },
+        {
+          "id": "option_1_b",
+          "optionLetter": "B",
+          "statement": "The radius is located medial to the ulna",
+          "answer": false,
+          "explanation": "Radius is lateral to ulna in anatomical position"
+        }
+      ]
+    }
+  ]
+}
+
+Generate ${validStemCount} medically accurate stems. Return ONLY valid JSON.`;
+
+    const messages: AIMessage[] = [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: `Create ${validStemCount} professional ${examType} exam stems covering ${topics.join(', ')}. Use "Concerning the..." format with True/False medical statements.` }
+    ];
+
+    console.log('🔄 Sending request to DeepSeek API...');
+    const response = await this.generateResponse(messages, 0.2);
+    
+    if (!response || response.trim().length === 0) {
+      throw new Error('DeepSeek API returned empty response');
+    }
+
+    console.log('✅ DeepSeek response received, processing...');
+    console.log('📄 Raw response preview:', response.substring(0, 150) + '...');
+    
+    // Extract and parse JSON from DeepSeek response
+    let jsonString = response.trim();
+    jsonString = jsonString.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    jsonString = jsonString.replace(/^```\s*/, '').replace(/\s*```$/, '');
+    
+    const jsonStart = jsonString.indexOf('{');
+    const jsonEnd = jsonString.lastIndexOf('}');
+    
+    if (jsonStart === -1 || jsonEnd === -1) {
+      throw new Error('No valid JSON structure found in DeepSeek response');
+    }
+    
+    jsonString = jsonString.substring(jsonStart, jsonEnd + 1);
+    
+    let aiResponse;
+    try {
+      aiResponse = JSON.parse(jsonString);
+    } catch (parseError) {
+      console.error('❌ JSON parsing failed:', parseError);
+      console.error('🔍 Invalid JSON sample:', jsonString.substring(0, 500));
+      throw new Error('DeepSeek returned invalid JSON format');
+    }
+    
+    if (!aiResponse.stems || !Array.isArray(aiResponse.stems)) {
+      throw new Error('DeepSeek response missing required stems array');
+    }
+
+    // Process DeepSeek AI generated stems
+    const aiGeneratedStems = aiResponse.stems.slice(0, validStemCount).map((stem: any, index: number) => {
+      return {
+        id: stem.id || `stem_${index + 1}`,
+        stemText: stem.stemText || `Concerning ${topics[index % topics.length]}`,
+        orderIndex: index + 1,
+        options: (stem.options || []).slice(0, 2).map((opt: any, optIndex: number) => ({
+          id: opt.id || `option_${index + 1}_${optIndex === 0 ? 'a' : 'b'}`,
+          optionLetter: opt.optionLetter || (optIndex === 0 ? 'A' : 'B'),
+          statement: opt.statement || `Medical statement ${optIndex + 1}`,
+          answer: opt.answer !== undefined ? opt.answer : (optIndex === 0),
+          explanation: opt.explanation || `Medical explanation ${optIndex + 1}`
+        }))
+      };
     });
 
-    // If no templates available, create basic stems
-    if (allAvailableStems.length === 0) {
-      topics.forEach((topic, topicIndex) => {
-        allAvailableStems.push({
-          stemText: `Concerning ${topic.toLowerCase()}`,
-          options: [
-            { statement: "True", answer: true, explanation: `Study ${topic} concepts thoroughly` },
-            { statement: "False", answer: false, explanation: `Review ${topic} materials carefully` }
-          ]
-        });
-      });
-    }
-
-    // Select and format stems
-    const selectedStems = [];
-    for (let i = 0; i < validStemCount; i++) {
-      const templateIndex = i % allAvailableStems.length;
-      const template = allAvailableStems[templateIndex];
-      
-      selectedStems.push({
-        id: `stem_${i + 1}`,
-        stemText: template.stemText,
-        orderIndex: i + 1,
-        options: template.options.map((opt: any, optIndex: number) => ({
-          id: `option_${i + 1}_${optIndex === 0 ? 'a' : 'b'}`,
-          optionLetter: optIndex === 0 ? 'A' : 'B',
-          statement: opt.statement,
-          answer: opt.answer,
-          explanation: opt.explanation
-        }))
-      });
-    }
-
-    console.log(`Generated ${selectedStems.length} professional medical exam stems`);
+    console.log(`🎯 Successfully generated ${aiGeneratedStems.length} AI-powered medical exam stems from DeepSeek`);
     
     return {
-      stems: selectedStems,
+      stems: aiGeneratedStems,
       examType,
       topics,
-      totalStems: selectedStems.length
+      totalStems: aiGeneratedStems.length
     };
   }
 
