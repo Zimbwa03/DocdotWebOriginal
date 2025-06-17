@@ -30,7 +30,8 @@ import {
   ArrowLeft,
   Play,
   Database,
-  Zap
+  Zap,
+  Timer
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
@@ -513,9 +514,9 @@ export default function Quiz() {
     if (!currentExam) return;
 
     const correctAnswers = Object.entries(examAnswers).reduce((count, [stemId, userAnswer]) => {
-      const stem = currentExam.stems.find(s => s.id === stemId);
+      const stem = currentExam.stems.find((s: any) => s.id === stemId);
       if (stem) {
-        const correctOption = stem.options.find(opt => opt.answer === true);
+        const correctOption = stem.options.find((opt: any) => opt.answer === true);
         if (correctOption && userAnswer === true) {
           count++;
         }
@@ -590,7 +591,7 @@ export default function Quiz() {
           </div>
           <div className="flex items-center space-x-4">
             <div className="flex items-center" style={{ color: '#3399FF' }}>
-              <Clock className="w-5 h-5 mr-2" />
+              <Timer className="w-5 h-5 mr-2" />
               <span className="font-mono">{Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}</span>
             </div>
           </div>
@@ -604,7 +605,7 @@ export default function Quiz() {
               </h3>
               
               <div className="space-y-3">
-                {currentStem.options?.map((option) => (
+                {currentStem.options?.map((option: any) => (
                   <div
                     key={option.id}
                     className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
