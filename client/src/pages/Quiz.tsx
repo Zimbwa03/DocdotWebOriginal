@@ -508,6 +508,226 @@ export default function Quiz() {
     setExamStep('select-type');
   };
 
+  // Render customize exam type selection
+  const renderCustomizeExamTypeSelection = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold" style={{ color: '#1C1C1C' }}>Customize Your Exam</h2>
+          <p style={{ color: '#2E2E2E' }}>Choose the type of exam you want to create</p>
+        </div>
+        <Button 
+          variant="outline" 
+          onClick={() => setSelectedMCQSubject(null)}
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to MCQ Options
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+        <Card 
+          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300"
+          style={{ backgroundColor: '#F7FAFC' }}
+          onClick={() => {
+            setExamType('anatomy');
+            setExamStep('select-topics');
+          }}
+        >
+          <CardHeader className="text-center">
+            <Brain className="w-16 h-16 mx-auto mb-4" style={{ color: '#3399FF' }} />
+            <CardTitle className="text-2xl" style={{ color: '#1C1C1C' }}>Anatomy Exam</CardTitle>
+            <CardDescription style={{ color: '#2E2E2E' }}>
+              Create a comprehensive anatomy exam with AI-generated stems
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Badge variant="secondary">6 Topics Available</Badge>
+              <Badge variant="secondary">True/False Format</Badge>
+              <Badge variant="secondary">AI-Generated</Badge>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card 
+          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300"
+          style={{ backgroundColor: '#F7FAFC' }}
+          onClick={() => {
+            setExamType('physiology');
+            setExamStep('select-topics');
+          }}
+        >
+          <CardHeader className="text-center">
+            <Activity className="w-16 h-16 mx-auto mb-4" style={{ color: '#3399FF' }} />
+            <CardTitle className="text-2xl" style={{ color: '#1C1C1C' }}>Physiology Exam</CardTitle>
+            <CardDescription style={{ color: '#2E2E2E' }}>
+              Create a comprehensive physiology exam with AI-generated stems
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Badge variant="secondary">6 Topics Available</Badge>
+              <Badge variant="secondary">True/False Format</Badge>
+              <Badge variant="secondary">AI-Generated</Badge>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+
+  // Render topic selection
+  const renderTopicSelection = () => {
+    const topics = examType === 'anatomy' ? anatomyTopics : physiologyTopics;
+    
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold" style={{ color: '#1C1C1C' }}>
+              Select {examType === 'anatomy' ? 'Anatomy' : 'Physiology'} Topics
+            </h2>
+            <p style={{ color: '#2E2E2E' }}>Choose the topics you want to include in your exam</p>
+          </div>
+          <Button 
+            variant="outline" 
+            onClick={() => setExamStep('select-type')}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Exam Types
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {topics.map((topic) => (
+            <Card 
+              key={topic.id}
+              className={`cursor-pointer transition-all border-2 ${
+                selectedTopics.includes(topic.id) 
+                  ? 'border-blue-500 bg-blue-50' 
+                  : 'border-gray-200 hover:border-blue-300'
+              }`}
+              onClick={() => {
+                if (selectedTopics.includes(topic.id)) {
+                  setSelectedTopics(selectedTopics.filter(id => id !== topic.id));
+                } else {
+                  setSelectedTopics([...selectedTopics, topic.id]);
+                }
+              }}
+            >
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg" style={{ color: '#1C1C1C' }}>
+                    {topic.name}
+                  </CardTitle>
+                  {selectedTopics.includes(topic.id) && (
+                    <CheckCircle className="w-5 h-5" style={{ color: '#3399FF' }} />
+                  )}
+                </div>
+              </CardHeader>
+            </Card>
+          ))}
+        </div>
+
+        {selectedTopics.length > 0 && (
+          <div className="text-center">
+            <Button 
+              onClick={() => setExamStep('select-count')}
+              size="lg"
+              style={{ backgroundColor: '#3399FF' }}
+            >
+              Continue with {selectedTopics.length} topic{selectedTopics.length > 1 ? 's' : ''}
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Render stem count selection
+  const renderStemCountSelection = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold" style={{ color: '#1C1C1C' }}>Configure Your Exam</h2>
+          <p style={{ color: '#2E2E2E' }}>Choose the number of stems for your exam</p>
+        </div>
+        <Button 
+          variant="outline" 
+          onClick={() => setExamStep('select-topics')}
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Topics
+        </Button>
+      </div>
+
+      <Card className="max-w-2xl mx-auto" style={{ backgroundColor: '#F7FAFC' }}>
+        <CardHeader>
+          <CardTitle style={{ color: '#1C1C1C' }}>Exam Configuration</CardTitle>
+          <CardDescription style={{ color: '#2E2E2E' }}>
+            Customize your exam settings
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div>
+            <Label className="text-base font-medium" style={{ color: '#1C1C1C' }}>
+              Number of Stems: {stemCount}
+            </Label>
+            <div className="mt-2">
+              <input
+                type="range"
+                min="5"
+                max="50"
+                step="5"
+                value={stemCount}
+                onChange={(e) => setStemCount(parseInt(e.target.value))}
+                className="w-full"
+              />
+              <div className="flex justify-between text-sm text-gray-500 mt-1">
+                <span>5</span>
+                <span>25</span>
+                <span>50</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <h4 className="font-medium mb-2" style={{ color: '#1C1C1C' }}>Exam Summary</h4>
+            <div className="space-y-1 text-sm" style={{ color: '#2E2E2E' }}>
+              <p>Type: {examType === 'anatomy' ? 'Anatomy' : 'Physiology'}</p>
+              <p>Topics: {selectedTopics.length} selected</p>
+              <p>Stems: {stemCount}</p>
+              <p>Estimated time: {Math.ceil(stemCount * 1.5)} minutes</p>
+            </div>
+          </div>
+
+          <div className="text-center">
+            <Button 
+              onClick={() => generateCustomExam(selectedTopics, stemCount, examType)}
+              size="lg"
+              disabled={isGeneratingExam}
+              style={{ backgroundColor: '#3399FF' }}
+            >
+              {isGeneratingExam ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Generating Exam...
+                </>
+              ) : (
+                <>
+                  <Zap className="w-4 h-4 mr-2" />
+                  Generate Exam
+                </>
+              )}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
   const renderQuizTypeSelection = () => (
     <div className="space-y-6 sm:space-y-8">
       <div className="text-center px-3 sm:px-4">
@@ -694,7 +914,10 @@ export default function Quiz() {
         <Card 
           className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300 relative overflow-hidden"
           style={{ backgroundColor: '#D1E8F9', border: '2px solid #3399FF' }}
-          onClick={() => setSelectedMCQSubject('customize-exam')}
+          onClick={() => {
+            setSelectedMCQSubject('customize-exam');
+            setExamStep('select-type');
+          }}
         >
           <div className="absolute top-2 right-2">
             <Badge style={{ backgroundColor: '#3399FF', color: 'white' }} className="text-xs">NEW!</Badge>
@@ -1377,6 +1600,32 @@ export default function Quiz() {
               Back to Quiz Types
             </Button>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Handle customize exam rendering
+  if (selectedMCQSubject === 'customize-exam') {
+    return (
+      <div className="min-h-screen bg-white dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center mb-12">
+            <div className="flex items-center justify-center space-x-3 mb-6">
+              <img 
+                src="/DocDot Medical Student Logo.png" 
+                alt="DocDot Medical Student Logo" 
+                className="h-16 w-auto"
+              />
+              <div>
+                <h1 className="text-4xl font-bold" style={{ color: '#1C1C1C' }}>Customize Exam</h1>
+              </div>
+            </div>
+          </div>
+          
+          {examStep === 'select-type' && renderCustomizeExamTypeSelection()}
+          {examStep === 'select-topics' && renderTopicSelection()}
+          {examStep === 'select-count' && renderStemCountSelection()}
         </div>
       </div>
     );
