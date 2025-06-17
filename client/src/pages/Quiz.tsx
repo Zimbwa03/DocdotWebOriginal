@@ -492,9 +492,13 @@ export default function Quiz() {
       // Start the countdown timer
       startExamTimer(totalTimeInSeconds);
       
+      const sources = examType === 'anatomy' 
+        ? "Snell's Clinical Anatomy, Gray's Anatomy, Keith Moore's Clinically Oriented Anatomy"
+        : "Guyton & Hall Medical Physiology, Ganong's Review, Boron & Boulpaep";
+      
       toast({
         title: "Exam Generated Successfully",
-        description: `Your custom ${examType} exam with ${stemCount} stems is ready! Time limit: ${stemCount * 2} minutes`
+        description: `Your custom ${examType} exam with ${stemCount} stems from ${sources} is ready! Time limit: ${stemCount * 2} minutes`
       });
 
     } catch (error) {
@@ -1111,13 +1115,23 @@ export default function Quiz() {
             <Brain className="w-16 h-16 mx-auto mb-4" style={{ color: '#3399FF' }} />
             <CardTitle className="text-2xl" style={{ color: '#1C1C1C' }}>Anatomy Exam</CardTitle>
             <CardDescription style={{ color: '#2E2E2E' }}>
-              Create a comprehensive anatomy exam with AI-generated stems
+              Create a comprehensive anatomy exam with AI-generated stems from authoritative medical sources
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <Badge variant="secondary">6 Topics Available</Badge>
-              <Badge variant="secondary">True/False Format</Badge>
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Badge variant="secondary">6 Topics Available</Badge>
+                <Badge variant="secondary">True/False Format</Badge>
+              </div>
+              <div className="text-xs text-gray-600 space-y-1">
+                <p className="font-semibold">Sources:</p>
+                <p>• Snell's Clinical Anatomy</p>
+                <p>• Gray's Anatomy for Students</p>
+                <p>• Keith Moore's Clinically Oriented Anatomy</p>
+                <p>• TeachMeAnatomy.info</p>
+                <p>• Kenhub.com</p>
+              </div>
               <Badge variant="secondary">AI-Generated</Badge>
             </div>
           </CardContent>
@@ -1135,13 +1149,23 @@ export default function Quiz() {
             <Activity className="w-16 h-16 mx-auto mb-4" style={{ color: '#3399FF' }} />
             <CardTitle className="text-2xl" style={{ color: '#1C1C1C' }}>Physiology Exam</CardTitle>
             <CardDescription style={{ color: '#2E2E2E' }}>
-              Create a comprehensive physiology exam with AI-generated stems
+              Create a comprehensive physiology exam with AI-generated stems from authoritative medical sources
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <Badge variant="secondary">6 Topics Available</Badge>
-              <Badge variant="secondary">True/False Format</Badge>
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Badge variant="secondary">6 Topics Available</Badge>
+                <Badge variant="secondary">True/False Format</Badge>
+              </div>
+              <div className="text-xs text-gray-600 space-y-1">
+                <p className="font-semibold">Sources:</p>
+                <p>• Guyton & Hall Medical Physiology</p>
+                <p>• Ganong's Review of Medical Physiology</p>
+                <p>• Boron & Boulpaep Medical Physiology</p>
+                <p>• TeachMePhysiology.com</p>
+                <p>• Kenhub.com</p>
+              </div>
               <Badge variant="secondary">AI-Generated</Badge>
             </div>
           </CardContent>
@@ -1162,6 +1186,12 @@ export default function Quiz() {
               Select {examType === 'anatomy' ? 'Anatomy' : 'Physiology'} Topics
             </h2>
             <p style={{ color: '#2E2E2E' }}>Choose the topics you want to include in your exam</p>
+            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <strong>Diverse Subtopic Coverage:</strong> Questions will cover different aspects within each topic. 
+                For example, selecting "Thorax" includes ribs, sternum, vertebrae, intercostals, pleura, lungs, heart, and mediastinum.
+              </p>
+            </div>
           </div>
           <Button 
             variant="outline" 
@@ -1286,7 +1316,7 @@ export default function Quiz() {
               {isGeneratingExam ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Generating Exam...
+                  Generating from Medical Sources...
                 </>
               ) : (
                 <>
@@ -1298,6 +1328,52 @@ export default function Quiz() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Authoritative Sources Loading Screen */}
+      {isGeneratingExam && (
+        <div className="fixed inset-0 bg-white bg-opacity-95 z-50 flex items-center justify-center">
+          <div className="max-w-2xl mx-auto p-8 text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-8"></div>
+            
+            <h2 className="text-3xl font-bold text-black mb-4">Generating Medical Exam</h2>
+            <p className="text-xl text-gray-600 mb-8">
+              Creating {stemCount} professional {examType} questions from authoritative medical sources
+            </p>
+
+            <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 mb-6">
+              <h3 className="text-lg font-bold text-blue-800 mb-4">
+                {examType === 'anatomy' ? 'Anatomy' : 'Physiology'} Sources Referenced:
+              </h3>
+              <div className="grid grid-cols-1 gap-2 text-sm text-blue-700">
+                {examType === 'anatomy' ? (
+                  <>
+                    <p>• Snell's Clinical Anatomy (Richard S. Snell)</p>
+                    <p>• Gray's Anatomy for Students (Drake, Vogl, Mitchell)</p>
+                    <p>• Clinically Oriented Anatomy (Keith L. Moore)</p>
+                    <p>• TeachMeAnatomy.info educational content</p>
+                    <p>• Kenhub.com anatomy resources</p>
+                  </>
+                ) : (
+                  <>
+                    <p>• Guyton & Hall Textbook of Medical Physiology</p>
+                    <p>• Ganong's Review of Medical Physiology</p>
+                    <p>• Boron & Boulpaep Medical Physiology</p>
+                    <p>• TeachMePhysiology.com educational content</p>
+                    <p>• Kenhub.com physiology resources</p>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4">
+              <p className="text-sm text-yellow-800">
+                <strong>Diverse Coverage:</strong> Questions will span multiple subtopics within your selected areas, 
+                ensuring comprehensive coverage from trusted medical education sources.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 
