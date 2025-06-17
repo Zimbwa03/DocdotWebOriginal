@@ -2,11 +2,13 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { 
   users, userStats, categoryStats, dailyStats, leaderboard, quizAttempts, badges, userBadges,
-  globalLeaderboard, userAnalytics, aiSessions, aiChats, studyPlannerSessions, studyGroups, studyGroupMembers,
+  userAnalytics, aiSessions, aiChats, studyPlannerSessions, studyGroups, studyGroupMembers,
+  customExams, customExamStems, stemOptions, customExamAttempts, examGenerationHistory,
   type User, type InsertUser, type UserStats, type CategoryStats, 
   type DailyStats, type LeaderboardEntry, type QuizAttempt,
   type InsertQuizAttempt, type InsertUserStats, type InsertCategoryStats,
-  type InsertDailyStats, type InsertLeaderboard
+  type InsertDailyStats, type InsertLeaderboard, type CustomExam, type CustomExamStem,
+  type StemOption, type InsertCustomExam, type InsertCustomExamStem, type InsertStemOption
 } from '@shared/schema';
 import { eq, desc, sql, and, gte, isNotNull, lte, gt, lt, count, sum, avg } from 'drizzle-orm';
 

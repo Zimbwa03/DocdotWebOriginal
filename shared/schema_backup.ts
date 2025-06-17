@@ -116,6 +116,8 @@ export const examGenerationHistory = pgTable("exam_generation_history", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Insert schemas for custom exam tables will be defined later with other schemas
+
 // Quiz system (existing)  
 export const quizzes = pgTable("quizzes", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
@@ -134,206 +136,265 @@ export const quizAttempts = pgTable("quiz_attempts", {
   userId: text("user_id").references(() => users.id),
   quizId: integer("quiz_id").references(() => quizzes.id),
   questionIdentifier: text("question_identifier"), // For tracking questions from JSON files
-  selectedAnswer: integer("selected_answer"),
-  isCorrect: boolean("is_correct"),
-  timeSpent: integer("time_spent"), // seconds
-  xpEarned: integer("xp_earned").default(0),
+  category: text("category").notNull(),
+  selectedAnswer: text("selected_answer").notNull(),
+  correctAnswer: text("correct_answer").notNull(),
+  isCorrect: boolean("is_correct").notNull(),
+  timeSpent: integer("time_spent"), // in seconds
+  difficulty: text("difficulty"),
+  xpEarned: integer("xp_earned").notNull().default(0),
   attemptedAt: timestamp("attempted_at").defaultNow(),
 });
 
-// User statistics and progress tracking
+// User statistics and performance tracking
 export const userStats = pgTable("user_stats", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   userId: text("user_id").references(() => users.id).unique(),
-  totalQuestions: integer("total_questions").default(0),
-  correctAnswers: integer("correct_answers").default(0),
-  totalXp: integer("total_xp").default(0),
-  currentLevel: integer("current_level").default(1),
-  currentStreak: integer("current_streak").default(0),
-  longestStreak: integer("longest_streak").default(0),
-  averageScore: integer("average_score").default(0), // percentage
-  totalStudyTime: integer("total_study_time").default(0), // minutes
-  rank: integer("rank").default(0),
-  createdAt: timestamp("created_at").defaultNow(),
+  totalQuestions: integer("total_questions").notNull().default(0),
+  correctAnswers: integer("correct_answers").notNull().default(0),
+  averageScore: integer("average_score").notNull().default(0), // percentage
+  currentStreak: integer("current_streak").notNull().default(0),
+  longestStreak: integer("longest_streak").notNull().default(0),
+  totalXP: integer("total_xp").notNull().default(0),
+  currentLevel: integer("current_level").notNull().default(1),
+  totalStudyTime: integer("total_study_time").notNull().default(0), // in minutes
+  rank: integer("rank").notNull().default(0),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Category-specific performance tracking
-export const categoryStats = pgTable("category_stats", {
-  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  userId: text("user_id").references(() => users.id),
-  categoryName: text("category_name").notNull(),
-  questionsAnswered: integer("questions_answered").default(0),
-  correctAnswers: integer("correct_answers").default(0),
-  accuracy: integer("accuracy").default(0), // percentage
-  xpEarned: integer("xp_earned").default(0),
-});
-
-// Daily study statistics
-export const dailyStats = pgTable("daily_stats", {
-  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  userId: text("user_id").references(() => users.id),
-  date: text("date").notNull(), // YYYY-MM-DD format
-  questionsAnswered: integer("questions_answered").default(0),
-  correctAnswers: integer("correct_answers").default(0),
-  xpEarned: integer("xp_earned").default(0),
-  studyTime: integer("study_time").default(0), // minutes
-  topicsStudied: json("topics_studied"), // Array of topic names
-});
-
-// Leaderboard system
-export const leaderboard = pgTable("leaderboard", {
-  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  userId: text("user_id").references(() => users.id).unique(),
-  rank: integer("rank").notNull(),
-  xp: integer("xp").notNull(),
-  level: integer("level").notNull(),
-  streak: integer("streak").notNull(),
-  fullName: text("full_name"),
-  institution: text("institution"),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-// Badge and achievement system
+// Advanced Achievement and Badge System
 export const badges = pgTable("badges", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  name: text("name").notNull(),
+  name: text("name").notNull().unique(),
   description: text("description").notNull(),
-  icon: text("icon").notNull(),
-  category: text("category").notNull(), // achievement, streak, xp, quiz
-  requirement: json("requirement"), // Conditions to earn the badge
-  xpReward: integer("xp_reward").default(0),
-  rarity: text("rarity").default("common"), // common, rare, epic, legendary
+  icon: text("icon").notNull(), // Lucide icon name
+  category: text("category").notNull(), // "performance", "streak", "mastery", "time", "special"
+  tier: text("tier").notNull(), // "bronze", "silver", "gold", "platinum", "diamond"
+  requirement: integer("requirement").notNull(), // Numeric requirement value
+  requirementType: text("requirement_type").notNull(), // "streak", "questions", "accuracy", "time", "xp"
+  xpReward: integer("xp_reward").notNull().default(0),
+  color: text("color").notNull(), // Hex color for badge styling
+  isSecret: boolean("is_secret").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// User Badge Achievements
 export const userBadges = pgTable("user_badges", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   userId: text("user_id").references(() => users.id),
   badgeId: integer("badge_id").references(() => badges.id),
   earnedAt: timestamp("earned_at").defaultNow(),
-  progress: json("progress"), // Progress towards earning the badge
+  progress: integer("progress").default(0), // Current progress towards badge
+}, (table) => ({
+  userBadgeUnique: unique().on(table.userId, table.badgeId),
+}));
+
+// Enhanced Global Leaderboard System
+export const globalLeaderboard = pgTable("global_leaderboard", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: text("user_id").references(() => users.id).unique(),
+  totalXP: integer("total_xp").notNull().default(0),
+  currentLevel: integer("current_level").notNull().default(1),
+  rank: integer("rank").notNull().default(0),
+  weeklyXP: integer("weekly_xp").notNull().default(0),
+  monthlyXP: integer("monthly_xp").notNull().default(0),
+  averageAccuracy: integer("average_accuracy").notNull().default(0),
+  totalBadges: integer("total_badges").notNull().default(0),
+  category: text("category"), // For category-specific leaderboards
+  lastActive: timestamp("last_active").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Flashcard system
+// Category-specific performance
+export const categoryStats = pgTable("category_stats", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: text("user_id").references(() => users.id),
+  category: text("category").notNull(),
+  questionsAttempted: integer("questions_attempted").notNull().default(0),
+  correctAnswers: integer("correct_answers").notNull().default(0),
+  averageScore: integer("average_score").notNull().default(0),
+  averageTime: integer("average_time").notNull().default(0), // in seconds
+  lastAttempted: timestamp("last_attempted"),
+  mastery: integer("mastery").notNull().default(0), // 0-100
+});
+
+// Daily performance tracking
+export const dailyStats = pgTable("daily_stats", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: text("user_id").references(() => users.id),
+  date: timestamp("date").notNull(),
+  questionsAnswered: integer("questions_answered").notNull().default(0),
+  correctAnswers: integer("correct_answers").notNull().default(0),
+  studyTime: integer("study_time").notNull().default(0), // in minutes
+  xpEarned: integer("xp_earned").notNull().default(0),
+  categoriesStudied: json("categories_studied"), // Array of categories
+});
+
+// Leaderboard entries
+export const leaderboard = pgTable("leaderboard", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: text("user_id").references(() => users.id),
+  category: text("category"), // null for overall leaderboard
+  rank: integer("rank").notNull(),
+  score: integer("score").notNull(),
+  totalQuestions: integer("total_questions").notNull(),
+  accuracy: integer("accuracy").notNull(), // percentage
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Flashcards
 export const flashcards = pgTable("flashcards", {
-  id: text("id").primaryKey(),
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   userId: text("user_id").references(() => users.id),
   topicId: integer("topic_id").references(() => topics.id),
   front: text("front").notNull(),
   back: text("back").notNull(),
-  difficulty: integer("difficulty").default(1), // 1-5 scale
-  lastReviewed: timestamp("last_reviewed"),
-  nextReview: timestamp("next_review"),
-  reviewCount: integer("review_count").default(0),
+  mnemonic: text("mnemonic"),
+  difficulty: text("difficulty").notNull().default("medium"),
+  isAiGenerated: boolean("is_ai_generated").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Study planner
 export const studyPlans = pgTable("study_plans", {
-  id: text("id").primaryKey(),
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   userId: text("user_id").references(() => users.id),
   title: text("title").notNull(),
   description: text("description"),
-  topicIds: json("topic_ids"), // Array of topic IDs
-  startDate: timestamp("start_date"),
-  endDate: timestamp("end_date"),
-  dailyGoal: integer("daily_goal"), // minutes per day
-  progress: integer("progress").default(0), // percentage
-  isActive: boolean("is_active").default(true),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  topics: json("topics").notNull(), // Array of topic IDs
+  completed: boolean("completed").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+
+
+// AI chat history with sessions
+export const aiSessions = pgTable("ai_sessions", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => users.id),
+  toolType: text("tool_type").notNull(), // 'tutor', 'explain', 'questions', etc.
+  title: text("title").notNull(),
+  lastMessage: text("last_message"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const aiChats = pgTable("ai_chats", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  sessionId: text("session_id").references(() => aiSessions.id),
+  userId: text("user_id").references(() => users.id),
+  role: text("role").notNull(), // 'user' or 'ai'
+  content: text("content").notNull(),
+  toolType: text("tool_type").notNull(),
+  context: json("context"), // Additional context data
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Study planner sessions
 export const studyPlannerSessions = pgTable("study_planner_sessions", {
-  id: text("id").primaryKey(),
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   userId: text("user_id").references(() => users.id),
-  planId: text("plan_id").references(() => studyPlans.id),
+  title: text("title").notNull(),
+  subject: text("subject").notNull(),
+  topic: text("topic"),
+  date: timestamp("date").notNull(),
+  startTime: text("start_time").notNull(),
+  endTime: text("end_time").notNull(),
+  duration: integer("duration").notNull(), // in minutes
+  status: text("status").notNull().default("planned"), // planned, completed, missed
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Study groups
+export const studyGroups = pgTable("study_groups", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  creator_id: text("creator_id").references(() => users.id),
   title: text("title").notNull(),
   description: text("description"),
-  startTime: timestamp("start_time").notNull(),
-  endTime: timestamp("end_time"),
-  duration: integer("duration"), // minutes
-  status: text("status").default("scheduled"), // scheduled, completed, cancelled
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  meeting_link: text("meeting_link").notNull(), // Zoom or Google Meet link
+  meeting_type: text("meeting_type").notNull(), // 'zoom' or 'meet'
+  scheduled_time: timestamp("scheduled_time").notNull(),
+  duration: integer("duration").notNull().default(60), // in minutes
+  max_members: integer("max_members").notNull().default(10),
+  current_members: integer("current_members").notNull().default(1),
+  is_active: boolean("is_active").notNull().default(false),
+  category: text("category"), // study topic category
+  created_at: timestamp("created_at").defaultNow(),
 });
 
-// AI tutoring system
-export const aiSessions = pgTable("ai_sessions", {
-  id: text("id").primaryKey(),
-  userId: text("user_id").references(() => users.id),
-  sessionType: text("session_type").notNull(), // tutor, quiz_explanation, study_help
-  title: text("title"),
-  startedAt: timestamp("started_at").defaultNow(),
-  endedAt: timestamp("ended_at"),
-  totalMessages: integer("total_messages").default(0),
-  tokensUsed: integer("tokens_used").default(0),
-  metadata: json("metadata"),
-});
-
-export const aiChats = pgTable("ai_chats", {
-  id: text("id").primaryKey(),
-  sessionId: text("session_id").references(() => aiSessions.id, { onDelete: "cascade" }),
-  role: text("role").notNull(), // user, assistant, system
-  content: text("content").notNull(),
-  timestamp: timestamp("timestamp").defaultNow(),
-  metadata: json("metadata"),
-});
-
-// Study groups and collaboration
-export const studyGroups = pgTable("study_groups", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  description: text("description"),
-  createdBy: text("created_by").references(() => users.id),
-  maxMembers: integer("max_members").default(10),
-  currentMembers: integer("current_members").default(1),
-  topicIds: json("topic_ids"), // Focus areas
-  meetingUrl: text("meeting_url"),
-  meetingTime: timestamp("meeting_time"),
-  timezone: text("timezone"),
-  isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
+// Study group members
 export const studyGroupMembers = pgTable("study_group_members", {
-  id: text("id").primaryKey(),
-  groupId: text("group_id").references(() => studyGroups.id, { onDelete: "cascade" }),
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  groupId: integer("group_id").references(() => studyGroups.id),
   userId: text("user_id").references(() => users.id),
-  role: text("role").default("member"), // member, moderator, admin
+  reminderSent: boolean("reminder_sent").notNull().default(false),
   joinedAt: timestamp("joined_at").defaultNow(),
-  lastActive: timestamp("last_active"),
-  hasJoinedMeeting: boolean("has_joined_meeting").default(false),
-  reminderSent: boolean("reminder_sent").default(false),
-});
+  hasJoinedMeeting: boolean("has_joined_meeting").notNull().default(false),
+}, (table) => ({
+  memberUnique: unique().on(table.groupId, table.userId),
+}));
 
+// Meeting reminders
 export const meetingReminders = pgTable("meeting_reminders", {
-  id: text("id").primaryKey(),
-  groupId: text("group_id").references(() => studyGroups.id, { onDelete: "cascade" }),
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  groupId: integer("group_id").references(() => studyGroups.id),
   userId: text("user_id").references(() => users.id),
-  meetingTime: timestamp("meeting_time").notNull(),
-  reminderType: text("reminder_type").notNull(), // email, push, sms
-  sentAt: timestamp("sent_at"),
-  emailSent: boolean("email_sent").default(false),
+  reminderTime: timestamp("reminder_time").notNull(),
+  emailSent: boolean("email_sent").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  reminderUnique: unique().on(table.groupId, table.userId),
+}));
 
-// Analytics and performance insights
+// User Analytics - Comprehensive tracking
 export const userAnalytics = pgTable("user_analytics", {
-  id: text("id").primaryKey(),
-  userId: text("user_id").references(() => users.id),
-  weeklyXp: json("weekly_xp"), // Last 7 days XP
-  monthlyProgress: json("monthly_progress"), // Progress by category
-  studyPatterns: json("study_patterns"), // Peak hours, frequency
-  weakAreas: json("weak_areas"), // Topics needing improvement
-  strengths: json("strengths"), // Top performing areas
-  recommendations: json("recommendations"), // AI-generated study suggestions
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: text("user_id").references(() => users.id).unique(),
+  totalStudyHours: integer("total_study_hours").notNull().default(0),
+  weeklyStudyHours: integer("weekly_study_hours").notNull().default(0),
+  monthlyStudyHours: integer("monthly_study_hours").notNull().default(0),
+  averageSessionDuration: integer("average_session_duration").notNull().default(0), // in minutes
+  totalQuizzes: integer("total_quizzes").notNull().default(0),
+  totalCorrectAnswers: integer("total_correct_answers").notNull().default(0),
+  overallAccuracy: integer("overall_accuracy").notNull().default(0), // percentage
+  weeklyQuizzes: integer("weekly_quizzes").notNull().default(0),
+  monthlyQuizzes: integer("monthly_quizzes").notNull().default(0),
+  strongestCategory: text("strongest_category"),
+  weakestCategory: text("weakest_category"),
+  improvementRate: integer("improvement_rate").notNull().default(0), // percentage
+  consistencyScore: integer("consistency_score").notNull().default(0), // 0-100
+  studyStreak: integer("study_streak").notNull().default(0),
+  longestStudyStreak: integer("longest_study_streak").notNull().default(0),
+  badgesEarned: integer("badges_earned").notNull().default(0),
+  rankPosition: integer("rank_position").notNull().default(0),
+  totalXpEarned: integer("total_xp_earned").notNull().default(0),
+  weeklyXpEarned: integer("weekly_xp_earned").notNull().default(0),
+  monthlyXpEarned: integer("monthly_xp_earned").notNull().default(0),
+  lastActiveDate: timestamp("last_active_date"),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Insert schemas
-export const insertUserSchema = createInsertSchema(users);
+// Schema exports
+export const insertUserSchema = createInsertSchema(users).pick({
+  email: true,
+  firstName: true,
+  lastName: true,
+  fullName: true,
+  specialization: true,
+  institution: true,
+  phone: true,
+  learningStyle: true,
+  goals: true,
+  schedule: true,
+});
+
+export const insertCategorySchema = createInsertSchema(categories);
+export const insertTopicSchema = createInsertSchema(topics);
+export const insertQuizSchema = createInsertSchema(quizzes);
 export const insertQuizAttemptSchema = createInsertSchema(quizAttempts).omit({ 
   id: true, 
   attemptedAt: true 
@@ -355,13 +416,11 @@ export const insertMeetingReminderSchema = createInsertSchema(meetingReminders).
 export const insertUserAnalyticsSchema = createInsertSchema(userAnalytics).omit({ id: true, updatedAt: true });
 
 // Custom exam schemas
-export const insertCustomExamSchema = createInsertSchema(customExams).omit({ id: true, createdAt: true, updatedAt: true });
-export const insertCustomExamStemSchema = createInsertSchema(customExamStems).omit({ id: true, createdAt: true });
-export const insertStemOptionSchema = createInsertSchema(stemOptions).omit({ id: true, createdAt: true });
-export const insertCustomExamAttemptSchema = createInsertSchema(customExamAttempts).omit({ id: true, startedAt: true });
-export const insertExamGenerationHistorySchema = createInsertSchema(examGenerationHistory).omit({ id: true, createdAt: true });
+export const insertCustomExamSchema = createInsertSchema(customExams).omit({ id: true, createdAt: true });
+export const insertExamStemSchema = createInsertSchema(examStems).omit({ id: true, createdAt: true });
+export const insertStemOptionSchema = createInsertSchema(stemOptions).omit({ id: true });
+export const insertStudentAnswerSchema = createInsertSchema(studentAnswers).omit({ id: true, answeredAt: true });
 
-// Type exports
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertQuizAttempt = z.infer<typeof insertQuizAttemptSchema>;
 export type InsertUserStats = z.infer<typeof insertUserStatsSchema>;
@@ -369,19 +428,17 @@ export type InsertCategoryStats = z.infer<typeof insertCategoryStatsSchema>;
 export type InsertDailyStats = z.infer<typeof insertDailyStatsSchema>;
 export type InsertLeaderboard = z.infer<typeof insertLeaderboardSchema>;
 export type InsertCustomExam = z.infer<typeof insertCustomExamSchema>;
-export type InsertCustomExamStem = z.infer<typeof insertCustomExamStemSchema>;
+export type InsertExamStem = z.infer<typeof insertExamStemSchema>;
 export type InsertStemOption = z.infer<typeof insertStemOptionSchema>;
-export type InsertCustomExamAttempt = z.infer<typeof insertCustomExamAttemptSchema>;
-export type InsertExamGenerationHistory = z.infer<typeof insertExamGenerationHistorySchema>;
+export type InsertStudentAnswer = z.infer<typeof insertStudentAnswerSchema>;
 
 export type User = typeof users.$inferSelect;
 export type Category = typeof categories.$inferSelect;
 export type Topic = typeof topics.$inferSelect;
 export type CustomExam = typeof customExams.$inferSelect;
-export type CustomExamStem = typeof customExamStems.$inferSelect;
+export type ExamStem = typeof examStems.$inferSelect;
 export type StemOption = typeof stemOptions.$inferSelect;
-export type CustomExamAttempt = typeof customExamAttempts.$inferSelect;
-export type ExamGenerationHistory = typeof examGenerationHistory.$inferSelect;
+export type StudentAnswer = typeof studentAnswers.$inferSelect;
 export type Quiz = typeof quizzes.$inferSelect;
 export type QuizAttempt = typeof quizAttempts.$inferSelect;
 export type UserStats = typeof userStats.$inferSelect;
