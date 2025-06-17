@@ -118,6 +118,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         questionId, currentQuestionIndex, totalQuestions 
       } = req.body;
 
+      console.log('📊 Quiz attempt received:', {
+        userId, category, selectedAnswer, correctAnswer, 
+        isCorrect, timeSpent, xpEarned, difficulty
+      });
+
       if (!userId) {
         return res.status(400).json({ error: "User ID is required" });
       }
@@ -140,22 +145,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
         attemptedAt: new Date().toISOString()
       };
 
+      console.log('🎯 Processing quiz attempt:', attempt);
+
       // Store in database
       await dbStorage.recordQuizAttempt(attempt);
 
+      console.log('✅ Quiz attempt recorded successfully');
+
       // Check for new badges after quiz attempt
       const newBadges = await dbStorage.checkAndAwardBadges(userId);
+
+      // Get updated user stats to verify changes
+      const updatedStats = await dbStorage.getUserStats(userId);
+      console.log('📈 Updated user stats:', {
+        totalQuestions: updatedStats?.totalQuestions,
+        correctAnswers: updatedStats?.correctAnswers,
+        totalXp: updatedStats?.totalXp,
+        currentLevel: updatedStats?.currentLevel,
+        averageScore: updatedStats?.averageScore
+      });
 
       res.json({ 
         success: true, 
         attemptId, 
         xpEarned: attempt.xpEarned,
         newBadges: newBadges,
+        updatedStats: updatedStats,
         message: "Quiz attempt recorded successfully" 
       });
     } catch (error) {
-      console.error("Error recording quiz attempt:", error);
-      res.status(500).json({ error: "Failed to record quiz attempt" });
+      console.error("❌ Error recording quiz attempt:", error);
+      res.status(500).json({ error: "Failed to record quiz attempt", details: error.message });
     }
   });
 
