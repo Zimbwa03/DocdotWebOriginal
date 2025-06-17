@@ -71,6 +71,18 @@ export default function Quiz() {
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [questionStartTime, setQuestionStartTime] = useState<number | null>(null);
 
+  // Customize Exam states
+  const [examStep, setExamStep] = useState<'select-type' | 'select-topics' | 'select-count' | 'exam' | 'results'>('select-type');
+  const [examType, setExamType] = useState<'anatomy' | 'physiology' | ''>('');
+  const [selectedTopics, setSelectedTopics] = useState<number[]>([]);
+  const [stemCount, setStemCount] = useState<number>(10);
+  const [currentExam, setCurrentExam] = useState<any>(null);
+  const [currentStemIndex, setCurrentStemIndex] = useState(0);
+  const [examAnswers, setExamAnswers] = useState<Record<string, boolean | null>>({});
+  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [examResults, setExamResults] = useState<any>(null);
+  const [isGeneratingExam, setIsGeneratingExam] = useState(false);
+
   const cadaverTopics = [
     { id: 'head-neck', name: 'Head and Neck', icon: Eye, description: 'Cranial anatomy, facial structures, cervical region' },
     { id: 'upper-limb', name: 'Upper Limb', icon: Hand, description: 'Shoulder, arm, forearm, hand anatomy' },
@@ -107,6 +119,25 @@ export default function Quiz() {
 
   const histologyEmbryologyCategories = [
     'Histology and Embryology'
+  ];
+
+  // Customize Exam topic definitions
+  const anatomyTopics = [
+    { id: 1, name: 'Upper Limb', slug: 'upperlimb' },
+    { id: 2, name: 'Thorax', slug: 'thorax' },
+    { id: 3, name: 'Head and Neck', slug: 'headneck' },
+    { id: 4, name: 'Lower Limb', slug: 'lowerlimb' },
+    { id: 5, name: 'Abdomen', slug: 'abdomen' },
+    { id: 6, name: 'Neuroanatomy', slug: 'neuroanatomy' },
+  ];
+
+  const physiologyTopics = [
+    { id: 7, name: 'Cell Physiology', slug: 'cell' },
+    { id: 8, name: 'Nerve and Muscle', slug: 'nervemuscle' },
+    { id: 9, name: 'Blood', slug: 'blood' },
+    { id: 10, name: 'Endocrine', slug: 'endocrine' },
+    { id: 11, name: 'Cardiovascular System', slug: 'cardiovascular' },
+    { id: 12, name: 'Respiration', slug: 'respiration' },
   ];
 
   // Fetch questions from Supabase based on category
@@ -423,6 +454,60 @@ export default function Quiz() {
     setAiPrompt('');
   };
 
+  // Generate custom exam with AI
+  const generateCustomExam = async (topics: number[], stemCount: number, examType: string) => {
+    setIsGeneratingExam(true);
+    try {
+      const topicNames = topics.map(id => {
+        const topic = [...anatomyTopics, ...physiologyTopics].find(t => t.id === id);
+        return topic?.name || '';
+      }).filter(Boolean);
+
+      const response = await fetch('/api/generate-custom-exam', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          topics: topicNames,
+          stemCount,
+          examType,
+          userId: user?.id
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate exam');
+      }
+
+      const examData = await response.json();
+      setCurrentExam(examData);
+      setTimeRemaining(examData.durationSeconds);
+      setExamStep('exam');
+      
+      toast({
+        title: "Exam Generated Successfully",
+        description: `Your custom ${examType} exam with ${stemCount} stems is ready!`
+      });
+
+    } catch (error) {
+      console.error('Error generating exam:', error);
+      toast({
+        variant: "destructive",
+        title: "Generation Failed",
+        description: "Could not generate your custom exam. Please try again."
+      });
+    } finally {
+      setIsGeneratingExam(false);
+    }
+  };
+
+  // Handle customize exam subject selection
+  const handleCustomizeExamSelection = () => {
+    setSelectedMCQSubject(null);
+    setExamStep('select-type');
+  };
+
   const renderQuizTypeSelection = () => (
     <div className="space-y-6 sm:space-y-8">
       <div className="text-center px-3 sm:px-4">
@@ -598,9 +683,34 @@ export default function Quiz() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <Badge variant="secondary">Microscopic Structure</Badge>
+              <Badge variant="secondary">Specialized</Badge>
+              <Badge variant="secondary">Microscopic</Badge>
               <Badge variant="secondary">Development</Badge>
-              <Badge variant="secondary">Cell Biology</Badge>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Customize Exam - NEW FEATURE */}
+        <Card 
+          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300 relative overflow-hidden"
+          style={{ backgroundColor: '#D1E8F9', border: '2px solid #3399FF' }}
+          onClick={() => setSelectedMCQSubject('customize-exam')}
+        >
+          <div className="absolute top-2 right-2">
+            <Badge style={{ backgroundColor: '#3399FF', color: 'white' }} className="text-xs">NEW!</Badge>
+          </div>
+          <CardHeader className="text-center">
+            <Zap className="w-16 h-16 mx-auto mb-4" style={{ color: '#3399FF' }} />
+            <CardTitle className="text-2xl" style={{ color: '#1C1C1C' }}>Customize Exam!</CardTitle>
+            <CardDescription style={{ color: '#2E2E2E' }}>
+              Create personalized exam with AI-generated stems
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Badge variant="secondary">AI-Generated</Badge>
+              <Badge variant="secondary">Custom Topics</Badge>
+              <Badge variant="secondary">Stem Format</Badge>
             </div>
           </CardContent>
         </Card>
