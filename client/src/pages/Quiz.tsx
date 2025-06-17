@@ -508,6 +508,229 @@ export default function Quiz() {
     setExamStep('select-type');
   };
 
+  // Handle custom exam submission
+  const handleSubmitCustomExam = async () => {
+    if (!currentExam) return;
+
+    const correctAnswers = Object.entries(examAnswers).reduce((count, [stemId, userAnswer]) => {
+      const stem = currentExam.stems.find(s => s.id === stemId);
+      if (stem) {
+        const correctOption = stem.options.find(opt => opt.answer === true);
+        if (correctOption && userAnswer === true) {
+          count++;
+        }
+      }
+      return count;
+    }, 0);
+
+    const totalStems = currentExam.stems.length;
+    const scorePercentage = Math.round((correctAnswers / totalStems) * 100);
+    const timeSpent = currentExam.durationSeconds - timeRemaining;
+
+    const results = {
+      correctAnswers,
+      totalStems,
+      scorePercentage,
+      timeSpent,
+      examId: currentExam.id
+    };
+
+    setExamResults(results);
+    setExamStep('results');
+
+    // Save attempt to database
+    try {
+      await fetch('/api/custom-exam-attempts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          customExamId: currentExam.id,
+          userId: user?.id,
+          answers: examAnswers,
+          correctAnswers,
+          incorrectAnswers: totalStems - correctAnswers,
+          scorePercentage,
+          timeSpentSeconds: timeSpent
+        })
+      });
+    } catch (error) {
+      console.error('Error saving exam attempt:', error);
+    }
+  };
+
+  // Render custom exam
+  const renderCustomExam = () => {
+    if (!currentExam || !currentExam.stems) {
+      return (
+        <div className="text-center py-20">
+          <p style={{ color: '#2E2E2E' }}>Loading exam questions...</p>
+        </div>
+      );
+    }
+
+    const currentStem = currentExam.stems[currentStemIndex];
+    if (!currentStem) {
+      return (
+        <div className="text-center py-20">
+          <p style={{ color: '#2E2E2E' }}>No questions available.</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold" style={{ color: '#1C1C1C' }}>
+              Question {currentStemIndex + 1} of {currentExam.stems.length}
+            </h2>
+            <p style={{ color: '#2E2E2E' }}>{examType === 'anatomy' ? 'Anatomy' : 'Physiology'} Exam</p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center" style={{ color: '#3399FF' }}>
+              <Clock className="w-5 h-5 mr-2" />
+              <span className="font-mono">{Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}</span>
+            </div>
+          </div>
+        </div>
+
+        <Card style={{ backgroundColor: '#F7FAFC' }}>
+          <CardContent className="p-6">
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-4" style={{ color: '#1C1C1C' }}>
+                {currentStem.stemText}
+              </h3>
+              
+              <div className="space-y-3">
+                {currentStem.options?.map((option) => (
+                  <div
+                    key={option.id}
+                    className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                      examAnswers[currentStem.id] === option.answer
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    onClick={() => {
+                      setExamAnswers(prev => ({
+                        ...prev,
+                        [currentStem.id]: option.answer
+                      }));
+                    }}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-4 h-4 rounded-full border-2 ${
+                        examAnswers[currentStem.id] === option.answer
+                          ? 'border-blue-500 bg-blue-500'
+                          : 'border-gray-300'
+                      }`}>
+                        {examAnswers[currentStem.id] === option.answer && (
+                          <div className="w-2 h-2 bg-white rounded-full mx-auto mt-0.5"></div>
+                        )}
+                      </div>
+                      <span className="font-medium" style={{ color: '#1C1C1C' }}>
+                        {option.optionLetter}.
+                      </span>
+                      <span style={{ color: '#2E2E2E' }}>{option.statement}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-between">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  if (currentStemIndex > 0) {
+                    setCurrentStemIndex(currentStemIndex - 1);
+                  }
+                }}
+                disabled={currentStemIndex === 0}
+              >
+                Previous
+              </Button>
+              
+              <Button
+                onClick={() => {
+                  if (currentStemIndex < currentExam.stems.length - 1) {
+                    setCurrentStemIndex(currentStemIndex + 1);
+                  } else {
+                    // Submit exam
+                    handleSubmitCustomExam();
+                  }
+                }}
+                style={{ backgroundColor: '#3399FF' }}
+                disabled={examAnswers[currentStem.id] === undefined}
+              >
+                {currentStemIndex < currentExam.stems.length - 1 ? 'Next' : 'Submit Exam'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
+
+  // Render exam results
+  const renderExamResults = () => {
+    if (!examResults) return null;
+
+    return (
+      <div className="space-y-6">
+        <Card style={{ backgroundColor: '#F7FAFC' }}>
+          <CardContent className="p-8 text-center">
+            <Award className="w-16 h-16 mx-auto mb-6" style={{ color: '#3399FF' }} />
+            <h2 className="text-3xl font-bold mb-4" style={{ color: '#1C1C1C' }}>Exam Complete!</h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className="text-center">
+                <div className="text-3xl font-bold mb-2" style={{ color: '#3399FF' }}>
+                  {examResults.correctAnswers}/{examResults.totalStems}
+                </div>
+                <p className="text-sm" style={{ color: '#2E2E2E' }}>Correct Answers</p>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold mb-2" style={{ color: '#3399FF' }}>
+                  {examResults.scorePercentage}%
+                </div>
+                <p className="text-sm" style={{ color: '#2E2E2E' }}>Score</p>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold mb-2" style={{ color: '#3399FF' }}>
+                  {Math.floor(examResults.timeSpent / 60)}:{(examResults.timeSpent % 60).toString().padStart(2, '0')}
+                </div>
+                <p className="text-sm" style={{ color: '#2E2E2E' }}>Time Taken</p>
+              </div>
+            </div>
+
+            <div className="flex justify-center space-x-4">
+              <Button 
+                onClick={() => {
+                  setExamStep('select-type');
+                  setCurrentExam(null);
+                  setExamAnswers({});
+                  setExamResults(null);
+                  setCurrentStemIndex(0);
+                }}
+                style={{ backgroundColor: '#3399FF' }}
+              >
+                Take Another Exam
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => setSelectedMCQSubject(null)}
+              >
+                Back to MCQ
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
+
   // Render customize exam type selection
   const renderCustomizeExamTypeSelection = () => (
     <div className="space-y-6">
@@ -727,6 +950,8 @@ export default function Quiz() {
       </Card>
     </div>
   );
+
+
 
   const renderQuizTypeSelection = () => (
     <div className="space-y-6 sm:space-y-8">
@@ -1517,6 +1742,8 @@ export default function Quiz() {
           {examStep === 'select-type' && renderCustomizeExamTypeSelection()}
           {examStep === 'select-topics' && renderTopicSelection()}
           {examStep === 'select-count' && renderStemCountSelection()}
+          {examStep === 'exam' && renderCustomExam()}
+          {examStep === 'results' && renderExamResults()}
         </div>
       </div>
     );
