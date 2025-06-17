@@ -942,7 +942,8 @@ export default function Quiz() {
   );
 
   const renderMCQCategories = () => {
-    let categories, subjectTitle;
+    let categories = [];
+    let subjectTitle = 'MCQ Categories';
 
     if (selectedMCQSubject === 'anatomy') {
       categories = anatomyCategories;
@@ -953,6 +954,11 @@ export default function Quiz() {
     } else if (selectedMCQSubject === 'histology-embryology') {
       categories = histologyEmbryologyCategories;
       subjectTitle = 'Histology & Embryology';
+    }
+
+    // If no categories found, return to subject selection
+    if (!categories || categories.length === 0) {
+      return renderMCQSubjects();
     }
 
     return (
