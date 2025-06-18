@@ -1,4 +1,5 @@
-import { pgTable, text, integer, timestamp, boolean, json, unique } from "drizzle-orm/pg-core";
+
+import { pgTable, text, integer, timestamp, boolean, json, unique, real, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -31,7 +32,8 @@ export const categories = pgTable("categories", {
   name: text("name").notNull(),
   description: text("description"),
   icon: text("icon"),
-  order: integer("order").notNull().default(0),
+  orderIndex: integer("order_index").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const topics = pgTable("topics", {
@@ -43,6 +45,7 @@ export const topics = pgTable("topics", {
   type: text("type").notNull(), // gross_anatomy, histology, embryology
   content: text("content"),
   accessTier: text("access_tier").notNull().default("free"), // free, starter, premium
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Custom Exam System - AI Generated Medical Exams
@@ -126,6 +129,7 @@ export const quizzes = pgTable("quizzes", {
   explanation: text("explanation"),
   difficulty: text("difficulty").notNull().default("medium"), // easy, medium, hard
   xpReward: integer("xp_reward").notNull().default(10),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // User quiz attempts with comprehensive tracking
@@ -157,6 +161,13 @@ export const userStats = pgTable("user_stats", {
   averageScore: integer("average_score").default(0), // percentage
   totalStudyTime: integer("total_study_time").default(0), // minutes
   rank: integer("rank").default(0),
+  weeklyXp: integer("weekly_xp").default(0),
+  monthlyXp: integer("monthly_xp").default(0),
+  averageAccuracy: integer("average_accuracy").default(0),
+  level: integer("level").default(1),
+  streak: integer("streak").default(0),
+  totalBadges: integer("total_badges").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
@@ -169,6 +180,7 @@ export const categoryStats = pgTable("category_stats", {
   correctAnswers: integer("correct_answers").default(0),
   accuracy: integer("accuracy").default(0), // percentage
   xpEarned: integer("xp_earned").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Daily study statistics
@@ -181,8 +193,21 @@ export const dailyStats = pgTable("daily_stats", {
   correctAnswers: integer("correct_answers").default(0),
   xpEarned: integer("xp_earned").default(0),
   studyTime: integer("study_time").default(0), // minutes
-  createdAt: timestamp("created_at").defaultNow(),
   topicsStudied: json("topics_studied"), // Array of topic names
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Global leaderboard table
+export const globalLeaderboard = pgTable("global_leaderboard", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: text("user_id").references(() => users.id).unique(),
+  totalXp: integer("total_xp").notNull().default(0),
+  currentLevel: integer("current_level").notNull().default(1),
+  rank: integer("rank").notNull(),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  email: text("email"),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Leaderboard system
@@ -195,6 +220,7 @@ export const leaderboard = pgTable("leaderboard", {
   streak: integer("streak").notNull(),
   fullName: text("full_name"),
   institution: text("institution"),
+  category: text("category"),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
@@ -205,9 +231,12 @@ export const badges = pgTable("badges", {
   description: text("description").notNull(),
   icon: text("icon").notNull(),
   category: text("category").notNull(), // achievement, streak, xp, quiz
-  requirement: json("requirement"), // Conditions to earn the badge
+  tier: text("tier").default("bronze"), // bronze, silver, gold, platinum
+  requirement: integer("requirement").notNull(), // numeric requirement
+  requirementType: text("requirement_type").notNull(), // questions, accuracy, streak, xp
   xpReward: integer("xp_reward").default(0),
-  rarity: text("rarity").default("common"), // common, rare, epic, legendary
+  color: text("color").default("#3B82F6"),
+  isSecret: boolean("is_secret").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -216,51 +245,11 @@ export const userBadges = pgTable("user_badges", {
   userId: text("user_id").references(() => users.id),
   badgeId: integer("badge_id").references(() => badges.id),
   earnedAt: timestamp("earned_at").defaultNow(),
-  progress: json("progress"), // Progress towards earning the badge
-});
-
-// Flashcard system
-export const flashcards = pgTable("flashcards", {
-  id: text("id").primaryKey(),
-  userId: text("user_id").references(() => users.id),
-  topicId: integer("topic_id").references(() => topics.id),
-  front: text("front").notNull(),
-  back: text("back").notNull(),
-  difficulty: integer("difficulty").default(1), // 1-5 scale
-  lastReviewed: timestamp("last_reviewed"),
-  nextReview: timestamp("next_review"),
-  reviewCount: integer("review_count").default(0),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-// Study planner
-export const studyPlans = pgTable("study_plans", {
-  id: text("id").primaryKey(),
-  userId: text("user_id").references(() => users.id),
-  title: text("title").notNull(),
-  description: text("description"),
-  topicIds: json("topic_ids"), // Array of topic IDs
-  startDate: timestamp("start_date"),
-  endDate: timestamp("end_date"),
-  dailyGoal: integer("daily_goal"), // minutes per day
-  progress: integer("progress").default(0), // percentage
-  isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-// Study planner sessions
-export const studyPlannerSessions = pgTable("study_planner_sessions", {
-  id: text("id").primaryKey(),
-  userId: text("user_id").references(() => users.id),
-  planId: text("plan_id").references(() => studyPlans.id),
-  title: text("title").notNull(),
-  description: text("description"),
-  startTime: timestamp("start_time").notNull(),
-  endTime: timestamp("end_time"),
-  duration: integer("duration"), // minutes
-  status: text("status").default("scheduled"), // scheduled, completed, cancelled
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  progress: integer("progress").default(0), // Current progress towards earning
+  requirement: integer("requirement"), // Cached requirement value
+  xpReward: integer("xp_reward").default(0), // Cached XP reward
+  name: text("name"), // Cached badge name
+  description: text("description"), // Cached badge description
 });
 
 // AI tutoring system
@@ -279,61 +268,63 @@ export const aiSessions = pgTable("ai_sessions", {
 export const aiChats = pgTable("ai_chats", {
   id: text("id").primaryKey(),
   sessionId: text("session_id").references(() => aiSessions.id, { onDelete: "cascade" }),
+  userId: text("user_id").references(() => users.id),
   role: text("role").notNull(), // user, assistant, system
   content: text("content").notNull(),
   timestamp: timestamp("timestamp").defaultNow(),
   metadata: json("metadata"),
 });
 
+// Study planner sessions
+export const studyPlannerSessions = pgTable("study_planner_sessions", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: text("user_id").references(() => users.id),
+  title: text("title").notNull(),
+  subject: text("subject"),
+  topic: text("topic"),
+  date: timestamp("date").notNull(),
+  startTime: text("start_time").notNull(),
+  endTime: text("end_time").notNull(),
+  duration: integer("duration").default(60), // minutes
+  notes: text("notes"),
+  status: text("status").default("planned"), // planned, completed, cancelled
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Study groups and collaboration
 export const studyGroups = pgTable("study_groups", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  title: text("title").notNull(),
   description: text("description"),
-  createdBy: text("created_by").references(() => users.id),
-  maxMembers: integer("max_members").default(10),
-  currentMembers: integer("current_members").default(1),
-  topicIds: json("topic_ids"), // Focus areas
-  meetingUrl: text("meeting_url"),
-  meetingTime: timestamp("meeting_time"),
-  timezone: text("timezone"),
-  isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").defaultNow(),
+  creator_id: text("creator_id").references(() => users.id),
+  meeting_link: text("meeting_link"),
+  meeting_type: text("meeting_type"), // 'zoom', 'meet'
+  scheduled_time: timestamp("scheduled_time"),
+  duration: integer("duration").default(60), // minutes
+  max_members: integer("max_members").default(10),
+  current_members: integer("current_members").default(1),
+  category: text("category"),
+  is_active: boolean("is_active").default(false),
+  created_at: timestamp("created_at").defaultNow(),
 });
 
 export const studyGroupMembers = pgTable("study_group_members", {
-  id: text("id").primaryKey(),
-  groupId: text("group_id").references(() => studyGroups.id, { onDelete: "cascade" }),
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  groupId: integer("group_id").references(() => studyGroups.id, { onDelete: "cascade" }),
   userId: text("user_id").references(() => users.id),
-  role: text("role").default("member"), // member, moderator, admin
   joinedAt: timestamp("joined_at").defaultNow(),
-  lastActive: timestamp("last_active"),
   hasJoinedMeeting: boolean("has_joined_meeting").default(false),
   reminderSent: boolean("reminder_sent").default(false),
 });
 
 export const meetingReminders = pgTable("meeting_reminders", {
-  id: text("id").primaryKey(),
-  groupId: text("group_id").references(() => studyGroups.id, { onDelete: "cascade" }),
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  groupId: integer("group_id").references(() => studyGroups.id, { onDelete: "cascade" }),
   userId: text("user_id").references(() => users.id),
-  meetingTime: timestamp("meeting_time").notNull(),
-  reminderType: text("reminder_type").notNull(), // email, push, sms
-  sentAt: timestamp("sent_at"),
+  reminderTime: timestamp("reminder_time").notNull(),
   emailSent: boolean("email_sent").default(false),
   createdAt: timestamp("created_at").defaultNow(),
-});
-
-// Analytics and performance insights
-export const userAnalytics = pgTable("user_analytics", {
-  id: text("id").primaryKey(),
-  userId: text("user_id").references(() => users.id),
-  weeklyXp: json("weekly_xp"), // Last 7 days XP
-  monthlyProgress: json("monthly_progress"), // Progress by category
-  studyPatterns: json("study_patterns"), // Peak hours, frequency
-  weakAreas: json("weak_areas"), // Topics needing improvement
-  strengths: json("strengths"), // Top performing areas
-  recommendations: json("recommendations"), // AI-generated study suggestions
-  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Insert schemas
@@ -348,15 +339,12 @@ export const insertDailyStatsSchema = createInsertSchema(dailyStats).omit({ id: 
 export const insertLeaderboardSchema = createInsertSchema(leaderboard).omit({ id: true, updatedAt: true });
 export const insertBadgeSchema = createInsertSchema(badges).omit({ id: true, createdAt: true });
 export const insertUserBadgeSchema = createInsertSchema(userBadges).omit({ id: true, earnedAt: true });
-export const insertFlashcardSchema = createInsertSchema(flashcards);
-export const insertStudyPlanSchema = createInsertSchema(studyPlans);
 export const insertAiSessionSchema = createInsertSchema(aiSessions);
 export const insertAiChatSchema = createInsertSchema(aiChats);
 export const insertStudyPlannerSessionSchema = createInsertSchema(studyPlannerSessions).omit({ id: true, createdAt: true, updatedAt: true });
-export const insertStudyGroupSchema = createInsertSchema(studyGroups).omit({ id: true, createdAt: true, currentMembers: true, isActive: true });
+export const insertStudyGroupSchema = createInsertSchema(studyGroups).omit({ id: true, created_at: true, current_members: true, is_active: true });
 export const insertStudyGroupMemberSchema = createInsertSchema(studyGroupMembers).omit({ id: true, joinedAt: true, hasJoinedMeeting: true, reminderSent: true });
 export const insertMeetingReminderSchema = createInsertSchema(meetingReminders).omit({ id: true, createdAt: true, emailSent: true });
-export const insertUserAnalyticsSchema = createInsertSchema(userAnalytics).omit({ id: true, updatedAt: true });
 
 // Custom exam schemas
 export const insertCustomExamSchema = createInsertSchema(customExams).omit({ id: true, createdAt: true, updatedAt: true });
@@ -392,12 +380,11 @@ export type UserStats = typeof userStats.$inferSelect;
 export type CategoryStats = typeof categoryStats.$inferSelect;
 export type DailyStats = typeof dailyStats.$inferSelect;
 export type LeaderboardEntry = typeof leaderboard.$inferSelect;
-export type Flashcard = typeof flashcards.$inferSelect;
-export type StudyPlan = typeof studyPlans.$inferSelect;
-export type StudyPlannerSession = typeof studyPlannerSessions.$inferSelect;
 export type AiSession = typeof aiSessions.$inferSelect;
 export type AiChat = typeof aiChats.$inferSelect;
 export type StudyGroup = typeof studyGroups.$inferSelect;
 export type StudyGroupMember = typeof studyGroupMembers.$inferSelect;
 export type MeetingReminder = typeof meetingReminders.$inferSelect;
-export type UserAnalytics = typeof userAnalytics.$inferSelect;
+export type StudyPlannerSession = typeof studyPlannerSessions.$inferSelect;
+export type Badge = typeof badges.$inferSelect;
+export type UserBadge = typeof userBadges.$inferSelect;

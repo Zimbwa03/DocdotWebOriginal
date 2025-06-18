@@ -142,7 +142,7 @@ export class DatabaseStorage {
   async recordQuizAttempt(attemptData: any): Promise<QuizAttempt> {
     try {
       console.log('🔍 Raw attempt data received:', attemptData);
-      
+
       const insertData = {
         userId: attemptData.userId!,
         quizId: attemptData.quizId && typeof attemptData.quizId === 'number' ? attemptData.quizId : null,
@@ -155,7 +155,7 @@ export class DatabaseStorage {
         difficulty: attemptData.difficulty || 'medium',
         xpEarned: attemptData.xpEarned || 0
       };
-      
+
       console.log('📝 Mapped insert data:', insertData);
 
       const result = await db.insert(quizAttempts).values(insertData).returning();
@@ -176,24 +176,24 @@ export class DatabaseStorage {
   async getUserStats(userId: string): Promise<UserStats | undefined> {
     try {
       const result = await db.select().from(userStats).where(eq(userStats.userId, userId)).limit(1);
-      
+
       if (result[0]) {
         // Calculate today's study time
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        
+
         const todayStats = await db.select().from(dailyStats)
           .where(and(eq(dailyStats.userId, userId), gte(dailyStats.date, today)))
           .limit(1);
-        
+
         const studyTimeToday = todayStats.length > 0 ? Math.round((todayStats[0].studyTime || 0) / 60) : 0;
-        
+
         return {
           ...result[0],
           studyTimeToday
         };
       }
-      
+
       return result[0];
     } catch (error) {
       console.error('Error getting user stats:', error);
@@ -209,11 +209,11 @@ export class DatabaseStorage {
         const newTotalQuestions = existing.totalQuestions + 1;
         const newCorrectAnswers = existing.correctAnswers + (isCorrect ? 1 : 0);
         const newAverageScore = Math.round((newCorrectAnswers / newTotalQuestions) * 100);
-        
+
         // Calculate streak: increment if correct, reset if wrong
         const newStreak = isCorrect ? existing.currentStreak + 1 : 0;
         const newLongestStreak = Math.max(existing.longestStreak, newStreak);
-        
+
         const newTotalXp = existing.totalXp + (xpEarned || 0);
         const newLevel = Math.floor(newTotalXp / 1000) + 1;
 
@@ -260,7 +260,7 @@ export class DatabaseStorage {
         totalXp: xpEarned || 0,
         currentLevel: Math.floor((xpEarned || 0) / 1000) + 1
       };
-      
+
       console.log(`Updated stats for user ${userId}: ${finalStats.totalQuestions} questions, ${finalStats.correctAnswers} correct, ${finalStats.averageScore}% accuracy, ${finalStats.totalXp} XP, Level ${finalStats.currentLevel}, Streak ${finalStats.currentStreak}`);
     } catch (error) {
       console.error('Error updating user stats:', error);
@@ -337,13 +337,13 @@ export class DatabaseStorage {
     }
   }
 
+  // Ensure user has stats entry
   async ensureUserHasStats(userId: string): Promise<void> {
     try {
-      const existingStats = await this.getUserStats(userId);
+      const existingStats = await db.select().from(userStats)
+        .where(eq(userStats.userId, userId));
 
-      if (!existingStats) {
-        console.log(`Creating initial stats for new user: ${userId}`);
-
+      if (existingStats.length === 0) {
         await db.insert(userStats).values({
           userId,
           totalQuestions: 0,
@@ -351,24 +351,41 @@ export class DatabaseStorage {
           averageScore: 0,
           currentStreak: 0,
           longestStreak: 0,
-          totalXP: 0,
+          totalXp: 0,
           currentLevel: 1,
           totalStudyTime: 0,
-          rank: 0
+          rank: 0,
+          weeklyXp: 0,
+          monthlyXp: 0,
+          averageAccuracy: 0,
+          level: 1,
+          streak: 0,
+          totalBadges: 0
         });
+        console.log(`Created stats entry for user: ${userId}`);
       } else {
-        // Recalculate stats from actual quiz data to ensure accuracy
-        await this.recalculateUserStats(userId);
+        // Update existing stats to ensure all fields are present
+        await db.update(userStats)
+          .set({
+            weeklyXp: existingStats[0].weeklyXp || 0,
+            monthlyXp: existingStats[0].monthlyXp || 0,
+            averageAccuracy: existingStats[0].averageAccuracy || existingStats[0].averageScore || 0,
+            level: existingStats[0].level || existingStats[0].currentLevel || 1,
+            streak: existingStats[0].streak || existingStats[0].currentStreak || 0,
+            totalBadges: existingStats[0].totalBadges || 0,
+            updatedAt: new Date()
+          })
+          .where(eq(userStats.userId, userId));
       }
     } catch (error) {
-      console.error('Error ensuring user has stats:', error);
+      console.error(`Error ensuring user stats for ${userId}:`, error);
     }
   }
 
   async recalculateUserStats(userId: string): Promise<void> {
     try {
       console.log(`Recalculating stats for user ${userId} from quiz attempts...`);
-      
+
       // Get all quiz attempts for this user
       const attempts = await db.select().from(quizAttempts)
         .where(eq(quizAttempts.userId, userId))
@@ -417,7 +434,7 @@ export class DatabaseStorage {
           averageScore,
           currentStreak,
           longestStreak,
-          totalXP,
+          totalXp,
           currentLevel,
           totalStudyTime,
           updatedAt: new Date()
@@ -501,7 +518,7 @@ export class DatabaseStorage {
   async getLeaderboard(limit: number = 50, timeFrame: string = 'all-time', category?: string) {
     try {
       console.log(`Getting leaderboard: limit=${limit}, timeFrame=${timeFrame}, category=${category}`);
-      
+
       const query = db
         .select({
           id: userStats.id,
@@ -527,9 +544,9 @@ export class DatabaseStorage {
         .limit(limit);
 
       const results = await query;
-      
+
       console.log(`Leaderboard query returned ${results.length} entries`);
-      
+
       // Format for frontend
       return results.map((entry, index) => ({
         id: entry.id,
@@ -558,7 +575,7 @@ export class DatabaseStorage {
   async getUserRank(userId: string, timeFrame: string = 'all-time', category?: string) {
     try {
       console.log(`Getting user rank for ${userId}`);
-      
+
       const userStatsData = await this.getUserStats(userId);
       if (!userStatsData) {
         console.log(`No stats found for user ${userId}`);
@@ -595,295 +612,98 @@ export class DatabaseStorage {
     }
   }
 
+  // Update global leaderboard with actual user data
   async updateGlobalLeaderboard(): Promise<void> {
     try {
-      console.log('Updating global leaderboard...');
-      
-      // Get all users with stats ordered by XP
-      const allUsers = await db
-        .select({
-          userId: userStats.userId,
-          totalXp: userStats.totalXp,
-          currentLevel: userStats.currentLevel,
-          averageScore: userStats.averageScore
-        })
-        .from(userStats)
-        .where(gt(userStats.totalXp, 0))
-        .orderBy(desc(userStats.totalXp), desc(userStats.averageScore));
+      // Calculate rankings based on total XP and level
+      const rankedUsers = await db.execute(sql`
+        WITH ranked_stats AS (
+          SELECT 
+            us.user_id,
+            COALESCE(us.total_xp, 0) as total_xp,
+            COALESCE(us.current_level, 1) as current_level,
+            COALESCE(us.current_streak, 0) as current_streak,
+            u.first_name,
+            u.last_name,
+            u.email,
+            ROW_NUMBER() OVER (ORDER BY COALESCE(us.total_xp, 0) DESC, COALESCE(us.current_level, 1) DESC) as new_rank
+          FROM user_stats us
+          LEFT JOIN users u ON us.user_id = u.id
+          WHERE u.id IS NOT NULL
+        )
+        SELECT * FROM ranked_stats
+        ORDER BY new_rank
+        LIMIT 100
+      `);
 
-      console.log(`Found ${allUsers.length} users to rank`);
+      // Update global_leaderboard table
+      await db.execute(sql`DELETE FROM global_leaderboard`);
 
-      // Update ranks in userStats table
-      for (let i = 0; i < allUsers.length; i++) {
-        await db.update(userStats)
-          .set({ rank: i + 1 })
-          .where(eq(userStats.userId, allUsers[i].userId));
+      if (rankedUsers.length > 0) {
+        for (const user of rankedUsers) {
+          await db.execute(sql`
+            INSERT INTO global_leaderboard (user_id, total_xp, current_level, rank, first_name, last_name, email)
+            VALUES (${user.user_id}, ${user.total_xp}, ${user.current_level}, ${user.new_rank}, ${user.first_name}, ${user.last_name}, ${user.email})
+            ON CONFLICT (user_id) DO UPDATE SET
+              total_xp = EXCLUDED.total_xp,
+              current_level = EXCLUDED.current_level,
+              rank = EXCLUDED.rank,
+              first_name = EXCLUDED.first_name,
+              last_name = EXCLUDED.last_name,
+              email = EXCLUDED.email,
+              updated_at = NOW()
+          `);
+        }
       }
 
-      // Update global leaderboard table
-      await db.delete(globalLeaderboard); // Clear existing entries
-
-      if (allUsers.length > 0) {
-        const leaderboardEntries = allUsers.map((user, index) => ({
-          userId: user.userId,
-          totalXp: user.totalXp,
-          currentLevel: user.currentLevel,
-          rank: index + 1,
-          updatedAt: new Date()
-        }));
-
-        await db.insert(globalLeaderboard).values(leaderboardEntries);
-      }
-
-      console.log(`Global leaderboard updated with ${allUsers.length} entries`);
+      console.log(`Updated global leaderboard with ${rankedUsers.length} entries`);
     } catch (error) {
       console.error('Error updating global leaderboard:', error);
     }
   }
 
-  // AI session management
-  async createAiSession(userId: string, toolType: string, title: string): Promise<any> {
-    try {
-      const sessionId = crypto.randomUUID();
-      const result = await db.insert(aiSessions).values({
-        id: sessionId,
-        userId,
-        toolType,
-        title,
-        totalMessages: 0,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }).returning();
-
-      return result[0];
-    } catch (error) {
-      console.error('Error creating AI session:', error);
-      throw error;
-    }
-  }
-
-  async addAiMessage(sessionId: string, userId: string, role: string, content: string, toolType: string): Promise<any> {
-    try {
-      const result = await db.insert(aiChats).values({
-        sessionId,
-        userId,
-        role,
-        content,
-        toolType,
-        createdAt: new Date()
-      }).returning();
-
-      // Update session
-      await db.update(aiSessions)
-        .set({ 
-          lastMessage: content.substring(0, 100),
-          updatedAt: new Date() 
-        })
-        .where(eq(aiSessions.id, sessionId));
-
-      return result[0];
-    } catch (error) {
-      console.error('Error adding AI message:', error);
-      throw error;
-    }
-  }
-
-  async getAiSessions(userId: string, limit: number = 10): Promise<any[]> {
-    try {
-      return await db.select()
-        .from(aiSessions)
-        .where(eq(aiSessions.userId, userId))
-        .orderBy(desc(aiSessions.updatedAt))
-        .limit(limit);
-    } catch (error) {
-      console.error('Error getting AI sessions:', error);
-      return [];
-    }
-  }
-
-  async getAiMessages(sessionId: string): Promise<any[]> {
-    try {
-      return await db.select()
-        .from(aiChats)
-        .where(eq(aiChats.sessionId, sessionId))
-        .orderBy(aiChats.createdAt);
-    } catch (error) {
-      console.error('Error getting AI messages:', error);
-      return [];
-    }
-  }
-
-  // Badge System Implementation
-  async initializeBadges(): Promise<void> {
-    try {
-      console.log('Initializing badge system...');
-      
-      // Check if badges already exist
-      const existingBadges = await db.select().from(badges).limit(1);
-      
-      if (existingBadges.length === 0) {
-        console.log('Creating default badges...');
-        
-        const defaultBadges = [
-          {
-            name: "First Steps",
-            description: "Complete your first quiz",
-            icon: "Trophy",
-            category: "performance",
-            tier: "bronze",
-            requirement: 1,
-            requirementType: "questions",
-            xpReward: 50,
-            color: "#CD7F32",
-            isSecret: false
-          },
-          {
-            name: "Quick Learner", 
-            description: "Answer 10 questions correctly",
-            icon: "Zap",
-            category: "performance",
-            tier: "bronze", 
-            requirement: 10,
-            requirementType: "questions",
-            xpReward: 100,
-            color: "#CD7F32",
-            isSecret: false
-          },
-          {
-            name: "Streak Master",
-            description: "Maintain a 7-day study streak",
-            icon: "Flame",
-            category: "streak",
-            tier: "silver",
-            requirement: 7,
-            requirementType: "streak",
-            xpReward: 200,
-            color: "#C0C0C0",
-            isSecret: false
-          },
-          {
-            name: "Accuracy Expert",
-            description: "Achieve 90% accuracy in 50+ questions",
-            icon: "Target", 
-            category: "mastery",
-            tier: "gold",
-            requirement: 90,
-            requirementType: "accuracy",
-            xpReward: 500,
-            color: "#FFD700",
-            isSecret: false
-          },
-          {
-            name: "Study Marathon",
-            description: "Study for 10 hours total",
-            icon: "Clock",
-            category: "time",
-            tier: "silver",
-            requirement: 600, // 10 hours in minutes
-            requirementType: "time",
-            xpReward: 300,
-            color: "#C0C0C0",
-            isSecret: false
-          },
-          {
-            name: "Knowledge Seeker",
-            description: "Earn 1000 XP",
-            icon: "Star",
-            category: "performance",
-            tier: "gold",
-            requirement: 1000,
-            requirementType: "xp",
-            xpReward: 1000,
-            color: "#FFD700",
-            isSecret: false
-          },
-          {
-            name: "Perfect Score",
-            description: "Get 100% on any quiz",
-            icon: "Award",
-            category: "mastery",
-            tier: "gold",
-            requirement: 100,
-            requirementType: "perfect",
-            xpReward: 250,
-            color: "#FFD700",
-            isSecret: false
-          },
-          {
-            name: "Persistent Learner",
-            description: "Answer 100 questions",
-            icon: "BookOpen",
-            category: "performance",
-            tier: "silver",
-            requirement: 100,
-            requirementType: "questions",
-            xpReward: 300,
-            color: "#C0C0C0",
-            isSecret: false
-          }
-        ];
-
-        await db.insert(badges).values(defaultBadges);
-        console.log(`Created ${defaultBadges.length} default badges`);
-      }
-      
-      console.log('Badge system initialized successfully');
-    } catch (error) {
-      console.error('Error initializing badges:', error);
-      throw error;
-    }
-  }
-
+  // Check and award badges to a user
   async checkAndAwardBadges(userId: string): Promise<any[]> {
     try {
-      // Ensure badges are initialized
-      await this.initializeBadges();
-      
-      const userStatsData = await this.getUserStats(userId);
-      if (!userStatsData) {
-        await this.ensureUserHasStats(userId);
-        return [];
-      }
+      const userStats = await this.getUserStats(userId);
+      if (!userStats) return [];
 
-      const allBadges = await db.select().from(badges);
-      const earnedBadges = await db.select().from(userBadges).where(eq(userBadges.userId, userId));
-      const earnedBadgeIds = new Set(earnedBadges.map(b => b.badgeId));
-      
+      const availableBadges = await db.select().from(badges);
+      const earnedBadges = await db.select().from(userBadges)
+        .where(eq(userBadges.userId, userId));
+
+      const earnedBadgeIds = new Set(earnedBadges.map(ub => ub.badgeId));
       const newBadges = [];
 
-      for (const badge of allBadges) {
-        if (earnedBadgeIds.has(badge.id)) continue; // Already earned
+      for (const badge of availableBadges) {
+        if (earnedBadgeIds.has(badge.id)) continue;
 
-        const progress = await this.calculateBadgeProgress(userId, badge, userStatsData);
-        
-        if (progress >= badge.requirement) {
-          console.log(`Awarding badge "${badge.name}" to user ${userId}`);
-          
-          // Award the badge
-          await db.insert(userBadges).values({
-            userId,
-            badgeId: badge.id,
-            progress: badge.requirement,
-            earnedAt: new Date()
-          });
+        let shouldAward = false;
+        const requirementValue = badge.requirement || 1;
 
-          // Add XP reward
-          if (badge.xpReward > 0) {
-            await db.update(userStats)
-              .set({ 
-                totalXp: userStatsData.totalXp + badge.xpReward,
-                currentLevel: Math.floor((userStatsData.totalXp + badge.xpReward) / 1000) + 1,
-                updatedAt: new Date()
-              })
-              .where(eq(userStats.userId, userId));
-          }
+        switch (badge.requirementType) {
+          case 'questions':
+            shouldAward = (userStats.totalQuestions || 0) >= requirementValue;
+            break;
+          case 'accuracy':
+            shouldAward = (userStats.averageScore || 0) >= requirementValue;
+            break;
+          case 'streak':
+            shouldAward = (userStats.currentStreak || 0) >= requirementValue;
+            break;
+          case 'xp':
+            shouldAward = (userStats.totalXp || 0) >= requirementValue;
+            break;
+          default:
+            // Default to questions requirement
+            shouldAward = (userStats.totalQuestions || 0) >= requirementValue;
+            break;
+        }
 
+        if (shouldAward) {
+          await this.awardBadge(userId, badge.id);
           newBadges.push(badge);
         }
-      }
-
-      if (newBadges.length > 0) {
-        console.log(`Awarded ${newBadges.length} new badges to user ${userId}`);
       }
 
       return newBadges;
@@ -898,28 +718,28 @@ export class DatabaseStorage {
       if (!userStatsData) {
         userStatsData = await this.getUserStats(userId);
       }
-      
+
       if (!userStatsData) return 0;
 
       switch (badge.requirementType) {
         case 'questions':
           return userStatsData.totalQuestions;
-          
+
         case 'accuracy':
           if (userStatsData.totalQuestions >= 50) {
             return userStatsData.averageScore;
           }
           return 0;
-          
+
         case 'streak':
           return userStatsData.currentStreak;
-          
+
         case 'time':
           return userStatsData.totalStudyTime;
-          
+
         case 'xp':
           return userStatsData.totalXP;
-          
+
         case 'perfect':
           // Check for perfect scores in quiz attempts
           const perfectScores = await db.select({ count: sql<number>`count(*)` })
@@ -928,11 +748,11 @@ export class DatabaseStorage {
               eq(quizAttempts.userId, userId),
               eq(quizAttempts.isCorrect, true)
             ));
-          
+
           // Simple check: if they have any correct answers, consider it progress toward perfect
           const correctCount = parseInt(perfectScores[0]?.count as string) || 0;
           return correctCount > 0 ? 100 : 0;
-          
+
         default:
           return 0;
       }
@@ -946,7 +766,7 @@ export class DatabaseStorage {
     try {
       // Ensure badges are initialized
       await this.initializeBadges();
-      
+
       const allBadges = await db.select().from(badges);
       const earnedBadges = await db.select({
         badgeId: userBadges.badgeId,
@@ -965,7 +785,7 @@ export class DatabaseStorage {
       .where(eq(userBadges.userId, userId));
 
       const earnedBadgeIds = new Set(earnedBadges.map(b => b.badgeId));
-      
+
       const userStatsData = await this.getUserStats(userId);
 
       const availableBadges = await Promise.all(
