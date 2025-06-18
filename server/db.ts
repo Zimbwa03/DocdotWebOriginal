@@ -270,7 +270,7 @@ export class DatabaseStorage {
   async updateCategoryStats(userId: string, category: string, isCorrect: boolean, timeSpent: number): Promise<void> {
     try {
       const existing = await db.select().from(categoryStats)
-        .where(and(eq(categoryStats.userId, userId), eq(categoryStats.category, category)))
+        .where(eq(categoryStats.userId, userId))
         .limit(1);
 
       if (existing.length > 0) {
@@ -290,7 +290,7 @@ export class DatabaseStorage {
             mastery: newMastery,
             lastAttempted: new Date()
           })
-          .where(and(eq(categoryStats.userId, userId), eq(categoryStats.category, category)));
+          .where(eq(categoryStats.userId, userId));
       } else {
         await db.insert(categoryStats).values({
           userId,
@@ -313,8 +313,9 @@ export class DatabaseStorage {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
+      const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
       const existing = await db.select().from(dailyStats)
-        .where(and(eq(dailyStats.userId, userId), gte(dailyStats.date, today)))
+        .where(and(eq(dailyStats.userId, userId), eq(dailyStats.date, todayStr)))
         .limit(1);
 
       if (existing.length > 0) {
@@ -334,7 +335,7 @@ export class DatabaseStorage {
       } else {
         await db.insert(dailyStats).values({
           userId,
-          date: today,
+          date: todayStr,
           questionsAnswered: 1,
           correctAnswers: isCorrect ? 1 : 0,
           studyTime: 0,
