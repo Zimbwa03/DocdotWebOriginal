@@ -662,6 +662,96 @@ export class DatabaseStorage {
     }
   }
 
+  // Initialize badges system
+  async initializeBadges(): Promise<void> {
+    try {
+      // Check if badges already exist
+      const existingBadges = await db.select().from(badges).limit(1);
+      if (existingBadges.length > 0) {
+        console.log('Badges already initialized');
+        return;
+      }
+
+      // Insert default badges
+      const defaultBadges = [
+        {
+          name: 'First Steps',
+          description: 'Complete your first quiz',
+          icon: 'Trophy',
+          category: 'performance',
+          tier: 'bronze',
+          requirement: 1,
+          requirementType: 'questions',
+          xpReward: 50,
+          color: '#CD7F32'
+        },
+        {
+          name: 'Quick Learner',
+          description: 'Answer 10 questions correctly',
+          icon: 'Zap',
+          category: 'performance',
+          tier: 'bronze',
+          requirement: 10,
+          requirementType: 'questions',
+          xpReward: 100,
+          color: '#CD7F32'
+        },
+        {
+          name: 'Streak Master',
+          description: 'Maintain a 7-day study streak',
+          icon: 'Flame',
+          category: 'streak',
+          tier: 'silver',
+          requirement: 7,
+          requirementType: 'streak',
+          xpReward: 200,
+          color: '#C0C0C0'
+        },
+        {
+          name: 'Accuracy Expert',
+          description: 'Achieve 90% accuracy in 50+ questions',
+          icon: 'Target',
+          category: 'mastery',
+          tier: 'gold',
+          requirement: 90,
+          requirementType: 'accuracy',
+          xpReward: 500,
+          color: '#FFD700'
+        },
+        {
+          name: 'Study Marathon',
+          description: 'Study for 10 hours total',
+          icon: 'Clock',
+          category: 'time',
+          tier: 'silver',
+          requirement: 600,
+          requirementType: 'time',
+          xpReward: 300,
+          color: '#C0C0C0'
+        },
+        {
+          name: 'Knowledge Seeker',
+          description: 'Earn 1000 XP',
+          icon: 'Star',
+          category: 'performance',
+          tier: 'gold',
+          requirement: 1000,
+          requirementType: 'xp',
+          xpReward: 1000,
+          color: '#FFD700'
+        }
+      ];
+
+      for (const badge of defaultBadges) {
+        await db.insert(badges).values(badge);
+      }
+
+      console.log('Badges system initialized successfully');
+    } catch (error) {
+      console.error('Error initializing badges:', error);
+    }
+  }
+
   // Check and award badges to a user
   async checkAndAwardBadges(userId: string): Promise<any[]> {
     try {
