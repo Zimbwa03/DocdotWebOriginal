@@ -99,12 +99,12 @@ export default function Badges() {
     return categoryIcons[category as keyof typeof categoryIcons] || Trophy;
   };
 
-  const renderBadge = (badge: BadgeData, earned = false) => {
+  const renderBadge = (badge: BadgeData, earned = false, keyOverride?: string) => {
     const IconComponent = getIconComponent(badge.icon);
     const isLocked = badge.isSecret && !earned;
 
     return (
-      <Card key={badge.id} className={`relative overflow-hidden transition-all duration-300 ${
+      <Card key={keyOverride || badge.id || badge.badgeId} className={`relative overflow-hidden transition-all duration-300 ${
         earned ? 'bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200' : 'hover:shadow-md'
       }`}>
         {earned && (
@@ -199,7 +199,7 @@ export default function Badges() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {Array.from({ length: 8 }).map((_, i) => (
-            <Card key={i} className="animate-pulse">
+            <Card key={`skeleton-${i}`} className="animate-pulse">
               <CardHeader>
                 <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-3"></div>
                 <div className="h-4 bg-gray-200 rounded mx-auto w-3/4"></div>
@@ -277,7 +277,7 @@ export default function Badges() {
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {earnedBadges.map((badge, index) => (
-                  <Card key={badge.badgeId || `earned-${index}`} className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200 hover:shadow-lg transition-shadow">
+                  <Card key={badge.id || badge.badgeId || `earned-${index}`} className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200 hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2 text-yellow-800">
@@ -314,7 +314,7 @@ export default function Badges() {
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {availableBadges.map((badge, index) => (
-                  <Card key={badge.id || `available-${index}`} className="bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 hover:shadow-lg transition-shadow">
+                  <Card key={badge.id || badge.badgeId || `available-${index}`} className="bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2 text-gray-800">
@@ -369,7 +369,7 @@ export default function Badges() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {badges.map(badge => renderBadge(badge, badge.earned))}
+                {badges.map((badge, index) => renderBadge(badge, badge.earned, `${category}-${badge.id || badge.badgeId || index}`))}
               </div>
 
               {badges.length === 0 && (
