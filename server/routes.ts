@@ -165,12 +165,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         averageScore: updatedStats?.averageScore
       });
 
+      // Refresh analytics data after quiz attempt
+      try {
+        await dbStorage.updateGlobalLeaderboard();
+        console.log('📊 Analytics refreshed after quiz attempt');
+      } catch (analyticsError) {
+        console.error('Error refreshing analytics:', analyticsError);
+      }
+
       res.json({ 
         success: true, 
         attemptId, 
         xpEarned: attempt.xpEarned,
         newBadges: newBadges,
         updatedStats: updatedStats,
+        analyticsRefreshed: true,
         message: "Quiz attempt recorded successfully" 
       });
     } catch (error) {

@@ -243,24 +243,33 @@ export default function Quiz() {
         });
 
         if (response.ok) {
-          const result = await response.json();
-          console.log('Quiz attempt recorded with XP:', result.xpEarned);
+        const result = await response.json();
+        console.log('✅ Quiz attempt recorded:', result);
 
-          // Force immediate refresh of all analytics data
-          await queryClient.invalidateQueries({ queryKey: ['/api/user-stats'] });
-          await queryClient.refetchQueries({ queryKey: ['/api/user-stats', user.id] });
-
-          // Also refresh other related queries
-          queryClient.invalidateQueries({ queryKey: ['/api/quiz-attempts'] });
-          queryClient.invalidateQueries({ queryKey: ['/api/category-stats'] });
-          queryClient.invalidateQueries({ queryKey: ['/api/daily-stats'] });
-          queryClient.invalidateQueries({ queryKey: ['/api/leaderboard'] });
-
-        } else {
-          console.error('Failed to record quiz attempt:', response.status);
-          const errorText = await response.text();
-          console.error('Error details:', errorText);
+        if (result.newBadges && result.newBadges.length > 0) {
+          console.log('🏆 New badges earned:', result.newBadges);
+          // You could show a badge notification here
         }
+
+        if (result.updatedStats) {
+          console.log('📊 Updated stats:', result.updatedStats);
+          // Stats have been updated in the database
+        }
+
+        if (result.analyticsRefreshed) {
+          console.log('📈 Analytics data refreshed successfully');
+        }
+
+        // Trigger a small delay to ensure database updates are complete
+        setTimeout(() => {
+          // Force refresh of any cached analytics data
+          window.dispatchEvent(new CustomEvent('analytics-update'));
+        }, 1000);
+      } else {
+        console.error('Failed to record quiz attempt:', response.status);
+        const errorData = await response.json();
+        console.error('Error details:', errorData);
+      }
       } catch (error) {
         console.error('Error recording quiz attempt:', error);
       }
@@ -483,19 +492,19 @@ export default function Quiz() {
 
       const examData = await response.json();
       setCurrentExam(examData);
-      
+
       // Set timer: 2 minutes per stem as specified
       const totalTimeInSeconds = stemCount * 2 * 60;
       setTimeRemaining(totalTimeInSeconds);
       setExamStep('exam');
-      
+
       // Start the countdown timer
       startExamTimer(totalTimeInSeconds);
-      
+
       const sources = examType === 'anatomy' 
         ? "Snell's Clinical Anatomy, Gray's Anatomy, Keith Moore's Clinically Oriented Anatomy"
         : "Guyton & Hall Medical Physiology, Ganong's Review, Boron & Boulpaep";
-      
+
       toast({
         title: "Exam Generated Successfully",
         description: `Your custom ${examType} exam with ${stemCount} stems from ${sources} is ready! Time limit: ${stemCount * 2} minutes`
@@ -668,13 +677,13 @@ export default function Quiz() {
                 <h2 className="text-2xl font-bold text-black mb-8 leading-relaxed">
                   {currentStemIndex + 1}. {currentStem.stemText}
                 </h2>
-                
+
                 {/* True/False Options in Professional Layout */}
                 <div className="space-y-6">
                   {currentStem.options?.map((option: any) => {
                     const optionKey = `${currentStem.id}_${option.id}`;
                     const userAnswer = examAnswers[optionKey];
-                    
+
                     return (
                       <div key={option.id} className="flex items-center space-x-6 p-4 border-l-4 border-gray-300 bg-gray-50">
                         {/* True/False Buttons */}
@@ -714,7 +723,7 @@ export default function Quiz() {
                             F
                           </Button>
                         </div>
-                        
+
                         {/* Option Statement */}
                         <div className="flex-1">
                           <span className="text-xl font-bold text-black mr-4">
@@ -752,7 +761,7 @@ export default function Quiz() {
                   <ArrowLeft className="w-5 h-5 mr-2" />
                   Previous Question
                 </Button>
-                
+
                 <div className="text-center">
                   <div className="flex space-x-4 mb-2">
                     <div className="text-center">
@@ -769,7 +778,7 @@ export default function Quiz() {
                     className="w-64 h-3"
                   />
                 </div>
-                
+
                 <Button
                   size="lg"
                   onClick={() => {
@@ -819,13 +828,13 @@ export default function Quiz() {
               <div className="text-center mb-10">
                 <Award className="w-20 h-20 mx-auto mb-6 text-yellow-500" />
                 <h2 className="text-4xl font-bold text-black mb-4">Examination Complete!</h2>
-                
+
                 {/* Main Score Display */}
                 <div className="bg-blue-50 border-2 border-blue-200 p-8 rounded-lg mb-8">
                   <div className="text-6xl font-bold text-blue-600 mb-2">
                     {examResults.scorePercentage}%
                   </div>
-                  <p className="text-xl text-blue-800 font-medium">Final Score</p>
+                  <p className="text-xl text-blue-800 font-medium                  Final Score</p>
                   <p className="text-lg text-gray-600 mt-2">
                     Total Points: {examResults.totalScore} / {examResults.totalOptions}
                   </p>
@@ -841,7 +850,7 @@ export default function Quiz() {
                   <p className="text-green-800 font-medium">Correct (+1 each)</p>
                   <p className="text-sm text-green-600 mt-1">+{examResults.correctCount} points</p>
                 </div>
-                
+
                 <div className="text-center p-6 bg-red-50 border-2 border-red-200 rounded-lg">
                   <div className="text-3xl font-bold text-red-600 mb-2">
                     {examResults.incorrectCount}
@@ -849,7 +858,7 @@ export default function Quiz() {
                   <p className="text-red-800 font-medium">Incorrect (-1 each)</p>
                   <p className="text-sm text-red-600 mt-1">-{examResults.incorrectCount} points</p>
                 </div>
-                
+
                 <div className="text-center p-6 bg-gray-50 border-2 border-gray-200 rounded-lg">
                   <div className="text-3xl font-bold text-gray-600 mb-2">
                     {examResults.skippedCount}
@@ -857,7 +866,7 @@ export default function Quiz() {
                   <p className="text-gray-800 font-medium">Skipped (0 each)</p>
                   <p className="text-sm text-gray-600 mt-1">0 points</p>
                 </div>
-                
+
                 <div className="text-center p-6 bg-blue-50 border-2 border-blue-200 rounded-lg">
                   <div className="text-3xl font-bold text-blue-600 mb-2">
                     {Math.floor(examResults.timeSpent / 60)}:{(examResults.timeSpent % 60).toString().padStart(2, '0')}
@@ -928,7 +937,7 @@ export default function Quiz() {
     if (!currentExam || !examResults) return null;
 
     const wrongAnswers: any[] = [];
-    
+
     // Collect all wrong answers for review
     currentExam.stems.forEach((stem: any) => {
       stem.options.forEach((option: any) => {
@@ -1177,7 +1186,7 @@ export default function Quiz() {
   // Render topic selection
   const renderTopicSelection = () => {
     const topics = examType === 'anatomy' ? anatomyTopics : physiologyTopics;
-    
+
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -1334,7 +1343,7 @@ export default function Quiz() {
         <div className="fixed inset-0 bg-white bg-opacity-95 z-50 flex items-center justify-center">
           <div className="max-w-2xl mx-auto p-8 text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-8"></div>
-            
+
             <h2 className="text-3xl font-bold text-black mb-4">Generating Medical Exam</h2>
             <p className="text-xl text-gray-600 mb-8">
               Creating {stemCount} professional {examType} questions from authoritative medical sources
@@ -2164,7 +2173,7 @@ export default function Quiz() {
               </div>
             </div>
           </div>
-          
+
           {examStep === 'select-type' && renderCustomizeExamTypeSelection()}
           {examStep === 'select-topics' && renderTopicSelection()}
           {examStep === 'select-count' && renderStemCountSelection()}

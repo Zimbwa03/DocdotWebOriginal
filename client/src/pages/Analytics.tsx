@@ -57,6 +57,11 @@ export default function Analytics() {
 
   useEffect(() => {
     fetchAnalytics();
+    
+    // Set up interval to refresh analytics every 30 seconds
+    const interval = setInterval(fetchAnalytics, 30000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const fetchAnalytics = async () => {
@@ -73,33 +78,65 @@ export default function Analytics() {
       const user = JSON.parse(userData);
       const userId = user.id;
 
-      // Fetch user stats
-      const statsResponse = await fetch(`/api/user-stats/${userId}`);
-      if (statsResponse.ok) {
-        const stats = await statsResponse.json();
-        setUserStats(stats);
+      console.log('📊 Fetching analytics for user:', userId);
+
+      // Fetch user stats with retry
+      try {
+        const statsResponse = await fetch(`/api/user-stats/${userId}`);
+        if (statsResponse.ok) {
+          const stats = await statsResponse.json();
+          console.log('✅ User stats loaded:', stats);
+          setUserStats(stats);
+        } else {
+          console.error('Failed to fetch user stats:', statsResponse.status);
+        }
+      } catch (statsError) {
+        console.error('Error fetching user stats:', statsError);
       }
 
       // Fetch category stats
-      const categoryResponse = await fetch(`/api/category-stats/${userId}`);
-      if (categoryResponse.ok) {
-        const categories = await categoryResponse.json();
-        setCategoryStats(categories);
+      try {
+        const categoryResponse = await fetch(`/api/category-stats/${userId}`);
+        if (categoryResponse.ok) {
+          const categories = await categoryResponse.json();
+          console.log('✅ Category stats loaded:', categories.length, 'categories');
+          setCategoryStats(categories);
+        } else {
+          console.error('Failed to fetch category stats:', categoryResponse.status);
+        }
+      } catch (categoryError) {
+        console.error('Error fetching category stats:', categoryError);
       }
 
       // Fetch daily stats
-      const dailyResponse = await fetch(`/api/daily-stats/${userId}?days=7`);
-      if (dailyResponse.ok) {
-        const daily = await dailyResponse.json();
-        setDailyStats(daily);
+      try {
+        const dailyResponse = await fetch(`/api/daily-stats/${userId}?days=30`);
+        if (dailyResponse.ok) {
+          const daily = await dailyResponse.json();
+          console.log('✅ Daily stats loaded:', daily.length, 'days');
+          setDailyStats(daily);
+        } else {
+          console.error('Failed to fetch daily stats:', dailyResponse.status);
+        }
+      } catch (dailyError) {
+        console.error('Error fetching daily stats:', dailyError);
       }
 
       // Fetch leaderboard
-      const leaderboardResponse = await fetch('/api/leaderboard?limit=10');
-      if (leaderboardResponse.ok) {
-        const board = await leaderboardResponse.json();
-        setLeaderboard(board.entries || []);
+      try {
+        const leaderboardResponse = await fetch('/api/leaderboard?limit=10');
+        if (leaderboardResponse.ok) {
+          const board = await leaderboardResponse.json();
+          console.log('✅ Leaderboard loaded:', board.length || board.entries?.length, 'entries');
+          setLeaderboard(Array.isArray(board) ? board : board.entries || []);
+        } else {
+          console.error('Failed to fetch leaderboard:', leaderboardResponse.status);
+        }
+      } catch (leaderboardError) {
+        console.error('Error fetching leaderboard:', leaderboardError);
       }
+
+      console.log('📊 Analytics fetch completed');
     } catch (error) {
       console.error('Error fetching analytics:', error);
     } finally {
@@ -135,6 +172,15 @@ export default function Analytics() {
           <h1 className="text-4xl font-bold" style={{ color: '#1C1C1C' }}>Performance Analytics</h1>
         </div>
         <p className="text-lg" style={{ color: '#2E2E2E' }}>Track your learning progress and achievements</p>
+        <div className="mt-4">
+          <Button 
+            onClick={fetchAnalytics} 
+            disabled={loading}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            {loading ? 'Refreshing...' : 'Refresh Analytics'}
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="overview" className="w-full">

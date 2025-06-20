@@ -204,14 +204,14 @@ export class DatabaseStorage {
     try {
       // Use the SQL function to recalculate stats from actual quiz data
       await db.execute(sql`SELECT recalculate_user_analytics(${userId})`);
-      
+
       console.log(`📊 Analytics updated for user ${userId} via SQL function`);
     } catch (error) {
       console.error('Error updating user stats:', error);
       // Fallback: try simple increment approach
       try {
         const existing = await db.select().from(userStats).where(eq(userStats.userId, userId)).limit(1);
-        
+
         if (existing.length > 0) {
           const current = existing[0];
           await db.update(userStats)
@@ -414,25 +414,56 @@ export class DatabaseStorage {
     }
   }
 
-  async getCategoryStats(userId: string): Promise<CategoryStats[]> {
+  // Get category statistics for user
+  async getCategoryStats(userId: string) {
     try {
-      return await db.select().from(categoryStats)
-        .where(eq(categoryStats.userId, userId))
-        .orderBy(desc(categoryStats.lastAttempted));
+      const result = await db.execute(sql`
+        SELECT 
+          category,
+          COUNT(*) as questions_attempted,
+          SUM(CASE WHEN is_correct THEN 1 ELSE 0 END) as correct_answers,
+          ROUND(AVG(CASE WHEN is_correct THEN 100 ELSE 0 END)) as average_score,
+          AVG(time_spent) as average_time,
+          ROUND(AVG(CASE WHEN is_correct THEN 100 ELSE 0 END)) as mastery,
+          MAX(attempted_at) as last_attempted
+        FROM quiz_attempts 
+        WHERE user_id = ${userId}
+        GROUP BY category
+        ORDER BY questions_attempted DESC
+      `);
+
+      return result;
     } catch (error) {
       console.error('Error getting category stats:', error);
       return [];
     }
   }
 
-  async getDailyStats(userId: string, days: number = 7): Promise<DailyStats[]> {
+  // Get daily statistics for user
+  async getDailyStats(userId: string, days: number = 7) {
     try {
+      const endDate = new Date();
       const startDate = new Date();
-      startDate.setDate(startDate.getDate() - days);
+      startDate.setDate(endDate.getDate() - days);
 
-      return await db.select().from(dailyStats)
-        .where(and(eq(dailyStats.userId, userId), gte(dailyStats.date, startDate)))
-        .orderBy(desc(dailyStats.date));
+      const result = await db.execute(sql`
+        SELECT 
+          DATE(attempted_at) as date,
+          COUNT(*) as questions_answered,
+          SUM(CASE WHEN is_correct THEN 1 ELSE 0 END) as correct_answers,
+          ROUND(AVG(CASE WHEN is_correct THEN 100 ELSE 0 END)) as accuracy,
+          SUM(COALESCE(time_spent, 0)) as study_time,
+          SUM(COALESCE(xp_earned, 0)) as xp_earned,
+          ARRAY_AGG(DISTINCT category) as categories_studied
+        FROM quiz_attempts 
+        WHERE user_id = ${userId} 
+          AND attempted_at >= ${startDate.toISOString()}
+          AND attempted_at <= ${endDate.toISOString()}
+        GROUP BY DATE(attempted_at)
+        ORDER BY date DESC
+      `);
+
+      return result;
     } catch (error) {
       console.error('Error getting daily stats:', error);
       return [];

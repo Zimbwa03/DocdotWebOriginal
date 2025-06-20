@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,11 +6,10 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
-import { useQuery } from '@tanstack/react-query';
 import { 
   Trophy, Target, Zap, Calendar, TrendingUp, Award, 
   BookOpen, Clock, Brain, BarChart3, Users, Star,
-  CheckCircle, XCircle, ArrowUp, ArrowDown, Minus
+  CheckCircle, XCircle, ArrowUp, ArrowDown, Minus, RefreshCw
 } from 'lucide-react';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -30,23 +30,22 @@ interface UserStats {
 
 interface CategoryPerformance {
   category: string;
-  questionsAttempted: number;
-  correctAnswers: number;
-  averageScore: number;
-  averageTime: number;
+  questions_attempted: number;
+  correct_answers: number;
+  average_score: number;
+  average_time: number;
   mastery: number;
-  lastAttempted: string;
-  improvement: number;
+  last_attempted: string;
 }
 
 interface DailyPerformance {
   date: string;
-  questionsAnswered: number;
-  correctAnswers: number;
+  questions_answered: number;
+  correct_answers: number;
   accuracy: number;
-  studyTime: number;
-  xpEarned: number;
-  categoriesStudied: string[];
+  study_time: number;
+  xp_earned: number;
+  categories_studied: string[];
 }
 
 interface QuizAttempt {
@@ -63,79 +62,93 @@ interface QuizAttempt {
 
 export default function EnhancedAnalytics() {
   const { user } = useAuth();
-  
-  // Fetch comprehensive user statistics
-  const { data: userStats, isLoading: loadingStats } = useQuery({
-    queryKey: ['/api/user-stats', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-      const response = await fetch(`/api/user-stats/${user.id}`);
-      if (!response.ok) return null;
-      return response.json();
-    },
-    enabled: !!user?.id,
-  });
+  const [userStats, setUserStats] = useState<UserStats | null>(null);
+  const [categoryStats, setCategoryStats] = useState<CategoryPerformance[]>([]);
+  const [dailyStats, setDailyStats] = useState<DailyPerformance[]>([]);
+  const [recentQuizzes, setRecentQuizzes] = useState<QuizAttempt[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
-  // Fetch category performance data
-  const { data: categoryStats } = useQuery({
-    queryKey: ['/api/category-stats', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      const response = await fetch(`/api/category-stats/${user.id}`);
-      if (!response.ok) return [];
-      return response.json();
-    },
-    enabled: !!user?.id,
-  });
+  // Real-time analytics fetching
+  const fetchAnalytics = async () => {
+    if (!user?.id) return;
+    
+    setLoading(true);
+    console.log('📊 Fetching enhanced analytics for user:', user.id);
 
-  // Fetch daily performance trends
-  const { data: dailyStats } = useQuery({
-    queryKey: ['/api/daily-stats', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      const response = await fetch(`/api/daily-stats/${user.id}?days=30`);
-      if (!response.ok) return [];
-      return response.json();
-    },
-    enabled: !!user?.id,
-  });
+    try {
+      // Parallel fetch for better performance
+      const [statsRes, categoryRes, dailyRes, quizzesRes] = await Promise.all([
+        fetch(`/api/user-stats/${user.id}`),
+        fetch(`/api/category-stats/${user.id}`),
+        fetch(`/api/daily-stats/${user.id}?days=30`),
+        fetch(`/api/quiz-attempts/${user.id}?limit=20`)
+      ]);
 
-  // Fetch recent quiz attempts
-  const { data: recentQuizzes } = useQuery({
-    queryKey: ['/api/quiz-attempts', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      const response = await fetch(`/api/quiz-attempts/${user.id}?limit=20`);
-      if (!response.ok) return [];
-      return response.json();
-    },
-    enabled: !!user?.id,
-  });
+      if (statsRes.ok) {
+        const stats = await statsRes.json();
+        setUserStats(stats);
+        console.log('📊 User stats updated:', stats);
+      }
+
+      if (categoryRes.ok) {
+        const categories = await categoryRes.json();
+        setCategoryStats(categories);
+        console.log('📊 Category stats updated:', categories.length, 'categories');
+      }
+
+      if (dailyRes.ok) {
+        const daily = await dailyRes.json();
+        setDailyStats(daily);
+        console.log('📊 Daily stats updated:', daily.length, 'days');
+      }
+
+      if (quizzesRes.ok) {
+        const quizzes = await quizzesRes.json();
+        setRecentQuizzes(quizzes);
+        console.log('📊 Recent quizzes updated:', quizzes.length, 'attempts');
+      }
+
+      setLastRefresh(new Date());
+    } catch (error) {
+      console.error('Error fetching enhanced analytics:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Listen for analytics updates from quiz completions
+  useEffect(() => {
+    const handleAnalyticsUpdate = () => {
+      console.log('📈 Received analytics update event, refreshing...');
+      fetchAnalytics();
+    };
+
+    window.addEventListener('analytics-update', handleAnalyticsUpdate);
+    return () => window.removeEventListener('analytics-update', handleAnalyticsUpdate);
+  }, [user?.id]);
+
+  // Initial load and periodic refresh
+  useEffect(() => {
+    if (user?.id) {
+      fetchAnalytics();
+      
+      // Refresh every 2 minutes for real-time updates
+      const interval = setInterval(fetchAnalytics, 120000);
+      return () => clearInterval(interval);
+    }
+  }, [user?.id]);
 
   // Calculate derived metrics
-  const calculateWeakestAreas = () => {
-    if (!categoryStats) return [];
-    return categoryStats
-      .filter((cat: CategoryPerformance) => cat.questionsAttempted >= 5)
-      .sort((a: CategoryPerformance, b: CategoryPerformance) => a.averageScore - b.averageScore)
-      .slice(0, 3);
-  };
-
-  const calculateStrongestAreas = () => {
-    if (!categoryStats) return [];
-    return categoryStats
-      .filter((cat: CategoryPerformance) => cat.questionsAttempted >= 5)
-      .sort((a: CategoryPerformance, b: CategoryPerformance) => b.averageScore - a.averageScore)
-      .slice(0, 3);
-  };
-
   const getPerformanceTrend = () => {
     if (!dailyStats || dailyStats.length < 2) return 'stable';
     const recent = dailyStats.slice(0, 7);
     const previous = dailyStats.slice(7, 14);
     
-    const recentAvg = recent.reduce((sum: number, day: DailyPerformance) => sum + day.accuracy, 0) / recent.length;
-    const previousAvg = previous.reduce((sum: number, day: DailyPerformance) => sum + day.accuracy, 0) / previous.length;
+    if (recent.length === 0 || previous.length === 0) return 'stable';
+    
+    const recentAvg = recent.reduce((sum, day) => sum + (day.accuracy || 0), 0) / recent.length;
+    const previousAvg = previous.reduce((sum, day) => sum + (day.accuracy || 0), 0) / previous.length;
     
     if (recentAvg > previousAvg + 5) return 'improving';
     if (recentAvg < previousAvg - 5) return 'declining';
@@ -150,10 +163,24 @@ export default function EnhancedAnalytics() {
     }
   };
 
+  const calculateWeakestAreas = () => {
+    return categoryStats
+      .filter(cat => cat.questions_attempted >= 3)
+      .sort((a, b) => a.average_score - b.average_score)
+      .slice(0, 3);
+  };
+
+  const calculateStrongestAreas = () => {
+    return categoryStats
+      .filter(cat => cat.questions_attempted >= 3)
+      .sort((a, b) => b.average_score - a.average_score)
+      .slice(0, 3);
+  };
+
   // Chart colors
   const COLORS = ['#3399FF', '#00C896', '#FF6B6B', '#FFD93D', '#6BCF7F', '#FF8A65'];
 
-  if (loadingStats) {
+  if (loading && !userStats) {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#3399FF' }}></div>
@@ -163,13 +190,26 @@ export default function EnhancedAnalytics() {
 
   return (
     <div className="space-y-8 p-6">
-      {/* Header Section */}
+      {/* Header with Real-time Updates */}
       <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4 text-gray-900">Advanced Analytics Dashboard</h1>
-        <p className="text-lg text-gray-600">Comprehensive insights into your medical learning journey</p>
+        <h1 className="text-4xl font-bold mb-4 text-gray-900">Live Analytics Dashboard</h1>
+        <p className="text-lg text-gray-600 mb-4">Real-time insights into your medical learning journey</p>
+        <div className="flex items-center justify-center gap-4">
+          <Button 
+            onClick={fetchAnalytics} 
+            disabled={loading}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            {loading ? 'Refreshing...' : 'Refresh Data'}
+          </Button>
+          <span className="text-sm text-gray-500">
+            Last updated: {lastRefresh.toLocaleTimeString()}
+          </span>
+        </div>
       </div>
 
-      {/* Key Performance Indicators */}
+      {/* Real-time KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -177,7 +217,7 @@ export default function EnhancedAnalytics() {
             <BookOpen className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-900">{String(userStats?.totalQuestions || 0)}</div>
+            <div className="text-3xl font-bold text-blue-900">{userStats?.totalQuestions || 0}</div>
             <p className="text-xs text-blue-600">
               {userStats?.correctAnswers || 0} correct answers
             </p>
@@ -190,7 +230,7 @@ export default function EnhancedAnalytics() {
             <Target className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-900">{String(userStats?.averageScore || 0)}%</div>
+            <div className="text-3xl font-bold text-green-900">{userStats?.averageScore || 0}%</div>
             <div className="flex items-center text-xs text-green-600">
               {getTrendIcon(getPerformanceTrend())}
               <span className="ml-1">Performance trend</span>
@@ -204,9 +244,9 @@ export default function EnhancedAnalytics() {
             <Zap className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-orange-900">{String(userStats?.currentStreak || 0)}</div>
+            <div className="text-3xl font-bold text-orange-900">{userStats?.currentStreak || 0}</div>
             <p className="text-xs text-orange-600">
-              Best: {String(userStats?.longestStreak || 0)} days
+              Best: {userStats?.longestStreak || 0} days
             </p>
           </CardContent>
         </Card>
@@ -228,14 +268,14 @@ export default function EnhancedAnalytics() {
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="categories">Categories</TabsTrigger>
-          <TabsTrigger value="trends">Trends</TabsTrigger>
-          <TabsTrigger value="weaknesses">Weaknesses</TabsTrigger>
+          <TabsTrigger value="trends">Performance Trends</TabsTrigger>
+          <TabsTrigger value="categories">Category Analysis</TabsTrigger>
+          <TabsTrigger value="insights">Insights</TabsTrigger>
           <TabsTrigger value="recent">Recent Activity</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          {/* Performance Overview Charts */}
+          {/* Performance Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Daily Performance Trend */}
             <Card>
@@ -263,13 +303,13 @@ export default function EnhancedAnalytics() {
                     />
                     <Legend />
                     <Line type="monotone" dataKey="accuracy" stroke="#3399FF" strokeWidth={2} name="Accuracy %" />
-                    <Line type="monotone" dataKey="questionsAnswered" stroke="#00C896" strokeWidth={2} name="Questions" />
+                    <Line type="monotone" dataKey="questions_answered" stroke="#00C896" strokeWidth={2} name="Questions" />
                   </LineChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
 
-            {/* Category Distribution */}
+            {/* Category Performance */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -290,7 +330,7 @@ export default function EnhancedAnalytics() {
                     />
                     <YAxis />
                     <Tooltip formatter={(value: number) => [`${value}%`, 'Accuracy']} />
-                    <Bar dataKey="averageScore" fill="#3399FF" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="average_score" fill="#3399FF" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -308,7 +348,7 @@ export default function EnhancedAnalytics() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {calculateStrongestAreas().map((area: CategoryPerformance, index: number) => (
+                  {calculateStrongestAreas().map((area, index) => (
                     <div key={area.category} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold text-sm">
@@ -316,11 +356,11 @@ export default function EnhancedAnalytics() {
                         </div>
                         <div>
                           <p className="font-medium text-green-900">{area.category}</p>
-                          <p className="text-sm text-green-600">{area.questionsAttempted} questions</p>
+                          <p className="text-sm text-green-600">{area.questions_attempted} questions</p>
                         </div>
                       </div>
                       <Badge variant="secondary" className="bg-green-100 text-green-800">
-                        {area.averageScore}%
+                        {area.average_score}%
                       </Badge>
                     </div>
                   ))}
@@ -337,7 +377,7 @@ export default function EnhancedAnalytics() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {calculateWeakestAreas().map((area: CategoryPerformance, index: number) => (
+                  {calculateWeakestAreas().map((area, index) => (
                     <div key={area.category} className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center font-bold text-sm">
@@ -345,83 +385,17 @@ export default function EnhancedAnalytics() {
                         </div>
                         <div>
                           <p className="font-medium text-red-900">{area.category}</p>
-                          <p className="text-sm text-red-600">{area.questionsAttempted} questions</p>
+                          <p className="text-sm text-red-600">{area.questions_attempted} questions</p>
                         </div>
                       </div>
                       <Badge variant="secondary" className="bg-red-100 text-red-800">
-                        {area.averageScore}%
+                        {area.average_score}%
                       </Badge>
                     </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="categories" className="space-y-6">
-          <div className="grid gap-6">
-            {categoryStats?.map((category: CategoryPerformance) => (
-              <Card key={category.category} className="bg-gradient-to-r from-gray-50 to-white">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{category.category}</CardTitle>
-                    <div className="flex items-center gap-2">
-                      <Badge 
-                        variant="secondary" 
-                        className={`${
-                          category.mastery >= 80 ? 'bg-green-100 text-green-800' :
-                          category.mastery >= 60 ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-red-100 text-red-800'
-                        }`}
-                      >
-                        {category.mastery}% Mastery
-                      </Badge>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-600">{category.questionsAttempted}</div>
-                      <p className="text-sm text-gray-600">Questions</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-green-600">{category.correctAnswers}</div>
-                      <p className="text-sm text-gray-600">Correct</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-purple-600">{category.averageScore}%</div>
-                      <p className="text-sm text-gray-600">Accuracy</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-orange-600">{Math.round(category.averageTime)}s</div>
-                      <p className="text-sm text-gray-600">Avg Time</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-indigo-600">
-                        {category.lastAttempted ? new Date(category.lastAttempted).toLocaleDateString() : 'Never'}
-                      </div>
-                      <p className="text-sm text-gray-600">Last Attempt</p>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Progress to Mastery</span>
-                      <span>{category.mastery}%</span>
-                    </div>
-                    <Progress 
-                      value={category.mastery} 
-                      className="h-2"
-                      style={{
-                        '--progress-background': category.mastery >= 80 ? '#10B981' : 
-                                               category.mastery >= 60 ? '#F59E0B' : '#EF4444'
-                      } as React.CSSProperties}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
           </div>
         </TabsContent>
 
@@ -448,7 +422,7 @@ export default function EnhancedAnalytics() {
                       labelFormatter={(value) => new Date(value).toLocaleDateString()}
                       formatter={(value: number) => [`${value} XP`, 'XP Earned']}
                     />
-                    <Area type="monotone" dataKey="xpEarned" stroke="#FFD93D" fill="#FEF3C7" strokeWidth={2} />
+                    <Area type="monotone" dataKey="xp_earned" stroke="#FFD93D" fill="#FEF3C7" strokeWidth={2} />
                   </AreaChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -475,7 +449,7 @@ export default function EnhancedAnalytics() {
                       labelFormatter={(value) => new Date(value).toLocaleDateString()}
                       formatter={(value: number) => [`${value} min`, 'Study Time']}
                     />
-                    <Bar dataKey="studyTime" fill="#6366F1" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="study_time" fill="#6366F1" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -483,42 +457,100 @@ export default function EnhancedAnalytics() {
           </div>
         </TabsContent>
 
-        <TabsContent value="weaknesses" className="space-y-6">
+        <TabsContent value="categories" className="space-y-6">
+          <div className="grid gap-6">
+            {categoryStats?.map((category) => (
+              <Card key={category.category} className="bg-gradient-to-r from-gray-50 to-white">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg">{category.category}</CardTitle>
+                    <Badge 
+                      variant="secondary" 
+                      className={`${
+                        category.mastery >= 80 ? 'bg-green-100 text-green-800' :
+                        category.mastery >= 60 ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }`}
+                    >
+                      {category.mastery}% Mastery
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-600">{category.questions_attempted}</div>
+                      <p className="text-sm text-gray-600">Questions</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-600">{category.correct_answers}</div>
+                      <p className="text-sm text-gray-600">Correct</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-purple-600">{category.average_score}%</div>
+                      <p className="text-sm text-gray-600">Accuracy</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-orange-600">{Math.round(category.average_time || 0)}s</div>
+                      <p className="text-sm text-gray-600">Avg Time</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-indigo-600">
+                        {category.last_attempted ? new Date(category.last_attempted).toLocaleDateString() : 'Never'}
+                      </div>
+                      <p className="text-sm text-gray-600">Last Attempt</p>
+                    </div>
+                  </div>
+                  <Progress value={category.mastery} className="h-2" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="insights" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Brain className="h-5 w-5 text-red-600" />
-                Detailed Weakness Analysis
+                Learning Insights & Recommendations
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
-                {calculateWeakestAreas().map((area: CategoryPerformance) => (
-                  <div key={area.category} className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-red-800">{area.category}</h3>
-                      <Badge variant="destructive">{area.averageScore}% Accuracy</Badge>
+              <div className="space-y-4">
+                {getPerformanceTrend() === 'improving' && (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center gap-2 text-green-800 font-semibold mb-2">
+                      <ArrowUp className="w-4 h-4" />
+                      Excellent Progress!
                     </div>
-                    <div className="grid grid-cols-3 gap-4 text-sm">
-                      <div>
-                        <p className="text-gray-600">Questions Attempted</p>
-                        <p className="font-semibold">{area.questionsAttempted}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-600">Wrong Answers</p>
-                        <p className="font-semibold text-red-600">{area.questionsAttempted - area.correctAnswers}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-600">Avg Response Time</p>
-                        <p className="font-semibold">{Math.round(area.averageTime)}s</p>
-                      </div>
-                    </div>
-                    <div className="mt-4">
-                      <p className="text-sm text-gray-600 mb-2">Improvement Needed</p>
-                      <Progress value={100 - area.averageScore} className="h-2" />
-                    </div>
+                    <p className="text-green-700">Your performance is improving consistently. Keep up the great work!</p>
                   </div>
-                ))}
+                )}
+                
+                {calculateWeakestAreas().length > 0 && (
+                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div className="flex items-center gap-2 text-yellow-800 font-semibold mb-2">
+                      <Target className="w-4 h-4" />
+                      Focus Areas
+                    </div>
+                    <p className="text-yellow-700">
+                      Consider spending more time on: {calculateWeakestAreas().map(area => area.category).join(', ')}
+                    </p>
+                  </div>
+                )}
+
+                {userStats && userStats.currentStreak > 0 && (
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center gap-2 text-blue-800 font-semibold mb-2">
+                      <Zap className="w-4 h-4" />
+                      Study Streak Active
+                    </div>
+                    <p className="text-blue-700">
+                      You're on a {userStats.currentStreak}-day streak! Don't break the momentum.
+                    </p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -534,7 +566,7 @@ export default function EnhancedAnalytics() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {recentQuizzes?.map((attempt: QuizAttempt) => (
+                {recentQuizzes?.map((attempt) => (
                   <div key={attempt.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                     <div className="flex items-center gap-4">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
