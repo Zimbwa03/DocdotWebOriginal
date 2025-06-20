@@ -202,17 +202,17 @@ export class DatabaseStorage {
   async updateUserStats(userId: string, isCorrect: boolean, xpEarned: number, timeSpent: number): Promise<void> {
     try {
       // Use the comprehensive SQL function to recalculate stats and award badges
-      await db.execute(sql`SELECT initialize_user_complete(${userId})`);
+      await db.execute(sql`SELECT initialize_user_complete(${userId}::uuid)`);
 
       console.log(`🎉 Full analytics updated for user ${userId} - stats recalculated and badges checked`);
     } catch (error) {
       console.error('Error updating user stats with full system:', error);
       // Fallback: try the basic analytics function
       try {
-        await db.execute(sql`SELECT recalculate_user_analytics(${userId})`);
+        await db.execute(sql`SELECT recalculate_user_analytics(${userId}::uuid)`);
         
         // Then try to award badges separately
-        const badgesAwarded = await db.execute(sql`SELECT check_and_award_badges(${userId})`);
+        const badgesAwarded = await db.execute(sql`SELECT check_and_award_badges(${userId}::uuid)`);
         console.log(`📊 Analytics updated for user ${userId}, badges check completed`);
       } catch (fallbackError) {
         console.error('Fallback stats update also failed:', fallbackError);
@@ -630,7 +630,7 @@ export class DatabaseStorage {
       try {
         const rankedUsers = await db.execute(sql`
           SELECT 
-            us.user_id,
+            us.user_id::text as user_id,
             COALESCE(us.total_xp, 0) as total_xp,
             COALESCE(us.current_level, 1) as current_level,
             u.first_name,
@@ -651,7 +651,7 @@ export class DatabaseStorage {
         for (const user of rankedUsers) {
           await db.execute(sql`
             INSERT INTO global_leaderboard (user_id, total_xp, current_level, rank, first_name, last_name, full_name, email)
-            VALUES (${user.user_id}, ${user.total_xp}, ${user.current_level}, ${user.new_rank}, 
+            VALUES (${user.user_id}::uuid, ${user.total_xp}, ${user.current_level}, ${user.new_rank}, 
                    ${user.first_name}, ${user.last_name}, ${user.full_name}, ${user.email})
           `);
         }
