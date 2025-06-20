@@ -1,11 +1,40 @@
 -- Complete Supabase Schema for DocDot Medical Education Platform
--- Run this script in your Supabase SQL Editor to create all missing tables and columns
+-- WARNING: This will DROP all existing tables and recreate them with clean data
+-- Only run this if you want to completely reset your database
 
--- Enable UUID extension
+-- Enable required extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Users table (extend if exists, create if not)
-CREATE TABLE IF NOT EXISTS users (
+-- Drop all existing tables (in correct order to handle foreign key constraints)
+DROP TABLE IF EXISTS meeting_reminders CASCADE;
+DROP TABLE IF EXISTS study_group_members CASCADE;
+DROP TABLE IF EXISTS study_groups CASCADE;
+DROP TABLE IF EXISTS study_planner_sessions CASCADE;
+DROP TABLE IF EXISTS flashcards CASCADE;
+DROP TABLE IF EXISTS study_plans CASCADE;
+DROP TABLE IF EXISTS user_analytics CASCADE;
+DROP TABLE IF EXISTS ai_chats CASCADE;
+DROP TABLE IF EXISTS ai_sessions CASCADE;
+DROP TABLE IF EXISTS exam_generation_history CASCADE;
+DROP TABLE IF EXISTS custom_exam_attempts CASCADE;
+DROP TABLE IF EXISTS stem_options CASCADE;
+DROP TABLE IF EXISTS custom_exam_stems CASCADE;
+DROP TABLE IF EXISTS custom_exams CASCADE;
+DROP TABLE IF EXISTS user_badges CASCADE;
+DROP TABLE IF EXISTS badges CASCADE;
+DROP TABLE IF EXISTS global_leaderboard CASCADE;
+DROP TABLE IF EXISTS leaderboard CASCADE;
+DROP TABLE IF EXISTS daily_stats CASCADE;
+DROP TABLE IF EXISTS category_stats CASCADE;
+DROP TABLE IF EXISTS user_stats CASCADE;
+DROP TABLE IF EXISTS quizzes CASCADE;
+DROP TABLE IF EXISTS quiz_attempts CASCADE;
+DROP TABLE IF EXISTS topics CASCADE;
+DROP TABLE IF EXISTS categories CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+
+-- Users table - Core user information
+CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   email TEXT UNIQUE NOT NULL,
   first_name TEXT,
@@ -15,22 +44,8 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Add missing columns to users table if they don't exist
-DO $$ 
-BEGIN 
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'first_name') THEN
-    ALTER TABLE users ADD COLUMN first_name TEXT;
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'last_name') THEN
-    ALTER TABLE users ADD COLUMN last_name TEXT;
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'profile_picture_url') THEN
-    ALTER TABLE users ADD COLUMN profile_picture_url TEXT;
-  END IF;
-END $$;
-
 -- Categories table
-CREATE TABLE IF NOT EXISTS categories (
+CREATE TABLE categories (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
   description TEXT,
@@ -38,7 +53,7 @@ CREATE TABLE IF NOT EXISTS categories (
 );
 
 -- Topics table
-CREATE TABLE IF NOT EXISTS topics (
+CREATE TABLE topics (
   id SERIAL PRIMARY KEY,
   category_id INTEGER REFERENCES categories(id),
   name TEXT NOT NULL,
@@ -47,7 +62,7 @@ CREATE TABLE IF NOT EXISTS topics (
 );
 
 -- Quiz attempts table with all required columns
-CREATE TABLE IF NOT EXISTS quiz_attempts (
+CREATE TABLE quiz_attempts (
   id BIGSERIAL PRIMARY KEY,
   user_id UUID REFERENCES users(id),
   quiz_id INTEGER,
@@ -62,25 +77,8 @@ CREATE TABLE IF NOT EXISTS quiz_attempts (
   attempted_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Add missing columns to quiz_attempts if they don't exist
-DO $$ 
-BEGIN 
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'quiz_attempts' AND column_name = 'category') THEN
-    ALTER TABLE quiz_attempts ADD COLUMN category TEXT NOT NULL DEFAULT 'general';
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'quiz_attempts' AND column_name = 'correct_answer') THEN
-    ALTER TABLE quiz_attempts ADD COLUMN correct_answer TEXT NOT NULL DEFAULT '';
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'quiz_attempts' AND column_name = 'difficulty') THEN
-    ALTER TABLE quiz_attempts ADD COLUMN difficulty TEXT DEFAULT 'medium';
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'quiz_attempts' AND column_name = 'xp_earned') THEN
-    ALTER TABLE quiz_attempts ADD COLUMN xp_earned INTEGER DEFAULT 0;
-  END IF;
-END $$;
-
--- User statistics table
-CREATE TABLE IF NOT EXISTS user_stats (
+-- User statistics table with all required columns
+CREATE TABLE user_stats (
   id SERIAL PRIMARY KEY,
   user_id UUID REFERENCES users(id) UNIQUE,
   total_questions INTEGER DEFAULT 0,
@@ -90,6 +88,7 @@ CREATE TABLE IF NOT EXISTS user_stats (
   current_streak INTEGER DEFAULT 0,
   longest_streak INTEGER DEFAULT 0,
   average_score INTEGER DEFAULT 0,
+  average_accuracy INTEGER DEFAULT 0,
   total_study_time INTEGER DEFAULT 0,
   rank INTEGER DEFAULT 0,
   weekly_xp INTEGER DEFAULT 0,
@@ -97,19 +96,8 @@ CREATE TABLE IF NOT EXISTS user_stats (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Add missing columns to user_stats if they don't exist
-DO $$ 
-BEGIN 
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_stats' AND column_name = 'weekly_xp') THEN
-    ALTER TABLE user_stats ADD COLUMN weekly_xp INTEGER DEFAULT 0;
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_stats' AND column_name = 'monthly_xp') THEN
-    ALTER TABLE user_stats ADD COLUMN monthly_xp INTEGER DEFAULT 0;
-  END IF;
-END $$;
-
 -- Category statistics table
-CREATE TABLE IF NOT EXISTS category_stats (
+CREATE TABLE category_stats (
   id SERIAL PRIMARY KEY,
   user_id UUID REFERENCES users(id),
   category_name TEXT NOT NULL,
@@ -121,7 +109,7 @@ CREATE TABLE IF NOT EXISTS category_stats (
 );
 
 -- Daily statistics table
-CREATE TABLE IF NOT EXISTS daily_stats (
+CREATE TABLE daily_stats (
   id SERIAL PRIMARY KEY,
   user_id UUID REFERENCES users(id),
   date TEXT NOT NULL,
@@ -135,7 +123,7 @@ CREATE TABLE IF NOT EXISTS daily_stats (
 );
 
 -- Leaderboard table
-CREATE TABLE IF NOT EXISTS leaderboard (
+CREATE TABLE leaderboard (
   id SERIAL PRIMARY KEY,
   user_id UUID REFERENCES users(id),
   xp INTEGER DEFAULT 0,
@@ -147,7 +135,7 @@ CREATE TABLE IF NOT EXISTS leaderboard (
 );
 
 -- Global leaderboard table
-CREATE TABLE IF NOT EXISTS global_leaderboard (
+CREATE TABLE global_leaderboard (
   id SERIAL PRIMARY KEY,
   user_id UUID REFERENCES users(id),
   first_name TEXT,
@@ -158,8 +146,8 @@ CREATE TABLE IF NOT EXISTS global_leaderboard (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Badges table
-CREATE TABLE IF NOT EXISTS badges (
+-- Badges table with all required columns
+CREATE TABLE badges (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
   description TEXT,
@@ -171,16 +159,8 @@ CREATE TABLE IF NOT EXISTS badges (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Add missing columns to badges if they don't exist
-DO $$ 
-BEGIN 
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'badges' AND column_name = 'rarity') THEN
-    ALTER TABLE badges ADD COLUMN rarity TEXT DEFAULT 'common';
-  END IF;
-END $$;
-
 -- User badges table
-CREATE TABLE IF NOT EXISTS user_badges (
+CREATE TABLE user_badges (
   id SERIAL PRIMARY KEY,
   user_id UUID REFERENCES users(id),
   badge_id INTEGER REFERENCES badges(id),
@@ -188,7 +168,7 @@ CREATE TABLE IF NOT EXISTS user_badges (
 );
 
 -- Quizzes table (for AI-generated questions)
-CREATE TABLE IF NOT EXISTS quizzes (
+CREATE TABLE quizzes (
   id SERIAL PRIMARY KEY,
   question TEXT NOT NULL,
   options JSONB NOT NULL,
@@ -201,7 +181,7 @@ CREATE TABLE IF NOT EXISTS quizzes (
 );
 
 -- Custom exams table
-CREATE TABLE IF NOT EXISTS custom_exams (
+CREATE TABLE custom_exams (
   id SERIAL PRIMARY KEY,
   user_id UUID REFERENCES users(id),
   title TEXT NOT NULL,
@@ -214,7 +194,7 @@ CREATE TABLE IF NOT EXISTS custom_exams (
 );
 
 -- Custom exam stems table
-CREATE TABLE IF NOT EXISTS custom_exam_stems (
+CREATE TABLE custom_exam_stems (
   id SERIAL PRIMARY KEY,
   exam_id INTEGER REFERENCES custom_exams(id),
   stem_text TEXT NOT NULL,
@@ -224,7 +204,7 @@ CREATE TABLE IF NOT EXISTS custom_exam_stems (
 );
 
 -- Stem options table
-CREATE TABLE IF NOT EXISTS stem_options (
+CREATE TABLE stem_options (
   id SERIAL PRIMARY KEY,
   stem_id INTEGER REFERENCES custom_exam_stems(id),
   option_text TEXT NOT NULL,
@@ -233,7 +213,7 @@ CREATE TABLE IF NOT EXISTS stem_options (
 );
 
 -- Custom exam attempts table
-CREATE TABLE IF NOT EXISTS custom_exam_attempts (
+CREATE TABLE custom_exam_attempts (
   id SERIAL PRIMARY KEY,
   user_id UUID REFERENCES users(id),
   exam_id INTEGER REFERENCES custom_exams(id),
@@ -246,7 +226,7 @@ CREATE TABLE IF NOT EXISTS custom_exam_attempts (
 );
 
 -- Exam generation history table
-CREATE TABLE IF NOT EXISTS exam_generation_history (
+CREATE TABLE exam_generation_history (
   id SERIAL PRIMARY KEY,
   user_id UUID REFERENCES users(id),
   exam_type TEXT NOT NULL,
@@ -259,8 +239,8 @@ CREATE TABLE IF NOT EXISTS exam_generation_history (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- AI sessions table
-CREATE TABLE IF NOT EXISTS ai_sessions (
+-- AI sessions table with all columns
+CREATE TABLE ai_sessions (
   id TEXT PRIMARY KEY,
   user_id UUID REFERENCES users(id),
   session_type TEXT,
@@ -271,19 +251,8 @@ CREATE TABLE IF NOT EXISTS ai_sessions (
   metadata JSONB
 );
 
--- Add missing columns to ai_sessions if they don't exist
-DO $$ 
-BEGIN 
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'ai_sessions' AND column_name = 'session_type') THEN
-    ALTER TABLE ai_sessions ADD COLUMN session_type TEXT;
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'ai_sessions' AND column_name = 'updated_at') THEN
-    ALTER TABLE ai_sessions ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
-  END IF;
-END $$;
-
--- AI chats table
-CREATE TABLE IF NOT EXISTS ai_chats (
+-- AI chats table with all columns
+CREATE TABLE ai_chats (
   id TEXT PRIMARY KEY,
   session_id TEXT REFERENCES ai_sessions(id),
   role TEXT NOT NULL,
@@ -293,16 +262,8 @@ CREATE TABLE IF NOT EXISTS ai_chats (
   metadata JSONB
 );
 
--- Add missing columns to ai_chats if they don't exist
-DO $$ 
-BEGIN 
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'ai_chats' AND column_name = 'created_at') THEN
-    ALTER TABLE ai_chats ADD COLUMN created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
-  END IF;
-END $$;
-
 -- Study planner sessions table
-CREATE TABLE IF NOT EXISTS study_planner_sessions (
+CREATE TABLE study_planner_sessions (
   id TEXT PRIMARY KEY,
   user_id UUID REFERENCES users(id),
   title TEXT NOT NULL,
@@ -318,7 +279,7 @@ CREATE TABLE IF NOT EXISTS study_planner_sessions (
 );
 
 -- Study groups table
-CREATE TABLE IF NOT EXISTS study_groups (
+CREATE TABLE study_groups (
   id TEXT PRIMARY KEY,
   creator_id UUID REFERENCES users(id),
   name TEXT NOT NULL,
@@ -335,7 +296,7 @@ CREATE TABLE IF NOT EXISTS study_groups (
 );
 
 -- Study group members table
-CREATE TABLE IF NOT EXISTS study_group_members (
+CREATE TABLE study_group_members (
   id SERIAL PRIMARY KEY,
   group_id TEXT REFERENCES study_groups(id),
   user_id UUID REFERENCES users(id),
@@ -346,7 +307,7 @@ CREATE TABLE IF NOT EXISTS study_group_members (
 );
 
 -- Meeting reminders table
-CREATE TABLE IF NOT EXISTS meeting_reminders (
+CREATE TABLE meeting_reminders (
   id SERIAL PRIMARY KEY,
   group_id TEXT REFERENCES study_groups(id),
   user_id UUID REFERENCES users(id),
@@ -356,7 +317,7 @@ CREATE TABLE IF NOT EXISTS meeting_reminders (
 );
 
 -- User analytics table
-CREATE TABLE IF NOT EXISTS user_analytics (
+CREATE TABLE user_analytics (
   id SERIAL PRIMARY KEY,
   user_id UUID REFERENCES users(id),
   session_count INTEGER DEFAULT 0,
@@ -366,7 +327,7 @@ CREATE TABLE IF NOT EXISTS user_analytics (
 );
 
 -- Flashcards table
-CREATE TABLE IF NOT EXISTS flashcards (
+CREATE TABLE flashcards (
   id TEXT PRIMARY KEY,
   user_id UUID REFERENCES users(id),
   front TEXT NOT NULL,
@@ -378,7 +339,7 @@ CREATE TABLE IF NOT EXISTS flashcards (
 );
 
 -- Study plans table
-CREATE TABLE IF NOT EXISTS study_plans (
+CREATE TABLE study_plans (
   id TEXT PRIMARY KEY,
   user_id UUID REFERENCES users(id),
   title TEXT NOT NULL,
@@ -401,31 +362,26 @@ CREATE INDEX IF NOT EXISTS idx_leaderboard_xp ON leaderboard(xp DESC);
 CREATE INDEX IF NOT EXISTS idx_ai_sessions_user_id ON ai_sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_ai_chats_session_id ON ai_chats(session_id);
 
--- Insert default categories if they don't exist
-INSERT INTO categories (name, description) 
-SELECT 'Anatomy', 'Human anatomy and anatomical structures'
-WHERE NOT EXISTS (SELECT 1 FROM categories WHERE name = 'Anatomy');
+-- Insert default categories
+INSERT INTO categories (name, description) VALUES
+('Anatomy', 'Human anatomy and anatomical structures'),
+('Physiology', 'Human physiology and body functions'),
+('Pathology', 'Disease processes and pathological conditions'),
+('Pharmacology', 'Drugs and their effects on the human body'),
+('Microbiology', 'Study of microorganisms and infectious diseases');
 
-INSERT INTO categories (name, description) 
-SELECT 'Physiology', 'Human physiology and body functions'
-WHERE NOT EXISTS (SELECT 1 FROM categories WHERE name = 'Physiology');
-
-INSERT INTO categories (name, description) 
-SELECT 'Pathology', 'Disease processes and pathological conditions'
-WHERE NOT EXISTS (SELECT 1 FROM categories WHERE name = 'Pathology');
-
--- Insert default badges if they don't exist
-INSERT INTO badges (name, description, icon, requirement, xp_reward, rarity, category)
-SELECT 'First Quiz', 'Complete your first quiz', '🎯', '{"type": "quiz_count", "value": 1}', 10, 'common', 'achievement'
-WHERE NOT EXISTS (SELECT 1 FROM badges WHERE name = 'First Quiz');
-
-INSERT INTO badges (name, description, icon, requirement, xp_reward, rarity, category)
-SELECT 'Quiz Master', 'Complete 100 quizzes', '🏆', '{"type": "quiz_count", "value": 100}', 100, 'legendary', 'achievement'
-WHERE NOT EXISTS (SELECT 1 FROM badges WHERE name = 'Quiz Master');
-
-INSERT INTO badges (name, description, icon, requirement, xp_reward, rarity, category)
-SELECT 'Streak Keeper', 'Maintain a 7-day study streak', '🔥', '{"type": "streak", "value": 7}', 50, 'rare', 'streak'
-WHERE NOT EXISTS (SELECT 1 FROM badges WHERE name = 'Streak Keeper');
+-- Insert default badges
+INSERT INTO badges (name, description, icon, requirement, xp_reward, rarity, category) VALUES
+('First Quiz', 'Complete your first quiz', '🎯', '{"type": "quiz_count", "value": 1}'::jsonb, 10, 'common', 'achievement'),
+('Quiz Master', 'Complete 100 quizzes', '🏆', '{"type": "quiz_count", "value": 100}'::jsonb, 100, 'legendary', 'achievement'),
+('Streak Keeper', 'Maintain a 7-day study streak', '🔥', '{"type": "streak", "value": 7}'::jsonb, 50, 'rare', 'streak'),
+('Speed Demon', 'Answer 10 questions in under 30 seconds each', '⚡', '{"type": "speed", "value": 10}'::jsonb, 25, 'rare', 'performance'),
+('Perfectionist', 'Get 50 questions correct in a row', '💎', '{"type": "streak_correct", "value": 50}'::jsonb, 75, 'epic', 'achievement'),
+('Night Owl', 'Study after 10 PM for 5 consecutive days', '🦉', '{"type": "night_study", "value": 5}'::jsonb, 30, 'uncommon', 'habit'),
+('Early Bird', 'Study before 7 AM for 5 consecutive days', '🐦', '{"type": "morning_study", "value": 5}'::jsonb, 30, 'uncommon', 'habit'),
+('Scholar', 'Reach level 10', '📚', '{"type": "level", "value": 10}'::jsonb, 100, 'epic', 'milestone'),
+('Anatomy Expert', 'Score 90% or higher on 25 anatomy questions', '🦴', '{"type": "category_mastery", "category": "anatomy", "accuracy": 90, "count": 25}'::jsonb, 50, 'rare', 'expertise'),
+('Physiology Master', 'Score 90% or higher on 25 physiology questions', '❤️', '{"type": "category_mastery", "category": "physiology", "accuracy": 90, "count": 25}'::jsonb, 50, 'rare', 'expertise');
 
 -- Update function for updated_at timestamps
 CREATE OR REPLACE FUNCTION update_updated_at_column()
