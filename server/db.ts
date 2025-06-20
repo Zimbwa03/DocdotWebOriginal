@@ -201,29 +201,46 @@ export class DatabaseStorage {
 
   async updateUserStats(userId: string, isCorrect: boolean, xpEarned: number, timeSpent: number): Promise<void> {
     try {
-      // Use the SQL function to recalculate stats from actual quiz data
-      await db.execute(sql`SELECT recalculate_user_analytics(${userId})`);
+      // Use the comprehensive SQL function to recalculate stats and award badges
+      await db.execute(sql`SELECT initialize_user_complete(${userId})`);
 
-      console.log(`📊 Analytics updated for user ${userId} via SQL function`);
+      console.log(`🎉 Full analytics updated for user ${userId} - stats recalculated and badges checked`);
     } catch (error) {
-      console.error('Error updating user stats:', error);
-      // Fallback: try simple increment approach
+      console.error('Error updating user stats with full system:', error);
+      // Fallback: try the basic analytics function
       try {
-        const existing = await db.select().from(userStats).where(eq(userStats.userId, userId)).limit(1);
-
-        if (existing.length > 0) {
-          const current = existing[0];
-          await db.update(userStats)
-            .set({
-              totalQuestions: (current.totalQuestions || 0) + 1,
-              correctAnswers: (current.correctAnswers || 0) + (isCorrect ? 1 : 0),
-              totalXp: (current.totalXp || 0) + (xpEarned || 0),
-              updatedAt: new Date()
-            })
-            .where(eq(userStats.userId, userId));
-        }
+        await db.execute(sql`SELECT recalculate_user_analytics(${userId})`);
+        
+        // Then try to award badges separately
+        const badgesAwarded = await db.execute(sql`SELECT check_and_award_badges(${userId})`);
+        console.log(`📊 Analytics updated for user ${userId}, badges check completed`);
       } catch (fallbackError) {
         console.error('Fallback stats update also failed:', fallbackError);
+        // Last resort: manual update
+        try {
+          const existing = await db.select().from(userStats).where(eq(userStats.userId, userId)).limit(1);
+
+          if (existing.length > 0) {
+            const current = existing[0];
+            const newTotalXp = (current.totalXp || 0) + (xpEarned || 0);
+            const newLevel = Math.floor(newTotalXp / 1000) + 1;
+            
+            await db.update(userStats)
+              .set({
+                totalQuestions: (current.totalQuestions || 0) + 1,
+                correctAnswers: (current.correctAnswers || 0) + (isCorrect ? 1 : 0),
+                totalXp: newTotalXp,
+                currentLevel: newLevel,
+                level: newLevel,
+                averageScore: Math.round(((current.correctAnswers || 0) + (isCorrect ? 1 : 0)) / ((current.totalQuestions || 0) + 1) * 100),
+                updatedAt: new Date()
+              })
+              .where(eq(userStats.userId, userId));
+            console.log(`📈 Manual stats update completed for user ${userId}`);
+          }
+        } catch (manualError) {
+          console.error('Manual stats update failed:', manualError);
+        }
       }
     }
   }
@@ -248,37 +265,45 @@ export class DatabaseStorage {
 
   async updateLeaderboard(userId: string): Promise<void> {
     try {
-      const userStatsData = await this.getUserStats(userId);
-      if (!userStatsData) return;
-
-      const existingEntry = await db.select()
-        .from(leaderboard)
-        .where(and(eq(leaderboard.userId, userId), sql`${leaderboard.category} IS NULL`))
-        .limit(1);
-
-      if (existingEntry.length > 0) {
-        await db.update(leaderboard)
-          .set({
-            score: userStatsData.totalXP,
-            totalQuestions: userStatsData.totalQuestions,
-            accuracy: userStatsData.averageScore,
-            updatedAt: new Date()
-          })
-          .where(eq(leaderboard.id, existingEntry[0].id));
-      } else {
-        await db.insert(leaderboard).values({
-          userId,
-          category: null,
-          rank: 0,
-          score: userStatsData.totalXP,
-          totalQuestions: userStatsData.totalQuestions,
-          accuracy: userStatsData.averageScore
-        });
-      }
-
-            await this.updateLeaderboardRanks();
+      // Use the new global leaderboard update function
+      await db.execute(sql`SELECT update_global_leaderboard()`);
+      console.log(`🏆 Global leaderboard updated after user ${userId} activity`);
     } catch (error) {
-      console.error('Error updating leaderboard:', error);
+      console.error('Error updating global leaderboard:', error);
+      // Fallback to old method if new one fails
+      try {
+        const userStatsData = await this.getUserStats(userId);
+        if (!userStatsData) return;
+
+        const existingEntry = await db.select()
+          .from(leaderboard)
+          .where(and(eq(leaderboard.userId, userId), sql`${leaderboard.category} IS NULL`))
+          .limit(1);
+
+        if (existingEntry.length > 0) {
+          await db.update(leaderboard)
+            .set({
+              xp: userStatsData.totalXp,
+              level: userStatsData.currentLevel,
+              streak: userStatsData.currentStreak || 0,
+              updatedAt: new Date()
+            })
+            .where(eq(leaderboard.id, existingEntry[0].id));
+        } else {
+          await db.insert(leaderboard).values({
+            userId,
+            category: null,
+            rank: 0,
+            xp: userStatsData.totalXp,
+            level: userStatsData.currentLevel,
+            streak: userStatsData.currentStreak || 0
+          });
+        }
+
+        await this.updateLeaderboardRanks();
+      } catch (fallbackError) {
+        console.error('Fallback leaderboard update also failed:', fallbackError);
+      }
     }
   }
 
@@ -592,53 +617,49 @@ export class DatabaseStorage {
     }
   }
 
-  // Update global leaderboard with actual user data
+  // Update global leaderboard using the new SQL function
   async updateGlobalLeaderboard(): Promise<void> {
     try {
-      // Calculate rankings based on total XP and level
-      const rankedUsers = await db.execute(sql`
-        WITH ranked_stats AS (
+      // Use the SQL function to update the global leaderboard
+      await db.execute(sql`SELECT update_global_leaderboard()`);
+      console.log(`🏆 Global leaderboard updated successfully using SQL function`);
+    } catch (error) {
+      console.error('Error updating global leaderboard with SQL function:', error);
+      
+      // Fallback to manual update if function fails
+      try {
+        const rankedUsers = await db.execute(sql`
           SELECT 
             us.user_id,
             COALESCE(us.total_xp, 0) as total_xp,
             COALESCE(us.current_level, 1) as current_level,
-            COALESCE(us.current_streak, 0) as current_streak,
             u.first_name,
             u.last_name,
+            COALESCE(u.full_name, CONCAT(u.first_name, ' ', u.last_name)) as full_name,
             u.email,
-            ROW_NUMBER() OVER (ORDER BY COALESCE(us.total_xp, 0) DESC, COALESCE(us.current_level, 1) DESC) as new_rank
+            ROW_NUMBER() OVER (ORDER BY COALESCE(us.total_xp, 0) DESC, COALESCE(us.average_score, 0) DESC) as new_rank
           FROM user_stats us
           LEFT JOIN users u ON us.user_id = u.id
-          WHERE u.id IS NOT NULL
-        )
-        SELECT * FROM ranked_stats
-        ORDER BY new_rank
-        LIMIT 100
-      `);
+          WHERE u.id IS NOT NULL AND COALESCE(us.total_xp, 0) > 0
+          ORDER BY total_xp DESC
+          LIMIT 100
+        `);
 
-      // Update global_leaderboard table
-      await db.execute(sql`DELETE FROM global_leaderboard`);
+        // Clear and repopulate global leaderboard
+        await db.execute(sql`DELETE FROM global_leaderboard`);
 
-      if (rankedUsers.length > 0) {
         for (const user of rankedUsers) {
           await db.execute(sql`
-            INSERT INTO global_leaderboard (user_id, total_xp, current_level, rank, first_name, last_name, email)
-            VALUES (${user.user_id}, ${user.total_xp}, ${user.current_level}, ${user.new_rank}, ${user.first_name}, ${user.last_name}, ${user.email})
-            ON CONFLICT (user_id) DO UPDATE SET
-              total_xp = EXCLUDED.total_xp,
-              current_level = EXCLUDED.current_level,
-              rank = EXCLUDED.rank,
-              first_name = EXCLUDED.first_name,
-              last_name = EXCLUDED.last_name,
-              email = EXCLUDED.email,
-              updated_at = NOW()
+            INSERT INTO global_leaderboard (user_id, total_xp, current_level, rank, first_name, last_name, full_name, email)
+            VALUES (${user.user_id}, ${user.total_xp}, ${user.current_level}, ${user.new_rank}, 
+                   ${user.first_name}, ${user.last_name}, ${user.full_name}, ${user.email})
           `);
         }
-      }
 
-      console.log(`Updated global leaderboard with ${rankedUsers.length} entries`);
-    } catch (error) {
-      console.error('Error updating global leaderboard:', error);
+        console.log(`📊 Fallback: Updated global leaderboard with ${rankedUsers.length} entries`);
+      } catch (fallbackError) {
+        console.error('Fallback global leaderboard update also failed:', fallbackError);
+      }
     }
   }
 
@@ -732,54 +753,83 @@ export class DatabaseStorage {
     }
   }
 
-  // Check and award badges to a user
+  // Check and award badges to a user using the SQL function
   async checkAndAwardBadges(userId: string): Promise<any[]> {
     try {
-      const userStats = await this.getUserStats(userId);
-      if (!userStats) return [];
-
-      const availableBadges = await db.select().from(badges);
-      const earnedBadges = await db.select().from(userBadges)
-        .where(eq(userBadges.userId, userId));
-
-      const earnedBadgeIds = new Set(earnedBadges.map(ub => ub.badgeId));
-      const newBadges = [];
-
-      for (const badge of availableBadges) {
-        if (earnedBadgeIds.has(badge.id)) continue;
-
-        let shouldAward = false;
-        const requirementValue = badge.requirement || 1;
-
-        switch (badge.requirementType) {
-          case 'questions':
-            shouldAward = (userStats.totalQuestions || 0) >= requirementValue;
-            break;
-          case 'accuracy':
-            shouldAward = (userStats.averageScore || 0) >= requirementValue;
-            break;
-          case 'streak':
-            shouldAward = (userStats.currentStreak || 0) >= requirementValue;
-            break;
-          case 'xp':
-            shouldAward = (userStats.totalXp || 0) >= requirementValue;
-            break;
-          default:
-            // Default to questions requirement
-            shouldAward = (userStats.totalQuestions || 0) >= requirementValue;
-            break;
-        }
-
-        if (shouldAward) {
-          await this.awardBadge(userId, badge.id);
-          newBadges.push(badge);
-        }
+      // Use the SQL function to check and award badges
+      const result = await db.execute(sql`SELECT check_and_award_badges(${userId}) as badges_awarded`);
+      const badgesAwarded = result[0]?.badges_awarded || 0;
+      
+      if (badgesAwarded > 0) {
+        console.log(`🏅 Awarded ${badgesAwarded} new badges to user ${userId}`);
+        
+        // Get the newly awarded badges to return to the frontend
+        const recentBadges = await db.execute(sql`
+          SELECT b.name, b.description, b.icon, b.xp_reward, b.color, ub.earned_at
+          FROM user_badges ub
+          JOIN badges b ON ub.badge_id = b.id
+          WHERE ub.user_id = ${userId}
+          AND ub.earned_at > NOW() - INTERVAL '1 minute'
+          ORDER BY ub.earned_at DESC
+        `);
+        
+        return recentBadges;
       }
-
-      return newBadges;
-    } catch (error) {
-      console.error('Error checking and awarding badges:', error);
+      
       return [];
+    } catch (error) {
+      console.error('Error checking and awarding badges with SQL function:', error);
+      
+      // Fallback to original method if SQL function fails
+      try {
+        const userStats = await this.getUserStats(userId);
+        if (!userStats) return [];
+
+        const availableBadges = await db.select().from(badges);
+        const earnedBadges = await db.select().from(userBadges)
+          .where(eq(userBadges.userId, userId));
+
+        const earnedBadgeIds = new Set(earnedBadges.map(ub => ub.badgeId));
+        const newBadges = [];
+
+        for (const badge of availableBadges) {
+          if (earnedBadgeIds.has(badge.id)) continue;
+
+          let shouldAward = false;
+          const requirementValue = badge.requirement || 1;
+
+          switch (badge.requirementType) {
+            case 'questions':
+              shouldAward = (userStats.totalQuestions || 0) >= requirementValue;
+              break;
+            case 'correct':
+              shouldAward = (userStats.correctAnswers || 0) >= requirementValue;
+              break;
+            case 'accuracy':
+              shouldAward = (userStats.averageScore || 0) >= requirementValue && userStats.totalQuestions >= 5;
+              break;
+            case 'xp':
+              shouldAward = (userStats.totalXp || 0) >= requirementValue;
+              break;
+            case 'level':
+              shouldAward = (userStats.currentLevel || 1) >= requirementValue;
+              break;
+            default:
+              shouldAward = (userStats.totalQuestions || 0) >= requirementValue;
+              break;
+          }
+
+          if (shouldAward) {
+            await this.awardBadge(userId, badge.id);
+            newBadges.push(badge);
+          }
+        }
+
+        return newBadges;
+      } catch (fallbackError) {
+        console.error('Fallback badge checking also failed:', fallbackError);
+        return [];
+      }
     }
   }
 

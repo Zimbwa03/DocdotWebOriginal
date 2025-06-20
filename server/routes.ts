@@ -1476,51 +1476,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Activate badge system for all existing users
-  app.post('/api/activate-badges', async (req, res) => {
+  // Fully activate XP and badges system
+  app.post('/api/activate-xp-badges-system', async (req, res) => {
     try {
-      console.log('Activating badge system for all users...');
+      console.log('🚀 Fully activating XP and badges system for all users...');
       
-      // Initialize badges first
-      await dbStorage.initializeBadges();
-      
-      // Get all users (not just those with stats)
+      // Get all users
       const allUsers = await db.select({ id: users.id }).from(users);
       
-      let activated = 0;
-      let statsCreated = 0;
+      let successfulActivations = 0;
+      let totalBadgesAwarded = 0;
+      const results = [];
       
       for (const { id: userId } of allUsers) {
         try {
-          // Ensure user has stats entry
-          await dbStorage.ensureUserHasStats(userId);
-          statsCreated++;
+          // Use the comprehensive initialization function
+          const result = await db.execute(sql`SELECT initialize_user_complete(${userId}) as result`);
+          const initResult = result[0]?.result;
           
-          // Check and award badges
-          const newBadges = await dbStorage.checkAndAwardBadges(userId);
-          if (newBadges.length > 0) {
-            console.log(`Activated ${newBadges.length} badges for user ${userId}`);
-            activated++;
+          if (initResult) {
+            successfulActivations++;
+            const badgesAwarded = initResult.badges_awarded || 0;
+            totalBadgesAwarded += badgesAwarded;
+            
+            results.push({
+              userId,
+              badgesAwarded,
+              success: true
+            });
+            
+            console.log(`✅ Activated user ${userId}: ${badgesAwarded} badges awarded`);
           }
         } catch (error) {
-          console.error(`Error activating badges for user ${userId}:`, error);
+          console.error(`❌ Error activating user ${userId}:`, error);
+          results.push({
+            userId,
+            error: error.message,
+            success: false
+          });
         }
       }
       
-      // Update global leaderboard
-      await dbStorage.updateGlobalLeaderboard();
+      // Final global leaderboard update
+      await db.execute(sql`SELECT update_global_leaderboard()`);
       
       res.json({ 
         success: true, 
-        message: `Badge system activated for ${activated} users, stats created for ${statsCreated} users`,
+        message: `🎉 XP and badges system fully activated!`,
         totalUsers: allUsers.length,
-        activated,
-        statsCreated
+        successfulActivations,
+        totalBadgesAwarded,
+        failedActivations: allUsers.length - successfulActivations,
+        leaderboardUpdated: true,
+        results
       });
     } catch (error) {
-      console.error('Error activating badge system:', error);
-      res.status(500).json({ error: 'Failed to activate badge system' });
+      console.error('Error fully activating XP and badges system:', error);
+      res.status(500).json({ error: 'Failed to activate XP and badges system' });
     }
+  });
+
+  // Legacy badge activation endpoint (for backward compatibility)
+  app.post('/api/activate-badges', async (req, res) => {
+    // Redirect to the new comprehensive activation
+    return res.redirect(307, '/api/activate-xp-badges-system');
   });
 
   // Create sample leaderboard data for testing

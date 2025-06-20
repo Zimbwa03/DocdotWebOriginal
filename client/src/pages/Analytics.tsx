@@ -57,10 +57,10 @@ export default function Analytics() {
 
   useEffect(() => {
     fetchAnalytics();
-    
+
     // Set up interval to refresh analytics every 30 seconds
     const interval = setInterval(fetchAnalytics, 30000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
@@ -148,8 +148,13 @@ export default function Analytics() {
     return currentLevel * 1000;
   };
 
-  const getCurrentLevelXP = (totalXP: number, currentLevel: number) => {
-    return totalXP - ((currentLevel - 1) * 1000);
+  const getCurrentLevelXP = (totalXP: number, currentLevel: number): number => {
+    const xpForCurrentLevel = (currentLevel - 1) * 1000;
+    return totalXP - xpForCurrentLevel;
+  };
+
+  const getXPToNextLevel = (totalXP: number, currentLevel: number): number => {
+    return Math.max(0, 1000 - getCurrentLevelXP(totalXP, currentLevel));
   };
 
   if (loading) {
@@ -162,6 +167,7 @@ export default function Analytics() {
 
   return (
     <div className="space-y-8">
+      
       <div className="text-center">
         <div className="flex items-center justify-center space-x-3 mb-4">
           <img 
