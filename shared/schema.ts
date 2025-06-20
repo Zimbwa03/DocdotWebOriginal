@@ -311,23 +311,6 @@ export const studyGroups = pgTable("study_groups", {
 
 export const studyGroupMembers = pgTable("study_group_members", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  groupId: integer("group_id").references(() => studyGroups.id),
-  userId: text("user_id").references(() => users.id),
-  joinedAt: timestamp("joined_at").defaultNow(),
-  hasJoinedMeeting: boolean("has_joined_meeting").default(false),
-});
-
-export const meetingReminders = pgTable("meeting_reminders", {
-  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  groupId: integer("group_id").references(() => studyGroups.id),
-  userId: text("user_id").references(() => users.id),
-  reminderTime: timestamp("reminder_time").notNull(),
-  sent: boolean("sent").default(false),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-export const studyGroupMembers = pgTable("study_group_members", {
-  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   groupId: integer("group_id").references(() => studyGroups.id, { onDelete: "cascade" }),
   userId: text("user_id").references(() => users.id),
   joinedAt: timestamp("joined_at").defaultNow(),
