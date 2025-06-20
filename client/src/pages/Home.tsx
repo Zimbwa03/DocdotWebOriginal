@@ -539,31 +539,31 @@ export default function Home() {
             {[
               {
                 title: 'XP & Level',
-                value: stats.totalXP.toLocaleString(),
-                subtitle: `Level ${stats.currentLevel}`,
-                progress: ((stats.totalXP % 1000) / 1000) * 100,
-                progressText: `${1000 - (stats.totalXP % 1000)} XP to next level`,
+                value: (stats.totalXP || 0).toLocaleString(),
+                subtitle: `Level ${stats.currentLevel || 1}`,
+                progress: (((stats.totalXP || 0) % 1000) / 1000) * 100,
+                progressText: `${1000 - ((stats.totalXP || 0) % 1000)} XP to next level`,
                 icon: Zap,
                 bgColor: '#D1E8F9'
               },
               {
                 title: 'Study Streak',
-                value: stats.currentStreak,
+                value: stats.currentStreak || 0,
                 subtitle: 'days active',
-                extraText: `Best: ${stats.longestStreak} days`,
+                extraText: `Best: ${stats.longestStreak || 0} days`,
                 icon: Calendar,
                 bgColor: '#D1E8F9'
               },
               {
                 title: 'Overall Accuracy',
-                value: `${stats.averageScore}%`,
-                subtitle: `${stats.correctAnswers} of ${stats.totalQuestions} correct`,
+                value: `${stats.averageScore || 0}%`,
+                subtitle: `${stats.correctAnswers || 0} of ${stats.totalQuestions || 0} correct`,
                 icon: Target,
                 bgColor: '#D1E8F9'
               },
               {
                 title: 'Global Rank',
-                value: `#${stats.rank}`,
+                value: `#${stats.rank || 1}`,
                 subtitle: 'Top 100!',
                 hasButton: true,
                 icon: Trophy,
