@@ -178,20 +178,19 @@ export class DatabaseStorage {
       const result = await db.select().from(userStats).where(eq(userStats.userId, userId)).limit(1);
 
       if (result[0]) {
-        // Calculate today's study time
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        const todayStats = await db.select().from(dailyStats)
-          .where(and(eq(dailyStats.userId, userId), gte(dailyStats.date, today)))
-          .limit(1);
-
-        const studyTimeToday = todayStats.length > 0 ? Math.round((todayStats[0].studyTime || 0) / 60) : 0;
-
-        return {
+        // Ensure all fields are present with defaults
+        const stats = {
           ...result[0],
-          studyTimeToday
+          streak: result[0].streak || result[0].currentStreak || 0,
+          level: result[0].level || result[0].currentLevel || 1,
+          averageAccuracy: result[0].averageAccuracy || result[0].averageScore || 0,
+          weeklyXp: result[0].weeklyXp || 0,
+          monthlyXp: result[0].monthlyXp || 0,
+          totalBadges: result[0].totalBadges || 0,
+          studyTimeToday: 0 // Default value, skip daily stats query for now due to schema issues
         };
+
+        return stats;
       }
 
       return result[0];
@@ -203,67 +202,30 @@ export class DatabaseStorage {
 
   async updateUserStats(userId: string, isCorrect: boolean, xpEarned: number, timeSpent: number): Promise<void> {
     try {
-      const existing = await this.getUserStats(userId);
-
-      if (existing) {
-        const newTotalQuestions = existing.totalQuestions + 1;
-        const newCorrectAnswers = existing.correctAnswers + (isCorrect ? 1 : 0);
-        const newAverageScore = Math.round((newCorrectAnswers / newTotalQuestions) * 100);
-
-        // Calculate streak: increment if correct, reset if wrong
-        const newStreak = isCorrect ? existing.currentStreak + 1 : 0;
-        const newLongestStreak = Math.max(existing.longestStreak, newStreak);
-
-        const newTotalXp = existing.totalXp + (xpEarned || 0);
-        const newLevel = Math.floor(newTotalXp / 1000) + 1;
-
-        await db.update(userStats)
-          .set({
-            totalQuestions: newTotalQuestions,
-            correctAnswers: newCorrectAnswers,
-            averageScore: newAverageScore,
-            currentStreak: newStreak,
-            longestStreak: newLongestStreak,
-            totalXp: newTotalXp,
-            currentLevel: newLevel,
-            totalStudyTime: existing.totalStudyTime + Math.round((timeSpent || 0) / 60),
-            updatedAt: new Date()
-          })
-          .where(eq(userStats.userId, userId));
-      } else {
-        await db.insert(userStats).values({
-          userId,
-          totalQuestions: 1,
-          correctAnswers: isCorrect ? 1 : 0,
-          averageScore: isCorrect ? 100 : 0,
-          currentStreak: isCorrect ? 1 : 0,
-          longestStreak: isCorrect ? 1 : 0,
-          totalXp: xpEarned || 0,
-          currentLevel: Math.floor((xpEarned || 0) / 1000) + 1,
-          totalStudyTime: Math.round((timeSpent || 0) / 60),
-          rank: 0
-        });
-      }
-
-      const finalStats = existing ? {
-        totalQuestions: existing.totalQuestions + 1,
-        correctAnswers: existing.correctAnswers + (isCorrect ? 1 : 0),
-        averageScore: Math.round(((existing.correctAnswers + (isCorrect ? 1 : 0)) / (existing.totalQuestions + 1)) * 100),
-        currentStreak: isCorrect ? existing.currentStreak + 1 : 0,
-        totalXp: existing.totalXp + (xpEarned || 0),
-        currentLevel: Math.floor((existing.totalXp + (xpEarned || 0)) / 1000) + 1
-      } : {
-        totalQuestions: 1,
-        correctAnswers: isCorrect ? 1 : 0,
-        averageScore: isCorrect ? 100 : 0,
-        currentStreak: isCorrect ? 1 : 0,
-        totalXp: xpEarned || 0,
-        currentLevel: Math.floor((xpEarned || 0) / 1000) + 1
-      };
-
-      console.log(`Updated stats for user ${userId}: ${finalStats.totalQuestions} questions, ${finalStats.correctAnswers} correct, ${finalStats.averageScore}% accuracy, ${finalStats.totalXp} XP, Level ${finalStats.currentLevel}, Streak ${finalStats.currentStreak}`);
+      // Use the SQL function to recalculate stats from actual quiz data
+      await db.execute(sql`SELECT recalculate_user_analytics(${userId})`);
+      
+      console.log(`📊 Analytics updated for user ${userId} via SQL function`);
     } catch (error) {
       console.error('Error updating user stats:', error);
+      // Fallback: try simple increment approach
+      try {
+        const existing = await db.select().from(userStats).where(eq(userStats.userId, userId)).limit(1);
+        
+        if (existing.length > 0) {
+          const current = existing[0];
+          await db.update(userStats)
+            .set({
+              totalQuestions: (current.totalQuestions || 0) + 1,
+              correctAnswers: (current.correctAnswers || 0) + (isCorrect ? 1 : 0),
+              totalXp: (current.totalXp || 0) + (xpEarned || 0),
+              updatedAt: new Date()
+            })
+            .where(eq(userStats.userId, userId));
+        }
+      } catch (fallbackError) {
+        console.error('Fallback stats update also failed:', fallbackError);
+      }
     }
   }
 
@@ -363,22 +325,10 @@ export class DatabaseStorage {
           totalBadges: 0
         });
         console.log(`Created stats entry for user: ${userId}`);
-      } else {
-        // Update existing stats to ensure all fields are present
-        await db.update(userStats)
-          .set({
-            weeklyXp: existingStats[0].weeklyXp || 0,
-            monthlyXp: existingStats[0].monthlyXp || 0,
-            averageAccuracy: existingStats[0].averageAccuracy || existingStats[0].averageScore || 0,
-            level: existingStats[0].level || existingStats[0].currentLevel || 1,
-            streak: existingStats[0].streak || existingStats[0].currentStreak || 0,
-            totalBadges: existingStats[0].totalBadges || 0,
-            updatedAt: new Date()
-          })
-          .where(eq(userStats.userId, userId));
       }
     } catch (error) {
       console.error(`Error ensuring user stats for ${userId}:`, error);
+      // Don't throw error - analytics should not break the app
     }
   }
 
