@@ -28,7 +28,6 @@ console.log('- Using Supabase:', connectionString.includes('supabase.co'));
 const client = postgres(connectionString, {
   ssl: 'require',
   connect_timeout: 60,
-  socket_timeout: 60,
   idle_timeout: 60,
   max: 10,
   onnotice: () => {} // Suppress notices
@@ -567,7 +566,7 @@ export class DatabaseStorage {
       const [rankResult] = await db
         .select({ count: sql<number>`count(*)` })
         .from(userStats)
-        .where(gt(userStats.totalXp, userStatsData.totalXp));
+        .where(sql`${userStats.totalXp} > ${userStatsData.totalXp || 0}`);
 
       // Count total users with stats
       const [totalUsersResult] = await db

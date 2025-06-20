@@ -417,7 +417,7 @@ export default function Home() {
     averageScore: 0,
     currentStreak: 0,
     longestStreak: 0,
-    totalXP: 0,
+    totalXp: 0,
     currentLevel: 1,
     totalStudyTime: 0,
     rank: userRankResponse?.rank || 11,
@@ -485,7 +485,7 @@ export default function Home() {
           {[
             { label: 'Minutes Today', value: todayStudyTime, icon: Clock, color: '#3399FF' },
             { label: 'Day Streak', value: stats.currentStreak, icon: Flame, color: '#3399FF' },
-            { label: 'Total XP', value: stats.totalXP, icon: Star, color: '#3399FF' },
+            { label: 'Total XP', value: stats.totalXp, icon: Star, color: '#3399FF' },
             { label: `Level ${stats.currentLevel}`, value: '', icon: Crown, color: '#3399FF' }
           ].map((stat, index) => {
             const IconComponent = stat.icon;
