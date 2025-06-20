@@ -834,7 +834,7 @@ export default function Quiz() {
                   <div className="text-6xl font-bold text-blue-600 mb-2">
                     {examResults.scorePercentage}%
                   </div>
-                  <p className="text-xl text-blue-800 font-medium                  Final Score</p>
+                  <p className="text-xl text-blue-800 font-medium">Final Score</p>
                   <p className="text-lg text-gray-600 mt-2">
                     Total Points: {examResults.totalScore} / {examResults.totalOptions}
                   </p>

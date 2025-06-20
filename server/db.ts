@@ -2,7 +2,7 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { 
   users, userStats, categoryStats, dailyStats, leaderboard, quizAttempts, badges, userBadges,
-  userAnalytics, aiSessions, aiChats, studyPlannerSessions, studyGroups, studyGroupMembers,
+  aiSessions, aiChats, studyPlannerSessions, studyGroups, studyGroupMembers,
   customExams, customExamStems, stemOptions, customExamAttempts, examGenerationHistory,
   type User, type InsertUser, type UserStats, type CategoryStats, 
   type DailyStats, type LeaderboardEntry, type QuizAttempt,
