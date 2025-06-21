@@ -247,7 +247,7 @@ app.get("/api/leaderboard", async (req, res) => {
     console.log(`Getting leaderboard: limit=${limit}, timeFrame=${timeFrame}, category=${category}`);
 
     // Use a safer query approach to avoid Drizzle ORM issues
-    const leaderboardQuery = `
+    const result = await db.execute(sql`
       SELECT 
         user_id as "userId",
         rank,
@@ -256,17 +256,13 @@ app.get("/api/leaderboard", async (req, res) => {
         streak,
         full_name as "fullName",
         institution,
-        total_questions as "totalQuestions",
-        accuracy,
-        score
+        category
       FROM leaderboard
       WHERE xp > 0
       ORDER BY xp DESC, level DESC
-      LIMIT $1
-    `;
-
-    const result = await sql.unsafe(leaderboardQuery, [limit]);
-    const leaderboardEntries = result.rows || [];
+      LIMIT ${limit}
+    `);
+    const leaderboardEntries = result || [];
 
     console.log(`Leaderboard fetched: ${leaderboardEntries.length} entries`);
 
