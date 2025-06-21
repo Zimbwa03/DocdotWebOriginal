@@ -1673,12 +1673,26 @@ app.get("/api/leaderboard", async (req, res) => {
         return res.status(400).json({ error: "Missing required fields" });
       }
 
+      // Parse date properly - handle both string and Date objects
+      let parsedDate;
+      if (typeof date === 'string') {
+        // If it's already an ISO string, use it directly, otherwise add time
+        parsedDate = date.includes('T') ? new Date(date) : new Date(date + 'T00:00:00.000Z');
+      } else {
+        parsedDate = new Date(date);
+      }
+
+      // Validate the parsed date
+      if (isNaN(parsedDate.getTime())) {
+        return res.status(400).json({ error: "Invalid date format" });
+      }
+
       const [newSession] = await db.insert(studyPlannerSessions).values({
         userId,
         title,
         subject,
         topic,
-        date: typeof date === 'string' ? new Date(date + 'T00:00:00.000Z') : new Date(date),
+        date: parsedDate,
         startTime,
         endTime,
         duration: duration || 60,
