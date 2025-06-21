@@ -915,8 +915,22 @@ app.get("/api/leaderboard", async (req, res) => {
         aiProvider: 'deepseek'
       });
 
-      // Generate AI-powered medical MCQ stems
-      const examData = await openRouterAI.generateCustomExam(topics, stemCount, examType);
+      // Generate AI-powered medical exam stems using topics array correctly
+      const topicNames = topics.map(topicId => {
+        const anatomyTopicMap = {
+          1: 'Upper Limb', 2: 'Thorax', 3: 'Head and Neck', 
+          4: 'Lower Limb', 5: 'Abdomen', 6: 'Neuroanatomy'
+        };
+        const physiologyTopicMap = {
+          7: 'Cell Physiology', 8: 'Nerve and Muscle', 9: 'Blood',
+          10: 'Endocrine', 11: 'Cardiovascular System', 12: 'Respiration'
+        };
+        const topicMap = examType === 'anatomy' ? anatomyTopicMap : physiologyTopicMap;
+        return topicMap[topicId] || `Topic ${topicId}`;
+      });
+
+      console.log(`🤖 Generating ${stemCount} ${examType} stems for topics:`, topicNames);
+      const examData = await openRouterAI.generateCustomExam(topicNames, stemCount, examType);
 
       if (!examData || !examData.stems || examData.stems.length === 0) {
         // Update generation history with failure

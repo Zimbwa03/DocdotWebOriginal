@@ -42,7 +42,7 @@ class OpenRouterAI {
 
   private setCache(key: string, response: string): void {
     this.responseCache.set(key, { response, timestamp: Date.now() });
-    
+
     // Clean old cache entries (keep only last 100)
     if (this.responseCache.size > 100) {
       const entries = Array.from(this.responseCache.entries());
@@ -107,7 +107,7 @@ class OpenRouterAI {
           statusText: response.statusText,
           error: errorText
         });
-        
+
         if (response.status === 401) {
           throw new Error('Invalid API key - please check your DeepSeek API key configuration');
         } else if (response.status === 429) {
@@ -115,22 +115,22 @@ class OpenRouterAI {
         } else if (response.status >= 500) {
           throw new Error('DeepSeek service is temporarily unavailable - please try again later');
         }
-        
+
         throw new Error(`DeepSeek API error: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json() as any;
-      
+
       if (!data.choices || !data.choices[0] || !data.choices[0].message) {
         console.error('Invalid API response structure:', data);
         throw new Error('Invalid response from AI service');
       }
-      
+
       const result = data.choices[0].message.content || 'I apologize, but I could not generate a response.';
-      
+
       // Cache the response
       this.setCache(cacheKey, result);
-      
+
       console.log('AI response generated successfully');
       return result;
     } catch (error: any) {
@@ -139,15 +139,15 @@ class OpenRouterAI {
         message: error.message,
         stack: error.stack?.substring(0, 500)
       });
-      
+
       if (error.name === 'AbortError') {
         throw new Error('Request timed out after 15 seconds. Please try again with a shorter question.');
       }
-      
+
       if (error.message?.includes('fetch failed') || error.code === 'ENOTFOUND') {
         throw new Error('Network connection failed. Please check your internet connection.');
       }
-      
+
       throw error;
     }
   }
@@ -199,30 +199,30 @@ class OpenRouterAI {
     try {
       console.log(`Generating ${validCount} questions about "${sanitizedTopic}" at ${difficulty} level`);
       const response = await this.generateResponse(messages, 0.2);
-      
+
       if (!response || response.trim().length === 0) {
         throw new Error('Empty response from AI service');
       }
 
       console.log('Raw AI response:', response.substring(0, 200) + '...');
-      
+
       // Clean the response to extract JSON
       let jsonString = response.trim();
-      
+
       // Remove common prefixes/suffixes
       jsonString = jsonString.replace(/^```json\s*/, '').replace(/\s*```$/, '');
       jsonString = jsonString.replace(/^```\s*/, '').replace(/\s*```$/, '');
-      
+
       // Find JSON array bounds
       const jsonStart = jsonString.indexOf('[');
       const jsonEnd = jsonString.lastIndexOf(']');
-      
+
       if (jsonStart === -1 || jsonEnd === -1) {
         throw new Error('No valid JSON array found in response');
       }
-      
+
       jsonString = jsonString.substring(jsonStart, jsonEnd + 1);
-      
+
       let parsedResponse;
       try {
         parsedResponse = JSON.parse(jsonString);
@@ -231,10 +231,10 @@ class OpenRouterAI {
         console.error('Failed JSON string:', jsonString);
         throw new Error('Invalid JSON format in AI response');
       }
-      
+
       // Ensure it's an array
       const questions = Array.isArray(parsedResponse) ? parsedResponse : [parsedResponse];
-      
+
       if (questions.length === 0) {
         throw new Error('No questions generated');
       }
@@ -266,12 +266,12 @@ class OpenRouterAI {
         topic: sanitizedTopic,
         count: validCount
       });
-      
+
       // If AI fails, provide educational fallback questions
       if (error.message?.includes('API key') || error.message?.includes('not configured')) {
         throw error; // Re-throw configuration errors
       }
-      
+
       console.log('Providing fallback questions due to AI error');
       return this.generateFallbackQuestions(sanitizedTopic, difficulty, validCount);
     }
@@ -319,32 +319,32 @@ class OpenRouterAI {
   // Medical Tutor Chat
   async tutorResponse(userQuestion: string, context?: string): Promise<string> {
     const systemPrompt = `You are an expert medical tutor 👨‍⚕️. Provide concise, accurate medical education responses.
-    
+
     FORMATTING:
     - Start with greeting emoji
     - Use **bold** for key medical terms
     - Structure with emoji headers
     - Keep responses focused and under 500 words
-    
+
     CONTENT:
     - Accurate, evidence-based information
     - Clear language for medical students
     - Include practical examples
     - End with encouragement
-    
+
     STRUCTURE:
     [Emoji] Great question!
-    
+
     📖 **Key Concept:** [Brief explanation with **bold** terms]
-    
+
     🔍 **Important Points:**
     • [Point 1]
     • [Point 2]
-    
+
     🏥 **Clinical Application:** [Brief practical relevance]
-    
+
     ✨ Keep studying!
-    
+
     ${context ? `Context: ${context}` : ''}`;
 
     const messages: AIMessage[] = [
@@ -358,7 +358,7 @@ class OpenRouterAI {
   // Study Plan Generation
   async generateStudyPlan(goals: string[], timeframe: string, currentLevel: string): Promise<any> {
     const systemPrompt = `You are a medical education specialist. Create a comprehensive study plan based on the student's goals and timeframe.
-    
+
     Return a JSON object with this structure:
     {
       "title": "Study plan title",
@@ -394,34 +394,34 @@ class OpenRouterAI {
   // Concept Explanation
   async explainConcept(concept: string, level: string = 'intermediate'): Promise<string> {
     const systemPrompt = `You are a medical educator explaining complex concepts clearly at ${level} level.
-    
+
     FORMATTING REQUIREMENTS:
     - Start with concept emoji and **bold concept name**
     - Use structured sections with emojis
     - Bold all key medical terms
     - Include relevant emojis throughout
     - End with study encouragement
-    
+
     Response Structure:
     🧠 **${concept}** - ${level.charAt(0).toUpperCase() + level.slice(1)} Level Explanation
-    
+
     📖 **Definition:**
     [Clear definition with **bold** key terms]
-    
+
     🔑 **Key Components:**
     • [Component 1 with **bold** terms]
     • [Component 2 with **bold** terms]
     • [Component 3 with **bold** terms]
-    
+
     🏥 **Clinical Significance:**
     [Why this matters in practice]
-    
+
     🧩 **Related Concepts:**
     [Connected topics]
-    
+
     💡 **Memory Aid:**
     [Mnemonic or study tip if applicable]
-    
+
     ✨ Understanding ${concept} is crucial for medical practice!`;
 
     const messages: AIMessage[] = [
@@ -443,7 +443,7 @@ class OpenRouterAI {
 
     // Force DeepSeek AI generation - no fallback templates
     console.log(`🤖 Calling DeepSeek AI for ${validStemCount} ${examType} exam stems on topics: ${topics.join(', ')}`);
-    
+
     const systemPrompt = `You are a medical education expert creating professional ${examType} exam stems based on authoritative medical sources.
 
 AUTHORITATIVE SOURCES TO REFERENCE:
@@ -516,188 +516,108 @@ REQUIRED JSON OUTPUT:
 
 Generate ${validStemCount} medically accurate stems from authoritative sources. Ensure diverse subtopic coverage. Return ONLY valid JSON.`;
 
+    const userPrompt = `Generate ${validStemCount} medical exam stems about ${examType} covering: ${topics.join(', ')}.
+
+CRITICAL: Each stem must follow this EXACT format:
+- Start with "Concerning [specific topic]"
+- Have exactly 5 statements labeled a, b, c, d, e
+- Mix true and false statements
+- Include detailed explanations citing medical sources
+- Use proper medical terminology
+
+Example topics for ${examType}:
+${examType === 'anatomy' ? 
+  '- "Concerning the muscles of the forearm"\n- "Concerning the blood supply to the brain"\n- "Concerning the joints of the lower limb"' :
+  '- "Concerning cardiac electrophysiology"\n- "Concerning renal filtration"\n- "Concerning respiratory mechanics"'}
+
+Return ONLY valid JSON in the specified format. No additional text.`;
+
     const messages: AIMessage[] = [
       { role: 'system', content: systemPrompt },
-      { role: 'user', content: `Create ${validStemCount} professional ${examType} exam stems covering ${topics.join(', ')}. 
-
-SPECIFIC REQUIREMENTS:
-- For ANATOMY: Reference facts from Snell's Clinical Anatomy, Gray's Anatomy, Keith Moore's Clinically Oriented Anatomy, TeachMeAnatomy.info, and Kenhub.com
-- For PHYSIOLOGY: Reference facts from Guyton & Hall Medical Physiology, Ganong's Review, Boron & Boulpaep, TeachMePhysiology.com, and Kenhub.com
-- Cover DIVERSE subtopics within each topic area (e.g., thorax: ribs, sternum, vertebrae, intercostals, pleura, lungs, heart, mediastinum)
-- Include clinical correlations and functional relationships from these authoritative sources
-- Each stem should test different concepts within the topic area
-- Use "Concerning the..." format with True/False medical statements
-- Cite specific source material in explanations:
-  * "According to Snell's Clinical Anatomy..."
-  * "As described in Gray's Anatomy..."
-  * "Keith Moore's Clinically Oriented Anatomy states..."
-  * "Per Guyton & Hall Medical Physiology..."
-  * "Ganong's Review indicates..."
-  * "TeachMeAnatomy/TeachMePhysiology explains..."
-  * "Kenhub resources describe..."
-
-Generate medically accurate content exclusively from these trusted educational resources.` }
+      { role: 'user', content: userPrompt }
     ];
 
-    console.log('🔄 Sending request to DeepSeek API...');
-    const response = await this.generateResponse(messages, 0.2);
-    
-    if (!response || response.trim().length === 0) {
-      throw new Error('DeepSeek API returned empty response');
-    }
-
-    console.log('✅ DeepSeek response received, processing...');
-    console.log('📄 Raw response preview:', response.substring(0, 150) + '...');
-    
-    // Extract and parse JSON from DeepSeek response with better error handling
-    let jsonString = response.trim();
-    jsonString = jsonString.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-    jsonString = jsonString.replace(/^```\s*/, '').replace(/\s*```$/, '');
-    
-    const jsonStart = jsonString.indexOf('{');
-    let jsonEnd = jsonString.lastIndexOf('}');
-    
-    if (jsonStart === -1) {
-      throw new Error('No valid JSON structure found in DeepSeek response');
-    }
-    
-    // Handle truncated JSON by trying to repair it
-    if (jsonEnd === -1 || jsonEnd < jsonStart + 50) {
-      console.log('🔧 Attempting to repair truncated JSON response...');
-      // Find the last complete stem in the response
-      const stemsStart = jsonString.indexOf('"stems":');
-      if (stemsStart !== -1) {
-        let repairPoint = jsonString.lastIndexOf('},{');
-        if (repairPoint === -1) {
-          repairPoint = jsonString.lastIndexOf('{');
-        }
-        if (repairPoint > stemsStart) {
-          jsonString = jsonString.substring(0, repairPoint) + '}]}';
-          jsonEnd = jsonString.lastIndexOf('}');
-        }
-      }
-    }
-    
-    if (jsonEnd === -1) {
-      throw new Error('Unable to repair truncated JSON from DeepSeek');
-    }
-    
-    jsonString = jsonString.substring(jsonStart, jsonEnd + 1);
-    
-    let aiResponse;
     try {
-      aiResponse = JSON.parse(jsonString);
-    } catch (parseError) {
-      console.error('❌ JSON parsing failed even after repair attempts:', parseError);
-      console.error('🔍 Failed JSON sample:', jsonString.substring(0, 500));
-      
-      // Last resort: extract stems manually from response
-      console.log('🛠️ Attempting manual stem extraction...');
-      const stemMatches = response.match(/"stemText":\s*"([^"]+)"/g);
-      if (stemMatches && stemMatches.length > 0) {
-        const extractedStems = stemMatches.slice(0, validStemCount).map((match, index) => {
-          const stemText = match.match(/"stemText":\s*"([^"]+)"/)?.[1] || `Concerning topic ${index + 1}`;
-          return {
-            id: `stem_${index + 1}`,
-            stemText: stemText,
-            orderIndex: index + 1,
-            options: [
-              {
-                id: `option_${index + 1}_a`,
-                optionLetter: 'A',
-                statement: 'True',
-                answer: true,
-                explanation: 'Medical statement verified'
-              },
-              {
-                id: `option_${index + 1}_b`,
-                optionLetter: 'B',
-                statement: 'False',
-                answer: false,
-                explanation: 'Medical statement corrected'
-              }
-            ]
-          };
-        });
-        
-        console.log(`🔧 Extracted ${extractedStems.length} stems from partial response`);
-        return {
-          stems: extractedStems,
-          examType,
-          topics,
-          totalStems: extractedStems.length
-        };
+      console.log(`🤖 Sending request to DeepSeek for ${validStemCount} stems`);
+      const response = await this.generateResponse(messages, 0.7);
+
+      console.log(`✅ DeepSeek response received, length: ${response.length}`);
+
+      // Parse the JSON response
+      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('No valid JSON found in AI response');
       }
-      
-      throw new Error('DeepSeek returned unparseable JSON format');
-    }
-    
-    if (!aiResponse.stems || !Array.isArray(aiResponse.stems)) {
-      throw new Error('DeepSeek response missing required stems array');
-    }
 
-    // Process DeepSeek AI generated stems
-    const aiGeneratedStems = aiResponse.stems.slice(0, validStemCount).map((stem: any, index: number) => {
-      return {
-        id: stem.id || `stem_${index + 1}`,
-        stemText: stem.stemText || `Concerning ${topics[index % topics.length]}`,
-        orderIndex: index + 1,
-        options: (stem.options || []).slice(0, 2).map((opt: any, optIndex: number) => ({
-          id: opt.id || `option_${index + 1}_${optIndex === 0 ? 'a' : 'b'}`,
-          optionLetter: opt.optionLetter || (optIndex === 0 ? 'A' : 'B'),
-          statement: opt.statement || `Medical statement ${optIndex + 1}`,
-          answer: opt.answer !== undefined ? opt.answer : (optIndex === 0),
-          explanation: opt.explanation || `Medical explanation ${optIndex + 1}`
-        }))
-      };
-    });
+      const examData = JSON.parse(jsonMatch[0]);
 
-    console.log(`🎯 Successfully generated ${aiGeneratedStems.length} AI-powered medical exam stems from DeepSeek`);
-    
-    return {
-      stems: aiGeneratedStems,
-      examType,
-      topics,
-      totalStems: aiGeneratedStems.length
-    };
+      if (!examData.stems || !Array.isArray(examData.stems)) {
+        throw new Error('Invalid exam data structure from AI');
+      }
+
+      // Validate each stem has proper format
+      examData.stems.forEach((stem, index) => {
+        if (!stem.stemText || !stem.stemText.startsWith('Concerning')) {
+          throw new Error(`Stem ${index + 1} missing proper "Concerning" format`);
+        }
+        if (!stem.options || stem.options.length !== 5) {
+          throw new Error(`Stem ${index + 1} must have exactly 5 options (a-e)`);
+        }
+
+        // Ensure proper option letters
+        const expectedLetters = ['a', 'b', 'c', 'd', 'e'];
+        stem.options.forEach((option, optIndex) => {
+          if (option.optionLetter !== expectedLetters[optIndex]) {
+            option.optionLetter = expectedLetters[optIndex];
+          }
+        });
+      });
+
+      console.log(`✅ Successfully parsed and validated ${examData.stems.length} stems from AI`);
+      return examData;
+
+    } catch (error) {
+      console.error('❌ DeepSeek AI generation failed:', error);
+      throw new Error(`AI generation failed: ${error.message}`);
+    }
   }
 
   // Case Study Analysis
   async analyzeCaseStudy(caseDetails: string): Promise<string> {
     const systemPrompt = `You are a clinical educator helping students analyze medical cases.
-    
+
     FORMATTING REQUIREMENTS:
     - Use structured sections with medical emojis
     - Bold all medical terms and diagnoses
     - Include clinical reasoning emojis
     - End with learning summary
-    
+
     Response Structure:
     🏥 **Clinical Case Analysis**
-    
+
     📋 **Key Clinical Findings:**
     • [Finding 1 with **bold** terms]
     • [Finding 2 with **bold** terms]
     • [Finding 3 with **bold** terms]
-    
+
     🤔 **Differential Diagnosis:**
     1. **[Primary diagnosis]** - [reasoning]
     2. **[Secondary diagnosis]** - [reasoning]
     3. **[Tertiary diagnosis]** - [reasoning]
-    
+
     🔬 **Diagnostic Approach:**
     • **Initial tests:** [with **bold** test names]
     • **Confirmatory studies:** [with **bold** test names]
     • **Additional workup:** [if needed]
-    
+
     💡 **Clinical Reasoning:**
     [Step-by-step thought process with **bold** key points]
-    
+
     📚 **Learning Points:**
     • [Educational takeaway 1]
     • [Educational takeaway 2]
     • [Educational takeaway 3]
-    
+
     ⭐ Excellent case for learning clinical reasoning!`;
 
     const messages: AIMessage[] = [
@@ -712,7 +632,7 @@ Generate medically accurate content exclusively from these trusted educational r
   async getPersonalizedRecommendations(weakAreas: string[], strengths: string[], learningStyle: string): Promise<any> {
     const systemPrompt = `You are a learning analytics expert for medical education. 
     Based on student performance data, provide personalized recommendations.
-    
+
     Return JSON format:
     {
       "focusAreas": ["Area 1", "Area 2"],

@@ -445,35 +445,46 @@ export default function CustomizeExam() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="bg-[#D1E8F9] p-4 rounded-lg">
-                  <h3 className="font-bold text-heading text-lg mb-4">
+                <div className="bg-[#D1E8F9] p-6 rounded-lg">
+                  <h3 className="font-bold text-heading text-xl mb-4">
                     {currentStem.stemText}
                   </h3>
+                  <p className="text-body text-sm">
+                    For each statement below, select True (T) or False (F):
+                  </p>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {currentStem.options.map((option) => (
-                    <div key={option.id} className="flex items-center space-x-4 p-3 border border-[#D1E8F9] rounded-lg">
-                      <span className="font-bold text-heading w-6">
+                    <div key={option.id} className="flex items-start space-x-4 p-4 border-2 border-[#D1E8F9] rounded-lg hover:border-primary-docdot transition-colors">
+                      <span className="font-bold text-heading text-lg w-8 mt-1">
                         {option.optionLetter})
                       </span>
-                      <span className="flex-1 text-body">
+                      <span className="flex-1 text-body text-base leading-relaxed">
                         {option.statement}
                       </span>
-                      <div className="flex space-x-2">
+                      <div className="flex space-x-3 ml-4">
                         <Button
                           variant={answers[option.id] === true ? "default" : "outline"}
-                          size="sm"
+                          size="lg"
                           onClick={() => handleAnswerChange(option.id, true)}
-                          className={answers[option.id] === true ? "bg-green-500 hover:bg-green-600" : "hover:bg-green-50"}
+                          className={`min-w-[50px] font-bold text-lg ${
+                            answers[option.id] === true 
+                              ? "bg-green-500 hover:bg-green-600 text-white" 
+                              : "hover:bg-green-50 border-green-300 text-green-600"
+                          }`}
                         >
                           T
                         </Button>
                         <Button
                           variant={answers[option.id] === false ? "default" : "outline"}
-                          size="sm"
+                          size="lg"
                           onClick={() => handleAnswerChange(option.id, false)}
-                          className={answers[option.id] === false ? "bg-red-500 hover:bg-red-600" : "hover:bg-red-50"}
+                          className={`min-w-[50px] font-bold text-lg ${
+                            answers[option.id] === false 
+                              ? "bg-red-500 hover:bg-red-600 text-white" 
+                              : "hover:bg-red-50 border-red-300 text-red-600"
+                          }`}
                         >
                           F
                         </Button>
