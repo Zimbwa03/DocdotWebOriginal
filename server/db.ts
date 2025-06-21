@@ -202,7 +202,12 @@ export class DatabaseStorage {
   async updateUserStats(userId: string, isCorrect: boolean, xpEarned: number, timeSpent: number): Promise<void> {
     try {
       // Use the comprehensive SQL function to recalculate stats and award badges
-      await db.execute(sql`SELECT initialize_user_complete(${userId}::uuid)`);
+      await db.execute(sql`SELECT initialize_user_complete(${userId})`);
+
+      // Create achievement notification for XP gained
+      if (xpEarned > 0) {
+        await this.createAchievementNotification(userId, null, `+${xpEarned} XP earned!`, xpEarned);
+      }
 
       console.log(`🎉 Full analytics updated for user ${userId} - stats recalculated and badges checked`);
     } catch (error) {
@@ -974,10 +979,61 @@ export class DatabaseStorage {
         }
       }
 
+      // Create achievement notification
+      await this.createAchievementNotification(
+        userId, 
+        badgeId, 
+        `🏆 Achievement Unlocked: ${badge[0].name}!`, 
+        badge[0].xpReward
+      );
+
       return { success: true, message: `Badge "${badge[0].name}" awarded successfully!` };
     } catch (error) {
       console.error('Error awarding badge:', error);
       return { success: false, message: "Failed to award badge" };
+    }
+  }
+
+  // Create achievement notification
+  async createAchievementNotification(userId: string, badgeId: number | null, message: string, xpEarned: number = 0): Promise<void> {
+    try {
+      await db.execute(sql`
+        INSERT INTO achievement_notifications (user_id, badge_id, message, xp_earned)
+        VALUES (${userId}, ${badgeId}, ${message}, ${xpEarned})
+      `);
+    } catch (error) {
+      console.error('Error creating achievement notification:', error);
+    }
+  }
+
+  // Get unread notifications
+  async getUnreadNotifications(userId: string): Promise<any[]> {
+    try {
+      const notifications = await db.execute(sql`
+        SELECT an.*, b.name as badge_name, b.icon as badge_icon, b.color as badge_color
+        FROM achievement_notifications an
+        LEFT JOIN badges b ON an.badge_id = b.id
+        WHERE an.user_id = ${userId} AND an.is_read = false
+        ORDER BY an.created_at DESC
+        LIMIT 10
+      `);
+      return notifications;
+    } catch (error) {
+      console.error('Error getting notifications:', error);
+      return [];
+    }
+  }
+
+  // Mark notifications as read
+  async markNotificationsAsRead(userId: string): Promise<void> {
+    try {
+      await db.execute(sql`
+        UPDATE achievement_notifications 
+        SET is_read = true 
+        WHERE user_id = ${userId} AND is_read = false
+      `);
+    } catch (error) {
+      console.error('Error marking notifications as read:', error);
     }
   }
 }

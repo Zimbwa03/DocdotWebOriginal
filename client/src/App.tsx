@@ -28,6 +28,7 @@ import Badges from "@/pages/Badges";
 import Leaderboard from "@/pages/Leaderboard";
 import Resources from "@/pages/Resources";
 import NotFound from "@/pages/not-found";
+import { AchievementNotifications } from '@/components/AchievementNotifications';
 
 function AuthRedirect() {
   const { user, loading } = useAuth();
@@ -163,6 +164,7 @@ function App() {
               <Toaster />
               <Router />
               <TooltipGuide />
+              <AchievementNotifications />
             </TooltipProvider>
           </TooltipGuideProvider>
         </AuthProvider>
