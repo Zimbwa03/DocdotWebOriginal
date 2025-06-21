@@ -1774,17 +1774,12 @@ app.post("/api/study-groups", async (req, res) => {
       });
 
       // Use basic insert with only required fields
-      const result = await db.execute(sql`
-        INSERT INTO study_groups (
-          creator_id,
-          created_at
-        ) VALUES (
-          ${creatorId},
-          NOW()
-        ) RETURNING *
-      `);
+      const result = await db.insert(studyGroups).values({
+        creatorId,
+        createdAt: new Date()
+      }).returning();
 
-      res.json({ success: true, group: result.rows[0] });
+      res.json({ success: true, group: result[0] });
     } catch (error) {
       console.error("Error creating study group:", error);
       res.status(500).json({ error: "Failed to create study group", details: error.message });
@@ -1876,7 +1871,7 @@ app.post("/api/study-groups", async (req, res) => {
             userId: userId,
             reminderTime: reminderTime
           });
-          console.log(`📧 Reminder scheduled for ${userData.email} at ${reminderTime.toISOString()}`);
+          console.log(`Reminder scheduled for ${userData.email} at ${reminderTime.toISOString()}`);
         } catch (reminderError) {
           console.error("Error scheduling reminder:", reminderError);
         }
@@ -1885,7 +1880,7 @@ app.post("/api/study-groups", async (req, res) => {
       // Send immediate confirmation (optional - can be implemented with email service)
       try {
         // Note: Email service integration would go here
-        console.log(`✅ ${userData.firstName} ${userData.lastName} joined study group: ${group.title}`);
+        console.log(`${userData.firstName} ${userData.lastName} joined study group: ${group.title}`);
       } catch (emailError) {
         console.error("Error sending confirmation email:", emailError);
       }
@@ -2093,17 +2088,20 @@ app.post("/api/study-groups", async (req, res) => {
       }
 
       // Award the badge
-      await db.execute(sql`
-        INSERT INTO user_badges (user_id, badge_id, progress, earned_at)
-        VALUES (${userId}, ${parseInt(badgeId)}, ${progress}, NOW())
-      `);
+      await db.insert(userBadges).values({
+        userId: userId,
+        badgeId: parseInt(badgeId),
+        progress: progress || 100,
+        earnedAt: new Date()
+      });
 
       // Update user stats
-      await db.execute(sql`
-        UPDATE user_stats 
-        SET total_badges = total_badges + 1
-        WHERE user_id = ${userId}
-      `);
+      const existingStats = await db.select().from(userStats).where(eq(userStats.userId, userId)).limit(1);
+      if (existingStats.length > 0) {
+        await db.update(userStats)
+          .set({ totalBadges: (existingStats[0].totalBadges || 0) + 1 })
+          .where(eq(userStats.userId, userId));
+      }
 
       res.json({ success: true, message: "Badge awarded successfully" });
     } catch (error) {
@@ -2115,22 +2113,11 @@ app.post("/api/study-groups", async (req, res) => {
   // Initialize sample badges and data
   app.post("/api/initialize-badges", async (req, res) => {
     try {
-      // Insert sample badges without rarity column
-      await db.execute(sql`
-        INSERT INTO badges (name, description, icon, color, requirement, category) VALUES
-        ('First Steps', 'Complete your first quiz', '🎯', '#3B82F6', 'Complete 1 quiz', 'achievement'),
-        ('Quiz Master', 'Complete 10 quizzes', '🏆', '#F59E0B', 'Complete 10 quizzes', 'achievement'),
-        ('Anatomy Expert', 'Score 90% or higher in anatomy', '🧠', '#EF4444', 'Score 90%+ in anatomy', 'subject'),
-        ('Study Streak', 'Study for 7 consecutive days', '🔥', '#F97316', 'Study 7 days in a row', 'consistency'),
-        ('Night Owl', 'Study after 10 PM', '🦉', '#8B5CF6', 'Study after 10 PM', 'time'),
-        ('Early Bird', 'Study before 6 AM', '🌅', '#10B981', 'Study before 6 AM', 'time'),
-        ('Perfect Score', 'Get 100% on any quiz', '⭐', '#FFD700', 'Score 100% on a quiz', 'achievement'),
-        ('Collaborator', 'Join a study group', '👥', '#06B6D4', 'Join your first study group', 'social')
-        ON CONFLICT (name) DO NOTHING
-      `);
+      // Initialize badges using the database storage method
+      await dbStorage.initializeBadges();
 
       // Get count of badges inserted
-      const badgeCount = await db.execute(sql`SELECT COUNT(*) as count FROM badges`);
+      const badgeCount = await db.select({ count: sql<number>`count(*)` }).from(badges);
 
       res.json({ 
         success: true, 
