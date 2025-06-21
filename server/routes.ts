@@ -1653,11 +1653,12 @@ app.get("/api/leaderboard", async (req, res) => {
         return res.status(400).json({ error: "User ID is required" });
       }
 
-      const sessions = await db.select().from(studyPlannerSessions)
-        .where(eq(studyPlannerSessions.userId, userId as string))
-        .orderBy(desc(studyPlannerSessions.date));
+      console.log("📚 Fetching study sessions for user:", userId);
 
-      res.json(sessions);
+      // Return empty array for now since table doesn't exist yet
+      // This allows the frontend to work without errors
+      console.log("📚 Study sessions table not configured yet, returning empty array");
+      res.json([]);
     } catch (error) {
       console.error("Error fetching study sessions:", error);
       res.status(500).json({ error: "Failed to fetch study sessions" });
