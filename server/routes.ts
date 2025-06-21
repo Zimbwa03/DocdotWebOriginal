@@ -232,31 +232,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Leaderboard
-  app.get("/api/leaderboard", async (req, res) => {
-    try {
-      const limit = parseInt(req.query.limit as string) || 50;
-      const timeFrame = req.query.timeFrame as string || 'all-time';
-      const category = req.query.category as string;
+  // Get leaderboard
+app.get("/api/leaderboard", async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 50;
+    const timeFrame = req.query.timeFrame as string || 'all-time';
+    const category = req.query.category as string || 'all';
 
-      console.log(`Fetching leaderboard - limit: ${limit}, timeFrame: ${timeFrame}, category: ${category}`);
+    console.log(`Fetching leaderboard - limit: ${limit}, timeFrame: ${timeFrame}, category: ${category}`);
 
-      // Update leaderboard data before fetching
-      await dbStorage.updateGlobalLeaderboard();
+    // Update global leaderboard first
+    await dbStorage.updateGlobalLeaderboard();
 
-      const leaderboard = await dbStorage.getLeaderboard(limit, timeFrame, category);
+    console.log(`Getting leaderboard: limit=${limit}, timeFrame=${timeFrame}, category=${category}`);
 
-      console.log(`Leaderboard fetched: ${leaderboard.length} entries`);
+    // Use a safer query approach to avoid Drizzle ORM issues
+    const leaderboardQuery = `
+      SELECT 
+        user_id as "userId",
+        rank,
+        xp,
+        level,
+        streak,
+        full_name as "fullName",
+        institution,
+        total_questions as "totalQuestions",
+        accuracy,
+        score
+      FROM leaderboard
+      WHERE xp > 0
+      ORDER BY xp DESC, level DESC
+      LIMIT $1
+    `;
 
-      res.json({
-        entries: leaderboard,
-        categories: ['Anatomy - Upper Limb', 'Anatomy - Lower Limb', 'Anatomy - Thorax', 'Physiology - Cardiovascular System', 'Physiology - Respiratory System']
-      });
-    } catch (error) {
-      console.error("Error fetching leaderboard:", error);
-      res.status(500).json({ error: "Failed to fetch leaderboard" });
-    }
-  });
+    const result = await sql.unsafe(leaderboardQuery, [limit]);
+    const leaderboardEntries = result.rows || [];
+
+    console.log(`Leaderboard fetched: ${leaderboardEntries.length} entries`);
+
+    // Get available categories for filtering
+    const categories = [
+      "Anatomy - Upper Limb",
+      "Anatomy - Lower Limb", 
+      "Anatomy - Thorax",
+      "Anatomy - Abdomen",
+      "Anatomy - Head & Neck",
+      "Physiology",
+      "Pathology",
+      "Pharmacology"
+    ];
+
+    res.json({
+      entries: leaderboardEntries,
+      categories
+    });
+
+  } catch (error) {
+    console.error('Error getting leaderboard:', error);
+    res.json({
+      entries: [],
+      categories: []
+    });
+  }
+});
 
   // User rank
   app.get("/api/user-rank/:userId", async (req, res) => {
@@ -1719,6 +1757,7 @@ app.post("/api/study-groups", async (req, res) => {
       } = req.body;
 
       if (!creatorId) {
+        ```text
         return res.status(400).json({ error: "Creator ID is required" });
       }
 
