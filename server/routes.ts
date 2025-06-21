@@ -2079,7 +2079,7 @@ app.post("/api/study-groups", async (req, res) => {
 
       // Check if user already has this badge
       const existingBadge = await db.select().from(userBadges)
-        .where(and(eq(userBadges.user_id, userId), eq(userBadges.badge_id, parseInt(badgeId))))
+        .where(and(eq(userBadges.userId, userId), eq(userBadges.badgeId, parseInt(badgeId))))
         .limit(1);
 
       if (existingBadge.length > 0) {
@@ -2088,10 +2088,10 @@ app.post("/api/study-groups", async (req, res) => {
 
       // Award the badge
       await db.insert(userBadges).values({
-        user_id: userId,
-        badge_id: parseInt(badgeId),
+        userId: userId,
+        badgeId: parseInt(badgeId),
         progress: progress || 100,
-        earned_at: new Date()
+        earnedAt: new Date()
       });
 
       // Update user stats
