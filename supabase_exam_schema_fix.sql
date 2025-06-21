@@ -1,18 +1,46 @@
 
--- Fix Custom Exam Schema Issues
+-- Fix Custom Exam Schema Issues and Achievement Notifications Table
 -- Run this in Supabase SQL Editor
 
--- 1. Fix exam_generation_history table - add missing columns
+-- 1. First, ensure UUID extension is enabled
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- 2. Drop existing achievement_notifications table if it has wrong type
+DROP TABLE IF EXISTS achievement_notifications CASCADE;
+
+-- 3. Create achievement_notifications table with proper UUID type
+CREATE TABLE achievement_notifications (
+    id SERIAL PRIMARY KEY,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    badge_id INTEGER REFERENCES badges(id) ON DELETE SET NULL,
+    message TEXT NOT NULL,
+    xp_earned INTEGER DEFAULT 0,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 4. Create indexes for performance
+CREATE INDEX idx_achievement_notifications_user_id ON achievement_notifications(user_id);
+CREATE INDEX idx_achievement_notifications_is_read ON achievement_notifications(user_id, is_read);
+
+-- 5. Enable RLS for achievement_notifications
+ALTER TABLE achievement_notifications ENABLE ROW LEVEL SECURITY;
+
+-- 6. Create RLS policy for achievement_notifications
+CREATE POLICY "Users can view own notifications" ON achievement_notifications
+    FOR ALL USING (auth.uid() = user_id);
+
+-- 7. Fix exam_generation_history table - add missing columns
 ALTER TABLE exam_generation_history 
 ADD COLUMN IF NOT EXISTS requested_stem_count INTEGER DEFAULT 5;
 
--- 2. Ensure all custom exam tables have proper structure
+-- 8. Ensure all custom exam tables have proper structure
 ALTER TABLE custom_exams 
 ADD COLUMN IF NOT EXISTS topics TEXT[] DEFAULT '{}';
 
--- 3. Update the exam generation function to handle the new schema
+-- 9. Update the exam generation function to handle the new schema
 CREATE OR REPLACE FUNCTION track_exam_generation(
-    p_user_id TEXT,
+    p_user_id UUID,
     p_exam_type TEXT,
     p_topics TEXT[],
     p_requested_stem_count INTEGER
@@ -34,7 +62,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 4. Create enhanced badge system with medical education achievements
+-- 10. Create comprehensive badge system with medical education achievements
 INSERT INTO badges (name, description, icon, category, tier, requirement, requirement_type, xp_reward, color) VALUES
 -- Learning Journey Badges (like Candy Crush levels)
 ('First Diagnosis', 'Complete your first medical quiz', 'Stethoscope', 'journey', 'bronze', 1, 'questions', 100, '#8B4513'),
@@ -89,7 +117,7 @@ INSERT INTO badges (name, description, icon, category, tier, requirement, requir
 
 ON CONFLICT (name) DO NOTHING;
 
--- 5. Create badge rarity system for UI
+-- 11. Create badge rarity system for UI
 ALTER TABLE badges ADD COLUMN IF NOT EXISTS rarity TEXT DEFAULT 'common';
 
 UPDATE badges SET rarity = 'common' WHERE tier = 'bronze';
@@ -97,17 +125,138 @@ UPDATE badges SET rarity = 'rare' WHERE tier = 'silver';
 UPDATE badges SET rarity = 'epic' WHERE tier = 'gold';
 UPDATE badges SET rarity = 'legendary' WHERE tier = 'platinum';
 
--- 6. Create achievement notification system
-CREATE TABLE IF NOT EXISTS achievement_notifications (
-    id SERIAL PRIMARY KEY,
-    user_id TEXT REFERENCES users(id),
-    badge_id INTEGER REFERENCES badges(id),
-    message TEXT NOT NULL,
-    xp_earned INTEGER DEFAULT 0,
-    is_read BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+-- 12. Create comprehensive user analytics and badge checking function
+CREATE OR REPLACE FUNCTION initialize_user_complete(p_user_id UUID)
+RETURNS JSON AS $$
+DECLARE
+    user_stats_record RECORD;
+    new_badges_awarded INTEGER := 0;
+    total_attempts INTEGER;
+    correct_attempts INTEGER;
+    total_xp INTEGER;
+    user_level INTEGER;
+    badge_record RECORD;
+    should_award BOOLEAN;
+BEGIN
+    -- Ensure user_stats exists
+    INSERT INTO user_stats (user_id) 
+    VALUES (p_user_id) 
+    ON CONFLICT (user_id) DO NOTHING;
+    
+    -- Calculate actual stats from quiz attempts
+    SELECT 
+        COUNT(*) as total_questions,
+        SUM(CASE WHEN is_correct THEN 1 ELSE 0 END) as correct_answers,
+        SUM(COALESCE(xp_earned, 0)) as total_xp_earned,
+        ROUND(AVG(CASE WHEN is_correct THEN 100 ELSE 0 END)) as avg_score
+    INTO total_attempts, correct_attempts, total_xp, user_level
+    FROM quiz_attempts 
+    WHERE user_id = p_user_id;
+    
+    -- Set defaults if no attempts
+    total_attempts := COALESCE(total_attempts, 0);
+    correct_attempts := COALESCE(correct_attempts, 0);
+    total_xp := COALESCE(total_xp, 0);
+    user_level := GREATEST(1, FLOOR(total_xp / 1000.0) + 1);
+    
+    -- Update user_stats with calculated values
+    UPDATE user_stats 
+    SET 
+        total_questions = total_attempts,
+        correct_answers = correct_attempts,
+        total_xp = total_xp,
+        current_level = user_level,
+        level = user_level,
+        average_score = CASE WHEN total_attempts > 0 THEN ROUND((correct_attempts::DECIMAL / total_attempts) * 100) ELSE 0 END,
+        average_accuracy = CASE WHEN total_attempts > 0 THEN ROUND((correct_attempts::DECIMAL / total_attempts) * 100) ELSE 0 END,
+        updated_at = NOW()
+    WHERE user_id = p_user_id;
+    
+    -- Check and award badges
+    FOR badge_record IN 
+        SELECT b.* FROM badges b 
+        WHERE b.id NOT IN (SELECT badge_id FROM user_badges WHERE user_id = p_user_id)
+    LOOP
+        should_award := FALSE;
+        
+        CASE badge_record.requirement_type
+            WHEN 'questions' THEN
+                should_award := total_attempts >= badge_record.requirement;
+            WHEN 'correct' THEN
+                should_award := correct_attempts >= badge_record.requirement;
+            WHEN 'xp' THEN
+                should_award := total_xp >= badge_record.requirement;
+            WHEN 'accuracy' THEN
+                should_award := total_attempts >= 5 AND 
+                              (correct_attempts::DECIMAL / GREATEST(total_attempts, 1)) * 100 >= badge_record.requirement;
+            ELSE
+                should_award := total_attempts >= badge_record.requirement;
+        END CASE;
+        
+        IF should_award THEN
+            -- Award the badge
+            INSERT INTO user_badges (user_id, badge_id, progress, earned_at)
+            VALUES (p_user_id, badge_record.id, badge_record.requirement, NOW());
+            
+            -- Create notification
+            INSERT INTO achievement_notifications (user_id, badge_id, message, xp_earned)
+            VALUES (p_user_id, badge_record.id, 
+                   '🏆 Achievement Unlocked: ' || badge_record.name || '!', 
+                   badge_record.xp_reward);
+            
+            -- Add XP reward
+            UPDATE user_stats 
+            SET total_xp = total_xp + badge_record.xp_reward,
+                current_level = GREATEST(1, FLOOR((total_xp + badge_record.xp_reward) / 1000.0) + 1),
+                level = GREATEST(1, FLOOR((total_xp + badge_record.xp_reward) / 1000.0) + 1)
+            WHERE user_id = p_user_id;
+            
+            new_badges_awarded := new_badges_awarded + 1;
+        END IF;
+    END LOOP;
+    
+    -- Update total badges count
+    UPDATE user_stats 
+    SET total_badges = (SELECT COUNT(*) FROM user_badges WHERE user_id = p_user_id)
+    WHERE user_id = p_user_id;
+    
+    RETURN json_build_object(
+        'success', true,
+        'badges_awarded', new_badges_awarded,
+        'total_xp', total_xp,
+        'level', user_level,
+        'total_questions', total_attempts,
+        'correct_answers', correct_attempts
+    );
+END;
+$$ LANGUAGE plpgsql;
+
+-- 13. Create global leaderboard update function
+CREATE OR REPLACE FUNCTION update_global_leaderboard()
+RETURNS VOID AS $$
+BEGIN
+    -- Clear existing leaderboard
+    DELETE FROM global_leaderboard;
+    
+    -- Populate with ranked users
+    INSERT INTO global_leaderboard (user_id, total_xp, current_level, rank, first_name, last_name, full_name, email)
+    SELECT 
+        us.user_id,
+        us.total_xp,
+        us.current_level,
+        ROW_NUMBER() OVER (ORDER BY us.total_xp DESC, us.average_score DESC) as rank,
+        u.first_name,
+        u.last_name,
+        u.full_name,
+        u.email
+    FROM user_stats us
+    LEFT JOIN users u ON us.user_id = u.id
+    WHERE u.id IS NOT NULL AND us.total_xp > 0
+    ORDER BY us.total_xp DESC, us.average_score DESC
+    LIMIT 100;
+END;
+$$ LANGUAGE plpgsql;
 
 -- Success message
-SELECT 'Custom Exam Schema Fixed and Enhanced Badge System Created! 🎉' as status,
+SELECT 'Custom Exam Schema Fixed, Achievement Notifications Created, and Enhanced Badge System Ready! 🎉' as status,
        COUNT(*) as total_badges_available FROM badges;
