@@ -9,6 +9,8 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 DROP TABLE IF EXISTS achievement_notifications CASCADE;
 
 -- 3. Create achievement_notifications table with proper UUID type
+DROP TABLE IF EXISTS achievement_notifications CASCADE;
+
 CREATE TABLE achievement_notifications (
     id SERIAL PRIMARY KEY,
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
