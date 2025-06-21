@@ -7,7 +7,7 @@ CREATE TABLE study_groups (
     id SERIAL PRIMARY KEY,
     title TEXT NOT NULL,
     description TEXT,
-    creator_id TEXT REFERENCES auth.users(id),
+    creator_id UUID REFERENCES auth.users(id),
     meeting_link TEXT,
     meeting_type TEXT DEFAULT 'zoom',
     scheduled_time TIMESTAMPTZ,
@@ -24,7 +24,7 @@ DROP TABLE IF EXISTS study_group_members CASCADE;
 CREATE TABLE study_group_members (
     id SERIAL PRIMARY KEY,
     group_id INTEGER REFERENCES study_groups(id) ON DELETE CASCADE,
-    user_id TEXT REFERENCES auth.users(id),
+    user_id UUID REFERENCES auth.users(id),
     joined_at TIMESTAMPTZ DEFAULT now(),
     has_joined_meeting BOOLEAN DEFAULT false,
     reminder_sent BOOLEAN DEFAULT false
@@ -34,7 +34,7 @@ CREATE TABLE study_group_members (
 DROP TABLE IF EXISTS study_planner_sessions CASCADE;
 CREATE TABLE study_planner_sessions (
     id SERIAL PRIMARY KEY,
-    user_id TEXT REFERENCES auth.users(id),
+    user_id UUID REFERENCES auth.users(id),
     title TEXT NOT NULL,
     subject TEXT,
     topic TEXT,
@@ -52,7 +52,7 @@ CREATE TABLE study_planner_sessions (
 DROP TABLE IF EXISTS leaderboard CASCADE;
 CREATE TABLE leaderboard (
     id SERIAL PRIMARY KEY,
-    user_id TEXT REFERENCES auth.users(id) UNIQUE,
+    user_id UUID REFERENCES auth.users(id) UNIQUE,
     rank INTEGER NOT NULL,
     xp INTEGER NOT NULL DEFAULT 0,
     level INTEGER NOT NULL DEFAULT 1,
@@ -67,7 +67,7 @@ CREATE TABLE leaderboard (
 DROP TABLE IF EXISTS global_leaderboard CASCADE;
 CREATE TABLE global_leaderboard (
     id SERIAL PRIMARY KEY,
-    user_id TEXT REFERENCES auth.users(id) UNIQUE,
+    user_id UUID REFERENCES auth.users(id) UNIQUE,
     total_xp INTEGER NOT NULL DEFAULT 0,
     current_level INTEGER NOT NULL DEFAULT 1,
     rank INTEGER NOT NULL,
@@ -101,39 +101,39 @@ CREATE POLICY "Users can view all study groups" ON study_groups
     FOR SELECT USING (true);
 
 CREATE POLICY "Users can create study groups" ON study_groups
-    FOR INSERT WITH CHECK (auth.uid()::text = creator_id);
+    FOR INSERT WITH CHECK (auth.uid() = creator_id);
 
 CREATE POLICY "Creators can update their study groups" ON study_groups
-    FOR UPDATE USING (auth.uid()::text = creator_id);
+    FOR UPDATE USING (auth.uid() = creator_id);
 
 CREATE POLICY "Creators can delete their study groups" ON study_groups
-    FOR DELETE USING (auth.uid()::text = creator_id);
+    FOR DELETE USING (auth.uid() = creator_id);
 
 -- 9. Create RLS policies for Study Group Members
 CREATE POLICY "Users can view group memberships" ON study_group_members
     FOR SELECT USING (true);
 
 CREATE POLICY "Users can join groups" ON study_group_members
-    FOR INSERT WITH CHECK (auth.uid()::text = user_id);
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Users can update their memberships" ON study_group_members
-    FOR UPDATE USING (auth.uid()::text = user_id);
+    FOR UPDATE USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can leave groups" ON study_group_members
-    FOR DELETE USING (auth.uid()::text = user_id);
+    FOR DELETE USING (auth.uid() = user_id);
 
 -- 10. Create RLS policies for Study Planner Sessions
 CREATE POLICY "Users can view their own study sessions" ON study_planner_sessions
-    FOR SELECT USING (auth.uid()::text = user_id);
+    FOR SELECT USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can create their own study sessions" ON study_planner_sessions
-    FOR INSERT WITH CHECK (auth.uid()::text = user_id);
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Users can update their own study sessions" ON study_planner_sessions
-    FOR UPDATE USING (auth.uid()::text = user_id);
+    FOR UPDATE USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can delete their own study sessions" ON study_planner_sessions
-    FOR DELETE USING (auth.uid()::text = user_id);
+    FOR DELETE USING (auth.uid() = user_id);
 
 -- 11. Create RLS policies for Leaderboard (read-only for users)
 CREATE POLICY "Users can view leaderboard" ON leaderboard
@@ -142,11 +142,22 @@ CREATE POLICY "Users can view leaderboard" ON leaderboard
 CREATE POLICY "Users can view global leaderboard" ON global_leaderboard
     FOR SELECT USING (true);
 
--- 12. Insert sample data for testing
-INSERT INTO study_groups (title, description, creator_id, meeting_link, meeting_type, scheduled_time, duration, max_members, category)
-VALUES 
-    ('Anatomy Study Group', 'Weekly anatomy review sessions', (SELECT id FROM auth.users LIMIT 1), 'https://meet.google.com/abc-def-ghi', 'meet', now() + interval '1 day', 90, 8, 'Anatomy'),
-    ('Physiology Discussion', 'Interactive physiology learning', (SELECT id FROM auth.users LIMIT 1), 'https://zoom.us/j/123456789', 'zoom', now() + interval '2 days', 120, 10, 'Physiology');
+-- 12. Insert sample data for testing (only if users exist)
+DO $$
+DECLARE
+    sample_user_id UUID;
+BEGIN
+    -- Get a sample user ID if any exist
+    SELECT id INTO sample_user_id FROM auth.users LIMIT 1;
+    
+    -- Only insert sample data if we have users
+    IF sample_user_id IS NOT NULL THEN
+        INSERT INTO study_groups (title, description, creator_id, meeting_link, meeting_type, scheduled_time, duration, max_members, category)
+        VALUES 
+            ('Anatomy Study Group', 'Weekly anatomy review sessions', sample_user_id, 'https://meet.google.com/abc-def-ghi', 'meet', now() + interval '1 day', 90, 8, 'Anatomy'),
+            ('Physiology Discussion', 'Interactive physiology learning', sample_user_id, 'https://zoom.us/j/123456789', 'zoom', now() + interval '2 days', 120, 10, 'Physiology');
+    END IF;
+END $$;
 
 -- 13. Update trigger function for study planner sessions
 CREATE OR REPLACE FUNCTION update_study_planner_updated_at()
