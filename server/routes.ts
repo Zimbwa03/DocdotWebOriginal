@@ -246,23 +246,75 @@ app.get("/api/leaderboard", async (req, res) => {
 
     console.log(`Getting leaderboard: limit=${limit}, timeFrame=${timeFrame}, category=${category}`);
 
-    // Use a safer query approach to avoid Drizzle ORM issues
+    // Get actual user data with comprehensive leaderboard information
     const result = await db.execute(sql`
+      WITH ranked_users AS (
+        SELECT 
+          us.user_id,
+          us.total_xp,
+          us.current_level,
+          us.average_score as accuracy,
+          us.current_streak,
+          us.total_questions,
+          us.correct_answers,
+          us.updated_at,
+          u.first_name,
+          u.last_name,
+          u.email,
+          u.full_name,
+          COALESCE(ub.badge_count, 0) as total_badges,
+          ROW_NUMBER() OVER (ORDER BY us.total_xp DESC, us.average_score DESC, us.total_questions DESC) as rank
+        FROM user_stats us
+        LEFT JOIN users u ON us.user_id = u.id
+        LEFT JOIN (
+          SELECT user_id, COUNT(*) as badge_count 
+          FROM user_badges 
+          GROUP BY user_id
+        ) ub ON us.user_id = ub.user_id
+        WHERE us.total_xp > 0 AND u.id IS NOT NULL
+        ORDER BY us.total_xp DESC, us.average_score DESC, us.total_questions DESC
+        LIMIT ${limit}
+      )
       SELECT 
         user_id as "userId",
         rank,
-        xp,
-        level,
-        streak,
-        full_name as "fullName",
-        institution,
-        category
-      FROM leaderboard
-      WHERE xp > 0
-      ORDER BY xp DESC, level DESC
-      LIMIT ${limit}
+        total_xp as "totalXP",
+        current_level as "currentLevel", 
+        total_xp as "weeklyXP",
+        total_xp as "monthlyXP",
+        accuracy as "averageAccuracy",
+        total_badges as "totalBadges",
+        current_streak as "streak",
+        updated_at as "lastActive",
+        first_name as "firstName",
+        last_name as "lastName", 
+        email,
+        full_name as "fullName"
+      FROM ranked_users
+      ORDER BY rank
     `);
-    const leaderboardEntries = result || [];
+
+    // Format the entries for frontend
+    const leaderboardEntries = result.map((row: any) => ({
+      id: row.rank,
+      userId: row.userId,
+      rank: parseInt(row.rank),
+      totalXP: row.totalXP || 0,
+      currentLevel: row.currentLevel || 1,
+      weeklyXP: row.weeklyXP || 0,
+      monthlyXP: row.monthlyXP || 0,
+      averageAccuracy: row.averageAccuracy || 0,
+      totalBadges: row.totalBadges || 0,
+      category: category || 'overall',
+      lastActive: row.lastActive || new Date().toISOString(),
+      user: {
+        firstName: row.firstName,
+        lastName: row.lastName,
+        email: row.email,
+        fullName: row.fullName
+      },
+      rankChange: 0 // Could be calculated based on previous period
+    }));
 
     console.log(`Leaderboard fetched: ${leaderboardEntries.length} entries`);
 
@@ -303,9 +355,51 @@ app.get("/api/leaderboard", async (req, res) => {
         return res.status(400).json({ error: "User ID is required" });
       }
 
-      const userRank = await dbStorage.getUserRank(userId, timeFrame, category);
+      // Get user's rank and stats from leaderboard query
+      const result = await db.execute(sql`
+        WITH ranked_users AS (
+          SELECT 
+            us.user_id,
+            us.total_xp,
+            us.current_level,
+            us.average_score as accuracy,
+            ROW_NUMBER() OVER (ORDER BY us.total_xp DESC, us.average_score DESC, us.total_questions DESC) as rank
+          FROM user_stats us
+          LEFT JOIN users u ON us.user_id = u.id
+          WHERE u.id IS NOT NULL
+        ),
+        total_count AS (
+          SELECT COUNT(*) as total_users FROM ranked_users
+        )
+        SELECT 
+          ru.rank,
+          ru.total_xp as "totalXP",
+          ru.current_level as "currentLevel",
+          ru.accuracy as "averageAccuracy",
+          tc.total_users as "totalUsers"
+        FROM ranked_users ru, total_count tc
+        WHERE ru.user_id = ${userId}
+      `);
 
-      res.json(userRank);
+      if (result.length > 0) {
+        const userRank = {
+          rank: parseInt(result[0].rank),
+          totalXP: result[0].totalXP || 0,
+          currentLevel: result[0].currentLevel || 1,
+          averageAccuracy: result[0].averageAccuracy || 0,
+          totalUsers: parseInt(result[0].totalUsers) || 1
+        };
+        res.json(userRank);
+      } else {
+        // Return default data if user not found in rankings
+        res.json({
+          rank: 1,
+          totalXP: 0,
+          currentLevel: 1,
+          averageAccuracy: 0,
+          totalUsers: 1
+        });
+      }
     } catch (error) {
       console.error("Error fetching user rank:", error);
       res.status(500).json({ error: "Failed to fetch user rank" });
@@ -1586,7 +1680,12 @@ app.get("/api/leaderboard", async (req, res) => {
         { id: 'sample-user-2', email: 'bob@example.com', firstName: 'Bob', lastName: 'Smith' },
         { id: 'sample-user-3', email: 'carol@example.com', firstName: 'Carol', lastName: 'Davis' },
         { id: 'sample-user-4', email: 'david@example.com', firstName: 'David', lastName: 'Wilson' },
-        { id: 'sample-user-5', email: 'emma@example.com', firstName: 'Emma', lastName: 'Brown' }
+        { id: 'sample-user-5', email: 'emma@example.com', firstName: 'Emma', lastName: 'Brown' },
+        { id: 'sample-user-6', email: 'frank@example.com', firstName: 'Frank', lastName: 'Miller' },
+        { id: 'sample-user-7', email: 'grace@example.com', firstName: 'Grace', lastName: 'Taylor' },
+        { id: 'sample-user-8', email: 'henry@example.com', firstName: 'Henry', lastName: 'Anderson' },
+        { id: 'sample-user-9', email: 'iris@example.com', firstName: 'Iris', lastName: 'Thomas' },
+        { id: 'sample-user-10', email: 'jack@example.com', firstName: 'Jack', lastName: 'Jackson' }
       ];
 
       let created = 0;
@@ -1632,7 +1731,8 @@ app.get("/api/leaderboard", async (req, res) => {
       res.json({ 
         success: true, 
         message: `Created sample data for ${created} users`,
-        created 
+        created,
+        totalUsers: sampleUsers.length
       });
     } catch (error) {
       console.error('Error creating sample data:', error);

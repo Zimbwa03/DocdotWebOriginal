@@ -306,9 +306,23 @@ export default function Home() {
     queryKey: ['/api/user-stats', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
+      console.log('📊 Fetching enhanced analytics for user:', user.id);
+      
+      // Ensure user stats exist first
+      await fetch('/api/ensure-user-stats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id })
+      });
+
       const response = await fetch(`/api/user-stats/${user.id}`);
-      if (!response.ok) return null;
-      return response.json();
+      if (!response.ok) {
+        console.error('Failed to fetch user stats:', response.status);
+        return null;
+      }
+      const stats = await response.json();
+      console.log('📊 User stats updated:', stats);
+      return stats;
     },
     enabled: !!user?.id,
     refetchOnWindowFocus: true,
@@ -320,9 +334,15 @@ export default function Home() {
     queryKey: ['/api/daily-stats', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
+      console.log('📊 Fetching daily stats for user:', user.id);
       const response = await fetch(`/api/daily-stats/${user.id}?days=1`);
-      if (!response.ok) return [];
-      return response.json();
+      if (!response.ok) {
+        console.error('Failed to fetch daily stats:', response.status);
+        return [];
+      }
+      const stats = await response.json();
+      console.log('📊 Daily stats updated:', stats.length, 'days');
+      return stats;
     },
     enabled: !!user?.id,
   });
@@ -332,9 +352,15 @@ export default function Home() {
     queryKey: ['/api/badges', user?.id],
     queryFn: async () => {
       if (!user?.id) return { earned: [], available: [] };
+      console.log('📊 Fetching badges for user:', user.id);
       const response = await fetch(`/api/badges/${user.id}`);
-      if (!response.ok) return { earned: [], available: [] };
-      return response.json();
+      if (!response.ok) {
+        console.error('Failed to fetch badges:', response.status);
+        return { earned: [], available: [] };
+      }
+      const badges = await response.json();
+      console.log('📊 Badges updated:', badges.earned?.length || 0, 'earned');
+      return badges;
     },
     enabled: !!user?.id,
   });
@@ -343,13 +369,17 @@ export default function Home() {
   const { data: userRankResponse } = useQuery({
     queryKey: ['/api/user-rank', user?.id],
     queryFn: async () => {
-      if (!user?.id) return { rank: 11, totalUsers: 100 };
+      if (!user?.id) return { rank: 1, totalUsers: 1 };
       const response = await fetch(`/api/user-rank/${user.id}`);
-      if (!response.ok) return { rank: 11, totalUsers: 100 };
+      if (!response.ok) {
+        console.error('Failed to fetch user rank:', response.status);
+        return { rank: 1, totalUsers: 1 };
+      }
       const data = await response.json();
+      console.log('📊 User rank data:', data);
       return {
-        rank: Number(data.rank) || 11,
-        totalUsers: Number(data.totalUsers) || 100
+        rank: Number(data.rank) || 1,
+        totalUsers: Number(data.totalUsers) || 1
       };
     },
     enabled: !!user?.id,
@@ -360,9 +390,15 @@ export default function Home() {
     queryKey: ['/api/quiz-attempts/recent', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
+      console.log('📊 Fetching recent quizzes for user:', user.id);
       const response = await fetch(`/api/quiz-attempts/recent/${user.id}`);
-      if (!response.ok) return [];
-      return response.json();
+      if (!response.ok) {
+        console.error('Failed to fetch recent quizzes:', response.status);
+        return [];
+      }
+      const quizzes = await response.json();
+      console.log('📊 Recent quizzes updated:', quizzes.length, 'attempts');
+      return quizzes;
     },
     enabled: !!user?.id,
   });

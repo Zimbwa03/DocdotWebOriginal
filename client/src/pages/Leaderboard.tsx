@@ -272,11 +272,21 @@ export default function Leaderboard() {
       {/* Header */}
       <div className="text-center">
         <div className="flex items-center justify-center space-x-3 mb-4">
-          <img 
-            src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview-removebg-preview_1750075531418.png" 
-            alt="DocDot Medical Student Logo" 
-            className="h-12 w-auto"
-          />
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full blur animate-pulse"></div>
+            <img 
+              src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview-removebg-preview_1750075531418.png" 
+              alt="DocDot Medical Student Logo" 
+              className="relative h-16 w-auto transform hover:scale-110 transition-all duration-500"
+              onError={(e) => {
+                console.log('Logo failed to load, trying fallback');
+                e.currentTarget.src = '/DocDot Medical Student Logo.png';
+                e.currentTarget.onerror = () => {
+                  e.currentTarget.style.display = 'none';
+                };
+              }}
+            />
+          </div>
           <h1 className="text-3xl font-bold text-gray-900">Leaderboard</h1>
         </div>
         <p className="text-gray-600 mb-6">
