@@ -1,4 +1,5 @@
 
+
 -- Fix identity column type error and leaderboard table structure
 -- Run this in Supabase SQL Editor
 
@@ -6,10 +7,10 @@
 DROP TABLE IF EXISTS global_leaderboard CASCADE;
 DROP TABLE IF EXISTS leaderboard CASCADE;
 
--- 2. Create global_leaderboard with proper SERIAL (integer) identity column
+-- 2. Create global_leaderboard with proper SERIAL (integer) identity column and UUID user_id
 CREATE TABLE global_leaderboard (
     id SERIAL PRIMARY KEY,
-    user_id TEXT REFERENCES users(id) UNIQUE,
+    user_id UUID REFERENCES users(id) UNIQUE,
     total_xp INTEGER NOT NULL DEFAULT 0,
     current_level INTEGER NOT NULL DEFAULT 1,
     rank INTEGER NOT NULL DEFAULT 0,
@@ -20,10 +21,10 @@ CREATE TABLE global_leaderboard (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 3. Create leaderboard with proper SERIAL (integer) identity column
+-- 3. Create leaderboard with proper SERIAL (integer) identity column and UUID user_id
 CREATE TABLE leaderboard (
     id SERIAL PRIMARY KEY,
-    user_id TEXT REFERENCES users(id) UNIQUE,
+    user_id UUID REFERENCES users(id) UNIQUE,
     rank INTEGER NOT NULL DEFAULT 0,
     xp INTEGER NOT NULL DEFAULT 0,
     level INTEGER NOT NULL DEFAULT 1,
@@ -107,4 +108,4 @@ ON CONFLICT (user_id) DO UPDATE SET
     updated_at = NOW();
 
 -- Success message
-SELECT 'Leaderboard tables fixed with proper identity columns and populated with data!' as status;
+SELECT 'Leaderboard tables fixed with proper UUID identity columns and populated with data!' as status;
