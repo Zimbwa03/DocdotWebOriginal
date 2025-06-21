@@ -1651,10 +1651,13 @@ app.get("/api/leaderboard", async (req, res) => {
 
       console.log("📚 Fetching study sessions for user:", userId);
 
-      // Return empty array for now since table doesn't exist yet
-      // This allows the frontend to work without errors
-      console.log("📚 Study sessions table not configured yet, returning empty array");
-      res.json([]);
+      // Fetch actual data from Supabase study_planner_sessions table
+      const sessions = await db.select().from(studyPlannerSessions)
+        .where(eq(studyPlannerSessions.userId, userId as string))
+        .orderBy(desc(studyPlannerSessions.date));
+
+      console.log(`📚 Found ${sessions.length} study sessions for user`);
+      res.json(sessions);
     } catch (error) {
       console.error("Error fetching study sessions:", error);
       res.status(500).json({ error: "Failed to fetch study sessions" });
