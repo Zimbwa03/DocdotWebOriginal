@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { openRouterAI } from "./ai";
 import { dbStorage, db } from "./db";
 import { sql, eq, desc, and } from 'drizzle-orm';
-import { insertQuizAttemptSchema, badges, studyPlannerSessions, studyGroups, studyGroupMembers, meetingReminders, users, quizAttempts, userStats, quizzes, customExams, customExamStems, stemOptions, examGenerationHistory } from "@shared/schema";
+import { insertQuizAttemptSchema, badges, userBadges, studyPlannerSessions, studyGroups, studyGroupMembers, meetingReminders, users, quizAttempts, userStats, quizzes, customExams, customExamStems, stemOptions, examGenerationHistory } from "@shared/schema";
 import { v4 as uuidv4 } from "uuid";
 import { readFileSync } from "fs";
 import { resolve } from "path";
@@ -1757,11 +1757,10 @@ app.post("/api/study-groups", async (req, res) => {
       } = req.body;
 
       if (!creatorId) {
-        ```text
         return res.status(400).json({ error: "Creator ID is required" });
       }
 
-      console.log("🔧 Creating study group with data:", {
+      console.log("Creating study group with data:", {
         creatorId,
         title,
         description,
@@ -1775,8 +1774,9 @@ app.post("/api/study-groups", async (req, res) => {
 
       // Use basic insert with only required fields
       const result = await db.insert(studyGroups).values({
-        creatorId,
-        createdAt: new Date()
+        creator_id: creatorId,
+        title: title || "Study Group",
+        created_at: new Date()
       }).returning();
 
       res.json({ success: true, group: result[0] });
@@ -2078,10 +2078,9 @@ app.post("/api/study-groups", async (req, res) => {
       const { progress = 100 } = req.body;
 
       // Check if user already has this badge
-      const existingBadge = await db.execute(sql`
-        SELECT id FROM user_badges 
-        WHERE user_id = ${userId} AND badge_id = ${parseInt(badgeId)}
-      `);
+      const existingBadge = await db.select().from(userBadges)
+        .where(and(eq(userBadges.user_id, userId), eq(userBadges.badge_id, parseInt(badgeId))))
+        .limit(1);
 
       if (existingBadge.length > 0) {
         return res.status(400).json({ error: "Badge already earned" });
@@ -2089,10 +2088,10 @@ app.post("/api/study-groups", async (req, res) => {
 
       // Award the badge
       await db.insert(userBadges).values({
-        userId: userId,
-        badgeId: parseInt(badgeId),
+        user_id: userId,
+        badge_id: parseInt(badgeId),
         progress: progress || 100,
-        earnedAt: new Date()
+        earned_at: new Date()
       });
 
       // Update user stats
