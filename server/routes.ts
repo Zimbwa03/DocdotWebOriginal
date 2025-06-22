@@ -5,108 +5,23 @@ import { dbStorage, db } from "./db";
 import { sql, eq, desc, and } from 'drizzle-orm';
 import { insertQuizAttemptSchema, badges, userBadges, studyPlannerSessions, studyGroups, studyGroupMembers, meetingReminders, users, quizAttempts, userStats, quizzes, customExams, customExamStems, stemOptions, examGenerationHistory } from "@shared/schema";
 import { v4 as uuidv4 } from "uuid";
-import { readFileSync, existsSync } from "fs";
+import { readFileSync } from "fs";
 import { resolve } from "path";
 
 // Using database storage for persistent user data
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Get available categories for debugging
-  app.get('/api/categories', async (req, res) => {
+  // Serve quiz questions from JSON file
+  app.get("/api/questions", async (req, res) => {
     try {
-      const questionsPath = resolve(process.cwd(), 'client', 'public', 'docdot-questions.json');
+      const questionsPath = resolve(process.cwd(), "client", "public", "docdot-questions.json");
+      const questionsData = readFileSync(questionsPath, "utf-8");
+      const questions = JSON.parse(questionsData);
 
-      if (!existsSync(questionsPath)) {
-        return res.status(404).json({ error: 'Questions file not found' });
-      }
-
-      const questionsData = JSON.parse(readFileSync(questionsPath, 'utf8'));
-
-      if (!Array.isArray(questionsData)) {
-        return res.status(500).json({ error: 'Invalid questions data format' });
-      }
-
-      // Get unique categories
-      const categories = Array.from(new Set(questionsData.map((q: any) => q.category).filter(Boolean)));
-
-      console.log('Available categories:', categories);
-      console.log('Total questions:', questionsData.length);
-
-      res.json({ 
-        categories, 
-        totalQuestions: questionsData.length,
-        questionsByCategory: categories.reduce((acc: any, cat: string) => {
-          acc[cat] = questionsData.filter((q: any) => q.category === cat).length;
-          return acc;
-        }, {})
-      });
-    } catch (error: any) {
-      console.error('Error reading categories:', error);
-      res.status(500).json({ error: 'Failed to read categories' });
-    }
-  });
-
-  // Get questions by category
-  app.get('/api/questions', async (req, res) => {
-    try {
-      const { category } = req.query;
-
-      if (!category) {
-        return res.status(400).json({ error: 'Category is required' });
-      }
-
-      // Read questions from local JSON file
-      const questionsPath = resolve(process.cwd(), 'client', 'public', 'docdot-questions.json');
-
-      if (!existsSync(questionsPath)) {
-        console.error('Questions file not found at:', questionsPath);
-        return res.status(404).json({ error: 'Questions file not found' });
-      }
-
-      const questionsData = JSON.parse(readFileSync(questionsPath, 'utf8'));
-
-      if (!Array.isArray(questionsData)) {
-        console.error('Questions data is not an array');
-        return res.status(500).json({ error: 'Invalid questions data format' });
-      }
-
-      // Filter questions by category with better matching
-      const filteredQuestions = questionsData.filter((q: any) => {
-        if (!q || !q.category) return false;
-        return q.category.toLowerCase().trim() === category.toString().toLowerCase().trim();
-      });
-
-      console.log(`Found ${filteredQuestions.length} questions for category: ${category}`);
-
-      if (filteredQuestions.length === 0) {
-        return res.json([]);
-      }
-
-      // Shuffle and limit to 10 questions
-      const shuffledQuestions = filteredQuestions
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 10)
-        .map((q: any) => ({
-          ...q,
-          // Ensure all required fields exist
-          id: q.id || Math.random(),
-          question: q.question || '',
-          answer: q.answer !== undefined ? q.answer : (q.correct_answer || ''),
-          explanation: q.explanation || '',
-          ai_explanation: q.ai_explanation || q.explanation || '',
-          category: q.category || category,
-          reference_json: q.reference_json || q.reference_data || ''
-        }));
-
-      res.json(shuffledQuestions);
+      res.json(questions);
     } catch (error) {
-      console.error('Error loading questions:', error);
-      console.error('Error details:', {
-        message: error.message,
-        stack: error.stack,
-        category: req.query.category
-      });
-      res.status(500).json({ error: 'Failed to load questions' });
+      console.error("Error loading questions:", error);
+      res.status(500).json({ error: "Failed to load questions" });
     }
   });
 
@@ -891,15 +806,14 @@ app.get("/api/leaderboard", async (req, res) => {
       console.log('Supabase schema tables available:', allTables.length);
 
       // Test key tables with counts
-      const counts: Record<string, any> = {};
+      const counts = {};
       const keyTables = ['users', 'user_stats', 'quiz_attempts', 'ai_sessions', 'ai_chats', 'leaderboard', 'categories', 'subscription_plans'];
 
       for (const table of keyTables) {
         try {
-          // Use dynamic SQL for table name
-          const countQuery = await db.execute(sql.raw(`SELECT COUNT(*) as count FROM "${table}"`));
+          const countQuery = await db.execute(sql.raw(`SELECT COUNT(*) as count FROM ${table}`));
           counts[table] = countQuery[0]?.count || 0;
-        } catch (error: any) {
+        } catch (error) {
           counts[table] = `Error: ${error.message}`;
         }
       }
@@ -907,9 +821,19 @@ app.get("/api/leaderboard", async (req, res) => {
       // Test AI session functionality
       let aiTestResult = 'Not tested';
       try {
-        // Skip AI session test for now due to missing methods
-        aiTestResult = 'Skipped: AI session methods not available';
-      } catch (error: any) {
+        const testSession = await dbStorage.createAiSession('test-user-integration', 'tutor', 'Integration Test Session');
+        await dbStorage.addAiMessage(testSession.id, 'test-user-integration', 'user', 'Test message', 'tutor');
+        await dbStorage.addAiMessage(testSession.id, 'test-user-integration', 'assistant', 'Test response', 'tutor');
+
+        const sessions = await dbStorage.getAiSessions('test-user-integration', 1);
+        const messages = await dbStorage.getAiMessages(testSession.id);
+
+        // Cleanup test data
+        await db.execute(sql`DELETE FROM ai_chats WHERE session_id = ${testSession.id}`);
+        await db.execute(sql`DELETE FROM ai_sessions WHERE id = ${testSession.id}`);
+
+        aiTestResult = `Success: Created session with ${messages.length} messages`;
+      } catch (error) {
         aiTestResult = `Failed: ${error.message}`;
       }
 
@@ -978,7 +902,7 @@ app.get("/api/leaderboard", async (req, res) => {
       // Track generation attempt
       const generationStartTime = Date.now();
       const generationId = uuidv4();
-      const examUserId = userId || '00000000-0000-0000-0000-000000000000'; // Use actual user ID if provided
+      const currentUserId = userId || '00000000-0000-0000-0000-000000000000'; // Use actual user ID if provided
 
       // Log generation request with proper column names
       await db.execute(sql`
@@ -986,7 +910,7 @@ app.get("/api/leaderboard", async (req, res) => {
           id, user_id, exam_type, topics, requested_stem_count, 
           generation_status, ai_provider, created_at
         ) VALUES (
-          ${generationId}, ${examUserId}, ${examType}, ${JSON.stringify(topics)}, ${stemCount},
+          ${generationId}, ${currentUserId}, ${examType}, ${topics}, ${stemCount},
           'pending', 'deepseek', NOW()
         )
       `);
@@ -1002,10 +926,10 @@ app.get("/api/leaderboard", async (req, res) => {
           10: 'Endocrine', 11: 'Cardiovascular System', 12: 'Respiration'
         };
         const topicMap = examType === 'anatomy' ? anatomyTopicMap : physiologyTopicMap;
-        return (topicMap as any)[topicId] || `Topic ${topicId}`;
+        return topicMap[topicId] || `Topic ${topicId}`;
       });
 
-      console.log(`Generating ${stemCount} ${examType} stems for topics:`, topicNames);
+      console.log(`🤖 Generating ${stemCount} ${examType} stems for topics:`, topicNames);
       const examData = await openRouterAI.generateCustomExam(topicNames, stemCount, examType);
 
       if (!examData || !examData.stems || examData.stems.length === 0) {
@@ -1029,7 +953,7 @@ app.get("/api/leaderboard", async (req, res) => {
       // Insert custom exam
       const [customExam] = await db.insert(customExams).values({
         id: examId,
-        userId: examUserId,
+        userId: anonymousUserId,
         examType,
         title: `${examType.charAt(0).toUpperCase() + examType.slice(1)} Exam - ${topics.join(', ')}`,
         topics, // Pass array directly - schema now uses TEXT[] array type
@@ -1104,7 +1028,7 @@ app.get("/api/leaderboard", async (req, res) => {
         durationSeconds,
         stems: examData.stems,
         createdAt: new Date(),
-        userId: examUserId
+        userId: anonymousUserId
       };
 
       console.log(`Successfully generated custom exam with ${examData.stems.length} stems`);
