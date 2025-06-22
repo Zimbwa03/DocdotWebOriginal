@@ -2122,6 +2122,20 @@ app.post("/api/study-groups", async (req, res) => {
     }
   });
 
+  // Get quiz count endpoint
+  app.get("/api/quiz/count", async (req, res) => {
+    try {
+      const totalQuestions = await db.execute(sql`SELECT COUNT(*) as count FROM quizzes`);
+      const count = totalQuestions[0]?.count || 0;
+      
+      console.log(`📊 Total questions in database: ${count}`);
+      res.json({ totalQuestions: count });
+    } catch (error) {
+      console.error('Error counting questions:', error);
+      res.status(500).json({ error: 'Failed to count questions' });
+    }
+  });
+
   app.post("/api/study-groups/:id/leave", async (req, res) => {
     try {
       const groupId = parseInt(req.params.id);
