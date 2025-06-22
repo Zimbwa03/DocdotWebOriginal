@@ -5,23 +5,108 @@ import { dbStorage, db } from "./db";
 import { sql, eq, desc, and } from 'drizzle-orm';
 import { insertQuizAttemptSchema, badges, userBadges, studyPlannerSessions, studyGroups, studyGroupMembers, meetingReminders, users, quizAttempts, userStats, quizzes, customExams, customExamStems, stemOptions, examGenerationHistory } from "@shared/schema";
 import { v4 as uuidv4 } from "uuid";
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 import { resolve } from "path";
 
 // Using database storage for persistent user data
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Serve quiz questions from JSON file
-  app.get("/api/questions", async (req, res) => {
+  // Get available categories for debugging
+  app.get('/api/categories', async (req, res) => {
     try {
-      const questionsPath = resolve(process.cwd(), "client", "public", "docdot-questions.json");
-      const questionsData = readFileSync(questionsPath, "utf-8");
-      const questions = JSON.parse(questionsData);
+      const questionsPath = resolve(process.cwd(), 'client', 'public', 'docdot-questions.json');
 
-      res.json(questions);
+      if (!existsSync(questionsPath)) {
+        return res.status(404).json({ error: 'Questions file not found' });
+      }
+
+      const questionsData = JSON.parse(readFileSync(questionsPath, 'utf8'));
+
+      if (!Array.isArray(questionsData)) {
+        return res.status(500).json({ error: 'Invalid questions data format' });
+      }
+
+      // Get unique categories
+      const categories = [...new Set(questionsData.map((q: any) => q.category).filter(Boolean))];
+
+      console.log('Available categories:', categories);
+      console.log('Total questions:', questionsData.length);
+
+      res.json({ 
+        categories, 
+        totalQuestions: questionsData.length,
+        questionsByCategory: categories.reduce((acc: any, cat: string) => {
+          acc[cat] = questionsData.filter((q: any) => q.category === cat).length;
+          return acc;
+        }, {})
+      });
     } catch (error) {
-      console.error("Error loading questions:", error);
-      res.status(500).json({ error: "Failed to load questions" });
+      console.error('Error reading categories:', error);
+      res.status(500).json({ error: 'Failed to read categories' });
+    }
+  });
+
+  // Get questions by category
+  app.get('/api/questions', async (req, res) => {
+    try {
+      const { category } = req.query;
+
+      if (!category) {
+        return res.status(400).json({ error: 'Category is required' });
+      }
+
+      // Read questions from local JSON file
+      const questionsPath = resolve(process.cwd(), 'client', 'public', 'docdot-questions.json');
+
+      if (!existsSync(questionsPath)) {
+        console.error('Questions file not found at:', questionsPath);
+        return res.status(404).json({ error: 'Questions file not found' });
+      }
+
+      const questionsData = JSON.parse(readFileSync(questionsPath, 'utf8'));
+
+      if (!Array.isArray(questionsData)) {
+        console.error('Questions data is not an array');
+        return res.status(500).json({ error: 'Invalid questions data format' });
+      }
+
+      // Filter questions by category with better matching
+      const filteredQuestions = questionsData.filter((q: any) => {
+        if (!q || !q.category) return false;
+        return q.category.toLowerCase().trim() === category.toString().toLowerCase().trim();
+      });
+
+      console.log(`Found ${filteredQuestions.length} questions for category: ${category}`);
+
+      if (filteredQuestions.length === 0) {
+        return res.json([]);
+      }
+
+      // Shuffle and limit to 10 questions
+      const shuffledQuestions = filteredQuestions
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 10)
+        .map((q: any) => ({
+          ...q,
+          // Ensure all required fields exist
+          id: q.id || Math.random(),
+          question: q.question || '',
+          answer: q.answer !== undefined ? q.answer : (q.correct_answer || ''),
+          explanation: q.explanation || '',
+          ai_explanation: q.ai_explanation || q.explanation || '',
+          category: q.category || category,
+          reference_json: q.reference_json || q.reference_data || ''
+        }));
+
+      res.json(shuffledQuestions);
+    } catch (error) {
+      console.error('Error loading questions:', error);
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        category: req.query.category
+      });
+      res.status(500).json({ error: 'Failed to load questions' });
     }
   });
 
@@ -799,7 +884,7 @@ app.get("/api/leaderboard", async (req, res) => {
       const allTables = [
         'users', 'user_stats', 'quiz_attempts', 'ai_sessions', 'ai_chats', 
         'leaderboard', 'global_leaderboard', 'categories', 'topics', 'quizzes',
-        'badges', 'user_badges', 'category_stats', 'daily_stats', 'flashcards',
+        'badges', 'user_badges', 'category_stats', 'daily_stats', 'flashcards',<previous_generation>```tool_code
         'study_plans', 'study_planner_sessions', 'study_groups', 'study_group_members',
         'subscription_plans', 'user_subscriptions', 'payment_history', 'user_analytics'
       ];

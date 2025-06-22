@@ -145,39 +145,33 @@ export default function Quiz() {
   const fetchQuestions = async (category: string) => {
     setLoading(true);
     try {
-      const response = await fetch('/api/questions');
-      if (!response.ok) {
-        throw new Error('Failed to load questions file');
-      }
-
+      const response = await fetch(`/api/questions?category=${encodeURIComponent(category)}`);
       const data = await response.json();
 
-      // Filter questions by category
-      const filtered = data.filter((q: any) => q.category === category);
-
-      if (filtered.length > 0) {
-        // Transform questions to True/False format
-        const transformed = filtered.map((q: any) => ({
-          ...q,
-          options: ['True', 'False'],
-          correct_answer: q.answer === 1 || q.answer === "True" || q.answer === true ? 'True' : 'False',
-          correctAnswer: q.answer === 1 || q.answer === "True" || q.answer === true ? 'True' : 'False',
-          reference_data: q.reference_json || q.reference_data || ''
-        }));
-
-        const shuffled = transformed.sort(() => 0.5 - Math.random());
-        setQuestions(shuffled);
-        setCurrentQuestionIndex(0);
-        setScore(0);
-        setQuizCompleted(false);
-        setSelectedAnswer('');
-        setIsAnswered(false);
-        setQuestionStartTime(Date.now()); // Start timing for first question
+      if (response.ok) {
+        if (Array.isArray(data) && data.length > 0) {
+          setQuestions(data);
+          setCurrentQuestionIndex(0);
+          setScore(0);
+          setQuizCompleted(false);
+          setSelectedAnswer('');
+          setIsAnswered(false);
+          setStartTime(new Date());
+          setQuestionStartTime(Date.now());
+        } else {
+          console.warn('No questions found for category:', category);
+          alert(`No questions available for category: ${category}. Please try another category.`);
+          setSelectedCategory(null);
+        }
       } else {
-        console.error('No questions available for this category.');
+        console.error('Error fetching questions:', data);
+        alert(`Failed to load questions: ${data.error || 'Unknown error'}`);
+        setSelectedCategory(null);
       }
     } catch (error) {
       console.error('Error fetching questions:', error);
+      alert('Failed to load questions. Please check your connection and try again.');
+      setSelectedCategory(null);
     } finally {
       setLoading(false);
     }
