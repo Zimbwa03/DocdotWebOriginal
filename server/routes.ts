@@ -2046,6 +2046,82 @@ app.post("/api/study-groups", async (req, res) => {
     }
   });
 
+  // Add homeostasis questions endpoint
+  app.post("/api/add-homeostasis-questions", async (req, res) => {
+    try {
+      console.log('📚 Adding homeostasis MCQ questions to database...');
+      
+      // Read the questions file
+      const fs = await import('fs');
+      const fileContent = fs.readFileSync('attached_assets/Pasted--question-Concerning-Homeostasis-Homeostatic-control-systems-minimize-changes-in-t-1750555872562_1750555872600.txt', 'utf8');
+      
+      // Extract questions using regex
+      const questionPattern = /"question":\s*"([^"]+)"/g;
+      const answerPattern = /"answer":\s*(True|False)/g;
+      const explanationPattern = /"explanation":\s*"([^"]+)"/g;
+      
+      const questions: any[] = [];
+      let questionMatch, answerMatch, explanationMatch;
+      
+      questionPattern.lastIndex = 0;
+      answerPattern.lastIndex = 0;
+      explanationPattern.lastIndex = 0;
+      
+      while ((questionMatch = questionPattern.exec(fileContent)) !== null) {
+        answerMatch = answerPattern.exec(fileContent);
+        explanationMatch = explanationPattern.exec(fileContent);
+        
+        if (questionMatch && answerMatch && explanationMatch) {
+          const questionText = questionMatch[1];
+          const answerValue = answerMatch[1] === 'True';
+          const explanationText = explanationMatch[1];
+          
+          if (questionText.length >= 10) {
+            questions.push({
+              question: questionText,
+              options: JSON.stringify([
+                { text: "True", value: true },
+                { text: "False", value: false }
+              ]),
+              correctAnswer: answerValue ? 0 : 1,
+              explanation: explanationText,
+              difficulty: "medium",
+              xpReward: 10
+            });
+          }
+        }
+      }
+      
+      console.log(`📝 Parsed ${questions.length} homeostasis questions`);
+      
+      // Insert questions using raw SQL to avoid schema issues
+      let successCount = 0;
+      for (const question of questions) {
+        try {
+          await sql`
+            INSERT INTO quizzes (question, options, correct_answer, explanation, difficulty, xp_reward, created_at)
+            VALUES (${question.question}, ${question.options}, ${question.correctAnswer}, ${question.explanation}, ${question.difficulty}, ${question.xpReward}, NOW())
+          `;
+          successCount++;
+        } catch (insertError) {
+          console.error(`❌ Error inserting question: ${insertError}`);
+        }
+      }
+      
+      console.log(`🎉 Successfully added ${successCount} homeostasis MCQ questions!`);
+      
+      res.json({ 
+        success: true,
+        message: `Successfully added ${successCount} homeostasis MCQ questions to the database`,
+        totalParsed: questions.length,
+        totalAdded: successCount
+      });
+    } catch (error) {
+      console.error('❌ Error adding homeostasis questions:', error);
+      res.status(500).json({ error: 'Failed to add homeostasis questions' });
+    }
+  });
+
   app.post("/api/study-groups/:id/leave", async (req, res) => {
     try {
       const groupId = parseInt(req.params.id);
