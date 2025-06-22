@@ -2094,14 +2094,14 @@ app.post("/api/study-groups", async (req, res) => {
       
       console.log(`📝 Parsed ${questions.length} homeostasis questions`);
       
-      // Insert questions using raw SQL to avoid schema issues
+      // Insert questions using database insert
       let successCount = 0;
       for (const question of questions) {
         try {
-          await sql`
+          await db.execute(sql`
             INSERT INTO quizzes (question, options, correct_answer, explanation, difficulty, xp_reward, created_at)
             VALUES (${question.question}, ${question.options}, ${question.correctAnswer}, ${question.explanation}, ${question.difficulty}, ${question.xpReward}, NOW())
-          `;
+          `);
           successCount++;
         } catch (insertError) {
           console.error(`❌ Error inserting question: ${insertError}`);
