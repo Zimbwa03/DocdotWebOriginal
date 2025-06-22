@@ -986,7 +986,7 @@ app.get("/api/leaderboard", async (req, res) => {
           id, user_id, exam_type, topics, requested_stem_count, 
           generation_status, ai_provider, created_at
         ) VALUES (
-          ${generationId}, ${currentUserId}, ${examType}, ${JSON.stringify(topics)}, ${stemCount},
+          ${generationId}, ${examUserId}, ${examType}, ${JSON.stringify(topics)}, ${stemCount},
           'pending', 'deepseek', NOW()
         )
       `);
@@ -1029,7 +1029,7 @@ app.get("/api/leaderboard", async (req, res) => {
       // Insert custom exam
       const [customExam] = await db.insert(customExams).values({
         id: examId,
-        userId: currentUserId,
+        userId: examUserId,
         examType,
         title: `${examType.charAt(0).toUpperCase() + examType.slice(1)} Exam - ${topics.join(', ')}`,
         topics, // Pass array directly - schema now uses TEXT[] array type
@@ -1104,7 +1104,7 @@ app.get("/api/leaderboard", async (req, res) => {
         durationSeconds,
         stems: examData.stems,
         createdAt: new Date(),
-        userId: anonymousUserId
+        userId: examUserId
       };
 
       console.log(`Successfully generated custom exam with ${examData.stems.length} stems`);
