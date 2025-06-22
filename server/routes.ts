@@ -898,7 +898,7 @@ app.get("/api/leaderboard", async (req, res) => {
         try {
           const countQuery = await db.execute(sql.raw(`SELECT COUNT(*) as count FROM ${table}`));
           counts[table] = countQuery[0]?.count || 0;
-        } catch (error) {
+        } catch (error: any) {
           counts[table] = `Error: ${error.message}`;
         }
       }
@@ -995,7 +995,7 @@ app.get("/api/leaderboard", async (req, res) => {
           id, user_id, exam_type, topics, requested_stem_count, 
           generation_status, ai_provider, created_at
         ) VALUES (
-          ${generationId}, ${currentUserId}, ${examType}, ${topics}, ${stemCount},
+          ${generationId}, ${currentUserId}, ${examType}, ${JSON.stringify(topics)}, ${stemCount},
           'pending', 'deepseek', NOW()
         )
       `);
