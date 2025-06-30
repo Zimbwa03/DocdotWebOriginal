@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,11 @@ import {
   Heart,
   Brain,
   Bone,
-  Eye
+  Eye,
+  Clock,
+  Star,
+  Users,
+  Download
 } from 'lucide-react';
 
 interface Category {
@@ -245,8 +250,6 @@ The upper limb is designed for manipulation and interaction with the environment
           name: 'Bones of the Upper Limb',
           description: 'Clavicle, scapula, humerus, radius, ulna, hand',
           content: `
-<div class="prose prose-lg max-w-none">
-
 # Upper Limb Anatomy Notes
 
 ## Introduction to the Upper Limb Bones
@@ -737,8 +740,6 @@ By combining detailed anatomical descriptions with practical mnemonics and relev
 1.  Kenhub. (n.d.). *Tibia: Anatomy and clinical notes*. Retrieved from [https://www.kenhub.com/en/library/anatomy/tibia](https://www.kenhub.com/en/library/anatomy/tibia)
 2.  TeachMeAnatomy. (n.d.). *Human Upper Limb Anatomy*. Retrieved from [https://teachmeanatomy.info/upper-limb/](https://teachmeanatomy.info/upper-limb/)
 3.  Snell, R. S. (2012). *Clinical Anatomy by Regions* (9th ed.). Lippincott Williams & Wilkins. (General reference for anatomical details and clinical correlates)
-
-</div>
           `
         },
         {
@@ -1217,11 +1218,11 @@ The cardiovascular system consists of the heart and blood vessels, each with dis
   const getAccessBadge = (tier: 'free' | 'starter' | 'premium') => {
     switch (tier) {
       case 'premium':
-        return <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">Premium</Badge>;
+        return <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold">Premium</Badge>;
       case 'starter':
-        return <Badge className="bg-docdot-blue text-white">Starter</Badge>;
+        return <Badge className="bg-primary text-white font-semibold">Starter</Badge>;
       default:
-        return <Badge variant="outline">Free</Badge>;
+        return <Badge variant="outline" className="font-semibold">Free</Badge>;
     }
   };
 
@@ -1233,37 +1234,52 @@ The cardiovascular system consists of the heart and blood vessels, each with dis
   // Handle subtopic view
   if (selectedSubtopic) {
     return (
-      <div className="min-h-screen bg-docdot-bg">
-        <div className="max-w-4xl mx-auto py-8 px-4">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800">
+        <div className="max-w-5xl mx-auto py-8 px-4">
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <Button variant="ghost" onClick={() => setSelectedSubtopic(null)}>
-              <ArrowLeft className="mr-2" size={16} />
-              Back to {selectedTopic?.name}
+          <div className="flex items-center justify-between mb-8">
+            <Button 
+              variant="ghost" 
+              onClick={() => setSelectedSubtopic(null)}
+              className="hover:bg-primary/10 transition-colors"
+            >
+              <ArrowLeft className="mr-2" size={18} />
+              <span className="font-medium">Back to {selectedTopic?.name}</span>
             </Button>
           </div>
 
           {/* Subtopic Content */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl text-docdot-heading">
-                {selectedSubtopic.name}
-              </CardTitle>
-              {selectedSubtopic.description && (
-                <p className="text-docdot-text">{selectedSubtopic.description}</p>
-              )}
+          <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+            <CardHeader className="bg-gradient-to-r from-primary to-blue-600 text-white rounded-t-lg">
+              <div className="flex items-center space-x-3">
+                <BookOpen className="h-8 w-8" />
+                <div>
+                  <CardTitle className="text-3xl font-bold">
+                    {selectedSubtopic.name}
+                  </CardTitle>
+                  {selectedSubtopic.description && (
+                    <p className="text-blue-100 text-lg mt-2 font-medium">
+                      {selectedSubtopic.description}
+                    </p>
+                  )}
+                </div>
+              </div>
             </CardHeader>
-            <CardContent className="prose prose-lg max-w-none">
+            <CardContent className="p-8">
               {selectedSubtopic.content ? (
-                <div dangerouslySetInnerHTML={{ __html: selectedSubtopic.content.replace(/\n/g, '<br/>') }} />
+                <div className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-headings:font-bold prose-h1:text-4xl prose-h1:mb-6 prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-4 prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-3 prose-p:text-gray-700 prose-p:leading-relaxed prose-strong:text-primary prose-strong:font-bold prose-ul:text-gray-700 prose-li:mb-2">
+                  <div dangerouslySetInnerHTML={{ __html: selectedSubtopic.content.replace(/\n/g, '<br/>') }} />
+                </div>
               ) : (
-                <div className="text-center py-12">
-                  <BookOpen className="mx-auto mb-4 text-gray-400" size={48} />
-                  <h3 className="text-xl font-semibold text-docdot-heading mb-2">
+                <div className="text-center py-16">
+                  <div className="bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+                    <BookOpen className="h-12 w-12 text-primary" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">
                     Content Coming Soon
                   </h3>
-                  <p className="text-docdot-text">
-                    This subtopic content is being developed. Check back soon for detailed notes.
+                  <p className="text-gray-600 text-lg max-w-md mx-auto">
+                    This subtopic content is being developed. Check back soon for comprehensive, detailed notes.
                   </p>
                 </div>
               )}
@@ -1276,31 +1292,46 @@ The cardiovascular system consists of the heart and blood vessels, each with dis
 
   if (selectedTopic) {
     return (
-      <div className="min-h-screen bg-docdot-bg">
-        <div className="max-w-4xl mx-auto py-8 px-4">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800">
+        <div className="max-w-6xl mx-auto py-8 px-4">
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <Button variant="ghost" onClick={() => setSelectedTopic(null)}>
-              <ArrowLeft className="mr-2" size={16} />
-              Back to Topics
+          <div className="flex items-center justify-between mb-8">
+            <Button 
+              variant="ghost" 
+              onClick={() => setSelectedTopic(null)}
+              className="hover:bg-primary/10 transition-colors"
+            >
+              <ArrowLeft className="mr-2" size={18} />
+              <span className="font-medium">Back to Categories</span>
             </Button>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-4">
               {getAccessBadge(selectedTopic.accessTier)}
-              <span className="text-docdot-text text-sm">
-                Updated: {new Date(selectedTopic.lastUpdated).toLocaleDateString()}
-              </span>
+              <div className="flex items-center space-x-2 text-gray-600">
+                <Clock size={16} />
+                <span className="text-sm font-medium">
+                  Updated: {new Date(selectedTopic.lastUpdated).toLocaleDateString()}
+                </span>
+              </div>
             </div>
           </div>
 
           {/* Topic Overview */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="text-2xl text-docdot-heading">
-                {selectedTopic.name}
-              </CardTitle>
+          <Card className="mb-8 shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+            <CardHeader className="bg-gradient-to-r from-primary to-blue-600 text-white rounded-t-lg">
+              <div className="flex items-center space-x-3">
+                <BookOpen className="h-10 w-10" />
+                <div>
+                  <CardTitle className="text-4xl font-bold">
+                    {selectedTopic.name}
+                  </CardTitle>
+                  <p className="text-blue-100 text-lg mt-2 font-medium">
+                    Comprehensive study materials for medical students
+                  </p>
+                </div>
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="prose prose-lg max-w-none mb-6">
+            <CardContent className="p-8">
+              <div className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-headings:font-bold prose-p:text-gray-700 prose-p:leading-relaxed">
                 <div dangerouslySetInnerHTML={{ __html: selectedTopic.content.replace(/\n/g, '<br/>') }} />
               </div>
             </CardContent>
@@ -1309,28 +1340,45 @@ The cardiovascular system consists of the heart and blood vessels, each with dis
           {/* Subtopics Grid */}
           {selectedTopic.subtopics && (
             <div>
-              <h3 className="text-xl font-semibold text-docdot-heading mb-4">
-                Study Topics
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {selectedTopic.subtopics.map((subtopic) => (
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="bg-gradient-to-r from-primary to-blue-600 rounded-full p-2">
+                  <Users className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-3xl font-bold text-gray-900">
+                  Study Topics ({selectedTopic.subtopics.length})
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {selectedTopic.subtopics.map((subtopic, index) => (
                   <Card 
                     key={subtopic.id} 
-                    className="cursor-pointer hover:shadow-lg transition-shadow"
+                    className="group cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-0 bg-white/80 backdrop-blur-sm overflow-hidden"
                     onClick={() => setSelectedSubtopic(subtopic)}
                   >
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-lg text-docdot-heading">
-                        {subtopic.name}
-                      </CardTitle>
-                      {subtopic.description && (
-                        <p className="text-sm text-docdot-text">
-                          {subtopic.description}
-                        </p>
-                      )}
+                    <CardHeader className="pb-4 relative">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-blue-600"></div>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <CardTitle className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors line-clamp-2">
+                            {subtopic.name}
+                          </CardTitle>
+                          {subtopic.description && (
+                            <p className="text-gray-600 text-sm mt-2 line-clamp-3 leading-relaxed">
+                              {subtopic.description}
+                            </p>
+                          )}
+                        </div>
+                        <Badge variant="secondary" className="ml-2 font-semibold">
+                          #{index + 1}
+                        </Badge>
+                      </div>
                     </CardHeader>
                     <CardContent className="pt-0">
-                      <Button variant="outline" size="sm" className="w-full">
+                      <Button 
+                        className="w-full bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary text-white font-semibold transition-all duration-300 group-hover:shadow-lg"
+                        size="sm"
+                      >
+                        <BookOpen className="mr-2 h-4 w-4" />
                         Study This Topic
                       </Button>
                     </CardContent>
@@ -1342,30 +1390,33 @@ The cardiovascular system consists of the heart and blood vessels, each with dis
 
           {/* Traditional Content Display for topics without subtopics */}
           {!selectedTopic.subtopics && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-2xl text-docdot-heading">
+            <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+              <CardHeader className="bg-gradient-to-r from-primary to-blue-600 text-white rounded-t-lg">
+                <CardTitle className="text-3xl font-bold">
                   {selectedTopic.name}
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-8">
                 {canAccessContent(selectedTopic.accessTier) ? (
-                  <div className="prose prose-lg max-w-none">
-                    <div className="whitespace-pre-wrap text-docdot-text leading-relaxed">
+                  <div className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-headings:font-bold prose-p:text-gray-700 prose-p:leading-relaxed">
+                    <div className="whitespace-pre-wrap">
                       {selectedTopic.content}
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center py-12">
-                    <Lock className="mx-auto mb-4 text-gray-400" size={48} />
-                    <h3 className="text-xl font-semibold text-docdot-heading mb-2">
+                  <div className="text-center py-16">
+                    <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+                      <Lock className="h-12 w-12 text-purple-600" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3">
                       Premium Content
                     </h3>
-                    <p className="text-docdot-text mb-6">
-                      This content requires a {selectedTopic.accessTier} subscription to access.
+                    <p className="text-gray-600 text-lg mb-6 max-w-md mx-auto">
+                      This content requires a {selectedTopic.accessTier} subscription to access comprehensive study materials.
                     </p>
                     <Link href="/pricing">
-                      <Button className="bg-docdot-blue">
+                      <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-pink-500 hover:to-purple-500 text-white font-semibold px-8 py-3 text-lg">
+                        <Star className="mr-2 h-5 w-5" />
                         Upgrade Now
                       </Button>
                     </Link>
@@ -1381,96 +1432,143 @@ The cardiovascular system consists of the heart and blood vessels, each with dis
 
   if (selectedCategory) {
     return (
-      <div className="min-h-screen bg-docdot-bg">
-        <div className="max-w-6xl mx-auto py-8 px-4">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800">
+        <div className="max-w-7xl mx-auto py-8 px-4">
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center">
-              <Button variant="ghost" onClick={() => setSelectedCategory(null)}>
-                <ArrowLeft className="mr-2" size={16} />
-                Back to Categories
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center space-x-4">
+              <Button 
+                variant="ghost" 
+                onClick={() => setSelectedCategory(null)}
+                className="hover:bg-primary/10 transition-colors"
+              >
+                <ArrowLeft className="mr-2" size={18} />
+                <span className="font-medium">Back to Categories</span>
               </Button>
-              <div className="ml-4">
-                <h1 className="text-2xl font-bold text-docdot-heading">{selectedCategory.name} Notes</h1>
-                <p className="text-docdot-text">{selectedCategory.description}</p>
+              <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 shadow-lg">
+                <h1 className="text-3xl font-bold text-gray-900">{selectedCategory.name} Notes</h1>
+                <p className="text-gray-600 font-medium">{selectedCategory.description}</p>
               </div>
             </div>
           </div>
 
           {/* Search */}
-          <div className="relative mb-6">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-            <Input
-              placeholder="Search topics..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
+          <Card className="mb-8 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <Input
+                  placeholder="Search topics..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-12 h-12 text-lg border-2 border-gray-200 focus:border-primary transition-colors"
+                />
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Topic Type Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-            <TabsList>
-              <TabsTrigger value="gross_anatomy" className="flex items-center space-x-2">
-                <Bone size={16} />
-                <span>Gross Anatomy</span>
-              </TabsTrigger>
-              <TabsTrigger value="histology" className="flex items-center space-x-2">
-                <Microscope size={16} />
-                <span>Histology</span>
-              </TabsTrigger>
-              <TabsTrigger value="embryology" className="flex items-center space-x-2">
-                <Baby size={16} />
-                <span>Embryology</span>
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value={activeTab} className="mt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredTopics.map((topic) => (
-                  <Card 
-                    key={topic.id}
-                    className="cursor-pointer hover:shadow-lg transition-shadow duration-200 border-2 hover:border-docdot-blue"
-                    onClick={() => setSelectedTopic(topic)}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
+            <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+              <CardContent className="p-6">
+                <TabsList className="grid w-full grid-cols-3 gap-4 bg-gray-100 p-2 rounded-lg">
+                  <TabsTrigger 
+                    value="gross_anatomy" 
+                    className="flex items-center space-x-3 data-[state=active]:bg-primary data-[state=active]:text-white font-semibold py-3 px-6 transition-all"
                   >
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg text-docdot-heading">{topic.name}</CardTitle>
-                        {!canAccessContent(topic.accessTier) && (
-                          <Lock className="text-gray-400" size={16} />
-                        )}
-                      </div>
-                      <div className="flex items-center justify-between">
-                        {getAccessBadge(topic.accessTier)}
-                        <span className="text-xs text-docdot-text">
-                          {new Date(topic.lastUpdated).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-docdot-text text-sm line-clamp-3">
-                        {topic.content.substring(0, 100)}...
-                      </p>
-                      <Button variant="outline" size="sm" className="mt-3 w-full">
-                        {canAccessContent(topic.accessTier) ? 'Read More' : 'Upgrade to Access'}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                    <Bone size={20} />
+                    <span>Gross Anatomy</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="histology" 
+                    className="flex items-center space-x-3 data-[state=active]:bg-primary data-[state=active]:text-white font-semibold py-3 px-6 transition-all"
+                  >
+                    <Microscope size={20} />
+                    <span>Histology</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="embryology" 
+                    className="flex items-center space-x-3 data-[state=active]:bg-primary data-[state=active]:text-white font-semibold py-3 px-6 transition-all"
+                  >
+                    <Baby size={20} />
+                    <span>Embryology</span>
+                  </TabsTrigger>
+                </TabsList>
 
-              {filteredTopics.length === 0 && (
-                <div className="text-center py-12">
-                  <BookOpen className="mx-auto mb-4 text-gray-400" size={48} />
-                  <h3 className="text-xl font-semibold text-docdot-heading mb-2">
-                    No topics found
-                  </h3>
-                  <p className="text-docdot-text">
-                    Try adjusting your search or explore other categories.
-                  </p>
-                </div>
-              )}
-            </TabsContent>
+                <TabsContent value={activeTab} className="mt-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredTopics.map((topic) => (
+                      <Card 
+                        key={topic.id}
+                        className="group cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-0 bg-white/90 backdrop-blur-sm overflow-hidden"
+                        onClick={() => setSelectedTopic(topic)}
+                      >
+                        <CardHeader className="relative">
+                          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-blue-600"></div>
+                          <div className="flex items-center justify-between mb-2">
+                            <CardTitle className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors">
+                              {topic.name}
+                            </CardTitle>
+                            {!canAccessContent(topic.accessTier) && (
+                              <Lock className="text-gray-400" size={16} />
+                            )}
+                          </div>
+                          <div className="flex items-center justify-between">
+                            {getAccessBadge(topic.accessTier)}
+                            <div className="flex items-center space-x-1 text-gray-500">
+                              <Clock size={12} />
+                              <span className="text-xs font-medium">
+                                {new Date(topic.lastUpdated).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-gray-600 text-sm line-clamp-3 mb-4 leading-relaxed">
+                            {topic.content.substring(0, 120)}...
+                          </p>
+                          <Button 
+                            variant={canAccessContent(topic.accessTier) ? "default" : "outline"}
+                            size="sm" 
+                            className={`w-full font-semibold transition-all duration-300 ${
+                              canAccessContent(topic.accessTier) 
+                                ? 'bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary text-white group-hover:shadow-lg' 
+                                : 'hover:bg-gray-100'
+                            }`}
+                          >
+                            {canAccessContent(topic.accessTier) ? (
+                              <>
+                                <BookOpen className="mr-2 h-4 w-4" />
+                                Read More
+                              </>
+                            ) : (
+                              <>
+                                <Star className="mr-2 h-4 w-4" />
+                                Upgrade to Access
+                              </>
+                            )}
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+
+                  {filteredTopics.length === 0 && (
+                    <div className="text-center py-16">
+                      <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+                        <BookOpen className="h-12 w-12 text-gray-400" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                        No topics found
+                      </h3>
+                      <p className="text-gray-600 text-lg max-w-md mx-auto">
+                        Try adjusting your search or explore other categories.
+                      </p>
+                    </div>
+                  )}
+                </TabsContent>
+              </CardContent>
+            </Card>
           </Tabs>
         </div>
       </div>
@@ -1478,47 +1576,78 @@ The cardiovascular system consists of the heart and blood vessels, each with dis
   }
 
   return (
-    <div className="min-h-screen bg-docdot-bg">
-      <div className="max-w-6xl mx-auto py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800">
+      <div className="max-w-7xl mx-auto py-12 px-4">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center space-x-3 mb-4">
+        <div className="text-center mb-12">
+          <div className="flex items-center justify-center space-x-4 mb-6">
             <img 
               src="/DocDot Medical Student Logo.png" 
               alt="DocDot Medical Student Logo" 
-              className="h-12 w-auto"
+              className="h-16 w-auto"
             />
-            <h1 className="text-3xl font-bold text-docdot-heading">Study Notes</h1>
+            <div>
+              <h1 className="text-5xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+                Study Notes
+              </h1>
+              <p className="text-xl text-gray-600 font-medium mt-2">
+                Comprehensive medical education materials for ambitious students
+              </p>
+            </div>
           </div>
-          <p className="text-xl text-docdot-text">Comprehensive medical education materials</p>
+          <div className="flex items-center justify-center space-x-8 opacity-60">
+            <div className="flex items-center space-x-2">
+              <Star className="h-5 w-5 text-yellow-500" />
+              <span className="text-sm font-medium text-gray-600">Expert-Reviewed Content</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Users className="h-5 w-5 text-blue-500" />
+              <span className="text-sm font-medium text-gray-600">Student-Friendly Format</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Download className="h-5 w-5 text-green-500" />
+              <span className="text-sm font-medium text-gray-600">Always Updated</span>
+            </div>
+          </div>
         </div>
 
         {/* Categories Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {categories.map((category) => {
             const IconComponent = category.icon;
             return (
               <Card 
                 key={category.id}
-                className="cursor-pointer hover:shadow-lg transition-shadow duration-200 border-2 hover:border-docdot-blue"
+                className="group cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-0 bg-white/80 backdrop-blur-sm overflow-hidden"
                 onClick={() => setSelectedCategory(category)}
               >
-                <CardHeader>
-                  <div className="flex items-center space-x-4">
-                    <div className={`p-3 rounded-lg bg-${category.color}-100`}>
-                      <IconComponent className={`text-${category.color}-600`} size={32} />
+                <CardHeader className="relative pb-6">
+                  <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary to-blue-600"></div>
+                  <div className="flex items-center space-x-6 mt-4">
+                    <div className={`p-4 rounded-2xl bg-gradient-to-br from-${category.color}-100 to-${category.color}-200 group-hover:from-${category.color}-200 group-hover:to-${category.color}-300 transition-all duration-300`}>
+                      <IconComponent className={`text-${category.color}-600 h-12 w-12`} />
                     </div>
-                    <div>
-                      <CardTitle className="text-xl text-docdot-heading">{category.name}</CardTitle>
-                      <p className="text-docdot-text">{category.description}</p>
+                    <div className="flex-1">
+                      <CardTitle className="text-2xl font-bold text-gray-900 group-hover:text-primary transition-colors">
+                        {category.name}
+                      </CardTitle>
+                      <p className="text-gray-600 text-lg font-medium mt-1">
+                        {category.description}
+                      </p>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between">
-                    <span className="text-docdot-text">{category.topicCount} topics available</span>
-                    <Button variant="outline" size="sm">
-                      Explore
+                    <div className="flex items-center space-x-2 text-gray-600">
+                      <BookOpen size={18} />
+                      <span className="font-semibold">{category.topicCount} topics available</span>
+                    </div>
+                    <Button 
+                      className="bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary text-white font-semibold px-6 py-2 transition-all duration-300 group-hover:shadow-lg"
+                      size="sm"
+                    >
+                      Explore Now
                     </Button>
                   </div>
                 </CardContent>
