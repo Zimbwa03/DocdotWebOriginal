@@ -560,7 +560,7 @@ The ulna articulates with two bones:
 
 1.  **Humerus:** At the trochlear notch and the trochlea, forming the **humeroulnar joint** (part of the elbow joint).
 2.  **Radius:**
-    *   **Proximally:** At the radial notch of the ulna and the proximal radioulnar joint**.
+    *   **Proximally:** At the radial notch of the ulna and the proximal radioulnnar joint**.
     *   **Distally:** At the head of the ulna and the ulnar notch of the radius, forming the **distal radioulnar joint**.
 
 ### Muscle Attachments
@@ -1330,39 +1330,47 @@ The cardiovascular system consists of the heart and blood vessels, each with dis
               </div>
             </CardHeader>
             <CardContent className="p-8">
-              
+
 {canAccessContent(selectedTopic.accessTier) ? (
-                  <div className="prose prose-lg max-w-none">
+                  <div className="formatted-content prose prose-lg max-w-none">
                     <div 
-                      className="formatted-content"
                       dangerouslySetInnerHTML={{ 
                         __html: selectedTopic.content
-                          // Convert markdown headers
-                          .replace(/^### (.*$)/gm, '<h3 class="text-2xl font-bold text-blue-700 mt-8 mb-4 border-l-4 border-blue-500 pl-4 bg-blue-50 py-2">$1</h3>')
-                          .replace(/^## (.*$)/gm, '<h2 class="text-3xl font-bold text-primary mt-10 mb-6 border-b-2 border-primary pb-2">$1</h2>')
-                          .replace(/^# (.*$)/gm, '<h1 class="text-4xl font-bold text-gray-900 mb-8 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">$1</h1>')
+                          // Convert markdown headers with advanced styling
+                          .replace(/^### (.*$)/gim, '<h3 class="text-2xl font-bold text-blue-700 mt-8 mb-4 border-l-4 border-blue-500 pl-4 bg-gradient-to-r from-blue-50 to-blue-100 py-3 rounded-r-lg shadow-sm">$1</h3>')
+                          .replace(/^## (.*$)/gim, '<h2 class="text-3xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent mt-10 mb-6 border-b-3 border-primary pb-3">$1</h2>')
+                          .replace(/^# (.*$)/gim, '<h1 class="text-4xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent mb-8 text-center">$1</h1>')
 
-                          // Convert bold text with colors
-                          .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-blue-600 bg-blue-50 px-1 rounded">$1</strong>')
+                          // Enhanced bold text with medical theme colors
+                          .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-blue-700 bg-gradient-to-r from-blue-50 to-blue-100 px-2 py-1 rounded-md border border-blue-200 shadow-sm">$1</strong>')
 
-                          // Convert italic text
-                          .replace(/\*(.*?)\*/g, '<em class="italic text-purple-600 font-medium">$1</em>')
+                          // Enhanced italic text with purple accent
+                          .replace(/\*(.*?)\*/g, '<em class="italic text-purple-700 font-semibold bg-purple-50 px-1 rounded">$1</em>')
 
-                          // Convert bullet points with enhanced styling
-                          .replace(/^\* (.*$)/gm, '<li class="ml-6 mb-3 text-gray-700 leading-relaxed pl-2 border-l-2 border-blue-200">$1</li>')
+                          // Enhanced bullet points with medical theme
+                          .replace(/^\* (.*$)/gim, '<li class="ml-6 mb-4 text-gray-700 leading-relaxed pl-4 border-l-3 border-blue-300 bg-gradient-to-r from-blue-50 to-white py-2 rounded-r-md hover:from-blue-100 hover:to-blue-50 transition-all duration-200 relative"><span class="absolute -left-2 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-blue-500 rounded-full"></span>$1</li>')
 
-                          // Convert numbered lists
-                          .replace(/^(\d+)\. (.*$)/gm, '<li class="ml-6 mb-3 text-gray-700 leading-relaxed"><span class="font-bold text-primary mr-2">$1.</span>$1</li>')
+                          // Enhanced numbered lists
+                          .replace(/^(\d+)\. (.*$)/gim, '<li class="ml-6 mb-4 text-gray-700 leading-relaxed pl-4 bg-gradient-to-r from-gray-50 to-white py-2 rounded-md border border-gray-200"><span class="font-bold text-primary mr-3 bg-primary text-white px-2 py-1 rounded-full text-sm">$1</span>$2</li>')
 
-                          // Add spacing and formatting
-                          .replace(/\n\n/g, '</p><p class="mb-4 leading-relaxed text-gray-700">')
+                          // Special formatting for anatomical terms and important medical concepts
+                          .replace(/(Clavicle|Scapula|Humerus|Radius|Ulna|Anatomy|Physiology|Clinical)/gi, '<span class="font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded border border-orange-200">$1</span>')
+
+                          // Format special medical abbreviations
+                          .replace(/\b([A-Z]{2,})\b/g, '<span class="font-semibold text-green-600 bg-green-50 px-1 rounded text-sm">$1</span>')
+
+                          // Add spacing and improved paragraph formatting
+                          .replace(/\n\n/g, '</p><p class="mb-6 leading-relaxed text-gray-700 text-justify">')
                           .replace(/\n/g, '<br/>')
 
-                          // Wrap in paragraph tags
-                          .replace(/^(?!<[h|l|d])(.+)/gm, '<p class="mb-4 leading-relaxed text-gray-700">$1</p>')
+                          // Wrap content in well-formatted paragraphs
+                          .replace(/^(?!<[h|l|d])(.+)/gm, '<p class="mb-6 leading-relaxed text-gray-700 text-justify">$1</p>')
 
-                          // Clean up any double paragraph tags
-                          .replace(/<p class="mb-4 leading-relaxed text-gray-700"><\/p>/g, '')
+                          // Clean up any empty paragraphs
+                          .replace(/<p class="mb-6 leading-relaxed text-gray-700 text-justify"><\/p>/g, '')
+
+                          // Add special formatting for section breaks
+                          .replace(/---/g, '<hr class="my-8 border-0 h-1 bg-gradient-to-r from-primary to-blue-600 rounded-full opacity-30" />')
                       }} 
                     />
                   </div>
@@ -1484,7 +1492,7 @@ The cardiovascular system consists of the heart and blood vessels, each with dis
   if (selectedCategory) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800">
-        <div className="max-w-7xl mx-auto py-8 px-4">
+      <div className="max-w-7xl mx-auto py-8 px-4">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-4">
