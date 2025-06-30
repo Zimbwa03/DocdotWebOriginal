@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
@@ -1331,9 +1330,61 @@ The cardiovascular system consists of the heart and blood vessels, each with dis
               </div>
             </CardHeader>
             <CardContent className="p-8">
-              <div className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-headings:font-bold prose-p:text-gray-700 prose-p:leading-relaxed">
-                <div dangerouslySetInnerHTML={{ __html: selectedTopic.content.replace(/\n/g, '<br/>') }} />
-              </div>
+              
+{canAccessContent(selectedTopic.accessTier) ? (
+                  <div className="prose prose-lg max-w-none">
+                    <div 
+                      className="formatted-content"
+                      dangerouslySetInnerHTML={{ 
+                        __html: selectedTopic.content
+                          // Convert markdown headers
+                          .replace(/^### (.*$)/gm, '<h3 class="text-2xl font-bold text-blue-700 mt-8 mb-4 border-l-4 border-blue-500 pl-4 bg-blue-50 py-2">$1</h3>')
+                          .replace(/^## (.*$)/gm, '<h2 class="text-3xl font-bold text-primary mt-10 mb-6 border-b-2 border-primary pb-2">$1</h2>')
+                          .replace(/^# (.*$)/gm, '<h1 class="text-4xl font-bold text-gray-900 mb-8 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">$1</h1>')
+
+                          // Convert bold text with colors
+                          .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-blue-600 bg-blue-50 px-1 rounded">$1</strong>')
+
+                          // Convert italic text
+                          .replace(/\*(.*?)\*/g, '<em class="italic text-purple-600 font-medium">$1</em>')
+
+                          // Convert bullet points with enhanced styling
+                          .replace(/^\* (.*$)/gm, '<li class="ml-6 mb-3 text-gray-700 leading-relaxed pl-2 border-l-2 border-blue-200">$1</li>')
+
+                          // Convert numbered lists
+                          .replace(/^(\d+)\. (.*$)/gm, '<li class="ml-6 mb-3 text-gray-700 leading-relaxed"><span class="font-bold text-primary mr-2">$1.</span>$1</li>')
+
+                          // Add spacing and formatting
+                          .replace(/\n\n/g, '</p><p class="mb-4 leading-relaxed text-gray-700">')
+                          .replace(/\n/g, '<br/>')
+
+                          // Wrap in paragraph tags
+                          .replace(/^(?!<[h|l|d])(.+)/gm, '<p class="mb-4 leading-relaxed text-gray-700">$1</p>')
+
+                          // Clean up any double paragraph tags
+                          .replace(/<p class="mb-4 leading-relaxed text-gray-700"><\/p>/g, '')
+                      }} 
+                    />
+                  </div>
+                ) : (
+                  <div className="text-center py-16">
+                    <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+                      <Lock className="h-12 w-12 text-purple-600" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                      Premium Content
+                    </h3>
+                    <p className="text-gray-600 text-lg mb-6 max-w-md mx-auto">
+                      This content requires a {selectedTopic.accessTier} subscription to access comprehensive study materials.
+                    </p>
+                    <Link href="/pricing">
+                      <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-pink-500 hover:to-purple-500 text-white font-semibold px-8 py-3 text-lg">
+                        <Star className="mr-2 h-5 w-5" />
+                        Upgrade Now
+                      </Button>
+                    </Link>
+                  </div>
+                )}
             </CardContent>
           </Card>
 
