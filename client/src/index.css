@@ -304,6 +304,21 @@
   }
 
   .formatted-content h3 {
+    color: #000000 !important;
+    font-weight: 900 !important;
+    font-size: 1.4rem !important;
+    margin-top: 32px;
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%);
+    border-left: 4px solid #000000;
+    border-radius: 6px;
+    letter-spacing: -0.01em;
+    text-transform: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .formatted-content h3 {
     color: #1E40AF;
     background: linear-gradient(135deg, #EBF4FF 0%, #DBEAFE 100%);
     border-left: 4px solid #3399FF;

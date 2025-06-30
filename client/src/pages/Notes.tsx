@@ -1337,7 +1337,7 @@ The cardiovascular system consists of the heart and blood vessels, each with dis
                       dangerouslySetInnerHTML={{ 
                         __html: selectedTopic.content
                           // Convert markdown headers with advanced styling
-                          .replace(/^### (.*$)/gim, '<h3 class="text-2xl font-bold text-blue-700 mt-8 mb-4 border-l-4 border-blue-500 pl-4 bg-gradient-to-r from-blue-50 to-blue-100 py-3 rounded-r-lg shadow-sm">$1</h3>')
+                          .replace(/^### (.*$)/gim, '<h3 class="text-2xl font-black text-black mt-8 mb-4 border-l-4 border-black pl-4 bg-gradient-to-r from-gray-50 to-gray-100 py-3 rounded-r-lg shadow-lg">$1</h3>')
                           .replace(/^## (.*$)/gim, '<h2 class="text-3xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent mt-10 mb-6 border-b-3 border-primary pb-3">$1</h2>')
                           .replace(/^# (.*$)/gim, '<h1 class="text-4xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent mb-8 text-center">$1</h1>')
 
