@@ -113,24 +113,24 @@ The head and neck region contains vital structures for sensation, communication,
           content: `# Skull
 
 ## Bones of the Skull
-- **Frontal bone**: Forms forehead and roof of orbits
-- **Parietal bones**: Form sides and roof of skull  
-- **Temporal bones**: House ear structures
-- **Occipital bone**: Forms back of skull
-- **Sphenoid**: Central skull base bone
-- **Ethmoid**: Forms part of nasal cavity
+- <strong>Frontal bone</strong>: Forms forehead and roof of orbits
+- <strong>Parietal bones</strong>: Form sides and roof of skull  
+- <strong>Temporal bones</strong>: House ear structures
+- <strong>Occipital bone</strong>: Forms back of skull
+- <strong>Sphenoid</strong>: Central skull base bone
+- <strong>Ethmoid</strong>: Forms part of nasal cavity
 
 ## Foramina
-- **Foramen magnum**: Spinal cord passage
-- **Optic canal**: Optic nerve passage
-- **Superior orbital fissure**: Multiple cranial nerves
-- **Foramen rotundum**: Maxillary nerve
-- **Foramen ovale**: Mandibular nerve
+- <strong>Foramen magnum</strong>: Spinal cord passage
+- <strong>Optic canal</strong>: Optic nerve passage
+- <strong>Superior orbital fissure</strong>: Multiple cranial nerves
+- <strong>Foramen rotundum</strong>: Maxillary nerve
+- <strong>Foramen ovale</strong>: Mandibular nerve
 
 ## Cranial Fossae  
-- **Anterior fossa**: Frontal lobes
-- **Middle fossa**: Temporal lobes
-- **Posterior fossa**: Cerebellum and brainstem`
+- <strong>Anterior fossa</strong>: Frontal lobes
+- <strong>Middle fossa</strong>: Temporal lobes
+- <strong>Posterior fossa</strong>: Cerebellum and brainstem`
         },
         {
           id: 'scalp-face',
@@ -139,22 +139,22 @@ The head and neck region contains vital structures for sensation, communication,
           content: `# Scalp and Face
 
 ## Scalp Layers (SCALP)
-- **S**: Skin
-- **C**: Connective tissue (subcutaneous)
-- **A**: Aponeurosis (galea aponeurotica)
-- **L**: Loose connective tissue
-- **P**: Pericranium
+- <strong>S</strong>: Skin
+- <strong>C</strong>: Connective tissue (subcutaneous)
+- <strong>A</strong>: Aponeurosis (galea aponeurotica)
+- <strong>L</strong>: Loose connective tissue
+- <strong>P</strong>: Pericranium
 
 ## Facial Muscles
-- **Muscles of expression**: Controlled by facial nerve (CN VII)
-- **Muscles of mastication**: Controlled by trigeminal nerve (CN V)
-- **Orbicularis oculi**: Eye closure
-- **Orbicularis oris**: Lip closure
+- <strong>Muscles of expression</strong>: Controlled by facial nerve (CN VII)
+- <strong>Muscles of mastication</strong>: Controlled by trigeminal nerve (CN V)
+- <strong>Orbicularis oculi</strong>: Eye closure
+- <strong>Orbicularis oris</strong>: Lip closure
 
 ## Blood Supply
-- **Facial artery**: Main facial blood supply
-- **Superficial temporal artery**: Temple region
-- **Maxillary artery**: Deep facial structures`
+- <strong>Facial artery</strong>: Main facial blood supply
+- <strong>Superficial temporal artery</strong>: Temple region
+- <strong>Maxillary artery</strong>: Deep facial structures`
         },
         {
           id: 'parotid',
@@ -263,10 +263,10 @@ In these notes, we will explore each bone of the upper limb in detail, covering 
 
 The upper limb consists of the following bones:
 
-*   **Shoulder Girdle:** Clavicle and Scapula
-*   **Arm:** Humerus
-*   **Forearm:** Radius and Ulna
-*   **Hand:** Carpals, Metacarpals, and Phalanges
+*   <strong>Shoulder Girdle:</strong> Clavicle and Scapula
+*   <strong>Arm:</strong> Humerus
+*   <strong>Forearm:</strong> Radius and Ulna
+*   <strong>Hand:</strong> Carpals, Metacarpals, and Phalanges
 
 Each of these bones plays a vital role in the structure and function of the upper limb, providing support, facilitating movement, and protecting underlying neurovascular structures. We will now delve into the specifics of each bone, starting with the shoulder girdle.
 
@@ -278,41 +278,41 @@ The clavicle, commonly known as the collarbone, is a long, slender bone that for
 
 The clavicle has two ends and a shaft:
 
-*   **Sternal End (Medial End):** This end is rounded and articulates with the manubrium of the sternum to form the sternoclavicular joint. It is the only true articulation between the upper limb and the axial skeleton.
-*   **Acromial End (Lateral End):** This end is flattened and articulates with the acromion of the scapula to form the acromioclavicular joint.
-*   **Shaft:** The shaft of the clavicle is curved, with a convex anterior curvature medially and a concave anterior curvature laterally. The superior surface is smooth, while the inferior surface is rough due to ligamentous and muscular attachments.
-    *   **Conoid Tubercle:** A prominent elevation on the inferior surface near the acromial end, serving as the attachment site for the conoid ligament (part of the coracoclavicular ligament).
-    *   **Trapezoid Line:** A ridge extending laterally from the conoid tubercle, providing attachment for the trapezoid ligament (also part of the coracoclavicular ligament).
-    *   **Subclavian Groove:** A groove on the inferior surface of the middle third of the shaft, providing attachment for the subclavius muscle.
-    *   **Impression for Costoclavicular Ligament:** A rough, oval impression on the inferior surface of the sternal end, serving as the attachment site for the costoclavicular ligament.
+*   <strong>Sternal End (Medial End):</strong> This end is rounded and articulates with the manubrium of the sternum to form the sternoclavicular joint. It is the only true articulation between the upper limb and the axial skeleton.
+*   <strong>Acromial End (Lateral End):</strong> This end is flattened and articulates with the acromion of the scapula to form the acromioclavicular joint.
+*   <strong>Shaft:</strong> The shaft of the clavicle is curved, with a convex anterior curvature medially and a concave anterior curvature laterally. The superior surface is smooth, while the inferior surface is rough due to ligamentous and muscular attachments.
+    *   <strong>Conoid Tubercle:</strong> A prominent elevation on the inferior surface near the acromial end, serving as the attachment site for the conoid ligament (part of the coracoclavicular ligament).
+    *   <strong>Trapezoid Line:</strong> A ridge extending laterally from the conoid tubercle, providing attachment for the trapezoid ligament (also part of the coracoclavicular ligament).
+    *   <strong>Subclavian Groove:</strong> A groove on the inferior surface of the middle third of the shaft, providing attachment for the subclavius muscle.
+    *   <strong>Impression for Costoclavicular Ligament:</strong> A rough, oval impression on the inferior surface of the sternal end, serving as the attachment site for the costoclavicular ligament.
 
 ### Articulations
 
 The clavicle articulates with two bones:
 
-1.  **Sternum:** At the sternal end, forming the **sternoclavicular joint** (a saddle-type synovial joint, functionally a ball-and-socket joint).
-2.  **Scapula:** At the acromial end, forming the **acromioclavicular joint** (a plane-type synovial joint).
+1.  <strong>Sternum:</strong> At the sternal end, forming the <strong>sternoclavicular joint</strong> (a saddle-type synovial joint, functionally a ball-and-socket joint).
+2.  <strong>Scapula:</strong> At the acromial end, forming the <strong>acromioclavicular joint</strong> (a plane-type synovial joint).
 
 ### Muscle Attachments
 
 Several muscles attach to the clavicle, contributing to shoulder and neck movements:
 
-*   **Pectoralis Major:** Attaches to the anterior surface of the medial half.
-*   **Sternocleidomastoid:** Attaches to the superior surface of the medial end.
-*   **Deltoid:** Attaches to the anterior surface of the lateral third.
-*   **Trapezius:** Attaches to the posterior surface of the lateral third.
-*   **Subclavius:** Attaches to the subclavian groove on the inferior surface.
-*   **Sternohyoid:** Attaches to the posterior surface of the sternal end.
+*   <strong>Pectoralis Major:</strong> Attaches to the anterior surface of the medial half.
+*   <strong>Sternocleidomastoid:</strong> Attaches to the superior surface of the medial end.
+*   <strong>Deltoid:</strong> Attaches to the anterior surface of the lateral third.
+*   <strong>Trapezius:</strong> Attaches to the posterior surface of the lateral third.
+*   <strong>Subclavius:</strong> Attaches to the subclavian groove on the inferior surface.
+*   <strong>Sternohyoid:</strong> Attaches to the posterior surface of the sternal end.
 
 ### Mnemonics
 
-*   **D**on't **T**ouch **S**ome **P**eople's **S**tupid **S**houlders (**D**eltoid, **T**rapezius, **S**ubclavius, **P**ectoralis Major, **S**ternocleidomastoid, **S**ternohyoid).
+*   <strong>D</strong>on't <strong>T</strong>ouch <strong>S</strong>ome <strong>P</strong>eople's <strong>S</strong>tupid <strong>S</strong>houlders (<strong>D</strong>eltoid, <strong>T</strong>rapezius, <strong>S</strong>ubclavius, <strong>P</strong>ectoralis Major, <strong>S</strong>ternocleidomastoid, <strong>S</strong>ternohyoid).
 
 ### Clinical Correlates
 
-*   **Clavicle Fractures:** The clavicle is one of the most commonly fractured bones, especially in children and athletes. The most common site of fracture is the middle third, due to its change in curvature and the lack of muscular support. Fractures often result from a fall on the outstretched hand or a direct blow to the shoulder. The sternocleidomastoid muscle pulls the medial fragment superiorly, while the weight of the arm and the pectoralis major muscle pull the lateral fragment inferiorly and medially, leading to characteristic displacement.
-*   **Ossification:** The clavicle is unique as it is the first bone to ossify (around the 5th or 6th week of embryonic development) and the last to complete ossification (around 25 years of age). It undergoes intramembranous ossification, unlike most other long bones which undergo endochondral ossification.
-*   **Cleidocranial Dysostosis:** A rare congenital disorder characterized by defective ossification of the clavicles (often absent or hypoplastic), along with other skeletal abnormalities. Individuals with this condition may be able to approximate their shoulders anteriorly due to the absence of the clavicular strut.
+*   <strong>Clavicle Fractures:</strong> The clavicle is one of the most commonly fractured bones, especially in children and athletes. The most common site of fracture is the middle third, due to its change in curvature and the lack of muscular support. Fractures often result from a fall on the outstretched hand or a direct blow to the shoulder. The sternocleidomastoid muscle pulls the medial fragment superiorly, while the weight of the arm and the pectoralis major muscle pull the lateral fragment inferiorly and medially, leading to characteristic displacement.
+*   <strong>Ossification:</strong> The clavicle is unique as it is the first bone to ossify (around the 5th or 6th week of embryonic development) and the last to complete ossification (around 25 years of age). It undergoes intramembranous ossification, unlike most other long bones which undergo endochondral ossification.
+*   <strong>Cleidocranial Dysostosis:</strong> A rare congenital disorder characterized by defective ossification of the clavicles (often absent or hypoplastic), along with other skeletal abnormalities. Individuals with this condition may be able to approximate their shoulders anteriorly due to the absence of the clavicular strut.
 
 ## The Scapula (Shoulder Blade)
 
@@ -324,71 +324,71 @@ The scapula has two surfaces, three borders, three angles, and several prominent
 
 #### Surfaces:
 
-*   **Costal (Anterior) Surface:** This surface faces the ribs and is concave, forming the **subscapular fossa**, which is occupied by the subscapularis muscle.
-*   **Posterior Surface:** This surface is convex and is divided by the spine of the scapula into two fossae:
-    *   **Supraspinous Fossa:** Superior to the spine, occupied by the supraspinatus muscle.
-    *   **Infraspinous Fossa:** Inferior to the spine, occupied by the infraspinatus muscle.
+*   <strong>Costal (Anterior) Surface:</strong> This surface faces the ribs and is concave, forming the <strong>subscapular fossa</strong>, which is occupied by the subscapularis muscle.
+*   <strong>Posterior Surface:</strong> This surface is convex and is divided by the spine of the scapula into two fossae:
+    *   <strong>Supraspinous Fossa:</strong> Superior to the spine, occupied by the supraspinatus muscle.
+    *   <strong>Infraspinous Fossa:</strong> Inferior to the spine, occupied by the infraspinatus muscle.
 
 #### Borders:
 
-*   **Superior Border:** The shortest and sharpest border, featuring the **suprascapular notch** (or scapular notch), which is bridged by the superior transverse scapular ligament, forming a foramen for the suprascapular nerve.
-*   **Medial (Vertebral) Border:** The longest border, running parallel to the vertebral column.
-*   **Lateral (Axillary) Border:** The thickest border, extending from the glenoid cavity inferiorly.
+*   <strong>Superior Border:</strong> The shortest and sharpest border, featuring the <strong>suprascapular notch</strong> (or scapular notch), which is bridged by the superior transverse scapular ligament, forming a foramen for the suprascapular nerve.
+*   <strong>Medial (Vertebral) Border:</strong> The longest border, running parallel to the vertebral column.
+*   <strong>Lateral (Axillary) Border:</strong> The thickest border, extending from the glenoid cavity inferiorly.
 
 #### Angles:
 
-*   **Superior Angle:** Formed by the junction of the superior and medial borders.
-*   **Inferior Angle:** Formed by the junction of the medial and lateral borders; serves as a landmark for counting ribs (usually at the level of T7).
-*   **Lateral Angle:** The thickest part of the scapula, featuring the glenoid cavity.
+*   <strong>Superior Angle:</strong> Formed by the junction of the superior and medial borders.
+*   <strong>Inferior Angle:</strong> Formed by the junction of the medial and lateral borders; serves as a landmark for counting ribs (usually at the level of T7).
+*   <strong>Lateral Angle:</strong> The thickest part of the scapula, featuring the glenoid cavity.
 
 #### Processes:
 
-*   **Spine of the Scapula:** A prominent ridge on the posterior surface that extends laterally to form the acromion. It divides the posterior surface into the supraspinous and infraspinous fossae.
-*   **Acromion:** The flattened, most lateral part of the spine, forming the highest point of the shoulder. It articulates with the clavicle at the acromioclavicular joint.
-*   **Coracoid Process:** A beak-like projection from the superior border of the scapula, anterior to the glenoid cavity. It serves as an attachment site for several muscles and ligaments.
+*   <strong>Spine of the Scapula:</strong> A prominent ridge on the posterior surface that extends laterally to form the acromion. It divides the posterior surface into the supraspinous and infraspinous fossae.
+*   <strong>Acromion:</strong> The flattened, most lateral part of the spine, forming the highest point of the shoulder. It articulates with the clavicle at the acromioclavicular joint.
+*   <strong>Coracoid Process:</strong> A beak-like projection from the superior border of the scapula, anterior to the glenoid cavity. It serves as an attachment site for several muscles and ligaments.
 
-*   **Glenoid Cavity (Fossa):** A shallow, pear-shaped articular depression on the lateral angle of the scapula, articulating with the head of the humerus to form the glenohumeral (shoulder) joint. It is deepened slightly by the **glenoid labrum**, a fibrocartilaginous rim.
-*   **Supraglenoid Tubercle:** A small projection superior to the glenoid cavity, serving as the origin for the long head of the biceps brachii muscle.
-*   **Infraglenoid Tubercle:** A small projection inferior to the glenoid cavity, serving as the origin for the long head of the triceps brachii muscle.
+*   <strong>Glenoid Cavity (Fossa):</strong> A shallow, pear-shaped articular depression on the lateral angle of the scapula, articulating with the head of the humerus to form the glenohumeral (shoulder) joint. It is deepened slightly by the <strong>glenoid labrum</strong>, a fibrocartilaginous rim.
+*   <strong>Supraglenoid Tubercle:</strong> A small projection superior to the glenoid cavity, serving as the origin for the long head of the biceps brachii muscle.
+*   <strong>Infraglenoid Tubercle:</strong> A small projection inferior to the glenoid cavity, serving as the origin for the long head of the triceps brachii muscle.
 
 ### Articulations
 
 The scapula articulates with two bones:
 
-1.  **Humerus:** At the glenoid cavity, forming the **glenohumeral joint** (a ball-and-socket synovial joint, allowing for extensive movement).
-2.  **Clavicle:** At the acromion, forming the **acromioclavicular joint** (a plane-type synovial joint).
+1.  <strong>Humerus:</strong> At the glenoid cavity, forming the <strong>glenohumeral joint</strong> (a ball-and-socket synovial joint, allowing for extensive movement).
+2.  <strong>Clavicle:</strong> At the acromion, forming the <strong>acromioclavicular joint</strong> (a plane-type synovial joint).
 
 ### Muscle Attachments
 
 Numerous muscles attach to the scapula, contributing to movements of the shoulder girdle and the humerus. Key muscles include:
 
-*   **Subscapularis:** Originates from the subscapular fossa.
-*   **Supraspinatus:** Originates from the supraspinous fossa.
-*   **Infraspinatus:** Originates from the infraspinous fossa.
-*   **Teres Minor:** Originates from the upper two-thirds of the lateral border.
-*   **Teres Major:** Originates from the lower third of the lateral border and inferior angle.
-*   **Deltoid:** Inserts onto the spine and acromion.
-*   **Trapezius:** Inserts onto the spine and acromion.
-*   **Rhomboid Major:** Inserts onto the medial border below the spine.
-*   **Rhomboid Minor:** Inserts onto the medial border at the root of the spine.
-*   **Levator Scapulae:** Inserts onto the superior angle.
-*   **Serratus Anterior:** Inserts onto the medial border (costal surface).
-*   **Biceps Brachii (long head):** Originates from the supraglenoid tubercle.
-*   **Triceps Brachii (long head):** Originates from the infraglenoid tubercle.
-*   **Coracobrachialis:** Originates from the coracoid process.
-*   **Pectoralis Minor:** Inserts onto the coracoid process.
-*   **Short head of Biceps Brachii:** Originates from the coracoid process.
+*   <strong>Subscapularis:</strong> Originates from the subscapular fossa.
+*   <strong>Supraspinatus:</strong> Originates from the supraspinous fossa.
+*   <strong>Infraspinatus:</strong> Originates from the infraspinous fossa.
+*   <strong>Teres Minor:</strong> Originates from the upper two-thirds of the lateral border.
+*   <strong>Teres Major:</strong> Originates from the lower third of the lateral border and inferior angle.
+*   <strong>Deltoid:</strong> Inserts onto the spine and acromion.
+*   <strong>Trapezius:</strong> Inserts onto the spine and acromion.
+*   <strong>Rhomboid Major:</strong> Inserts onto the medial border below the spine.
+*   <strong>Rhomboid Minor:</strong> Inserts onto the medial border at the root of the spine.
+*   <strong>Levator Scapulae:</strong> Inserts onto the superior angle.
+*   <strong>Serratus Anterior:</strong> Inserts onto the medial border (costal surface).
+*   <strong>Biceps Brachii (long head):</strong> Originates from the supraglenoid tubercle.
+*   <strong>Triceps Brachii (long head):</strong> Originates from the infraglenoid tubercle.
+*   <strong>Coracobrachialis:</strong> Originates from the coracoid process.
+*   <strong>Pectoralis Minor:</strong> Inserts onto the coracoid process.
+*   <strong>Short head of Biceps Brachii:</strong> Originates from the coracoid process.
 
 ### Mnemonics
 
-*   **SITS** muscles (Rotator Cuff): **S**upraspinatus, **I**nfraspinatus, **T**eres Minor, **S**ubscapularis. These muscles originate from the scapula and insert onto the humerus, stabilizing the glenohumeral joint.
+*   <strong>SITS</strong> muscles (Rotator Cuff): <strong>S</strong>upraspinatus, <strong>I</strong>nfraspinatus, <strong>T</strong>eres Minor, <strong>S</strong>ubscapularis. These muscles originate from the scapula and insert onto the humerus, stabilizing the glenohumeral joint.
 
 ### Clinical Correlates
 
-*   **Scapular Fractures:** Less common than clavicle fractures due to the scapula's protected position by surrounding muscles and the thoracic cage. They usually result from severe direct trauma. Fractures of the body are most common, but fractures involving the glenoid cavity can significantly impact shoulder joint function.
-*   **Winged Scapula:** This condition occurs when the medial border of the scapula protrudes posteriorly, giving the appearance of a wing. It is most commonly caused by paralysis of the serratus anterior muscle due to damage to the long thoracic nerve. This impairs the scapula's ability to protract and rotate, affecting overhead arm movements.
-*   **Shoulder Dislocation:** While not a scapular fracture, the glenoid cavity of the scapula is directly involved in shoulder dislocations. The shallow nature of the glenoid cavity, combined with the large head of the humerus, makes the glenohumeral joint the most frequently dislocated joint in the body. Most dislocations are anterior-inferior.
-*   **Calcific Tendinitis:** Often affects the supraspinatus tendon, which passes through the subacromial space, superior to the supraspinous fossa of the scapula. Calcium deposits can form in the tendon, leading to pain and restricted movement, particularly during abduction of the arm.
+*   <strong>Scapular Fractures:</strong> Less common than clavicle fractures due to the scapula's protected position by surrounding muscles and the thoracic cage. They usually result from severe direct trauma. Fractures of the body are most common, but fractures involving the glenoid cavity can significantly impact shoulder joint function.
+*   <strong>Winged Scapula:</strong> This condition occurs when the medial border of the scapula protrudes posteriorly, giving the appearance of a wing. It is most commonly caused by paralysis of the serratus anterior muscle due to damage to the long thoracic nerve. This impairs the scapula's ability to protract and rotate, affecting overhead arm movements.
+*   <strong>Shoulder Dislocation:</strong> While not a scapular fracture, the glenoid cavity of the scapula is directly involved in shoulder dislocations. The shallow nature of the glenoid cavity, combined with the large head of the humerus, makes the glenohumeral joint the most frequently dislocated joint in the body. Most dislocations are anterior-inferior.
+*   <strong>Calcific Tendinitis:</strong> Often affects the supraspinatus tendon, which passes through the subacromial space, superior to the supraspinous fossa of the scapula. Calcium deposits can form in the tendon, leading to pain and restricted movement, particularly during abduction of the arm.
 
 ## The Humerus (Arm Bone)
 
@@ -400,68 +400,68 @@ The humerus is a typical long bone, consisting of a proximal end, a shaft, and a
 
 #### Proximal End:
 
-*   **Head:** A large, smooth, rounded articular surface that articulates with the glenoid cavity of the scapula. It faces medially, superiorly, and posteriorly.
-*   **Anatomical Neck:** A slight constriction inferior to the head, marking the attachment of the joint capsule.
-*   **Surgical Neck:** A common site of fracture, located inferior to the greater and lesser tubercles.
-*   **Greater Tubercle:** A large, lateral projection with three facets for the insertion of the supraspinatus, infraspinatus, and teres minor muscles (SIT muscles of the rotator cuff).
-*   **Lesser Tubercle:** A smaller, anterior projection for the insertion of the subscapularis muscle.
-*   **Intertubercular (Bicipital) Groove:** A deep groove between the greater and lesser tubercles, transmitting the long head tendon of the biceps brachii muscle.
+*   <strong>Head:</strong> A large, smooth, rounded articular surface that articulates with the glenoid cavity of the scapula. It faces medially, superiorly, and posteriorly.
+*   <strong>Anatomical Neck:</strong> A slight constriction inferior to the head, marking the attachment of the joint capsule.
+*   <strong>Surgical Neck:</strong> A common site of fracture, located inferior to the greater and lesser tubercles.
+*   <strong>Greater Tubercle:</strong> A large, lateral projection with three facets for the insertion of the supraspinatus, infraspinatus, and teres minor muscles (SIT muscles of the rotator cuff).
+*   <strong>Lesser Tubercle:</strong> A smaller, anterior projection for the insertion of the subscapularis muscle.
+*   <strong>Intertubercular (Bicipital) Groove:</strong> A deep groove between the greater and lesser tubercles, transmitting the long head tendon of the biceps brachii muscle.
 
 #### Shaft:
 
-*   **Deltoid Tuberosity:** A V-shaped roughened area on the lateral aspect of the shaft, serving as the insertion site for the deltoid muscle.
-*   **Radial (Spiral) Groove:** An oblique groove on the posterior surface of the shaft, running inferiorly and laterally. It transmits the radial nerve and deep brachial artery.
-*   **Nutrient Foramen:** Located on the anteromedial surface, directed distally.
+*   <strong>Deltoid Tuberosity:</strong> A V-shaped roughened area on the lateral aspect of the shaft, serving as the insertion site for the deltoid muscle.
+*   <strong>Radial (Spiral) Groove:</strong> An oblique groove on the posterior surface of the shaft, running inferiorly and laterally. It transmits the radial nerve and deep brachial artery.
+*   <strong>Nutrient Foramen:</strong> Located on the anteromedial surface, directed distally.
 
 #### Distal End:
 
-*   **Capitulum:** A rounded, lateral articular eminence that articulates with the head of the radius.
-*   **Trochlea:** A spool-shaped medial articular surface that articulates with the trochlear notch of the ulna.
-*   **Medial Epicondyle:** A prominent projection on the medial side, providing attachment for the common flexor origin of the forearm muscles and the ulnar collateral ligament. The ulnar nerve passes posterior to it.
-*   **Lateral Epicondyle:** A smaller projection on the lateral side, providing attachment for the common extensor origin of the forearm muscles and the radial collateral ligament.
-*   **Coronoid Fossa:** An anterior depression superior to the trochlea, accommodating the coronoid process of the ulna during full flexion of the elbow.
-*   **Radial Fossa:** An anterior depression superior to the capitulum, accommodating the head of the radius during full flexion of the elbow.
-*   **Olecranon Fossa:** A large posterior depression superior to the trochlea, accommodating the olecranon process of the ulna during full extension of the elbow.
+*   <strong>Capitulum:</strong> A rounded, lateral articular eminence that articulates with the head of the radius.
+*   <strong>Trochlea:</strong> A spool-shaped medial articular surface that articulates with the trochlear notch of the ulna.
+*   <strong>Medial Epicondyle:</strong> A prominent projection on the medial side, providing attachment for the common flexor origin of the forearm muscles and the ulnar collateral ligament. The ulnar nerve passes posterior to it.
+*   <strong>Lateral Epicondyle:</strong> A smaller projection on the lateral side, providing attachment for the common extensor origin of the forearm muscles and the radial collateral ligament.
+*   <strong>Coronoid Fossa:</strong> An anterior depression superior to the trochlea, accommodating the coronoid process of the ulna during full flexion of the elbow.
+*   <strong>Radial Fossa:</strong> An anterior depression superior to the capitulum, accommodating the head of the radius during full flexion of the elbow.
+*   <strong>Olecranon Fossa:</strong> A large posterior depression superior to the trochlea, accommodating the olecranon process of the ulna during full extension of the elbow.
 
 ### Articulations
 
 The humerus articulates with three bones:
 
-1.  **Scapula:** At the head of the humerus and the glenoid cavity, forming the **glenohumeral joint**.
-2.  **Radius:** At the capitulum and the head of the radius, forming part of the **elbow joint** (humeroradial joint).
-3.  **Ulna:** At the trochlea and the trochlear notch, forming part of the **elbow joint** (humeroulnar joint).
+1.  <strong>Scapula:</strong> At the head of the humerus and the glenoid cavity, forming the <strong>glenohumeral joint</strong>.
+2.  <strong>Radius:</strong> At the capitulum and the head of the radius, forming part of the <strong>elbow joint</strong> (humeroradial joint).
+3.  <strong>Ulna:</strong> At the trochlea and the trochlear notch, forming part of the <strong>elbow joint</strong> (humeroulnar joint).
 
 ### Muscle Attachments
 
 Numerous muscles attach to the humerus, facilitating a wide range of movements:
 
-*   **Rotator Cuff Muscles (SITS):** Supraspinatus, Infraspinatus, Teres Minor (insert on Greater Tubercle), Subscapularis (inserts on Lesser Tubercle).
-*   **Deltoid:** Inserts on the deltoid tuberosity.
-*   **Pectoralis Major:** Inserts on the lateral lip of the intertubercular groove.
-*   **Latissimus Dorsi:** Inserts on the floor of the intertubercular groove.
-*   **Teres Major:** Inserts on the medial lip of the intertubercular groove.
-*   **Coracobrachialis:** Inserts on the medial surface of the mid-shaft.
-*   **Biceps Brachii:** Long head tendon runs in the intertubercular groove; short head attaches to coracoid process of scapula.
-*   **Brachialis:** Originates from the anterior surface of the distal half of the humerus.
-*   **Triceps Brachii:** Long head originates from infraglenoid tubercle of scapula; medial and lateral heads originate from posterior surface of humerus.
-*   **Forearm Flexors:** Originate from the medial epicondyle.
-*   **Forearm Extensors:** Originate from the lateral epicondyle.
+*   <strong>Rotator Cuff Muscles (SITS):</strong> Supraspinatus, Infraspinatus, Teres Minor (insert on Greater Tubercle), Subscapularis (inserts on Lesser Tubercle).
+*   <strong>Deltoid:</strong> Inserts on the deltoid tuberosity.
+*   <strong>Pectoralis Major:</strong> Inserts on the lateral lip of the intertubercular groove.
+*   <strong>Latissimus Dorsi:</strong> Inserts on the floor of the intertubercular groove.
+*   <strong>Teres Major:</strong> Inserts on the medial lip of the intertubercular groove.
+*   <strong>Coracobrachialis:</strong> Inserts on the medial surface of the mid-shaft.
+*   <strong>Biceps Brachii:</strong> Long head tendon runs in the intertubercular groove; short head attaches to coracoid process of scapula.
+*   <strong>Brachialis:</strong> Originates from the anterior surface of the distal half of the humerus.
+*   <strong>Triceps Brachii:</strong> Long head originates from infraglenoid tubercle of scapula; medial and lateral heads originate from posterior surface of humerus.
+*   <strong>Forearm Flexors:</strong> Originate from the medial epicondyle.
+*   <strong>Forearm Extensors:</strong> Originate from the lateral epicondyle.
 
 ### Mnemonics
 
-*   **'A' for Anterior, 'P' for Posterior:** The **A**natomical neck is **A**nterior to the surgical neck. The **P**osterior surface has the radial groove.
-*   **'SIT' on the Greater Tubercle:** **S**upraspinatus, **I**nfraspinatus, **T**eres Minor insert on the **Greater Tubercle**.
-*   **'Lady Between Two Majors':** **L**atissimus Dorsi inserts on the **L**ip of the intertubercular groove, **between** Pectoralis **Major** (lateral lip) and Teres **Major** (medial lip).
+*   <strong>'A' for Anterior, 'P' for Posterior:</strong> The <strong>A</strong>natomical neck is <strong>A</strong>nterior to the surgical neck. The <strong>P</strong>osterior surface has the radial groove.
+*   <strong>'SIT' on the Greater Tubercle:</strong> <strong>S</strong>upraspinatus, <strong>I</strong>nfraspinatus, <strong>T</strong>eres Minor insert on the <strong>Greater Tubercle</strong>.
+*   <strong>'Lady Between Two Majors':</strong> <strong>L</strong>atissimus Dorsi inserts on the <strong>L</strong>ip of the intertubercular groove, <strong>between</strong> Pectoralis <strong>Major</strong> (lateral lip) and Teres <strong>Major</strong> (medial lip).
 
 ### Clinical Correlates
 
-*   **Fractures of the Humerus:** Common due to direct trauma or falls. Different regions of the humerus are associated with injury to specific nerves:
-    *   **Surgical Neck Fracture:** Often injures the **axillary nerve** and posterior circumflex humeral artery, leading to deltoid paralysis and loss of sensation over the lateral shoulder.
-    *   **Mid-shaft Fracture (Spiral Groove):** Often injures the **radial nerve**, leading to wrist drop (inability to extend wrist and fingers) and loss of sensation over the posterior forearm and dorsum of the hand.
-    *   **Supracondylar Fracture:** A common fracture in children, occurring just above the epicondyles. Can injure the **median nerve** and **brachial artery**, potentially leading to Volkmann's ischemic contracture (a permanent flexion deformity of the hand and wrist).
-    *   **Medial Epicondyle Fracture:** Can injure the **ulnar nerve**, leading to claw hand deformity and sensory loss over the medial hand.
-*   **Shoulder Dislocation:** The glenohumeral joint is the most commonly dislocated joint. The head of the humerus typically dislocates anteriorly and inferiorly, often tearing the joint capsule and potentially damaging the axillary nerve.
-*   **Rotator Cuff Injuries:** Tears or inflammation of the rotator cuff muscles (SITS) are common, especially in athletes and older individuals. These injuries lead to pain and weakness, particularly during abduction and rotation of the arm.
+*   <strong>Fractures of the Humerus:</strong> Common due to direct trauma or falls. Different regions of the humerus are associated with injury to specific nerves:
+    *   <strong>Surgical Neck Fracture:</strong> Often injures the <strong>axillary nerve</strong> and posterior circumflex humeral artery, leading to deltoid paralysis and loss of sensation over the lateral shoulder.
+    *   <strong>Mid-shaft Fracture (Spiral Groove):</strong> Often injures the <strong>radial nerve</strong>, leading to wrist drop (inability to extend wrist and fingers) and loss of sensation over the posterior forearm and dorsum of the hand.
+    *   <strong>Supracondylar Fracture:</strong> A common fracture in children, occurring just above the epicondyles. Can injure the <strong>median nerve</strong> and <strong>brachial artery</strong>, potentially leading to Volkmann's ischemic contracture (a permanent flexion deformity of the hand and wrist).
+    *   <strong>Medial Epicondyle Fracture:</strong> Can injure the <strong>ulnar nerve</strong>, leading to claw hand deformity and sensory loss over the medial hand.
+*   <strong>Shoulder Dislocation:</strong> The glenohumeral joint is the most commonly dislocated joint. The head of the humerus typically dislocates anteriorly and inferiorly, often tearing the joint capsule and potentially damaging the axillary nerve.
+*   <strong>Rotator Cuff Injuries:</strong> Tears or inflammation of the rotator cuff muscles (SITS) are common, especially in athletes and older individuals. These injuries lead to pain and weakness, particularly during abduction and rotation of the arm.
 
 ## The Radius (Lateral Forearm Bone)
 
@@ -473,59 +473,59 @@ The radius, like other long bones, has a proximal end, a shaft, and a distal end
 
 #### Proximal End:
 
-*   **Head:** A cylindrical, disc-shaped structure that articulates with the capitulum of the humerus and the radial notch of the ulna. The superior surface is concave.
-*   **Neck:** A constricted part inferior to the head.
-*   **Radial Tuberosity:** A roughened projection inferior to the neck, serving as the insertion site for the biceps brachii muscle.
+*   <strong>Head:</strong> A cylindrical, disc-shaped structure that articulates with the capitulum of the humerus and the radial notch of the ulna. The superior surface is concave.
+*   <strong>Neck:</strong> A constricted part inferior to the head.
+*   <strong>Radial Tuberosity:</strong> A roughened projection inferior to the neck, serving as the insertion site for the biceps brachii muscle.
 
 #### Shaft:
 
-*   **Interosseous Border:** A sharp medial border that provides attachment for the interosseous membrane, which connects the radius and ulna.
-*   **Anterior Surface:** Smooth, with a nutrient foramen directed proximally.
-*   **Posterior Surface:** Smooth.
-*   **Lateral Surface:** Roughened in its middle part for the insertion of the pronator teres muscle.
+*   <strong>Interosseous Border:</strong> A sharp medial border that provides attachment for the interosseous membrane, which connects the radius and ulna.
+*   <strong>Anterior Surface:</strong> Smooth, with a nutrient foramen directed proximally.
+*   <strong>Posterior Surface:</strong> Smooth.
+*   <strong>Lateral Surface:</strong> Roughened in its middle part for the insertion of the pronator teres muscle.
 
 #### Distal End:
 
-*   **Styloid Process:** A pointed projection on the lateral side, extending distally. It is palpable at the wrist.
-*   **Ulnar Notch:** A concavity on the medial side that articulates with the head of the ulna.
-*   **Dorsal Tubercle (Lister's Tubercle):** A small, palpable tubercle on the posterior surface, lateral to the groove for the extensor pollicis longus tendon.
-*   **Articular Surface:** The distal end is concave and articulates with the scaphoid and lunate carpal bones.
+*   <strong>Styloid Process:</strong> A pointed projection on the lateral side, extending distally. It is palpable at the wrist.
+*   <strong>Ulnar Notch:</strong> A concavity on the medial side that articulates with the head of the ulna.
+*   <strong>Dorsal Tubercle (Lister's Tubercle):</strong> A small, palpable tubercle on the posterior surface, lateral to the groove for the extensor pollicis longus tendon.
+*   <strong>Articular Surface:</strong> The distal end is concave and articulates with the scaphoid and lunate carpal bones.
 
 ### Articulations
 
 The radius articulates with four bones:
 
-1.  **Humerus:** At the head of the radius and the capitulum, forming the **humeroradial joint** (part of the elbow joint).
-2.  **Ulna:**
-    *   **Proximally:** At the head of the radius and the radial notch of the ulna, forming the **proximal radioulnar joint** (a pivot-type synovial joint).
-    *   **Distally:** At the ulnar notch of the radius and the head of the ulna, forming the **distal radioulnar joint** (a pivot-type synovial joint).
-3.  **Scaphoid:** At the distal articular surface.
-4.  **Lunate:** At the distal articular surface.
+1.  <strong>Humerus:</strong> At the head of the radius and the capitulum, forming the <strong>humeroradial joint</strong> (part of the elbow joint).
+2.  <strong>Ulna:</strong>
+    *   <strong>Proximally:</strong> At the head of the radius and the radial notch of the ulna, forming the <strong>proximal radioulnar joint</strong> (a pivot-type synovial joint).
+    *   <strong>Distally:</strong> At the ulnar notch of the radius and the head of the ulna, forming the <strong>distal radioulnar joint</strong> (a pivot-type synovial joint).
+3.  <strong>Scaphoid:</strong> At the distal articular surface.
+4.  <strong>Lunate:</strong> At the distal articular surface.
 
 ### Muscle Attachments
 
 Key muscles attaching to the radius include:
 
-*   **Biceps Brachii:** Inserts on the radial tuberosity.
-*   **Supinator:** Inserts on the proximal part of the shaft.
-*   **Pronator Teres:** Inserts on the lateral surface of the shaft.
-*   **Flexor Digitorum Superficialis:** Originates from the anterior surface of the shaft.
-*   **Flexor Pollicis Longus:** Originates from the anterior surface of the shaft.
-*   **Pronator Quadratus:** Inserts on the anterior surface of the distal end.
-*   **Abductor Pollicis Longus:** Originates from the posterior surface of the shaft.
-*   **Extensor Pollicis Brevis:** Originates from the posterior surface of the shaft.
+*   <strong>Biceps Brachii:</strong> Inserts on the radial tuberosity.
+*   <strong>Supinator:</strong> Inserts on the proximal part of the shaft.
+*   <strong>Pronator Teres:</strong> Inserts on the lateral surface of the shaft.
+*   <strong>Flexor Digitorum Superficialis:</strong> Originates from the anterior surface of the shaft.
+*   <strong>Flexor Pollicis Longus:</strong> Originates from the anterior surface of the shaft.
+*   <strong>Pronator Quadratus:</strong> Inserts on the anterior surface of the distal end.
+*   <strong>Abductor Pollicis Longus:</strong> Originates from the posterior surface of the shaft.
+*   <strong>Extensor Pollicis Brevis:</strong> Originates from the posterior surface of the shaft.
 
 ### Mnemonics
 
-*   **R**adius is **L**ateral: The **R**adius is on the **L**ateral (thumb) side of the forearm.
-*   **S**o **L**ong **T**o **P**inky, **H**ere **C**omes **T**he **T**humb: **S**caphoid, **L**unate, **T**riquetrum, **P**isiform, **H**amate, **C**apitate, **T**rapezoid, **T**rapezium. The radius articulates with the **S**caphoid and **L**unate.
+*   <strong>R</strong>adius is <strong>L</strong>ateral: The <strong>R</strong>adius is on the <strong>L</strong>ateral (thumb) side of the forearm.
+*   <strong>S</strong>o <strong>L</strong>ong <strong>T</strong>o <strong>P</strong>inky, <strong>H</strong>ere <strong>C</strong>omes <strong>T</strong>he <strong>T</strong>humb: <strong>S</strong>caphoid, <strong>L</strong>unate, <strong>T</strong>riquetrum, <strong>P</strong>isiform, <strong>H</strong>amate, <strong>C</strong>apitate, <strong>T</strong>rapezoid, <strong>T</strong>rapezium. The radius articulates with the <strong>S</strong>caphoid and <strong>L</strong>unate.
 
 ### Clinical Correlates
 
-*   **Colles' Fracture:** A very common fracture of the distal radius, typically occurring from a fall on an outstretched hand (FOOSH). The distal fragment is displaced dorsally, resulting in a characteristic "dinner fork" deformity. It can also involve fracture of the ulnar styloid process.
-*   **Smith's Fracture:** A fracture of the distal radius with volar (anterior) displacement of the distal fragment, often caused by a fall on the back of the hand. It is sometimes called a "reverse Colles' fracture."
-*   **Galeazzi Fracture:** A fracture of the distal third of the radius with dislocation of the distal radioulnar joint. It is important to recognize and treat both the fracture and the dislocation.
-*   **Pulled Elbow (Nursemaid's Elbow):** A common injury in young children, where the head of the radius is subluxated (partially dislocated) from the annular ligament. It typically occurs when a child's arm is suddenly pulled or jerked. The child presents with pain and refusal to use the arm.
+*   <strong>Colles' Fracture:</strong> A very common fracture of the distal radius, typically occurring from a fall on an outstretched hand (FOOSH). The distal fragment is displaced dorsally, resulting in a characteristic "dinner fork" deformity. It can also involve fracture of the ulnar styloid process.
+*   <strong>Smith's Fracture:</strong> A fracture of the distal radius with volar (anterior) displacement of the distal fragment, often caused by a fall on the back of the hand. It is sometimes called a "reverse Colles' fracture."
+*   <strong>Galeazzi Fracture:</strong> A fracture of the distal third of the radius with dislocation of the distal radioulnar joint. It is important to recognize and treat both the fracture and the dislocation.
+*   <strong>Pulled Elbow (Nursemaid's Elbow):</strong> A common injury in young children, where the head of the radius is subluxated (partially dislocated) from the annular ligament. It typically occurs when a child's arm is suddenly pulled or jerked. The child presents with pain and refusal to use the arm.
 
 ## The Ulna (Medial Forearm Bone)
 
@@ -537,59 +537,59 @@ The ulna has a proximal end, a shaft, and a distal end.
 
 #### Proximal End:
 
-*   **Olecranon Process:** A large, prominent projection that forms the most proximal part of the ulna and the posterior point of the elbow. It articulates with the olecranon fossa of the humerus during elbow extension.
-*   **Coronoid Process:** A triangular projection on the anterior aspect of the proximal ulna, inferior to the trochlear notch. It articulates with the coronoid fossa of the humerus during elbow flexion.
-*   **Trochlear Notch:** A large, C-shaped articular surface between the olecranon and coronoid processes, articulating with the trochlea of the humerus.
-*   **Radial Notch:** A small, oval articular facet on the lateral side of the coronoid process, articulating with the head of the radius.
-*   **Ulnar Tuberosity:** A roughened area inferior to the coronoid process, serving as the insertion site for the brachialis muscle.
+*   <strong>Olecranon Process:</strong> A large, prominent projection that forms the most proximal part of the ulna and the posterior point of the elbow. It articulates with the olecranon fossa of the humerus during elbow extension.
+*   <strong>Coronoid Process:</strong> A triangular projection on the anterior aspect of the proximal ulna, inferior to the trochlear notch. It articulates with the coronoid fossa of the humerus during elbow flexion.
+*   <strong>Trochlear Notch:</strong> A large, C-shaped articular surface between the olecranon and coronoid processes, articulating with the trochlea of the humerus.
+*   <strong>Radial Notch:</strong> A small, oval articular facet on the lateral side of the coronoid process, articulating with the head of the radius.
+*   <strong>Ulnar Tuberosity:</strong> A roughened area inferior to the coronoid process, serving as the insertion site for the brachialis muscle.
 
 #### Shaft:
 
-*   **Interosseous Border:** A sharp lateral border that provides attachment for the interosseous membrane, connecting the ulna and radius.
-*   **Anterior Surface:** Smooth, with a nutrient foramen directed proximally.
-*   **Posterior Surface:** Marked by several ridges for muscle attachments.
+*   <strong>Interosseous Border:</strong> A sharp lateral border that provides attachment for the interosseous membrane, connecting the ulna and radius.
+*   <strong>Anterior Surface:</strong> Smooth, with a nutrient foramen directed proximally.
+*   <strong>Posterior Surface:</strong> Marked by several ridges for muscle attachments.
 
 #### Distal End:
 
-*   **Head:** A small, rounded articular surface that articulates with the ulnar notch of the radius and the articular disc of the wrist joint. It is located medially and posteriorly to the wrist.
-*   **Styloid Process:** A pointed projection on the posteromedial aspect of the head, extending distally. It is palpable on the medial side of the wrist.
+*   <strong>Head:</strong> A small, rounded articular surface that articulates with the ulnar notch of the radius and the articular disc of the wrist joint. It is located medially and posteriorly to the wrist.
+*   <strong>Styloid Process:</strong> A pointed projection on the posteromedial aspect of the head, extending distally. It is palpable on the medial side of the wrist.
 
 ### Articulations
 
 The ulna articulates with two bones:
 
-1.  **Humerus:** At the trochlear notch and the trochlea, forming the **humeroulnar joint** (part of the elbow joint).
-2.  **Radius:**
-    *   **Proximally:** At the radial notch of the ulna and the proximal radioulnnar joint**.
-    *   **Distally:** At the head of the ulna and the ulnar notch of the radius, forming the **distal radioulnar joint**.
+1.  <strong>Humerus:</strong> At the trochlear notch and the trochlea, forming the <strong>humeroulnar joint</strong> (part of the elbow joint).
+2.  <strong>Radius:</strong>
+    *   <strong>Proximally:</strong> At the radial notch of the ulna and the proximal radioulnnar joint**.
+    *   <strong>Distally:</strong> At the head of the ulna and the ulnar notch of the radius, forming the <strong>distal radioulnar joint</strong>.
 
 ### Muscle Attachments
 
 Key muscles attaching to the ulna include:
 
-*   **Brachialis:** Inserts on the ulnar tuberosity and coronoid process.
-*   **Triceps Brachii:** Inserts on the olecranon process.
-*   **Anconeus:** Inserts on the lateral surface of the olecranon and posterior surface of the ulna.
-*   **Pronator Quadratus:** Originates from the anterior surface of the distal ulna.
-*   **Flexor Digitorum Profundus:** Originates from the anterior and medial surfaces of the shaft.
-*   **Flexor Carpi Ulnaris:** Originates from the olecranon and posterior border of the ulna.
-*   **Supinator:** Originates from the lateral epicondyle of the humerus and supinator crest of the ulna.
-*   **Extensor Carpi Ulnaris:** Originates from the lateral epicondyle of the humerus and posterior border of the ulna.
-*   **Abductor Pollicis Longus:** Originates from the posterior surface of the ulna.
-*   **Extensor Pollicis Longus:** Originates from the posterior surface of the ulna.
-*   **Extensor Indicis:** Originates from the posterior surface of the ulna.
+*   <strong>Brachialis:</strong> Inserts on the ulnar tuberosity and coronoid process.
+*   <strong>Triceps Brachii:</strong> Inserts on the olecranon process.
+*   <strong>Anconeus:</strong> Inserts on the lateral surface of the olecranon and posterior surface of the ulna.
+*   <strong>Pronator Quadratus:</strong> Originates from the anterior surface of the distal ulna.
+*   <strong>Flexor Digitorum Profundus:</strong> Originates from the anterior and medial surfaces of the shaft.
+*   <strong>Flexor Carpi Ulnaris:</strong> Originates from the olecranon and posterior border of the ulna.
+*   <strong>Supinator:</strong> Originates from the lateral epicondyle of the humerus and supinator crest of the ulna.
+*   <strong>Extensor Carpi Ulnaris:</strong> Originates from the lateral epicondyle of the humerus and posterior border of the ulna.
+*   <strong>Abductor Pollicis Longus:</strong> Originates from the posterior surface of the ulna.
+*   <strong>Extensor Pollicis Longus:</strong> Originates from the posterior surface of the ulna.
+*   <strong>Extensor Indicis:</strong> Originates from the posterior surface of the ulna.
 
 ### Mnemonics
 
-*   **U**lna is **M**edial: The **U**lna is on the **M**edial (pinky finger) side of the forearm.
-*   **O**ut **C**omes **T**he **R**adius: **O**lecranon, **C**oronoid, **T**rochlear notch, **R**adial notch (features of the proximal ulna).
+*   <strong>U</strong>lna is <strong>M</strong>edial: The <strong>U</strong>lna is on the <strong>M</strong>edial (pinky finger) side of the forearm.
+*   <strong>O</strong>ut <strong>C</strong>omes <strong>T</strong>he <strong>R</strong>adius: <strong>O</strong>lecranon, <strong>C</strong>oronoid, <strong>T</strong>rochlear notch, <strong>R</strong>adial notch (features of the proximal ulna).
 
 ### Clinical Correlates
 
-*   **Monteggia Fracture:** A fracture of the proximal ulna with dislocation of the radial head. It typically results from a direct blow to the posterior forearm or a fall on an outstretched hand with forced pronation.
-*   **Nightstick Fracture:** An isolated fracture of the ulnar shaft, often resulting from a direct blow to the forearm (e.g., in self-defense).
-*   **Olecranon Fracture:** A common fracture, often caused by a direct fall on the elbow or a sudden, forceful contraction of the triceps brachii muscle. It can lead to significant impairment of elbow extension.
-*   **Ulnar Nerve Entrapment (Cubital Tunnel Syndrome):** The ulnar nerve passes posterior to the medial epicondyle of the humerus and then enters the cubital tunnel, formed by the olecranon and medial epicondyle. Compression or irritation of the ulnar nerve in this region can lead to numbness and tingling in the little finger and medial half of the ring finger, as well as weakness of intrinsic hand muscles.
+*   <strong>Monteggia Fracture:</strong> A fracture of the proximal ulna with dislocation of the radial head. It typically results from a direct blow to the posterior forearm or a fall on an outstretched hand with forced pronation.
+*   <strong>Nightstick Fracture:</strong> An isolated fracture of the ulnar shaft, often resulting from a direct blow to the forearm (e.g., in self-defense).
+*   <strong>Olecranon Fracture:</strong> A common fracture, often caused by a direct fall on the elbow or a sudden, forceful contraction of the triceps brachii muscle. It can lead to significant impairment of elbow extension.
+*   <strong>Ulnar Nerve Entrapment (Cubital Tunnel Syndrome):</strong> The ulnar nerve passes posterior to the medial epicondyle of the humerus and then enters the cubital tunnel, formed by the olecranon and medial epicondyle. Compression or irritation of the ulnar nerve in this region can lead to numbness and tingling in the little finger and medial half of the ring finger, as well as weakness of intrinsic hand muscles.
 
 ## The Carpal Bones (Wrist Bones)
 
@@ -599,17 +599,17 @@ The carpal bones are a group of eight small, irregularly shaped bones that form 
 
 #### Proximal Row (from lateral to medial):
 
-1.  **Scaphoid:** Boat-shaped bone, the largest bone in the proximal row. It articulates with the radius proximally and is a common site for fracture due to falls on an outstretched hand.
-2.  **Lunate:** Moon-shaped bone, articulating with the radius proximally. It is the most frequently dislocated carpal bone.
-3.  **Triquetrum:** Pyramid-shaped bone, located medial to the lunate. It articulates with the articular disc of the distal radioulnar joint.
-4.  **Pisiform:** Pea-shaped bone, located anterior to the triquetrum. It is a sesamoid bone, meaning it is embedded within the flexor carpi ulnaris tendon.
+1.  <strong>Scaphoid:</strong> Boat-shaped bone, the largest bone in the proximal row. It articulates with the radius proximally and is a common site for fracture due to falls on an outstretched hand.
+2.  <strong>Lunate:</strong> Moon-shaped bone, articulating with the radius proximally. It is the most frequently dislocated carpal bone.
+3.  <strong>Triquetrum:</strong> Pyramid-shaped bone, located medial to the lunate. It articulates with the articular disc of the distal radioulnar joint.
+4.  <strong>Pisiform:</strong> Pea-shaped bone, located anterior to the triquetrum. It is a sesamoid bone, meaning it is embedded within the flexor carpi ulnaris tendon.
 
 #### Distal Row (from lateral to medial):
 
-1.  **Trapezium:** Four-sided bone, articulating with the first metacarpal (thumb) and forming the highly mobile carpometacarpal joint of the thumb.
-2.  **Trapezoid:** Wedge-shaped bone, articulating with the second metacarpal.
-3.  **Capitate:** Head-shaped bone, the largest carpal bone, located in the center of the wrist. It articulates with the third metacarpal.
-4.  **Hamate:** Hooked bone, characterized by a prominent hook-like process (hook of hamate) on its palmar surface. It articulates with the fourth and fifth metacarpals.
+1.  <strong>Trapezium:</strong> Four-sided bone, articulating with the first metacarpal (thumb) and forming the highly mobile carpometacarpal joint of the thumb.
+2.  <strong>Trapezoid:</strong> Wedge-shaped bone, articulating with the second metacarpal.
+3.  <strong>Capitate:</strong> Head-shaped bone, the largest carpal bone, located in the center of the wrist. It articulates with the third metacarpal.
+4.  <strong>Hamate:</strong> Hooked bone, characterized by a prominent hook-like process (hook of hamate) on its palmar surface. It articulates with the fourth and fifth metacarpals.
 
 ### Articulations
 
@@ -619,22 +619,22 @@ The carpal bones articulate with each other (intercarpal joints), with the radiu
 
 To remember the carpal bones from lateral to medial, proximal row first, then distal row:
 
-*   **S**ome **L**overs **T**ry **P**ositions **T**hat **T**hey **C**an't **H**andle:
-    *   **S**caphoid
-    *   **L**unate
-    *   **T**riquetrum
-    *   **P**isiform
-    *   **T**rapezium
-    *   **T**rapezoid
-    *   **C**apitate
-    *   **H**amate
+*   <strong>S</strong>ome <strong>L</strong>overs <strong>T</strong>ry <strong>P</strong>ositions <strong>T</strong>hat <strong>T</strong>hey <strong>C</strong>an't <strong>H</strong>andle:
+    *   <strong>S</strong>caphoid
+    *   <strong>L</strong>unate
+    *   <strong>T</strong>riquetrum
+    *   <strong>P</strong>isiform
+    *   <strong>T</strong>rapezium
+    *   <strong>T</strong>rapezoid
+    *   <strong>C</strong>apitate
+    *   <strong>H</strong>amate
 
 ### Clinical Correlates
 
-*   **Scaphoid Fracture:** The most common carpal bone fracture, often resulting from a fall on an outstretched hand. Due to its precarious blood supply (entering distally), scaphoid fractures are prone to **avascular necrosis** (death of bone tissue due to lack of blood supply) and **non-union** (failure to heal), which can lead to chronic wrist pain and arthritis.
-*   **Carpal Tunnel Syndrome:** A common condition caused by compression of the median nerve as it passes through the carpal tunnel, a narrow passageway in the wrist formed by the carpal bones and the flexor retinaculum. Symptoms include numbness, tingling, and weakness in the thumb, index, middle, and radial half of the ring finger.
-*   **Dislocation of the Lunate:** The lunate is the most frequently dislocated carpal bone, usually dislocating anteriorly (volarly). This can compress the median nerve within the carpal tunnel and compromise blood supply to the lunate, potentially leading to avascular necrosis.
-*   **Fracture of the Hook of Hamate:** Often occurs in sports involving gripping (e.g., golf, baseball, tennis) due to direct trauma. Can injure the ulnar nerve and ulnar artery, leading to weakness of intrinsic hand muscles and sensory deficits in the medial hand.
+*   <strong>Scaphoid Fracture:</strong> The most common carpal bone fracture, often resulting from a fall on an outstretched hand. Due to its precarious blood supply (entering distally), scaphoid fractures are prone to <strong>avascular necrosis</strong> (death of bone tissue due to lack of blood supply) and <strong>non-union</strong> (failure to heal), which can lead to chronic wrist pain and arthritis.
+*   <strong>Carpal Tunnel Syndrome:</strong> A common condition caused by compression of the median nerve as it passes through the carpal tunnel, a narrow passageway in the wrist formed by the carpal bones and the flexor retinaculum. Symptoms include numbness, tingling, and weakness in the thumb, index, middle, and radial half of the ring finger.
+*   <strong>Dislocation of the Lunate:</strong> The lunate is the most frequently dislocated carpal bone, usually dislocating anteriorly (volarly). This can compress the median nerve within the carpal tunnel and compromise blood supply to the lunate, potentially leading to avascular necrosis.
+*   <strong>Fracture of the Hook of Hamate:</strong> Often occurs in sports involving gripping (e.g., golf, baseball, tennis) due to direct trauma. Can injure the ulnar nerve and ulnar artery, leading to weakness of intrinsic hand muscles and sensory deficits in the medial hand.
 
 ## The Metacarpal Bones (Palm Bones)
 
@@ -642,31 +642,31 @@ The metacarpal bones are five long bones that form the palm of the hand. They ar
 
 ### Key Anatomical Features
 
-*   **Base:** The proximal end, which articulates with the carpal bones.
-*   **Shaft:** The body of the metacarpal, which is triangular in cross-section proximally and cylindrical distally.
-*   **Head:** The distal end, which is rounded and articulates with the proximal phalanges to form the metacarpophalangeal (MCP) joints.
+*   <strong>Base:</strong> The proximal end, which articulates with the carpal bones.
+*   <strong>Shaft:</strong> The body of the metacarpal, which is triangular in cross-section proximally and cylindrical distally.
+*   <strong>Head:</strong> The distal end, which is rounded and articulates with the proximal phalanges to form the metacarpophalangeal (MCP) joints.
 
 #### Specific Features:
 
-*   **First Metacarpal (Thumb):** Shorter and stouter than the others, it articulates with the trapezium to form a saddle-shaped carpometacarpal (CMC) joint, allowing for a wide range of thumb movements, including opposition.
-*   **Second Metacarpal:** The longest metacarpal, articulating with the trapezoid, capitate, and third metacarpal.
-*   **Third Metacarpal:** Characterized by a styloid process on its dorsal aspect of the base, articulating with the capitate.
-*   **Fourth Metacarpal:** Articulates with the hamate and third and fifth metacarpals.
-*   **Fifth Metacarpal:** Articulates with the hamate and fourth metacarpal.
+*   <strong>First Metacarpal (Thumb):</strong> Shorter and stouter than the others, it articulates with the trapezium to form a saddle-shaped carpometacarpal (CMC) joint, allowing for a wide range of thumb movements, including opposition.
+*   <strong>Second Metacarpal:</strong> The longest metacarpal, articulating with the trapezoid, capitate, and third metacarpal.
+*   <strong>Third Metacarpal:</strong> Characterized by a styloid process on its dorsal aspect of the base, articulating with the capitate.
+*   <strong>Fourth Metacarpal:</strong> Articulates with the hamate and third and fifth metacarpals.
+*   <strong>Fifth Metacarpal:</strong> Articulates with the hamate and fourth metacarpal.
 
 ### Articulations
 
-*   **Carpometacarpal (CMC) Joints:** Articulations between the bases of the metacarpals and the distal row of carpal bones. The first CMC joint (thumb) is a saddle joint, while the others are plane synovial joints, allowing for limited gliding movements.
-*   **Metacarpophalangeal (MCP) Joints:** Articulations between the heads of the metacarpals and the bases of the proximal phalanges. These are condyloid synovial joints, allowing for flexion, extension, abduction, adduction, and circumduction.
+*   <strong>Carpometacarpal (CMC) Joints:</strong> Articulations between the bases of the metacarpals and the distal row of carpal bones. The first CMC joint (thumb) is a saddle joint, while the others are plane synovial joints, allowing for limited gliding movements.
+*   <strong>Metacarpophalangeal (MCP) Joints:</strong> Articulations between the heads of the metacarpals and the bases of the proximal phalanges. These are condyloid synovial joints, allowing for flexion, extension, abduction, adduction, and circumduction.
 
 ### Muscle Attachments
 
 Numerous intrinsic hand muscles and some extrinsic forearm muscles attach to the metacarpals, contributing to hand movements. Examples include:
 
-*   **Interossei Muscles:** Originate from the metacarpal shafts.
-*   **Adductor Pollicis:** Originates from the second and third metacarpals.
-*   **Opponens Pollicis:** Inserts on the first metacarpal.
-*   **Opponens Digiti Minimi:** Inserts on the fifth metacarpal.
+*   <strong>Interossei Muscles:</strong> Originate from the metacarpal shafts.
+*   <strong>Adductor Pollicis:</strong> Originates from the second and third metacarpals.
+*   <strong>Opponens Pollicis:</strong> Inserts on the first metacarpal.
+*   <strong>Opponens Digiti Minimi:</strong> Inserts on the fifth metacarpal.
 
 ### Mnemonics
 
@@ -674,10 +674,10 @@ Numerous intrinsic hand muscles and some extrinsic forearm muscles attach to the
 
 ### Clinical Correlates
 
-*   **Boxer's Fracture:** A common fracture of the neck of the fifth metacarpal (sometimes the fourth), typically resulting from punching an object with a closed fist. The distal fragment is usually displaced volarly, leading to a characteristic deformity.
-*   **Bennett's Fracture:** An intra-articular fracture-dislocation of the base of the first metacarpal, involving the carpometacarpal joint of the thumb. It is caused by axial loading along the thumb and is often unstable due to muscle pull.
-*   **Rolando's Fracture:** A comminuted intra-articular fracture at the base of the first metacarpal, similar to Bennett's but with multiple fragments. It is more complex and often harder to treat.
-*   **Metacarpal Fractures:** Can occur from direct trauma or crushing injuries. The stability and treatment depend on the location and type of fracture.
+*   <strong>Boxer's Fracture:</strong> A common fracture of the neck of the fifth metacarpal (sometimes the fourth), typically resulting from punching an object with a closed fist. The distal fragment is usually displaced volarly, leading to a characteristic deformity.
+*   <strong>Bennett's Fracture:</strong> An intra-articular fracture-dislocation of the base of the first metacarpal, involving the carpometacarpal joint of the thumb. It is caused by axial loading along the thumb and is often unstable due to muscle pull.
+*   <strong>Rolando's Fracture:</strong> A comminuted intra-articular fracture at the base of the first metacarpal, similar to Bennett's but with multiple fragments. It is more complex and often harder to treat.
+*   <strong>Metacarpal Fractures:</strong> Can occur from direct trauma or crushing injuries. The stability and treatment depend on the location and type of fracture.
 
 ## The Phalanges (Finger and Thumb Bones)
 
@@ -687,44 +687,44 @@ The phalanges are the bones that make up the digits (fingers and thumb) of the h
 
 Each phalanx consists of a base (proximally), a shaft, and a head (distally).
 
-*   **Base:** The proximal end, which articulates with the head of the metacarpal (for proximal phalanges) or the head of the more proximal phalanx (for middle and distal phalanges).
-*   **Shaft:** The body of the phalanx.
-*   **Head:** The distal end, which articulates with the base of the more distal phalanx (for proximal and middle phalanges) or forms the tip of the finger (for distal phalanges).
+*   <strong>Base:</strong> The proximal end, which articulates with the head of the metacarpal (for proximal phalanges) or the head of the more proximal phalanx (for middle and distal phalanges).
+*   <strong>Shaft:</strong> The body of the phalanx.
+*   <strong>Head:</strong> The distal end, which articulates with the base of the more distal phalanx (for proximal and middle phalanges) or forms the tip of the finger (for distal phalanges).
 
 #### Specific Features:
 
-*   **Proximal Phalanges:** The longest of the three phalanges in each finger. Their bases articulate with the metacarpal heads, and their heads articulate with the middle phalanges.
-*   **Middle Phalanges:** Located between the proximal and distal phalanges in fingers II-V. The thumb lacks a middle phalanx.
-*   **Distal Phalanges:** The shortest phalanges, forming the tips of the fingers and thumb. They are characterized by a roughened, flattened distal end that supports the nail bed.
+*   <strong>Proximal Phalanges:</strong> The longest of the three phalanges in each finger. Their bases articulate with the metacarpal heads, and their heads articulate with the middle phalanges.
+*   <strong>Middle Phalanges:</strong> Located between the proximal and distal phalanges in fingers II-V. The thumb lacks a middle phalanx.
+*   <strong>Distal Phalanges:</strong> The shortest phalanges, forming the tips of the fingers and thumb. They are characterized by a roughened, flattened distal end that supports the nail bed.
 
 ### Articulations
 
-*   **Metacarpophalangeal (MCP) Joints:** Articulations between the heads of the metacarpals and the bases of the proximal phalanges. These are condyloid synovial joints.
-*   **Proximal Interphalangeal (PIP) Joints:** Articulations between the heads of the proximal phalanges and the bases of the middle phalanges. These are hinge synovial joints, allowing for flexion and extension.
-*   **Distal Interphalangeal (DIP) Joints:** Articulations between the heads of the middle phalanges and the bases of the distal phalanges (in fingers II-V). These are also hinge synovial joints, allowing for flexion and extension.
-*   **Interphalangeal (IP) Joint of the Thumb:** The single joint between the proximal and distal phalanges of the thumb. This is a hinge synovial joint.
+*   <strong>Metacarpophalangeal (MCP) Joints:</strong> Articulations between the heads of the metacarpals and the bases of the proximal phalanges. These are condyloid synovial joints.
+*   <strong>Proximal Interphalangeal (PIP) Joints:</strong> Articulations between the heads of the proximal phalanges and the bases of the middle phalanges. These are hinge synovial joints, allowing for flexion and extension.
+*   <strong>Distal Interphalangeal (DIP) Joints:</strong> Articulations between the heads of the middle phalanges and the bases of the distal phalanges (in fingers II-V). These are also hinge synovial joints, allowing for flexion and extension.
+*   <strong>Interphalangeal (IP) Joint of the Thumb:</strong> The single joint between the proximal and distal phalanges of the thumb. This is a hinge synovial joint.
 
 ### Muscle Attachments
 
 Various intrinsic hand muscles and extrinsic forearm muscles attach to the phalanges, enabling finger movements. Examples include:
 
-*   **Flexor Digitorum Superficialis:** Inserts on the middle phalanges.
-*   **Flexor Digitorum Profundus:** Inserts on the distal phalanges.
-*   **Extensor Digitorum:** Inserts on the middle and distal phalanges via the extensor expansion.
-*   **Interossei and Lumbricals:** Insert on the bases of the proximal phalanges and contribute to the extensor expansion.
+*   <strong>Flexor Digitorum Superficialis:</strong> Inserts on the middle phalanges.
+*   <strong>Flexor Digitorum Profundus:</strong> Inserts on the distal phalanges.
+*   <strong>Extensor Digitorum:</strong> Inserts on the middle and distal phalanges via the extensor expansion.
+*   <strong>Interossei and Lumbricals:</strong> Insert on the bases of the proximal phalanges and contribute to the extensor expansion.
 
 ### Mnemonics
 
-*   **P**roximal, **M**iddle, **D**istal: The order of phalanges from the palm outwards.
-*   **Thumb has Two, Fingers have Three:** A simple way to remember the number of phalanges per digit.
+*   <strong>P</strong>roximal, <strong>M</strong>iddle, <strong>D</strong>istal: The order of phalanges from the palm outwards.
+*   <strong>Thumb has Two, Fingers have Three:</strong> A simple way to remember the number of phalanges per digit.
 
 ### Clinical Correlates
 
-*   **Phalangeal Fractures:** Very common, often resulting from crushing injuries, direct blows, or sports-related trauma. They can range from simple stable fractures to complex comminuted fractures. Proper reduction and immobilization are crucial to prevent deformity and preserve function.
-*   **Mallet Finger:** An injury to the extensor tendon at the DIP joint, causing the distal phalanx to remain in a flexed position. It typically occurs when a force suddenly flexes the extended fingertip (e.g., a baseball hitting the tip of the finger).
-*   **Boutonnière Deformity:** A deformity of the finger characterized by flexion of the PIP joint and hyperextension of the DIP joint. It results from damage to the central slip of the extensor tendon at the PIP joint.
-*   **Swan Neck Deformity:** A deformity of the finger characterized by hyperextension of the PIP joint and flexion of the DIP joint. It is often associated with rheumatoid arthritis or other conditions affecting the tendons and ligaments of the hand.
-*   **Trigger Finger (Stenosing Tenosynovitis):** A condition where a finger gets stuck in a bent position and then straightens with a snap, like a trigger being pulled. It is caused by inflammation and thickening of the tendon sheath, which restricts the smooth gliding of the flexor tendon.
+*   <strong>Phalangeal Fractures:</strong> Very common, often resulting from crushing injuries, direct blows, or sports-related trauma. They can range from simple stable fractures to complex comminuted fractures. Proper reduction and immobilization are crucial to prevent deformity and preserve function.
+*   <strong>Mallet Finger:</strong> An injury to the extensor tendon at the DIP joint, causing the distal phalanx to remain in a flexed position. It typically occurs when a force suddenly flexes the extended fingertip (e.g., a baseball hitting the tip of the finger).
+*   <strong>Boutonnière Deformity:</strong> A deformity of the finger characterized by flexion of the PIP joint and hyperextension of the DIP joint. It results from damage to the central slip of the extensor tendon at the PIP joint.
+*   <strong>Swan Neck Deformity:</strong> A deformity of the finger characterized by hyperextension of the PIP joint and flexion of the DIP joint. It is often associated with rheumatoid arthritis or other conditions affecting the tendons and ligaments of the hand.
+*   <strong>Trigger Finger (Stenosing Tenosynovitis):</strong> A condition where a finger gets stuck in a bent position and then straightens with a snap, like a trigger being pulled. It is caused by inflammation and thickening of the tendon sheath, which restricts the smooth gliding of the flexor tendon.
 
 ## Conclusion
 
@@ -1166,42 +1166,42 @@ The cardiovascular system consists of the heart and blood vessels, each with dis
 ## Heart Histology
 
 ### Cardiac Muscle
-- **Cardiomyocytes**: Specialized muscle cells with intercalated discs
-- **Intercalated discs**: Cell junctions containing gap junctions and desmosomes
-- **T-tubules**: Allow rapid depolarization throughout the cell
-- **Abundant mitochondria**: Support high energy demands
+- <strong>Cardiomyocytes</strong>: Specialized muscle cells with intercalated discs
+- <strong>Intercalated discs</strong>: Cell junctions containing gap junctions and desmosomes
+- <strong>T-tubules</strong>: Allow rapid depolarization throughout the cell
+- <strong>Abundant mitochondria</strong>: Support high energy demands
 
 ### Heart Layers
-- **Epicardium**: Outer layer (visceral pericardium)
-- **Myocardium**: Middle muscular layer
-- **Endocardium**: Inner lining, continuous with blood vessel endothelium
+- <strong>Epicardium</strong>: Outer layer (visceral pericardium)
+- <strong>Myocardium</strong>: Middle muscular layer
+- <strong>Endocardium</strong>: Inner lining, continuous with blood vessel endothelium
 
 ## Blood Vessel Histology
 
 ### Arteries
-- **Tunica intima**: Endothelium and internal elastic lamina
-- **Tunica media**: Smooth muscle and elastic fibers
-- **Tunica adventitia**: Connective tissue and vasa vasorum
+- <strong>Tunica intima</strong>: Endothelium and internal elastic lamina
+- <strong>Tunica media</strong>: Smooth muscle and elastic fibers
+- <strong>Tunica adventitia</strong>: Connective tissue and vasa vasorum
 
 ### Capillaries
-- **Continuous capillaries**: Tight junctions, blood-brain barrier
-- **Fenestrated capillaries**: Pores for filtration (kidneys, endocrine glands)
-- **Sinusoidal capillaries**: Large gaps for cell passage (liver, spleen)
+- <strong>Continuous capillaries</strong>: Tight junctions, blood-brain barrier
+- <strong>Fenestrated capillaries</strong>: Pores for filtration (kidneys, endocrine glands)
+- <strong>Sinusoidal capillaries</strong>: Large gaps for cell passage (liver, spleen)
 
 ### Veins
-- **Thinner walls**: Less smooth muscle than arteries
-- **Valves**: Prevent backflow in larger veins
-- **Larger lumens**: Accommodate blood return to heart
+- <strong>Thinner walls</strong>: Less smooth muscle than arteries
+- <strong>Valves</strong>: Prevent backflow in larger veins
+- <strong>Larger lumens</strong>: Accommodate blood return to heart
 
 ## Specialized Structures
-- **Cardiac conduction system**: Modified cardiac muscle cells
-- **Baroreceptors**: Pressure sensors in vessel walls
-- **Lymphatic vessels**: One-way drainage system
+- <strong>Cardiac conduction system</strong>: Modified cardiac muscle cells
+- <strong>Baroreceptors</strong>: Pressure sensors in vessel walls
+- <strong>Lymphatic vessels</strong>: One-way drainage system
 
 ## Pathological Changes
-- **Atherosclerosis**: Plaque formation in arteries
-- **Hypertrophy**: Enlarged cardiac muscle
-- **Thrombosis**: Blood clot formation`,
+- <strong>Atherosclerosis</strong>: Plaque formation in arteries
+- <strong>Hypertrophy</strong>: Enlarged cardiac muscle
+- <strong>Thrombosis</strong>: Blood clot formation`,
       accessTier: 'premium',
       lastUpdated: '2024-01-12'
     }
@@ -1341,8 +1341,9 @@ The cardiovascular system consists of the heart and blood vessels, each with dis
                           .replace(/^## (.*$)/gim, '<h2 class="text-3xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent mt-10 mb-6 border-b-3 border-primary pb-3">$1</h2>')
                           .replace(/^# (.*$)/gim, '<h1 class="text-4xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent mb-8 text-center">$1</h1>')
 
-                          // Enhanced bold text with medical theme colors
+                          // Enhanced bold text with medical theme colors - handle both ** and <strong> tags
                           .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-blue-700 bg-gradient-to-r from-blue-50 to-blue-100 px-2 py-1 rounded-md border border-blue-200 shadow-sm">$1</strong>')
+                          .replace(/<strong>(.*?)<\/strong>/g, '<strong class="font-bold text-blue-700 bg-gradient-to-r from-blue-50 to-blue-100 px-2 py-1 rounded-md border border-blue-200 shadow-sm">$1</strong>')
 
                           // Enhanced italic text with purple accent
                           .replace(/\*(.*?)\*/g, '<em class="italic text-purple-700 font-semibold bg-purple-50 px-1 rounded">$1</em>')
