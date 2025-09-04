@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { openRouterAI } from "./ai";
 import { dbStorage, db } from "./db";
 import { sql, eq, desc, and } from 'drizzle-orm';
-import { insertQuizAttemptSchema, badges, userBadges, studyPlannerSessions, studyGroups, studyGroupMembers, meetingReminders, users, quizAttempts, userStats, quizzes, customExams, customExamStems, stemOptions, examGenerationHistory } from "@shared/schema";
+import { insertQuizAttemptSchema, badges, userBadges, studyPlannerSessions, studyGroups, studyGroupMembers, meetingReminders, users, quizAttempts, userStats, quizzes, mcqQuestions, customExams, customExamStems, stemOptions, examGenerationHistory } from "@shared/schema";
 import { v4 as uuidv4 } from "uuid";
 import { readFileSync } from "fs";
 import { resolve } from "path";
@@ -22,6 +22,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error loading questions:", error);
       res.status(500).json({ error: "Failed to load questions" });
+    }
+  });
+
+  // Get MCQ questions by topic
+  app.get("/api/mcq-questions", async (req, res) => {
+    try {
+      const { topic, category, limit = 10 } = req.query;
+      
+      let query = db.select().from(mcqQuestions);
+      
+      if (topic) {
+        query = query.where(eq(mcqQuestions.topic, topic as string));
+      }
+      
+      if (category) {
+        query = query.where(eq(mcqQuestions.category, category as string));
+      }
+      
+      // Add random ordering and limit
+      query = query.orderBy(sql`RANDOM()`).limit(parseInt(limit as string));
+      
+      const questions = await query;
+      res.json(questions);
+    } catch (error) {
+      console.error("Error fetching MCQ questions:", error);
+      res.status(500).json({ error: "Failed to fetch MCQ questions" });
+    }
+  });
+
+  // Get available topics for a category
+  app.get("/api/mcq-topics", async (req, res) => {
+    try {
+      const { category } = req.query;
+      
+      let query = db.selectDistinct({ topic: mcqQuestions.topic })
+        .from(mcqQuestions);
+      
+      if (category) {
+        query = query.where(eq(mcqQuestions.category, category as string));
+      }
+      
+      const topics = await query;
+      res.json(topics.map(t => t.topic));
+    } catch (error) {
+      console.error("Error fetching MCQ topics:", error);
+      res.status(500).json({ error: "Failed to fetch MCQ topics" });
     }
   });
 

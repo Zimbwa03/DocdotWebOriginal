@@ -72,6 +72,17 @@ export default function Quiz() {
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [questionStartTime, setQuestionStartTime] = useState<number | null>(null);
 
+  // Topical Questions states
+  const [selectedUpperLimbMode, setSelectedUpperLimbMode] = useState<'topical' | 'exam' | null>(null);
+  const [availableTopics, setAvailableTopics] = useState<string[]>([]);
+  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+  const [mcqQuestions, setMcqQuestions] = useState<any[]>([]);
+  const [currentMcqIndex, setCurrentMcqIndex] = useState(0);
+  const [selectedMcqAnswer, setSelectedMcqAnswer] = useState('');
+  const [isMcqAnswered, setIsMcqAnswered] = useState(false);
+  const [mcqScore, setMcqScore] = useState(0);
+  const [mcqCompleted, setMcqCompleted] = useState(false);
+
   // Customize Exam states
   const [examStep, setExamStep] = useState<'select-type' | 'select-topics' | 'select-count' | 'exam' | 'results' | 'review'>('select-type');
   const [examType, setExamType] = useState<'anatomy' | 'physiology' | ''>('');
@@ -102,6 +113,19 @@ export default function Quiz() {
     'Pelvis and Perineum',
     'Neuroanatomy',
     'Abdomen'
+  ];
+
+  // Upper Limb topics for topical questions
+  const upperLimbTopics = [
+    'Pectoral Region',
+    'Arm',
+    'Cubital Fossa',
+    'Forearm',
+    'Wrist',
+    'Hand',
+    'Joints',
+    'Neurovascular Supply',
+    'Clinical Correlates'
   ];
 
   const physiologyCategories = [
@@ -180,6 +204,71 @@ export default function Quiz() {
       console.error('Error fetching questions:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch MCQ questions from database by topic
+  const fetchMcqQuestions = async (topic: string, category: string = 'Upper Limb') => {
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/mcq-questions?topic=${encodeURIComponent(topic)}&category=${encodeURIComponent(category)}&limit=10`);
+      if (!response.ok) {
+        throw new Error('Failed to load MCQ questions');
+      }
+
+      const data = await response.json();
+
+      if (data.length > 0) {
+        // Transform MCQ questions to match our quiz format
+        const transformed = data.map((q: any) => ({
+          ...q,
+          options: ['True', 'False'],
+          correct_answer: q.answer ? 'True' : 'False',
+          correctAnswer: q.answer ? 'True' : 'False',
+          reference_data: q.reference_snell || q.reference_grays || q.reference_moore || '',
+          ai_explanation: q.ai_explanation || q.explanation
+        }));
+
+        setMcqQuestions(transformed);
+        setCurrentMcqIndex(0);
+        setMcqScore(0);
+        setMcqCompleted(false);
+        setSelectedMcqAnswer('');
+        setIsMcqAnswered(false);
+        setQuestionStartTime(Date.now());
+      } else {
+        console.error('No MCQ questions available for this topic.');
+        toast({
+          variant: "destructive",
+          title: "No Questions Available",
+          description: `No questions found for ${topic}. Please try another topic.`
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching MCQ questions:', error);
+      toast({
+        variant: "destructive",
+        title: "Error Loading Questions",
+        description: "Failed to load questions. Please try again."
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch available topics for Upper Limb
+  const fetchUpperLimbTopics = async () => {
+    try {
+      const response = await fetch('/api/mcq-topics?category=Upper Limb');
+      if (!response.ok) {
+        throw new Error('Failed to load topics');
+      }
+      const topics = await response.json();
+      setAvailableTopics(topics);
+    } catch (error) {
+      console.error('Error fetching topics:', error);
+      // Fallback to predefined topics
+      setAvailableTopics(upperLimbTopics);
     }
   };
 
@@ -270,9 +359,100 @@ export default function Quiz() {
         const errorData = await response.json();
         console.error('Error details:', errorData);
       }
-      } catch (error) {
-        console.error('Error recording quiz attempt:', error);
+          } catch (error) {
+      console.error('Error recording quiz attempt:', error);
+    }
+  };
+
+  // Handle MCQ answer selection
+  const handleMcqAnswerSelect = async (answer: string) => {
+    if (isMcqAnswered) return;
+
+    setSelectedMcqAnswer(answer);
+
+    const currentQuestion = mcqQuestions[currentMcqIndex];
+    const isCorrect = answer === currentQuestion.correct_answer;
+    const timeSpent = questionStartTime ? Math.floor((Date.now() - questionStartTime) / 1000) : 0;
+
+    setIsMcqAnswered(true);
+
+    if (isCorrect) {
+      setMcqScore(mcqScore + 1);
+    }
+
+    // Record quiz attempt with comprehensive analytics using authenticated Supabase user
+    if (!user?.id) {
+      console.warn('User not authenticated, skipping analytics recording');
+      return;
+    }
+    const userId = user.id;
+
+    // Ensure user profile is fully initialized
+    try {
+      await fetch('/api/initialize-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+      });
+    } catch (initError) {
+      console.error('Error ensuring user initialization:', initError);
+    }
+
+    try {
+      // Calculate XP based on correctness and streak (like the Python code)
+      const baseXP = isCorrect ? 10 : 2;
+      const streakBonus = isCorrect ? (mcqScore * 2) : 0; // Streak bonus for correct answers
+      const xpEarned = baseXP + streakBonus;
+
+      const response = await fetch('/api/quiz/record-attempt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: userId,
+          category: `Upper Limb - ${selectedTopic}`,
+          selectedAnswer: answer,
+          correctAnswer: currentQuestion.correct_answer,
+          isCorrect,
+          timeSpent,
+          xpEarned,
+          difficulty: 'medium',
+          questionId: currentQuestion.id,
+          currentQuestionIndex: currentMcqIndex + 1,
+          totalQuestions: mcqQuestions.length
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('✅ MCQ attempt recorded:', result);
+
+        if (result.newBadges && result.newBadges.length > 0) {
+          console.log('🏆 New badges earned:', result.newBadges);
+        }
+
+        if (result.updatedStats) {
+          console.log('📊 Updated stats:', result.updatedStats);
+        }
+
+        if (result.analyticsRefreshed) {
+          console.log('📈 Analytics data refreshed successfully');
+        }
+
+        // Trigger a small delay to ensure database updates are complete
+        setTimeout(() => {
+          // Force refresh of any cached analytics data
+          window.dispatchEvent(new CustomEvent('analytics-update'));
+        }, 1000);
+      } else {
+        console.error('Failed to record MCQ attempt:', response.status);
+        const errorData = await response.json();
+        console.error('Error details:', errorData);
       }
+    } catch (error) {
+      console.error('Error recording MCQ attempt:', error);
+    }
   };
 
   const getRandomQuestionIndex = () => {
@@ -362,6 +542,30 @@ export default function Quiz() {
 
   const getScorePercentage = () => {
     return Math.round((score / questions.length) * 100);
+  };
+
+  const getMcqScorePercentage = () => {
+    return Math.round((mcqScore / mcqQuestions.length) * 100);
+  };
+
+  const handleNextMcqQuestion = () => {
+    if (currentMcqIndex < mcqQuestions.length - 1) {
+      setCurrentMcqIndex(currentMcqIndex + 1);
+      setSelectedMcqAnswer('');
+      setIsMcqAnswered(false);
+      setQuestionStartTime(Date.now());
+    } else {
+      setMcqCompleted(true);
+    }
+  };
+
+  const resetMcqQuiz = () => {
+    setCurrentMcqIndex(0);
+    setSelectedMcqAnswer('');
+    setIsMcqAnswered(false);
+    setMcqScore(0);
+    setMcqCompleted(false);
+    setStartTime(new Date());
   };
 
   const getScoreMessage = () => {
@@ -1644,8 +1848,15 @@ export default function Quiz() {
               className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300"
               style={{ backgroundColor: '#F7FAFC' }}
               onClick={() => {
-                setSelectedCategory(category);
-                fetchQuestions(category);
+                if (category === 'Upper Limb') {
+                  // For Upper Limb, show mode selection instead of direct quiz
+                  setSelectedCategory(category);
+                  setSelectedUpperLimbMode('topical'); // Default to topical
+                  fetchUpperLimbTopics();
+                } else {
+                  setSelectedCategory(category);
+                  fetchQuestions(category);
+                }
               }}
             >
               <CardHeader className="text-center">
@@ -1654,12 +1865,349 @@ export default function Quiz() {
               </CardHeader>
               <CardContent>
                 <div className="text-center">
-                  <Badge variant="secondary">Practice Questions</Badge>
+                  {category === 'Upper Limb' ? (
+                    <div className="space-y-2">
+                      <Badge variant="secondary">Topical Questions</Badge>
+                      <Badge variant="secondary">Exam Mode</Badge>
+                    </div>
+                  ) : (
+                    <Badge variant="secondary">Practice Questions</Badge>
+                  )}
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
+      </div>
+    );
+  };
+
+  // Render Upper Limb mode selection (Topical Questions vs Exam)
+  const renderUpperLimbModeSelection = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold" style={{ color: '#1C1C1C' }}>Upper Limb</h2>
+          <p style={{ color: '#2E2E2E' }}>Choose your learning mode</p>
+        </div>
+        <Button 
+          variant="outline" 
+          onClick={() => {
+            setSelectedCategory(null);
+            setSelectedUpperLimbMode(null);
+          }}
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Categories
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+        {/* Topical Questions */}
+        <Card 
+          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300"
+          style={{ backgroundColor: '#F7FAFC' }}
+          onClick={() => {
+            setSelectedUpperLimbMode('topical');
+            fetchUpperLimbTopics();
+          }}
+        >
+          <CardHeader className="text-center">
+            <BookOpen className="w-16 h-16 mx-auto mb-4" style={{ color: '#3399FF' }} />
+            <CardTitle className="text-2xl" style={{ color: '#1C1C1C' }}>Topical Questions</CardTitle>
+            <CardDescription style={{ color: '#2E2E2E' }}>
+              Practice questions organized by specific Upper Limb topics
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Badge variant="secondary">9 Topics Available</Badge>
+              <Badge variant="secondary">Focused Learning</Badge>
+              <Badge variant="secondary">Topic-Specific</Badge>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Exam Mode */}
+        <Card 
+          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300"
+          style={{ backgroundColor: '#F7FAFC' }}
+          onClick={() => {
+            setSelectedUpperLimbMode('exam');
+            setSelectedCategory('Upper Limb');
+            fetchQuestions('Upper Limb');
+          }}
+        >
+          <CardHeader className="text-center">
+            <Target className="w-16 h-16 mx-auto mb-4" style={{ color: '#3399FF' }} />
+            <CardTitle className="text-2xl" style={{ color: '#1C1C1C' }}>Exam Mode</CardTitle>
+            <CardDescription style={{ color: '#2E2E2E' }}>
+              Comprehensive exam with questions from all Upper Limb topics
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Badge variant="secondary">Mixed Topics</Badge>
+              <Badge variant="secondary">Exam Simulation</Badge>
+              <Badge variant="secondary">Comprehensive</Badge>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+
+  // Render Upper Limb topic selection
+  const renderUpperLimbTopicSelection = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold" style={{ color: '#1C1C1C' }}>Upper Limb Topics</h2>
+          <p style={{ color: '#2E2E2E' }}>Select a topic to practice with focused questions</p>
+        </div>
+        <Button 
+          variant="outline" 
+          onClick={() => setSelectedUpperLimbMode(null)}
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Mode Selection
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {(availableTopics.length > 0 ? availableTopics : upperLimbTopics).map((topic) => (
+          <Card 
+            key={topic}
+            className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300"
+            style={{ backgroundColor: '#F7FAFC' }}
+            onClick={() => {
+              setSelectedTopic(topic);
+              fetchMcqQuestions(topic, 'Upper Limb');
+            }}
+          >
+            <CardHeader className="text-center">
+              <BookOpen className="w-12 h-12 mx-auto mb-4" style={{ color: '#3399FF' }} />
+              <CardTitle style={{ color: '#1C1C1C' }}>{topic}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center">
+                <Badge variant="secondary">Topic Questions</Badge>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+
+  // Render MCQ Quiz (for topical questions)
+  const renderMcqQuiz = () => {
+    if (loading) {
+      return (
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#3399FF' }}></div>
+        </div>
+      );
+    }
+
+    if (mcqQuestions.length === 0) {
+      return (
+        <div className="text-center py-20">
+          <h3 className="text-xl font-semibold mb-4" style={{ color: '#1C1C1C' }}>No Questions Available</h3>
+          <p style={{ color: '#2E2E2E' }}>No questions found for this topic. Please try another topic.</p>
+          <Button 
+            onClick={() => setSelectedTopic(null)}
+            className="mt-4"
+            variant="outline"
+          >
+            Back to Topics
+          </Button>
+        </div>
+      );
+    }
+
+    if (mcqCompleted) {
+      const totalTime = startTime ? Math.round((new Date().getTime() - startTime.getTime()) / 1000) : 0;
+      const minutes = Math.floor(totalTime / 60);
+      const seconds = totalTime % 60;
+
+      return (
+        <div className="space-y-6">
+          <Card style={{ backgroundColor: '#F7FAFC' }}>
+            <CardContent className="p-8 text-center">
+              <Award className="w-16 h-16 mx-auto mb-6" style={{ color: '#3399FF' }} />
+              <h2 className="text-3xl font-bold mb-4" style={{ color: '#1C1C1C' }}>Quiz Complete!</h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="text-center">
+                  <div className="text-3xl font-bold mb-2" style={{ color: '#3399FF' }}>
+                    {String(mcqScore)}/{String(mcqQuestions.length)}
+                  </div>
+                  <p className="text-sm" style={{ color: '#2E2E2E' }}>Correct Answers</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold mb-2" style={{ color: '#3399FF' }}>
+                    {getMcqScorePercentage()}%
+                  </div>
+                  <p className="text-sm" style={{ color: '#2E2E2E' }}>Accuracy</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold mb-2" style={{ color: '#3399FF' }}>
+                    {minutes}:{seconds.toString().padStart(2, '0')}
+                  </div>
+                  <p className="text-sm" style={{ color: '#2E2E2E' }}>Total Time</p>
+                </div>
+              </div>
+
+              <p className="text-lg mb-6" style={{ color: '#1C1C1C' }}>{getScoreMessage()}</p>
+
+              <div className="space-x-4">
+                <Button 
+                  onClick={() => fetchMcqQuestions(selectedTopic!, 'Upper Limb')}
+                  style={{ backgroundColor: '#3399FF' }}
+                >
+                  Take Another Quiz
+                </Button>
+                <Button 
+                  onClick={() => setSelectedTopic(null)}
+                  variant="outline"
+                >
+                  Back to Topics
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+
+    const currentQuestion = mcqQuestions[currentMcqIndex];
+    const progress = ((currentMcqIndex + 1) / mcqQuestions.length) * 100;
+
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold" style={{ color: '#1C1C1C' }}>{selectedTopic} Quiz</h2>
+            <p style={{ color: '#2E2E2E' }}>Question {String(currentMcqIndex + 1)} of {String(mcqQuestions.length)}</p>
+          </div>
+          <Button 
+            variant="outline" 
+            onClick={() => setSelectedTopic(null)}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Exit Quiz
+          </Button>
+        </div>
+
+        <Progress value={progress} className="h-2" />
+
+        {/* Question Card */}
+        <Card style={{ backgroundColor: '#F7FAFC' }}>
+          <CardHeader>
+            <CardTitle className="text-xl" style={{ color: '#1C1C1C' }}>
+              {currentQuestion.question}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {['True', 'False'].map((option) => {
+                const isSelected = selectedMcqAnswer === option;
+                const isCorrect = option === currentQuestion.correct_answer;
+
+                let buttonStyle = 'w-full p-6 border-2 rounded-lg transition-all duration-200 flex items-center justify-between ';
+
+                if (isMcqAnswered) {
+                  if (isCorrect) {
+                    buttonStyle += 'border-green-500 bg-green-50 text-green-900';
+                  } else if (isSelected && !isCorrect) {
+                    buttonStyle += 'border-red-500 bg-red-50 text-red-900';
+                  } else {
+                    buttonStyle += 'border-gray-200 bg-gray-50 text-gray-700';
+                  }
+                } else {
+                  if (isSelected) {
+                    buttonStyle += 'border-blue-500 bg-blue-50 text-blue-900';
+                  } else {
+                    buttonStyle += 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 cursor-pointer';
+                  }
+                }
+
+                return (
+                  <button
+                    key={option}
+                    className={buttonStyle}
+                    onClick={() => handleMcqAnswerSelect(option)}
+                    disabled={isMcqAnswered}
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className={`w-10 h-10 rounded-lg border-2 flex items-center justify-center text-lg font-bold ${
+                        option === 'True' ? 'bg-green-100 border-green-300 text-green-700' : 'bg-red-100 border-red-300 text-red-700'
+                      }`}>
+                        {option === 'True' ? '✓' : '✗'}
+                      </div>
+                      <span className="text-lg font-semibold">{option}</span>
+                    </div>
+                    {isMcqAnswered && (
+                      <div>
+                        {isCorrect && <CheckCircle className="w-6 h-6 text-green-600" />}
+                        {isSelected && !isCorrect && <XCircle className="w-6 h-6 text-red-600" />}
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {isMcqAnswered && (
+              <div className="mt-6 space-y-4">
+                {/* Next Question Button */}
+                <div className="flex justify-center">
+                  <Button 
+                    onClick={handleNextMcqQuestion}
+                    style={{ backgroundColor: '#3399FF' }}
+                    size="lg"
+                  >
+                    {currentMcqIndex < mcqQuestions.length - 1 ? (
+                      <>
+                        Next Question
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </>
+                    ) : (
+                      'Complete Quiz'
+                    )}
+                  </Button>
+                </div>
+
+                {/* Answer Explanations */}
+                <div className="p-4 border rounded-lg" style={{ backgroundColor: '#F0F8FF', borderColor: '#3399FF' }}>
+                  <h4 className="font-medium mb-2" style={{ color: '#1C1C1C' }}>
+                    Answer: {selectedMcqAnswer === currentQuestion.correct_answer ? 'Correct' : 'Incorrect'}
+                  </h4>
+                  {currentQuestion.explanation && (
+                    <div className="mb-3">
+                      <p className="text-sm font-medium mb-1" style={{ color: '#1C1C1C' }}>Explanation:</p>
+                      <p className="text-sm" style={{ color: '#2E2E2E' }}>{currentQuestion.explanation}</p>
+                    </div>
+                  )}
+                  {currentQuestion.ai_explanation && (
+                    <div className="mb-3">
+                      <p className="text-sm font-medium mb-1" style={{ color: '#1C1C1C' }}>AI Explanation:</p>
+                      <p className="text-sm" style={{ color: '#2E2E2E' }}>{currentQuestion.ai_explanation}</p>
+                    </div>
+                  )}
+                  {currentQuestion.reference_data && (
+                    <div>
+                      <p className="text-sm font-medium mb-1" style={{ color: '#1C1C1C' }}>Reference:</p>
+                      <p className="text-sm" style={{ color: '#2E2E2E' }}>{currentQuestion.reference_data}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     );
   };
@@ -2204,6 +2752,51 @@ export default function Quiz() {
         </div>
       </div>
     );
+  }
+
+  // Upper Limb specific flow
+  if (selectedQuizType === 'mcq' && selectedCategory === 'Upper Limb') {
+    if (selectedUpperLimbMode === null) {
+      return (
+        <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
+          <div className="max-w-6xl mx-auto px-8 py-12">
+            {renderUpperLimbModeSelection()}
+          </div>
+        </div>
+      );
+    }
+
+    if (selectedUpperLimbMode === 'topical') {
+      if (selectedTopic === null) {
+        return (
+          <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
+            <div className="max-w-6xl mx-auto px-8 py-12">
+              {renderUpperLimbTopicSelection()}
+            </div>
+          </div>
+        );
+      }
+
+      if (mcqQuestions.length > 0) {
+        return (
+          <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
+            <div className="max-w-4xl mx-auto px-8 py-12">
+              {renderMcqQuiz()}
+            </div>
+          </div>
+        );
+      }
+    }
+
+    if (selectedUpperLimbMode === 'exam' && questions.length > 0) {
+      return (
+        <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
+          <div className="max-w-4xl mx-auto px-8 py-12">
+            {renderMCQQuiz()}
+          </div>
+        </div>
+      );
+    }
   }
 
   if (selectedQuizType === 'mcq' && selectedCategory && questions.length > 0) {

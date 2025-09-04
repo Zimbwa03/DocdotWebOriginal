@@ -132,6 +132,21 @@ export const quizzes = pgTable("quizzes", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// MCQ Questions table for topical questions
+export const mcqQuestions = pgTable("mcq_questions", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  question: text("question").notNull(),
+  answer: boolean("answer").notNull(), // True/False answer
+  explanation: text("explanation").notNull(),
+  aiExplanation: text("ai_explanation").notNull(),
+  referenceSnell: text("reference_snell"),
+  referenceGrays: text("reference_grays"),
+  referenceMoore: text("reference_moore"),
+  category: text("category").notNull(), // e.g., 'Upper Limb'
+  topic: text("topic").notNull(), // e.g., 'Pectoral Region', 'Arm', 'Cubital Fossa', etc.
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // User quiz attempts with comprehensive tracking
 export const quizAttempts = pgTable("quiz_attempts", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
@@ -375,6 +390,7 @@ export type StemOption = typeof stemOptions.$inferSelect;
 export type CustomExamAttempt = typeof customExamAttempts.$inferSelect;
 export type ExamGenerationHistory = typeof examGenerationHistory.$inferSelect;
 export type Quiz = typeof quizzes.$inferSelect;
+export type McqQuestion = typeof mcqQuestions.$inferSelect;
 export type QuizAttempt = typeof quizAttempts.$inferSelect;
 export type UserStats = typeof userStats.$inferSelect;
 export type CategoryStats = typeof categoryStats.$inferSelect;
