@@ -342,6 +342,59 @@ export const meetingReminders = pgTable("meeting_reminders", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Lecture Recording System
+export const lectures = pgTable("lectures", {
+  id: text("id").primaryKey(), // UUID
+  userId: text("user_id").notNull().references(() => users.id),
+  title: text("title").notNull(),
+  module: text("module").notNull(),
+  topic: text("topic"),
+  lecturer: text("lecturer"),
+  date: timestamp("date").notNull().defaultNow(),
+  duration: integer("duration").default(0), // seconds
+  status: text("status").notNull().default("recording"), // recording, processing, completed, failed
+  audioUrl: text("audio_url"), // URL to stored audio file
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const lectureTranscripts = pgTable("lecture_transcripts", {
+  id: text("id").primaryKey(), // UUID
+  lectureId: text("lecture_id").notNull().references(() => lectures.id, { onDelete: "cascade" }),
+  rawTranscript: text("raw_transcript"), // Original mixed-language transcript
+  unifiedTranscript: text("unified_transcript"), // English-only transcript
+  languageDetected: text("language_detected"), // detected languages
+  confidence: real("confidence"), // transcription confidence score
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const lectureNotes = pgTable("lecture_notes", {
+  id: text("id").primaryKey(), // UUID
+  lectureId: text("lecture_id").notNull().references(() => lectures.id, { onDelete: "cascade" }),
+  liveNotes: text("live_notes"), // Real-time generated notes
+  finalNotes: text("final_notes"), // Post-lecture processed notes
+  summary: text("summary"), // AI-generated summary
+  keyPoints: json("key_points"), // Array of key points
+  medicalTerms: json("medical_terms"), // Extracted medical terminology
+  researchContext: text("research_context"), // Additional research context
+  processingStatus: text("processing_status").default("pending"), // pending, processing, completed, failed
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const lectureProcessingLogs = pgTable("lecture_processing_logs", {
+  id: text("id").primaryKey(), // UUID
+  lectureId: text("lecture_id").notNull().references(() => lectures.id, { onDelete: "cascade" }),
+  step: text("step").notNull(), // transcription, translation, note_generation, summarization
+  status: text("status").notNull(), // started, completed, failed
+  startTime: timestamp("start_time").notNull(),
+  endTime: timestamp("end_time"),
+  duration: integer("duration"), // milliseconds
+  errorMessage: text("error_message"),
+  metadata: json("metadata"), // Additional processing metadata
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users);
 export const insertQuizAttemptSchema = createInsertSchema(quizAttempts).omit({ 
@@ -360,6 +413,12 @@ export const insertStudyPlannerSessionSchema = createInsertSchema(studyPlannerSe
 export const insertStudyGroupSchema = createInsertSchema(studyGroups).omit({ id: true, created_at: true, current_members: true, is_active: true });
 export const insertStudyGroupMemberSchema = createInsertSchema(studyGroupMembers).omit({ id: true, joinedAt: true, hasJoinedMeeting: true, reminderSent: true });
 export const insertMeetingReminderSchema = createInsertSchema(meetingReminders).omit({ id: true, createdAt: true, emailSent: true });
+
+// Lecture recording schemas
+export const insertLectureSchema = createInsertSchema(lectures).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertLectureTranscriptSchema = createInsertSchema(lectureTranscripts).omit({ id: true, createdAt: true });
+export const insertLectureNotesSchema = createInsertSchema(lectureNotes).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertLectureProcessingLogSchema = createInsertSchema(lectureProcessingLogs).omit({ id: true, createdAt: true });
 
 // Custom exam schemas
 export const insertCustomExamSchema = createInsertSchema(customExams).omit({ id: true, createdAt: true, updatedAt: true });
@@ -404,3 +463,7 @@ export type MeetingReminder = typeof meetingReminders.$inferSelect;
 export type StudyPlannerSession = typeof studyPlannerSessions.$inferSelect;
 export type Badge = typeof badges.$inferSelect;
 export type UserBadge = typeof userBadges.$inferSelect;
+export type Lecture = typeof lectures.$inferSelect;
+export type LectureTranscript = typeof lectureTranscripts.$inferSelect;
+export type LectureNotes = typeof lectureNotes.$inferSelect;
+export type LectureProcessingLog = typeof lectureProcessingLogs.$inferSelect;

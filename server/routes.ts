@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { openRouterAI } from "./ai";
 import { dbStorage, db, supabase } from "./db";
 import { sql, eq, desc, and } from 'drizzle-orm';
-import { insertQuizAttemptSchema, badges, userBadges, studyPlannerSessions, studyGroups, studyGroupMembers, meetingReminders, users, quizAttempts, userStats, quizzes, mcqQuestions, customExams, customExamStems, stemOptions, examGenerationHistory } from "@shared/schema";
+import { insertQuizAttemptSchema, badges, userBadges, studyPlannerSessions, studyGroups, studyGroupMembers, meetingReminders, users, quizAttempts, userStats, quizzes, mcqQuestions, customExams, customExamStems, stemOptions, examGenerationHistory, lectures, lectureTranscripts, lectureNotes, lectureProcessingLogs } from "@shared/schema";
 import { v4 as uuidv4 } from "uuid";
 import { readFileSync } from "fs";
 import { resolve } from "path";
@@ -2557,6 +2557,232 @@ app.post("/api/study-groups", async (req, res) => {
       res.status(500).json({ error: 'Failed to initialize system' });
     }
   });
+
+  // Lecture Recording API Routes
+  app.post("/api/lectures/start-recording", async (req, res) => {
+    try {
+      const { userId, title, module, topic, lecturer } = req.body;
+
+      if (!userId || !title || !module) {
+        return res.status(400).json({ error: "User ID, title, and module are required" });
+      }
+
+      const lectureId = uuidv4();
+      const [newLecture] = await db.insert(lectures).values({
+        id: lectureId,
+        userId,
+        title,
+        module,
+        topic: topic || null,
+        lecturer: lecturer || null,
+        status: 'recording',
+        duration: 0
+      }).returning();
+
+      console.log(`🎙️ Started recording lecture: ${title} for user ${userId}`);
+      res.json({ lectureId, lecture: newLecture });
+    } catch (error) {
+      console.error("Error starting lecture recording:", error);
+      res.status(500).json({ error: "Failed to start recording" });
+    }
+  });
+
+  app.post("/api/lectures/:id/stop-recording", async (req, res) => {
+    try {
+      const lectureId = req.params.id;
+      const { duration } = req.body;
+
+      // Update lecture status to processing
+      await db.update(lectures)
+        .set({ 
+          status: 'processing',
+          duration: duration || 0,
+          updatedAt: new Date()
+        })
+        .where(eq(lectures.id, lectureId));
+
+      // Start background processing
+      processLectureInBackground(lectureId);
+
+      console.log(`⏹️ Stopped recording lecture: ${lectureId}`);
+      res.json({ success: true, message: "Recording stopped, processing started" });
+    } catch (error) {
+      console.error("Error stopping lecture recording:", error);
+      res.status(500).json({ error: "Failed to stop recording" });
+    }
+  });
+
+  app.get("/api/lectures/:userId", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const { search, module, status } = req.query;
+
+      let query = db.select().from(lectures).where(eq(lectures.userId, userId));
+
+      if (search) {
+        query = query.where(sql`${lectures.title} ILIKE ${`%${search}%`} OR ${lectures.module} ILIKE ${`%${search}%`} OR ${lectures.topic} ILIKE ${`%${search}%`}`);
+      }
+
+      if (module) {
+        query = query.where(eq(lectures.module, module as string));
+      }
+
+      if (status) {
+        query = query.where(eq(lectures.status, status as string));
+      }
+
+      const userLectures = await query.orderBy(desc(lectures.date));
+
+      res.json(userLectures);
+    } catch (error) {
+      console.error("Error fetching lectures:", error);
+      res.status(500).json({ error: "Failed to fetch lectures" });
+    }
+  });
+
+  app.get("/api/lectures/:id/transcript", async (req, res) => {
+    try {
+      const lectureId = req.params.id;
+      
+      const transcript = await db.select().from(lectureTranscripts)
+        .where(eq(lectureTranscripts.lectureId, lectureId))
+        .limit(1);
+
+      if (transcript.length === 0) {
+        return res.status(404).json({ error: "Transcript not found" });
+      }
+
+      res.json(transcript[0]);
+    } catch (error) {
+      console.error("Error fetching transcript:", error);
+      res.status(500).json({ error: "Failed to fetch transcript" });
+    }
+  });
+
+  app.get("/api/lectures/:id/notes", async (req, res) => {
+    try {
+      const lectureId = req.params.id;
+      
+      const notes = await db.select().from(lectureNotes)
+        .where(eq(lectureNotes.lectureId, lectureId))
+        .limit(1);
+
+      if (notes.length === 0) {
+        return res.status(404).json({ error: "Notes not found" });
+      }
+
+      res.json(notes[0]);
+    } catch (error) {
+      console.error("Error fetching notes:", error);
+      res.status(500).json({ error: "Failed to fetch notes" });
+    }
+  });
+
+  app.delete("/api/lectures/:id", async (req, res) => {
+    try {
+      const lectureId = req.params.id;
+
+      // Delete related records first (cascade should handle this, but being explicit)
+      await db.delete(lectureNotes).where(eq(lectureNotes.lectureId, lectureId));
+      await db.delete(lectureTranscripts).where(eq(lectureTranscripts.lectureId, lectureId));
+      await db.delete(lectureProcessingLogs).where(eq(lectureProcessingLogs.lectureId, lectureId));
+      
+      // Delete the lecture
+      await db.delete(lectures).where(eq(lectures.id, lectureId));
+
+      console.log(`🗑️ Deleted lecture: ${lectureId}`);
+      res.json({ success: true, message: "Lecture deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting lecture:", error);
+      res.status(500).json({ error: "Failed to delete lecture" });
+    }
+  });
+
+  // Background processing function for lecture analysis
+  async function processLectureInBackground(lectureId: string) {
+    try {
+      console.log(`🔄 Starting background processing for lecture: ${lectureId}`);
+
+      // Log processing start
+      const logId = uuidv4();
+      await db.insert(lectureProcessingLogs).values({
+        id: logId,
+        lectureId,
+        step: 'transcription',
+        status: 'started',
+        startTime: new Date(),
+        metadata: { processingType: 'background' }
+      });
+
+      // Simulate processing time (in real implementation, this would be actual AI processing)
+      await new Promise(resolve => setTimeout(resolve, 5000));
+
+      // Create sample transcript and notes
+      const sampleTranscript = "This is a sample transcript of the medical lecture. The lecturer discussed important concepts about human anatomy and physiology.";
+      const sampleNotes = "Key Points:\n1. Introduction to anatomy\n2. Basic physiological processes\n3. Clinical applications\n\nSummary: This lecture covered fundamental concepts in medical education.";
+
+      // Insert transcript
+      await db.insert(lectureTranscripts).values({
+        id: uuidv4(),
+        lectureId,
+        rawTranscript: sampleTranscript,
+        unifiedTranscript: sampleTranscript,
+        languageDetected: 'en',
+        confidence: 0.95
+      });
+
+      // Insert notes
+      await db.insert(lectureNotes).values({
+        id: uuidv4(),
+        lectureId,
+        liveNotes: sampleNotes,
+        finalNotes: sampleNotes,
+        summary: "Comprehensive summary of medical lecture covering anatomy and physiology fundamentals.",
+        keyPoints: ["anatomy", "physiology", "clinical applications"],
+        medicalTerms: ["anatomy", "physiology", "clinical"],
+        researchContext: "Additional research context would be added here.",
+        processingStatus: 'completed'
+      });
+
+      // Update lecture status
+      await db.update(lectures)
+        .set({ 
+          status: 'completed',
+          updatedAt: new Date()
+        })
+        .where(eq(lectures.id, lectureId));
+
+      // Log processing completion
+      await db.update(lectureProcessingLogs)
+        .set({
+          status: 'completed',
+          endTime: new Date(),
+          duration: 5000
+        })
+        .where(eq(lectureProcessingLogs.id, logId));
+
+      console.log(`✅ Completed background processing for lecture: ${lectureId}`);
+    } catch (error) {
+      console.error(`❌ Error in background processing for lecture ${lectureId}:`, error);
+      
+      // Update lecture status to failed
+      await db.update(lectures)
+        .set({ 
+          status: 'failed',
+          updatedAt: new Date()
+        })
+        .where(eq(lectures.id, lectureId));
+
+      // Log processing failure
+      await db.update(lectureProcessingLogs)
+        .set({
+          status: 'failed',
+          endTime: new Date(),
+          errorMessage: error.message
+        })
+        .where(eq(lectureProcessingLogs.lectureId, lectureId));
+    }
+  }
 
   const httpServer = createServer(app);
   return httpServer;

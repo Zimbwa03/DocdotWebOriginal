@@ -13,6 +13,7 @@ import { Navigation } from "@/components/Navigation";
 import SimpleLanding from "@/pages/SimpleLanding";
 import Home from "@/pages/Home";
 import Quiz from "@/pages/Quiz";
+import Record from "@/pages/Record";
 import Notes from "@/pages/Notes";
 import Pricing from "@/pages/Pricing";
 import StudyGuide from "@/pages/StudyGuide";
@@ -69,6 +70,12 @@ function Router() {
         <ProtectedRoute>
           <Navigation />
           <Quiz />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/record">
+        <ProtectedRoute>
+          <Navigation />
+          <Record />
         </ProtectedRoute>
       </Route>
       <Route path="/notes">
