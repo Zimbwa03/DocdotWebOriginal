@@ -230,25 +230,8 @@ export default function Record() {
       console.log('📝 Total transcript length:', newTranscript.length);
       console.log('📝 Current transcript preview:', newTranscript.substring(0, 200));
       
-      // Generate notes when we have substantial content (use the full accumulated transcript)
-      if (finalTranscript.trim().length > 20) {
-        // Generate notes more frequently for real-time updates
-        if (newTranscript.trim().length > 50) {
-          console.log('🚀 Triggering real-time note generation...');
-          
-          // Clear existing timeout
-          if (noteGenerationTimeout) {
-            clearTimeout(noteGenerationTimeout);
-          }
-          
-          // Set new timeout for debounced note generation
-          const timeout = setTimeout(() => {
-            generateLiveNotes(newTranscript);
-          }, 1000); // 1 second delay for real-time feel
-          
-          setNoteGenerationTimeout(timeout);
-        }
-      }
+      // During lecture: Just accumulate transcript, no AI processing
+      // AI processing will happen only after lecture stops
 
       // Auto-save transcript periodically (every 500 characters of new content)
       if (finalTranscript.trim().length > 0 && newTranscript.length % 500 === 0) {
@@ -452,7 +435,62 @@ Date: ${new Date().toLocaleDateString()}
     }
   };
 
-  // Generate live notes from transcript using Gemini AI
+  // Process complete lecture with AI after recording stops
+  const processCompleteLecture = async (lectureId: string, transcript: string) => {
+    try {
+      console.log('🤖 Processing complete lecture with AI...');
+      setIsProcessing(true);
+      
+      // Call backend to process the complete lecture
+      const response = await fetch('/api/lectures/process-complete-lecture', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          lectureId,
+          transcript,
+          module: lectureMetadata.module,
+          topic: lectureMetadata.topic
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Complete lecture processed successfully');
+        
+        // Update the live notes with the processed content
+        setLiveNotes(data.processedNotes);
+        
+        // Save the processed notes to database
+        await saveLectureData(lectureId, transcript, data.processedNotes);
+        
+        // Show success message
+        toast({
+          title: "Lecture Processed!",
+          description: "AI has generated structured notes from your complete lecture.",
+        });
+      } else {
+        console.error('Failed to process complete lecture');
+        toast({
+          title: "Processing Failed",
+          description: "Could not process lecture with AI. Please try again.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error processing complete lecture:', error);
+      toast({
+        title: "Processing Error",
+        description: "An error occurred while processing the lecture.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Generate live notes from transcript using Gemini AI (DEPRECATED - not used during lecture)
   const generateLiveNotes = async (transcript: string) => {
     // Only generate notes if we have actual speech content
     if (!transcript || transcript.trim().length < 30) {
@@ -660,9 +698,17 @@ ${transcript.substring(0, 200)}...
       // Stop recording on backend and save transcript/notes
       const currentLecture = lectures.find(l => l.status === 'recording');
       if (currentLecture) {
-        // Save the complete accumulated transcript and notes to the database
-        await saveLectureData(currentLecture.id, liveTranscript, liveNotes);
+        // Save the complete accumulated transcript first
+        await saveLectureData(currentLecture.id, liveTranscript, '');
+        
+        // Stop recording in database
         await stopRecordingMutation.mutateAsync(currentLecture.id);
+        
+        // Now trigger AI processing for the complete lecture
+        if (liveTranscript.trim().length > 100) {
+          console.log('🎯 Starting AI processing for complete lecture...');
+          await processCompleteLecture(currentLecture.id, liveTranscript);
+        }
       }
     }
   };
@@ -1067,17 +1113,12 @@ ${transcript.substring(0, 200)}...
                                 </span>
                               </div>
                               <p className="text-xs text-blue-700 dark:text-blue-300">
-                                Speak clearly into your microphone. The system will transcribe your speech in real-time, accumulate the full conversation, and generate AI-powered notes from the complete transcript.
+                                Speak clearly into your microphone. The system will transcribe your speech in real-time and accumulate the full lecture content. AI processing will happen after you stop recording.
                               </p>
                               {liveTranscript && (
                                 <div className="mt-2 text-xs text-blue-600 dark:text-blue-400">
-                                  <strong>Transcript Length:</strong> {liveTranscript.length} characters
-                                  {liveTranscript.length > 50 && !isGeneratingNotes && (
-                                    <span className="ml-2 text-green-600">✓ Ready for AI processing</span>
-                                  )}
-                                  {isGeneratingNotes && (
-                                    <span className="ml-2 text-orange-600">🔄 Generating AI notes...</span>
-                                  )}
+                                  <strong>Live Transcript:</strong> {liveTranscript.length} characters
+                                  <span className="ml-2 text-green-600">✓ Transcribing lecture content</span>
                                 </div>
                               )}
                             </div>
@@ -1122,19 +1163,14 @@ ${transcript.substring(0, 200)}...
                             </div>
                           )}
                           <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border">
-                            {isGeneratingNotes ? (
-                              <div className="flex items-center space-x-2 text-orange-600">
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-600"></div>
-                                <span>Generating AI notes from your speech...</span>
-                              </div>
-                            ) : liveNotes ? (
+                            {liveNotes ? (
                               <div className="prose prose-sm max-w-none">
                                 <pre className="whitespace-pre-wrap font-sans">{liveNotes}</pre>
                               </div>
                             ) : (
                               <div className="flex items-center space-x-2 text-gray-500">
-                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                <span>Waiting for speech to generate notes...</span>
+                                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                                <span>AI will process notes after lecture ends...</span>
                               </div>
                             )}
                           </div>

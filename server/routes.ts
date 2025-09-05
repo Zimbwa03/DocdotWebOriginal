@@ -2699,7 +2699,47 @@ app.post("/api/study-groups", async (req, res) => {
     }
   });
 
-  // Generate live notes from transcript
+  // Process complete lecture after recording stops
+  app.post("/api/lectures/process-complete-lecture", async (req, res) => {
+    try {
+      const { lectureId, transcript, module, topic } = req.body;
+
+      if (!lectureId || !transcript || !module) {
+        return res.status(400).json({ error: "Lecture ID, transcript, and module are required" });
+      }
+
+      console.log(`🤖 Processing complete lecture ${lectureId} with ${transcript.length} characters`);
+
+      // Generate comprehensive notes from the complete lecture
+      const processedNotes = await geminiAI.generateComprehensiveSummary(transcript, module, topic);
+      
+      // Save the processed notes to database
+      await db.insert(lectureNotes).values({
+        lectureId,
+        liveNotes: processedNotes,
+        finalNotes: processedNotes,
+        processingStatus: 'completed'
+      }).onConflictDoUpdate({
+        target: lectureNotes.lectureId,
+        set: {
+          liveNotes: processedNotes,
+          finalNotes: processedNotes,
+          processingStatus: 'completed',
+          updatedAt: new Date()
+        }
+      });
+
+      res.json({ 
+        processedNotes,
+        message: 'Lecture processed successfully'
+      });
+    } catch (error) {
+      console.error("Error processing complete lecture:", error);
+      res.status(500).json({ error: "Failed to process complete lecture" });
+    }
+  });
+
+  // Generate live notes from transcript (DEPRECATED - not used during lecture)
   app.post("/api/lectures/generate-live-notes", async (req, res) => {
     try {
       const { transcript, module, topic } = req.body;
