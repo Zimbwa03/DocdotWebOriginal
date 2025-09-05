@@ -744,7 +744,426 @@ By combining detailed anatomical descriptions with practical mnemonics and relev
         {
           id: 'upper-limb-joints',
           name: 'Joints of the Upper Limb',
-          description: 'Shoulder, elbow, wrist, hand joints'
+          description: 'Shoulder, elbow, wrist, hand joints',
+          content: `# Upper Limb Joints Notes
+
+## Introduction to the Joints of the Upper Limb
+
+The upper limb is a highly mobile and versatile appendage, capable of a wide range of movements essential for daily activities. This remarkable mobility is largely attributed to the complex interplay of its various joints, which connect the bones of the shoulder girdle, arm, forearm, and hand. These joints, along with their associated ligaments, muscles, and neurovascular structures, enable precise and powerful actions, from throwing a ball to writing.
+
+Understanding the anatomy and biomechanics of the upper limb joints is crucial for medical professionals. Knowledge of their structure, classification, movements, and common pathologies is fundamental for diagnosing injuries, planning treatments, and rehabilitating patients. This document aims to provide a comprehensive overview of the major joints of the upper limb, drawing insights from authoritative sources such as Clinical Snell Anatomy, Kenhub, and Teach Me Anatomy.
+
+We will explore each joint in detail, covering its anatomical classification, articulating bones, key ligaments, range of motion, and relevant clinical correlates. Mnemonics and illustrative diagrams will be incorporated to facilitate learning and retention, ensuring a clear and practical understanding of these vital anatomical structures.
+
+### Overview of Major Upper Limb Joints
+
+The major joints of the upper limb, from proximal to distal, include:
+
+*   **Sternoclavicular Joint**
+*   **Acromioclavicular Joint**
+*   **Glenohumeral (Shoulder) Joint**
+*   **Elbow Joint** (Humeroulnar and Humeroradial Joints)
+*   **Radioulnar Joints** (Proximal and Distal)
+*   **Wrist (Radiocarpal) Joint**
+*   **Intercarpal Joints**
+*   **Carpometacarpal (CMC) Joints**
+*   **Metacarpophalangeal (MCP) Joints**
+*   **Interphalangeal (IP) Joints** (PIP and DIP)
+
+Each of these joints contributes uniquely to the overall function of the upper limb, allowing for a harmonious blend of stability and mobility. We will now delve into the specifics of each joint, beginning with the sternoclavicular joint.
+
+## The Sternoclavicular (SC) Joint
+
+The sternoclavicular joint is a synovial saddle-type joint, although it functions more like a ball-and-socket joint, providing the only bony articulation between the upper limb and the axial skeleton. It is remarkably stable, allowing for significant movement of the clavicle, which is essential for the wide range of motion of the shoulder girdle.
+
+### Articulating Bones
+
+*   **Sternal end of the Clavicle:** The medial end of the clavicle.
+*   **Manubrium of the Sternum:** The superior part of the sternum.
+*   **First Costal Cartilage:** The cartilage of the first rib, which also articulates with the joint capsule.
+
+### Joint Capsule and Ligaments
+
+The joint is surrounded by a fibrous capsule that is relatively thin but strengthened by several strong ligaments:
+
+*   **Anterior Sternoclavicular Ligament:** Strengthens the joint anteriorly, preventing upward and backward displacement of the clavicle.
+*   **Posterior Sternoclavicular Ligament:** Strengthens the joint posteriorly, preventing upward and forward displacement of the clavicle.
+*   **Interclavicular Ligament:** Connects the sternal ends of both clavicles, running across the jugular notch. It strengthens the joint superiorly and helps prevent upward displacement of the clavicle.
+*   **Costoclavicular Ligament:** A strong, short ligament connecting the first rib and its costal cartilage to the inferior surface of the sternal end of the clavicle. It is the primary stabilizer of the SC joint, limiting elevation of the clavicle.
+
+### Articular Disc
+
+An articular disc divides the joint cavity into two compartments. This disc is made of fibrocartilage and is attached to the superior aspect of the first costal cartilage and the superior and posterior aspects of the clavicle. It acts as a shock absorber and helps to prevent medial displacement of the clavicle.
+
+### Movements
+
+The sternoclavicular joint allows for a wide range of movements of the clavicle, which in turn facilitates movements of the scapula and the entire upper limb:
+
+*   **Elevation:** Upward movement (e.g., shrugging shoulders).
+*   **Depression:** Downward movement (e.g., dropping shoulders).
+*   **Protraction:** Forward movement (e.g., pushing forward).
+*   **Retraction:** Backward movement (e.g., pulling back).
+*   **Rotation:** Anterior-posterior rotation of the clavicle along its long axis.
+
+### Clinical Correlates
+
+*   **SC Joint Dislocation:** Although rare due to the strong ligaments, dislocations can occur, usually from significant trauma. Anterior dislocations are more common than posterior. Posterior dislocations are more serious due to potential compression of vital structures in the superior mediastinum (trachea, esophagus, great vessels).
+*   **Osteoarthritis:** Like other synovial joints, the SC joint can be affected by osteoarthritis, leading to pain, stiffness, and reduced range of motion.
+*   **Fractures of the Clavicle:** While not directly a joint injury, clavicle fractures (especially of the medial end) can affect the integrity and function of the SC joint.
+
+## The Acromioclavicular (AC) Joint
+
+The acromioclavicular joint is a plane-type synovial joint located at the top of the shoulder, connecting the clavicle and the scapula. It allows for gliding movements between the acromion and clavicle, contributing to the overall mobility of the shoulder girdle and enabling the scapula to move on the thoracic wall.
+
+### Articulating Bones
+
+*   **Acromial end of the Clavicle:** The lateral end of the clavicle.
+*   **Acromion of the Scapula:** The flattened, lateral projection of the scapular spine.
+
+### Joint Capsule and Ligaments
+
+The joint capsule is relatively weak and is strengthened by several ligaments:
+
+*   **Acromioclavicular Ligament:** Strengthens the joint capsule superiorly, preventing posterior displacement of the clavicle.
+*   **Coracoclavicular Ligament:** This is a very strong extrinsic ligament that is crucial for the stability of the AC joint. It consists of two parts:
+    *   **Conoid Ligament:** Medial and cone-shaped, attaching from the conoid tubercle of the clavicle to the coracoid process of the scapula. It primarily resists superior displacement of the clavicle.
+    *   **Trapezoid Ligament:** Lateral and quadrilateral, attaching from the trapezoid line of the clavicle to the coracoid process of the scapula. It primarily resists horizontal displacement of the clavicle.
+
+### Articular Disc
+
+An incomplete wedge-shaped articular disc is often present within the joint, which may partially divide the joint cavity.
+
+### Movements
+
+The AC joint allows for subtle gliding movements that accompany movements of the scapula on the thoracic wall. These movements include:
+
+*   **Rotation of the Scapula:** The acromion rotates on the clavicle during elevation and depression of the arm.
+*   **Anteroposterior Gliding:** Slight gliding movements.
+*   **Vertical Gliding:** Slight gliding movements.
+
+### Clinical Correlates
+
+*   **AC Joint Separation (Shoulder Separation):** A common injury, especially in contact sports, resulting from a direct blow to the shoulder or a fall on the shoulder. It involves tearing of the AC ligament and, in more severe cases, the coracoclavicular ligaments. Severity is graded from I to VI, with higher grades indicating more ligamentous damage and greater displacement of the clavicle relative to the acromion.
+*   **Osteoarthritis:** The AC joint is a common site for osteoarthritis, particularly in older individuals or those with a history of trauma to the joint. This can lead to pain, stiffness, and crepitus (a crackling sound) with shoulder movements.
+
+## The Glenohumeral (Shoulder) Joint
+
+The glenohumeral joint, commonly known as the shoulder joint, is a multiaxial ball-and-socket type synovial joint that connects the upper limb to the trunk. It is the most mobile joint in the human body, allowing for a wide range of movements in all planes. This extensive mobility, however, comes at the cost of stability, making it the most frequently dislocated joint.
+
+### Articulating Bones
+
+*   **Head of the Humerus:** The large, rounded proximal end of the humerus.
+*   **Glenoid Cavity of the Scapula:** A shallow, pear-shaped articular fossa on the lateral angle of the scapula.
+
+### Joint Capsule and Ligaments
+
+The joint capsule is relatively loose and thin, allowing for extensive movement. It is strengthened by several ligaments:
+
+*   **Glenoid Labrum:** A fibrocartilaginous rim attached to the margin of the glenoid cavity, which deepens the socket and increases the contact area with the humeral head.
+*   **Glenohumeral Ligaments (Superior, Middle, Inferior):** Three bands of fibrous tissue that reinforce the anterior aspect of the joint capsule. They are most effective in limiting external rotation and anterior displacement of the humeral head.
+*   **Coracohumeral Ligament:** Strengthens the superior aspect of the joint capsule, extending from the coracoid process to the greater and lesser tubercles of the humerus. It helps support the weight of the upper limb.
+*   **Transverse Humeral Ligament:** Bridges the intertubercular (bicipital) groove of the humerus, holding the long head tendon of the biceps brachii in place.
+
+### Bursae
+
+Several bursae (fluid-filled sacs) are associated with the shoulder joint, reducing friction between tendons, muscles, and bones:
+
+*   **Subacromial (Subdeltoid) Bursa:** The largest bursa in the shoulder, located between the deltoid muscle and the joint capsule/rotator cuff tendons. It facilitates smooth movement of the deltoid over the rotator cuff.
+*   **Subscapular Bursa:** Located between the subscapularis tendon and the neck of the scapula, communicating with the joint cavity.
+
+### Movements
+
+The glenohumeral joint allows for a wide range of movements:
+
+*   **Flexion:** Movement of the arm anteriorly (e.g., raising arm forward).
+*   **Extension:** Movement of the arm posteriorly (e.g., lowering arm backward).
+*   **Abduction:** Movement of the arm away from the midline (e.g., raising arm sideways).
+*   **Adduction:** Movement of the arm towards the midline (e.g., lowering arm sideways).
+*   **Medial (Internal) Rotation:** Rotation of the arm inwards.
+*   **Lateral (External) Rotation:** Rotation of the arm outwards.
+*   **Circumduction:** A combination of flexion, extension, abduction, and adduction, creating a circular movement.
+
+### Rotator Cuff Muscles
+
+The stability of the glenohumeral joint is primarily provided by the dynamic action of the four rotator cuff muscles (SITS muscles) and their tendons, which form a musculotendinous cuff around the joint:
+
+*   **S**upraspinatus
+*   **I**nfraspinatus
+*   **T**eres Minor
+*   **S**ubscapularis
+
+These muscles originate from the scapula and insert onto the greater and lesser tubercles of the humerus, acting to hold the humeral head firmly in the shallow glenoid cavity and to produce rotation and abduction movements.
+
+### Clinical Correlates
+
+*   **Shoulder Dislocation:** The most common major joint dislocation in the body, typically occurring anteriorly and inferiorly due to trauma (e.g., fall on an outstretched hand, direct blow to the shoulder). Can lead to damage to the joint capsule, glenoid labrum (Bankart lesion), or humeral head (Hill-Sachs lesion), and potential injury to the axillary nerve.
+*   **Rotator Cuff Tears:** Common injuries, especially in athletes and older individuals, involving tears in one or more of the rotator cuff tendons. Symptoms include pain, weakness, and limited range of motion, particularly during overhead activities.
+*   **Impingement Syndrome:** Occurs when the rotator cuff tendons (especially supraspinatus) and/or subacromial bursa are compressed between the humeral head and the acromion during arm elevation. This can lead to pain and inflammation.
+*   **Adhesive Capsulitis (Frozen Shoulder):** A condition characterized by pain and progressive stiffness of the shoulder joint, often without a clear cause. It involves inflammation and thickening of the joint capsule, leading to significant restriction of movement.
+
+## The Elbow Joint
+
+The elbow joint is a complex hinge-type synovial joint that connects the arm to the forearm. It is formed by the articulation of three bones: the humerus, ulna, and radius. This joint primarily allows for flexion and extension of the forearm, but also plays a role in pronation and supination through its articulation with the radioulnar joints.
+
+### Articulating Bones
+
+The elbow joint involves three articulations within a single joint capsule:
+
+1.  **Humeroulnar Joint:** Articulation between the trochlea of the humerus and the trochlear notch of the ulna. This is the primary articulation responsible for flexion and extension.
+2.  **Humeroradial Joint:** Articulation between the capitulum of the humerus and the head of the radius.
+3.  **Proximal Radioulnar Joint:** Articulation between the head of the radius and the radial notch of the ulna. This is a pivot-type synovial joint, allowing for pronation and supination of the forearm.
+
+### Joint Capsule and Ligaments
+
+The joint capsule encloses all three articulations and is strengthened by strong collateral ligaments:
+
+*   **Ulnar Collateral Ligament (Medial Collateral Ligament):** A strong triangular band that extends from the medial epicondyle of the humerus to the coronoid process and olecranon of the ulna. It has anterior, posterior, and oblique bands and is crucial for medial stability of the elbow.
+*   **Radial Collateral Ligament (Lateral Collateral Ligament):** A fan-shaped ligament that extends from the lateral epicondyle of the humerus to blend with the annular ligament of the radius. It provides lateral stability to the elbow.
+*   **Annular Ligament:** A strong fibrous band that encircles the head of the radius, holding it in place against the radial notch of the ulna. It is essential for the stability of the proximal radioulnar joint.
+
+### Movements
+
+The elbow joint primarily allows for:
+
+*   **Flexion:** Bending the forearm towards the arm (e.g., lifting an object).
+*   **Extension:** Straightening the forearm (e.g., pushing an object).
+
+Additionally, the proximal radioulnar joint, which is functionally part of the elbow complex, allows for:
+
+*   **Pronation:** Rotating the forearm so the palm faces posteriorly or inferiorly.
+*   **Supination:** Rotating the forearm so the palm faces anteriorly or superiorly.
+
+### Clinical Correlates
+
+*   **Elbow Dislocation:** Common, usually occurring posteriorly due to a fall on an outstretched hand. Can be associated with fractures of the coronoid process or radial head.
+*   **Supracondylar Fracture of the Humerus:** A common fracture in children, occurring just above the epicondyles. Can lead to serious complications such as injury to the brachial artery (leading to Volkmann's ischemic contracture) or median nerve.
+*   **Medial Epicondylitis (Golfer's Elbow):** Inflammation of the common flexor origin at the medial epicondyle, caused by repetitive forceful wrist flexion and pronation.
+*   **Lateral Epicondylitis (Tennis Elbow):** Inflammation of the common extensor origin at the lateral epicondyle, caused by repetitive forceful wrist extension and supination.
+*   **Pulled Elbow (Nursemaid's Elbow):** Subluxation of the radial head from the annular ligament, common in young children when their arm is suddenly pulled. The child presents with pain and refusal to use the arm.
+*   **Olecranon Bursitis:** Inflammation of the olecranon bursa, located over the olecranon process, often due to repetitive trauma or pressure (e.g., "student's elbow").
+
+## The Radioulnar Joints
+
+The radioulnar joints are a pair of articulations between the radius and ulna, located at both the proximal and distal ends of the forearm. These joints are crucial for the pronation and supination movements of the forearm, allowing the hand to be rotated through a wide range of motion.
+
+### Proximal Radioulnar Joint
+
+*   **Type:** Pivot-type synovial joint.
+*   **Articulating Bones:**
+    *   **Head of the Radius:** Articulates with the radial notch of the ulna.
+    *   **Radial Notch of the Ulna:** A shallow concavity on the lateral side of the coronoid process of the ulna.
+*   **Ligaments:**
+    *   **Annular Ligament:** A strong fibrous band that encircles the head of the radius, holding it firmly against the radial notch of the ulna. It is lined with synovial membrane.
+    *   **Quadrate Ligament:** Extends from the inferior border of the radial notch of the ulna to the neck of the radius, helping to maintain the radial head in position.
+*   **Movements:** Primarily responsible for pronation and supination of the forearm.
+
+### Distal Radioulnar Joint
+
+*   **Type:** Pivot-type synovial joint.
+*   **Articulating Bones:**
+    *   **Head of the Ulna:** Articulates with the ulnar notch of the radius.
+    *   **Ulnar Notch of the Radius:** A shallow concavity on the medial side of the distal radius.
+*   **Ligaments:**
+    *   **Anterior and Posterior Radioulnar Ligaments:** Strengthen the joint capsule anteriorly and posteriorly.
+    *   **Articular Disc (Triangular Fibrocartilage Complex - TFCC):** A triangular-shaped fibrocartilage that binds the distal ends of the ulna and radius together, separates the distal radioulnar joint from the wrist joint, and acts as a cushion.
+*   **Movements:** Allows the distal end of the radius to rotate around the head of the ulna, contributing to pronation and supination.
+
+### Interosseous Membrane
+
+While not a joint, the **interosseous membrane** is a strong fibrous sheet that connects the shafts of the radius and ulna along their interosseous borders. It serves several important functions:
+
+*   Transfers forces from the radius to the ulna (e.g., during a fall on the hand).
+*   Provides attachment sites for muscles of the forearm.
+*   Separates the anterior and posterior compartments of the forearm.
+
+### Clinical Correlates
+
+*   **Pulled Elbow (Nursemaid's Elbow):** As mentioned previously, this is a subluxation of the radial head from the annular ligament, common in young children. It occurs when the forearm is suddenly pulled in pronation.
+*   **Galeazzi Fracture:** A fracture of the distal radius with associated dislocation of the distal radioulnar joint. This injury highlights the close functional relationship between the radius and ulna.
+*   **Essex-Lopresti Fracture:** A comminuted fracture of the radial head with disruption of the interosseous membrane and dislocation of the distal radioulnar joint. This is a severe injury that can lead to significant instability and pain.
+*   **Distal Radioulnar Joint Instability:** Can result from trauma (e.g., TFCC tears) or degenerative conditions, leading to pain, clicking, and weakness during pronation and supination.
+
+## The Wrist (Radiocarpal) Joint
+
+The wrist joint, also known as the radiocarpal joint, is a condyloid-type synovial joint that connects the forearm to the hand. It is formed by the articulation of the distal end of the radius and the articular disc of the distal radioulnar joint with the proximal row of carpal bones. This joint allows for a wide range of movements of the hand, including flexion, extension, abduction, adduction, and circumduction.
+
+### Articulating Bones
+
+*   **Distal end of the Radius:** The primary articulating surface from the forearm side.
+*   **Articular Disc of the Distal Radioulnar Joint:** Separates the ulna from the carpal bones, preventing direct articulation.
+*   **Proximal Row of Carpal Bones:** Specifically, the scaphoid, lunate, and triquetrum. The pisiform does not directly articulate with the radius or articular disc.
+
+### Joint Capsule and Ligaments
+
+The joint capsule is relatively thin but strengthened by several ligaments:
+
+*   **Palmar Radiocarpal Ligament:** A strong ligament that connects the radius to the carpal bones on the palmar side. It is crucial for maintaining the alignment of the carpal bones and transmitting forces from the hand to the forearm.
+*   **Dorsal Radiocarpal Ligament:** Connects the radius to the carpal bones on the dorsal side. It is weaker than the palmar radiocarpal ligament.
+*   **Ulnar Collateral Ligament:** Extends from the ulnar styloid process to the triquetrum and pisiform, providing medial stability to the wrist.
+*   **Radial Collateral Ligament:** Extends from the radial styloid process to the scaphoid and trapezium, providing lateral stability to the wrist.
+
+### Movements
+
+The wrist joint allows for the following movements:
+
+*   **Flexion (Palmarflexion):** Bending the hand towards the palm.
+*   **Extension (Dorsiflexion):** Bending the hand towards the back of the hand.
+*   **Abduction (Radial Deviation):** Moving the hand towards the thumb side.
+*   **Adduction (Ulnar Deviation):** Moving the hand towards the little finger side.
+*   **Circumduction:** A combination of all the above movements, creating a circular motion.
+
+### Clinical Correlates
+
+*   **Colles' Fracture:** A common fracture of the distal radius, typically resulting from a fall on an outstretched hand (FOOSH). The distal fragment is displaced dorsally, leading to a characteristic "dinner fork" deformity. This fracture directly impacts the integrity of the wrist joint.
+*   **Scaphoid Fracture:** The most common carpal bone fracture, often resulting from a FOOSH. Due to its precarious blood supply, scaphoid fractures are prone to avascular necrosis and non-union, leading to chronic wrist pain and instability.
+*   **Carpal Tunnel Syndrome:** Compression of the median nerve within the carpal tunnel, which is formed by the carpal bones and the flexor retinaculum. Symptoms include numbness, tingling, and weakness in the hand, affecting movements controlled by the median nerve.
+*   **Ganglion Cyst:** A common, benign, fluid-filled swelling that often develops near the wrist joint, typically on the dorsal side. It arises from a joint capsule or tendon sheath.
+
+## The Intercarpal Joints
+
+The intercarpal joints are the articulations between the individual carpal bones within the wrist. These are plane synovial joints that allow for limited gliding movements, which collectively contribute to the overall flexibility and adaptability of the wrist and hand. They are divided into proximal and distal rows, and articulations between the two rows.
+
+### Articulating Bones
+
+*   **Between individual carpal bones within the proximal row:** Scaphoid, Lunate, Triquetrum, Pisiform.
+*   **Between individual carpal bones within the distal row:** Trapezium, Trapezoid, Capitate, Hamate.
+*   **Midcarpal Joint:** The articulation between the proximal and distal rows of carpal bones.
+
+### Joint Capsule and Ligaments
+
+The intercarpal joints share a common joint capsule, and their stability is reinforced by numerous ligaments:
+
+*   **Palmar Intercarpal Ligaments:** Strong ligaments on the palmar aspect, providing significant stability.
+*   **Dorsal Intercarpal Ligaments:** Ligaments on the dorsal aspect, generally weaker than their palmar counterparts.
+*   **Interosseous Intercarpal Ligaments:** Strong ligaments located between adjacent carpal bones within the same row, providing significant stability and preventing separation.
+
+### Movements
+
+The intercarpal joints allow for subtle gliding and sliding movements between the carpal bones. These small movements sum up to contribute to the overall range of motion at the wrist, particularly during radial and ulnar deviation, and during the complex movements of gripping and manipulation.
+
+### Clinical Correlates
+
+*   **Carpal Instability:** Disruption of the intercarpal ligaments can lead to carpal instability, where the carpal bones lose their normal alignment and movement patterns. This can result in chronic wrist pain, weakness, and progressive arthritis.
+*   **Kienböck's Disease:** Avascular necrosis of the lunate bone, often due to repetitive trauma or compromised blood supply. It leads to collapse of the lunate, wrist pain, stiffness, and can affect the integrity of the intercarpal joints.
+*   **Fractures of Carpal Bones:** While scaphoid fractures are most common, other carpal bones can also fracture. Fractures involving the articular surfaces of intercarpal joints can lead to post-traumatic arthritis and chronic pain.
+
+## The Carpometacarpal (CMC) Joints
+
+The carpometacarpal (CMC) joints are the articulations between the distal row of carpal bones and the bases of the metacarpal bones. These joints provide the foundation for the hand, allowing for varying degrees of mobility that are crucial for hand function, particularly the unique movements of the thumb.
+
+### Articulating Bones
+
+*   **First CMC Joint (Thumb):** Articulation between the **Trapezium** (carpal bone) and the **Base of the 1st Metacarpal**.
+*   **Second CMC Joint:** Articulation between the **Trapezoid**, **Capitate**, and **Base of the 2nd Metacarpal**.
+*   **Third CMC Joint:** Articulation between the **Capitate** and the **Base of the 3rd Metacarpal**.
+*   **Fourth CMC Joint:** Articulation between the **Hamate** and the **Base of the 4th Metacarpal**.
+*   **Fifth CMC Joint:** Articulation between the **Hamate** and the **Base of the 5th Metacarpal**.
+
+### Joint Type and Movements
+
+*   **First CMC Joint (Thumb):** This is a **saddle-type synovial joint**, which allows for a wide range of movements, making the thumb highly mobile and capable of opposition (touching the tips of other fingers).
+    *   **Movements:** Flexion, Extension, Abduction, Adduction, Opposition, Reposition, and Circumduction.
+*   **Second to Fifth CMC Joints:** These are primarily **plane-type synovial joints**, allowing for limited gliding movements. The mobility increases from the second to the fifth CMC joint, with the fifth CMC joint being the most mobile among them, contributing to the cupping of the hand.
+    *   **Movements:** Slight gliding movements, contributing to the overall flexibility of the palm.
+
+### Ligaments
+
+The CMC joints are reinforced by numerous strong ligaments, including palmar, dorsal, and interosseous carpometacarpal ligaments, which provide stability and limit excessive movement.
+
+### Clinical Correlates
+
+*   **Osteoarthritis of the First CMC Joint:** Very common, especially in women, due to the high mobility and stress placed on this joint. It leads to pain at the base of the thumb, stiffness, and weakness, significantly impacting pinch and grip strength.
+*   **Bennett's Fracture:** An intra-articular fracture-dislocation of the base of the first metacarpal, involving the first CMC joint. It is often unstable due to muscle pull and requires careful management.
+*   **Rolando's Fracture:** A comminuted intra-articular fracture at the base of the first metacarpal, similar to Bennett's but with multiple fragments. It is more complex and often harder to treat.
+
+## The Metacarpophalangeal (MCP) Joints
+
+The metacarpophalangeal (MCP) joints are the articulations between the heads of the metacarpal bones and the bases of the proximal phalanges. These joints are commonly referred to as the "knuckles" of the hand. They are condyloid-type synovial joints, allowing for a wide range of movements, including flexion, extension, abduction, adduction, and circumduction.
+
+### Articulating Bones
+
+*   **Heads of the Metacarpals (I-V):** The rounded distal ends of the metacarpal bones.
+*   **Bases of the Proximal Phalanges (I-V):** The proximal ends of the first set of finger bones.
+
+### Joint Capsule and Ligaments
+
+The joint capsule is relatively loose on the dorsal side to allow for flexion, but it is strengthened by several important ligaments:
+
+*   **Palmar (Volar) Ligaments:** Strong, dense fibrous plates on the palmar aspect of each joint. They are firmly attached to the proximal phalanx and loosely to the metacarpal, preventing hyperextension.
+*   **Collateral Ligaments:** Strong, cord-like ligaments located on each side of the joint. They are taut in flexion and relaxed in extension, which is why fingers can be abducted and adducted more freely when extended.
+*   **Deep Transverse Metacarpal Ligament:** Connects the palmar ligaments of the second through fifth MCP joints, preventing excessive spreading of the metacarpal heads.
+
+### Movements
+
+The MCP joints allow for the following movements:
+
+*   **Flexion:** Bending the fingers towards the palm.
+*   **Extension:** Straightening the fingers.
+*   **Abduction:** Spreading the fingers apart (away from the middle finger).
+*   **Adduction:** Bringing the fingers together (towards the middle finger).
+*   **Circumduction:** A combination of all the above movements, creating a circular motion.
+
+### Clinical Correlates
+
+*   **MCP Joint Dislocation:** Common, especially in the thumb (first MCP joint), often due to hyperextension injuries. The palmar ligament can be torn or entrapped, making reduction difficult.
+*   **Rheumatoid Arthritis:** The MCP joints are frequently affected in rheumatoid arthritis, leading to inflammation, pain, swelling, and characteristic deformities such as ulnar deviation of the fingers and subluxation.
+*   **Gamekeeper's Thumb (Skier's Thumb):** An injury to the ulnar collateral ligament of the first MCP joint, typically caused by forced abduction and hyperextension of the thumb. It results in instability of the thumb and impaired pinch strength.
+*   **Trigger Finger (Stenosing Tenosynovitis):** While primarily affecting the flexor tendons and their sheaths, the symptoms often manifest as difficulty flexing and extending the MCP joint, with a painful snapping sensation.
+
+## The Interphalangeal (IP) Joints
+
+The interphalangeal (IP) joints are the articulations between the phalanges of the fingers and thumb. These are hinge-type synovial joints, allowing primarily for flexion and extension. Each finger (digits II-V) has two IP joints: a proximal interphalangeal (PIP) joint and a distal interphalangeal (DIP) joint. The thumb (digit I) has only one IP joint.
+
+### Proximal Interphalangeal (PIP) Joints
+
+*   **Type:** Hinge-type synovial joint.
+*   **Articulating Bones:**
+    *   **Heads of the Proximal Phalanges:** The distal ends of the first set of finger bones.
+    *   **Bases of the Middle Phalanges:** The proximal ends of the second set of finger bones.
+*   **Ligaments:** Strengthened by palmar (volar) ligaments and collateral ligaments, similar to the MCP joints, which prevent hyperextension and provide stability.
+*   **Movements:** Flexion and Extension.
+
+### Distal Interphalangeal (DIP) Joints
+
+*   **Type:** Hinge-type synovial joint.
+*   **Articulating Bones:**
+    *   **Heads of the Middle Phalanges:** The distal ends of the second set of finger bones.
+    *   **Bases of the Distal Phalanges:** The proximal ends of the third set of finger bones.
+*   **Ligaments:** Also strengthened by palmar (volar) ligaments and collateral ligaments.
+*   **Movements:** Flexion and Extension.
+
+### Interphalangeal (IP) Joint of the Thumb
+
+*   **Type:** Hinge-type synovial joint.
+*   **Articulating Bones:**
+    *   **Head of the Proximal Phalanx of the Thumb:** The distal end of the first phalanx of the thumb.
+    *   **Base of the Distal Phalanx of the Thumb:** The proximal end of the second phalanx of the thumb.
+*   **Ligaments:** Strengthened by palmar (volar) ligaments and collateral ligaments.
+*   **Movements:** Flexion and Extension.
+
+### Clinical Correlates
+
+*   **Mallet Finger:** An injury to the extensor tendon at the DIP joint, causing the distal phalanx to remain in a flexed position. It typically occurs when a force suddenly flexes the extended fingertip.
+*   **Boutonnière Deformity:** A deformity of the finger characterized by flexion of the PIP joint and hyperextension of the DIP joint. It results from damage to the central slip of the extensor tendon at the PIP joint.
+*   **Swan Neck Deformity:** A deformity of the finger characterized by hyperextension of the PIP joint and flexion of the DIP joint. It is often associated with rheumatoid arthritis or other conditions affecting the tendons and ligaments of the hand.
+*   **Osteoarthritis:** The IP joints, particularly the DIP joints, are common sites for osteoarthritis, leading to pain, stiffness, and the formation of bony enlargements (Heberden's nodes at DIP, Bouchard's nodes at PIP).
+*   **Phalangeal Fractures:** Common injuries to the bones of the fingers and thumb, often involving the IP joints. Proper management is crucial to maintain joint function and prevent deformities.
+
+## Conclusion
+
+The joints of the upper limb are a testament to the intricate design of the human musculoskeletal system, enabling a remarkable spectrum of movements from the broad strokes of the shoulder to the delicate manipulations of the fingers. Each joint, with its unique anatomical structure, ligamentous support, and range of motion, plays a critical role in the overall function and versatility of the upper limb.
+
+A comprehensive understanding of these joints—their articulating surfaces, stabilizing ligaments, and the movements they permit—is indispensable for medical students and practitioners. This knowledge forms the bedrock for diagnosing and managing a wide array of musculoskeletal conditions, from traumatic injuries and degenerative diseases to inflammatory arthropathies.
+
+By integrating detailed anatomical descriptions with clinical correlates and illustrative diagrams, these notes aim to provide a clear and practical resource for mastering the complex yet fascinating anatomy of the upper limb joints. This foundational knowledge will undoubtedly enhance your ability to approach clinical scenarios with confidence and precision.
+
+## References
+
+1.  TeachMeAnatomy. (n.d.). *Joints of the Upper Limb*. Retrieved from [https://teachmeanatomy.info/upper-limb/joints/](https://teachmeanatomy.info/upper-limb/joints/)
+2.  Kenhub. (n.d.). *Joints and ligaments of the upper limb: Anatomy*. Retrieved from [https://www.kenhub.com/en/library/anatomy/ligaments-of-the-upper-limb](https://www.kenhub.com/en/library/anatomy/ligaments-of-the-upper-limb)
+3.  Snell, R. S. (2012). *Clinical Anatomy by Regions* (9th ed.). Lippincott Williams & Wilkins. (General reference for anatomical details and clinical correlates)
+
+![Upper Limb Joints](https://private-us-east-1.manuscdn.com/sessionFile/tLs8MBWVCYc2bO14mZmVkN/sandbox/gd8NNMP4h4ZZr13cXDLtLq-images_1751255765425_na1fn_L2hvbWUvdWJ1bnR1L3VwcGVyX2xpbWJfam9pbnRz.png?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9wcml2YXRlLXVzLWVhc3QtMS5tYW51c2Nkbi5jb20vc2Vzc2lvbkZpbGUvdExzOE1CV1ZDWWMyYk8xNG1abVZrTi9zYW5kYm94L2dkOE5OTVA0aDRaWnIxM2NYREx0THEtaW1hZ2VzXzE3NTEyNTU3NjU0MjVfbmExZm5fTDJodmJXVXZkV0oxYm5SMUwzVndjR1Z5WDJ4cGJXSmZhbTlwYm5Sei5wbmciLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE3NjcyMjU2MDB9fX1dfQ__&Key-Pair-Id=K2HSFNDJXOU9YS&Signature=ZRMb1wOxJMOCvdonlXfD0fDDnVYquxyv3uWjltWc0IGjSM52DsoafHwYCihV9ArMhoPmdmmsRexa4Ra3ez1ArkWGR0k~zIwyH-vFFK~itgcpGprVRQntH0qUljw8NR0HWZMTRof5PciuO0O4tfxZMqxo3IeznKvfO2RujpBmS2dvuaj8LtJkNySiPeSD4Dt44HmxWOQ6ZqwUcOyO-yAxIFfkbzo1PWBYN0PFSR-sULWDqeu9YphN1OGQhme34A6QAqwWqFtu2NVFG~FQv4~lnHCE5shyhIE-~MSyPeIA-xj89xPbj9PLdeV5AbGDe7ZzVsREpqZ9BzTSxTfqi5rnxA__)`
         },
         {
           id: 'pectoral-region',
@@ -3557,1724 +3976,4 @@ The cardiovascular system consists of the heart and blood vessels, each with dis
       </div>
     </div>
   );
-}
-
-      ]
-
-    },
-
-    {
-
-      id: 4,
-
-      name: 'Abdomen',
-
-      category: 'Anatomy',
-
-      type: 'gross_anatomy',
-
-      content: `# Abdomen - Overview
-
-
-
-The abdomen contains digestive organs, kidneys, and major blood vessels. Select a subtopic below to study specific abdominal structures in detail.`,
-
-      accessTier: 'free',
-
-      lastUpdated: '2024-01-11',
-
-      subtopics: [
-
-        {
-
-          id: 'anterior-wall',
-
-          name: 'Anterior Abdominal Wall',
-
-          description: 'Abdominal muscles and fascial layers'
-
-        },
-
-        {
-
-          id: 'inguinal-region',
-
-          name: 'Inguinal Region and Inguinal Canal',
-
-          description: 'Groin anatomy and hernia sites'
-
-        },
-
-        {
-
-          id: 'peritoneum',
-
-          name: 'Peritoneum and Peritoneal Cavity',
-
-          description: 'Abdominal lining and cavity'
-
-        },
-
-        {
-
-          id: 'stomach',
-
-          name: 'Stomach',
-
-          description: 'Gastric anatomy and relations'
-
-        },
-
-        {
-
-          id: 'intestines',
-
-          name: 'Small and Large Intestines',
-
-          description: 'Bowel anatomy and blood supply'
-
-        },
-
-        {
-
-          id: 'liver-biliary',
-
-          name: 'Liver and Biliary Apparatus',
-
-          description: 'Liver lobes and bile drainage'
-
-        },
-
-        {
-
-          id: 'pancreas',
-
-          name: 'Pancreas',
-
-          description: 'Pancreatic anatomy and ducts'
-
-        },
-
-        {
-
-          id: 'spleen',
-
-          name: 'Spleen',
-
-          description: 'Splenic anatomy and functions'
-
-        },
-
-        {
-
-          id: 'kidneys-adrenals',
-
-          name: 'Kidneys and Suprarenal Glands',
-
-          description: 'Renal anatomy and adrenal glands'
-
-        },
-
-        {
-
-          id: 'aorta-ivc',
-
-          name: 'Abdominal Aorta and IVC',
-
-          description: 'Major abdominal blood vessels'
-
-        },
-
-        {
-
-          id: 'lumbar-plexus',
-
-          name: 'Lumbar Plexus',
-
-          description: 'Nerve network in posterior abdomen'
-
-        },
-
-        {
-
-          id: 'posterior-wall',
-
-          name: 'Posterior Abdominal Wall',
-
-          description: 'Retroperitoneal muscles and structures'
-
-        },
-
-        {
-
-          id: 'abdomen-surface',
-
-          name: 'Surface Anatomy of the Abdomen',
-
-          description: 'Clinical regions and examination'
-
-        }
-
-      ]
-
-    },
-
-    {
-
-      id: 5,
-
-      name: 'Pelvis and Perineum',
-
-      category: 'Anatomy',
-
-      type: 'gross_anatomy',
-
-      content: `# Pelvis and Perineum - Overview
-
-
-
-The pelvis contains reproductive organs, bladder, rectum, and supporting structures. Select a subtopic below to study specific pelvic and perineal anatomy in detail.`,
-
-      accessTier: 'free',
-
-      subtopics: [
-
-        {
-
-          id: 'pelvic-bones',
-
-          name: 'Bones and Joints of the Pelvis',
-
-          description: 'Hip bone, sacrum, coccyx, and pelvic joints'
-
-        },
-
-        {
-
-          id: 'pelvic-diaphragm',
-
-          name: 'Pelvic Diaphragm and Muscles',
-
-          description: 'Levator ani and pelvic floor muscles'
-
-        },
-
-        {
-
-          id: 'bladder-urethra',
-
-          name: 'Urinary Bladder and Urethra',
-
-          description: 'Urinary system anatomy'
-
-        },
-
-        {
-
-          id: 'rectum-anal',
-
-          name: 'Rectum and Anal Canal',
-
-          description: 'Terminal digestive tract structures'
-
-        },
-
-        {
-
-          id: 'male-genitals',
-
-          name: 'Male Internal Genital Organs',
-
-          description: 'Prostate, seminal vesicles, vas deferens'
-
-        },
-
-        {
-
-          id: 'female-genitals',
-
-          name: 'Female Internal Genital Organs',
-
-          description: 'Uterus, tubes, ovaries, vagina'
-
-        },
-
-        {
-
-          id: 'perineum-subdivisions',
-
-          name: 'Perineum and its Subdivisions',
-
-          description: 'Urogenital and anal triangles'
-
-        },
-
-        {
-
-          id: 'urogenital-triangle',
-
-          name: 'Urogenital Triangle',
-
-          description: 'Anterior perineal anatomy'
-
-        },
-
-        {
-
-          id: 'anal-triangle',
-
-          name: 'Anal Triangle',
-
-          description: 'Posterior perineal anatomy'
-
-        },
-
-        {
-
-          id: 'pelvic-vessels-nerves',
-
-          name: 'Blood Vessels and Nerves of the Pelvis',
-
-          description: 'Pelvic circulation and innervation'
-
-        },
-
-        {
-
-          id: 'pelvis-surface',
-
-          name: 'Surface Anatomy of the Pelvis and Perineum',
-
-          description: 'Clinical landmarks and examination'
-
-        }
-
-      ],
-
-      lastUpdated: '2024-01-09'
-
-    },
-
-    {
-
-      id: 6,
-
-      name: 'Lower Limb',
-
-      category: 'Anatomy',
-
-      type: 'gross_anatomy',
-
-      content: `# Lower Limb - Overview
-
-
-
-The lower limb is designed for weight-bearing, locomotion, and stability. Select a subtopic below to study specific lower limb anatomical structures in detail.`,
-
-      accessTier: 'free',
-
-      subtopics: [
-
-        {
-
-          id: 'lower-limb-bones',
-
-          name: 'Bones of the Lower Limb',
-
-          description: 'Hip bone, femur, tibia, fibula, foot bones'
-
-        },
-
-        {
-
-          id: 'lower-limb-joints',
-
-          name: 'Joints of the Lower Limb',
-
-          description: 'Hip, knee, ankle, foot joints'
-
-        },
-
-        {
-
-          id: 'gluteal-region',
-
-          name: 'Gluteal Region',
-
-          description: 'Gluteal muscles and sciatic nerve'
-
-        },
-
-        {
-
-          id: 'thigh-compartments',
-
-          name: 'Thigh (Anterior, Medial, and Posterior Compartments)',
-
-          description: 'Thigh muscle compartments and femoral triangle'
-
-        },
-
-        {
-
-          id: 'popliteal-fossa',
-
-          name: 'Popliteal Fossa',
-
-          description: 'Posterior knee anatomy'
-
-        },
-
-        {
-
-          id: 'leg-compartments',
-
-          name: 'Leg (Anterior, Lateral, and Posterior Compartments)',
-
-          description: 'Lower leg muscle compartments'
-
-        },
-
-        {
-
-          id: 'foot-anatomy',
-
-          name: 'Foot (Dorsum and Sole)',
-
-          description: 'Foot muscles, arches, and weight-bearing'
-
-        },
-
-        {
-
-          id: 'lower-limb-vessels',
-
-          name: 'Arteries, Veins, and Lymphatics',
-
-          description: 'Lower limb circulation and drainage'
-
-        },
-
-        {
-
-          id: 'lower-limb-innervation',
-
-          name: 'Cutaneous Innervation',
-
-          description: 'Skin sensation and nerve territories'
-
-        },
-
-        {
-
-          id: 'lower-limb-surface',
-
-          name: 'Surface Anatomy of the Lower Limb',
-
-          description: 'Clinical landmarks and examination'
-
-        }
-
-      ],
-
-      lastUpdated: '2024-01-08'
-
-    },
-
-    {
-
-      id: 7,
-
-      name: 'Neuroanatomy',
-
-      category: 'Anatomy',
-
-      type: 'gross_anatomy',
-
-      content: `# Neuroanatomy - Overview
-
-
-
-The nervous system controls and coordinates body functions through complex neural networks. Select a subtopic below to study specific neuroanatomical structures in detail.`,
-
-      accessTier: 'free',
-
-      subtopics: [
-
-        {
-
-          id: 'nervous-system-organization',
-
-          name: 'Organization of the Nervous System',
-
-          description: 'Central, peripheral, autonomic, and somatic divisions'
-
-        },
-
-        {
-
-          id: 'meninges-csf',
-
-          name: 'Meninges and Cerebrospinal Fluid',
-
-          description: 'Brain coverings and CSF circulation'
-
-        },
-
-        {
-
-          id: 'spinal-cord',
-
-          name: 'Spinal Cord (Gross Anatomy, Tracts, Blood Supply)',
-
-          description: 'Spinal cord structure, pathways, and vascularization'
-
-        },
-
-        {
-
-          id: 'brainstem',
-
-          name: 'Brainstem (Medulla, Pons, Midbrain)',
-
-          description: 'Brainstem components and functions'
-
-        },
-
-        {
-
-          id: 'cerebellum',
-
-          name: 'Cerebellum',
-
-          description: 'Balance, coordination, and motor learning'
-
-        },
-
-        {
-
-          id: 'diencephalon',
-
-          name: 'Diencephalon (Thalamus, Hypothalamus)',
-
-          description: 'Thalamus, hypothalamus, and related structures'
-
-        },
-
-        {
-
-          id: 'cerebral-hemispheres',
-
-          name: 'Cerebral Hemispheres (Lobes, Functional Areas)',
-
-          description: 'Cortical lobes and functional regions'
-
-        },
-
-        {
-
-          id: 'basal-ganglia',
-
-          name: 'Basal Ganglia',
-
-          description: 'Motor control and movement disorders'
-
-        },
-
-        {
-
-          id: 'limbic-system',
-
-          name: 'Limbic System',
-
-          description: 'Memory, emotion, and behavior circuits'
-
-        },
-
-        {
-
-          id: 'cranial-nerves',
-
-          name: 'Cranial Nerves',
-
-          description: 'Twelve cranial nerves and their functions'
-
-        },
-
-        {
-
-          id: 'autonomic-nervous-system',
-
-          name: 'Autonomic Nervous System',
-
-          description: 'Sympathetic and parasympathetic divisions'
-
-        },
-
-        {
-
-          id: 'brain-ventricles',
-
-          name: 'Ventricles of the Brain',
-
-          description: 'CSF-filled spaces and circulation'
-
-        },
-
-        {
-
-          id: 'arterial-supply',
-
-          name: 'Arterial Supply (Circle of Willis)',
-
-          description: 'Brain blood supply and vascular territories'
-
-        },
-
-        {
-
-          id: 'venous-drainage',
-
-          name: 'Venous Drainage (Dural Sinuses)',
-
-          description: 'Brain venous system and dural sinuses'
-
-        }
-
-      ],
-
-      lastUpdated: '2024-01-07'
-
-    },
-
-    {
-
-      id: 8,
-
-      name: 'Cardiovascular Histology',
-
-      category: 'Anatomy',
-
-      type: 'histology',
-
-      content: `# Cardiovascular Histology
-
-
-
-## Overview
-
-The cardiovascular system consists of the heart and blood vessels, each with distinct histological features adapted to their functions.
-
-
-
-## Heart Histology
-
-
-
-### Cardiac Muscle
-
-- <strong>Cardiomyocytes</strong>: Specialized muscle cells with intercalated discs
-
-- <strong>Intercalated discs</strong>: Cell junctions containing gap junctions and desmosomes
-
-- <strong>T-tubules</strong>: Allow rapid depolarization throughout the cell
-
-- <strong>Abundant mitochondria</strong>: Support high energy demands
-
-
-
-### Heart Layers
-
-- <strong>Epicardium</strong>: Outer layer (visceral pericardium)
-
-- <strong>Myocardium</strong>: Middle muscular layer
-
-- <strong>Endocardium</strong>: Inner lining, continuous with blood vessel endothelium
-
-
-
-## Blood Vessel Histology
-
-
-
-### Arteries
-
-- <strong>Tunica intima</strong>: Endothelium and internal elastic lamina
-
-- <strong>Tunica media</strong>: Smooth muscle and elastic fibers
-
-- <strong>Tunica adventitia</strong>: Connective tissue and vasa vasorum
-
-
-
-### Capillaries
-
-- <strong>Continuous capillaries</strong>: Tight junctions, blood-brain barrier
-
-- <strong>Fenestrated capillaries</strong>: Pores for filtration (kidneys, endocrine glands)
-
-- <strong>Sinusoidal capillaries</strong>: Large gaps for cell passage (liver, spleen)
-
-
-
-### Veins
-
-- <strong>Thinner walls</strong>: Less smooth muscle than arteries
-
-- <strong>Valves</strong>: Prevent backflow in larger veins
-
-- <strong>Larger lumens</strong>: Accommodate blood return to heart
-
-
-
-## Specialized Structures
-
-- <strong>Cardiac conduction system</strong>: Modified cardiac muscle cells
-
-- <strong>Baroreceptors</strong>: Pressure sensors in vessel walls
-
-- <strong>Lymphatic vessels</strong>: One-way drainage system
-
-
-
-## Pathological Changes
-
-- <strong>Atherosclerosis</strong>: Plaque formation in arteries
-
-- <strong>Hypertrophy</strong>: Enlarged cardiac muscle
-
-- <strong>Thrombosis</strong>: Blood clot formation`,
-
-      accessTier: 'premium',
-
-      lastUpdated: '2024-01-12'
-
-    }
-
-  ];
-
-
-
-  const canAccessContent = (accessTier: 'free' | 'starter' | 'premium') => {
-
-    if (accessTier === 'free') return true;
-
-    if (accessTier === 'starter') return ['starter', 'premium'].includes(userTier);
-
-    if (accessTier === 'premium') return userTier === 'premium';
-
-    return false;
-
-  };
-
-
-
-  const getAccessBadge = (tier: 'free' | 'starter' | 'premium') => {
-
-    switch (tier) {
-
-      case 'premium':
-
-        return <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold">Premium</Badge>;
-
-      case 'starter':
-
-        return <Badge className="bg-primary text-white font-semibold">Starter</Badge>;
-
-      default:
-
-        return <Badge variant="outline" className="font-semibold">Free</Badge>;
-
-    }
-
-  };
-
-
-
-  const filteredTopics = anatomyTopics.filter(topic =>
-
-    topic.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-
-    topic.type === activeTab
-
-  );
-
-
-
-  // Handle subtopic view
-
-  if (selectedSubtopic) {
-
-    return (
-
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800">
-
-        <div className="max-w-5xl mx-auto py-8 px-4">
-
-          {/* Header */}
-
-          <div className="flex items-center justify-between mb-8">
-
-            <Button 
-
-              variant="ghost" 
-
-              onClick={() => setSelectedSubtopic(null)}
-
-              className="hover:bg-primary/10 transition-colors"
-
-            >
-
-              <ArrowLeft className="mr-2" size={18} />
-
-              <span className="font-medium">Back to {selectedTopic?.name}</span>
-
-            </Button>
-
-          </div>
-
-
-
-          {/* Subtopic Content */}
-
-          <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-
-            <CardHeader className="bg-gradient-to-r from-primary to-blue-600 text-white rounded-t-lg">
-
-              <div className="flex items-center space-x-3">
-
-                <BookOpen className="h-8 w-8" />
-
-                <div>
-
-                  <CardTitle className="text-3xl font-bold">
-
-                    {selectedSubtopic.name}
-
-                  </CardTitle>
-
-                  {selectedSubtopic.description && (
-
-                    <p className="text-blue-100 text-lg mt-2 font-medium">
-
-                      {selectedSubtopic.description}
-
-                    </p>
-
-                  )}
-
-                </div>
-
-              </div>
-
-            </CardHeader>
-
-            <CardContent className="p-8">
-
-              {selectedSubtopic.content ? (
-
-                <div className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-headings:font-bold prose-h1:text-4xl prose-h1:mb-6 prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-4 prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-3 prose-p:text-gray-700 prose-p:leading-relaxed prose-strong:text-primary prose-strong:font-bold prose-ul:text-gray-700 prose-li:mb-2">
-
-                  <div dangerouslySetInnerHTML={{ __html: selectedSubtopic.content.replace(/\n/g, '<br/>') }} />
-
-                </div>
-
-              ) : (
-
-                <div className="text-center py-16">
-
-                  <div className="bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
-
-                    <BookOpen className="h-12 w-12 text-primary" />
-
-                  </div>
-
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3">
-
-                    Content Coming Soon
-
-                  </h3>
-
-                  <p className="text-gray-600 text-lg max-w-md mx-auto">
-
-                    This subtopic content is being developed. Check back soon for comprehensive, detailed notes.
-
-                  </p>
-
-                </div>
-
-              )}
-
-            </CardContent>
-
-          </Card>
-
-        </div>
-
-      </div>
-
-    );
-
-  }
-
-
-
-  if (selectedTopic) {
-
-    return (
-
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800">
-
-        <div className="max-w-6xl mx-auto py-8 px-4">
-
-          {/* Header */}
-
-          <div className="flex items-center justify-between mb-8">
-
-            <Button 
-
-              variant="ghost" 
-
-              onClick={() => setSelectedTopic(null)}
-
-              className="hover:bg-primary/10 transition-colors"
-
-            >
-
-              <ArrowLeft className="mr-2" size={18} />
-
-              <span className="font-medium">Back to Categories</span>
-
-            </Button>
-
-            <div className="flex items-center space-x-4">
-
-              {getAccessBadge(selectedTopic.accessTier)}
-
-              <div className="flex items-center space-x-2 text-gray-600">
-
-                <Clock size={16} />
-
-                <span className="text-sm font-medium">
-
-                  Updated: {new Date(selectedTopic.lastUpdated).toLocaleDateString()}
-
-                </span>
-
-              </div>
-
-            </div>
-
-          </div>
-
-
-
-          {/* Topic Overview */}
-
-          <Card className="mb-8 shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-
-            <CardHeader className="bg-gradient-to-r from-primary to-blue-600 text-white rounded-t-lg">
-
-              <div className="flex items-center space-x-3">
-
-                <BookOpen className="h-10 w-10" />
-
-                <div>
-
-                  <CardTitle className="text-4xl font-bold">
-
-                    {selectedTopic.name}
-
-                  </CardTitle>
-
-                  <p className="text-blue-100 text-lg mt-2 font-medium">
-
-                    Comprehensive study materials for medical students
-
-                  </p>
-
-                </div>
-
-              </div>
-
-            </CardHeader>
-
-            <CardContent className="p-8">
-
-
-
-{canAccessContent(selectedTopic.accessTier) ? (
-
-                  <div className="formatted-content prose prose-lg max-w-none">
-
-                    <div 
-
-                      dangerouslySetInnerHTML={{ 
-
-                        __html: selectedTopic.content
-
-                          // Convert markdown headers with advanced styling
-
-                          .replace(/^### (.*$)/gim, '<h3 class="text-2xl font-black text-black mt-8 mb-4 border-l-4 border-black pl-4 bg-gradient-to-r from-gray-50 to-gray-100 py-3 rounded-r-lg shadow-lg">$1</h3>')
-
-                          .replace(/^## (.*$)/gim, '<h2 class="text-3xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent mt-10 mb-6 border-b-3 border-primary pb-3">$1</h2>')
-
-                          .replace(/^# (.*$)/gim, '<h1 class="text-4xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent mb-8 text-center">$1</h1>')
-
-
-
-                          // Enhanced bold text with medical theme colors - handle both ** and <strong> tags
-
-                          .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-blue-700 bg-gradient-to-r from-blue-50 to-blue-100 px-2 py-1 rounded-md border border-blue-200 shadow-sm">$1</strong>')
-
-                          .replace(/<strong>(.*?)<\/strong>/g, '<strong class="font-bold text-blue-700 bg-gradient-to-r from-blue-50 to-blue-100 px-2 py-1 rounded-md border border-blue-200 shadow-sm">$1</strong>')
-
-
-
-                          // Enhanced italic text with purple accent
-
-                          .replace(/\*(.*?)\*/g, '<em class="italic text-purple-700 font-semibold bg-purple-50 px-1 rounded">$1</em>')
-
-
-
-                          // Enhanced bullet points with medical theme
-
-                          .replace(/^\* (.*$)/gim, '<li class="ml-6 mb-4 text-gray-700 leading-relaxed pl-4 border-l-3 border-blue-300 bg-gradient-to-r from-blue-50 to-white py-2 rounded-r-md hover:from-blue-100 hover:to-blue-50 transition-all duration-200 relative"><span class="absolute -left-2 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-blue-500 rounded-full"></span>$1</li>')
-
-
-
-                          // Enhanced numbered lists
-
-                          .replace(/^(\d+)\. (.*$)/gim, '<li class="ml-6 mb-4 text-gray-700 leading-relaxed pl-4 bg-gradient-to-r from-gray-50 to-white py-2 rounded-md border border-gray-200"><span class="font-bold text-primary mr-3 bg-primary text-white px-2 py-1 rounded-full text-sm">$1</span>$2</li>')
-
-
-
-                          // Special formatting for anatomical terms and important medical concepts
-
-                          .replace(/(Clavicle|Scapula|Humerus|Radius|Ulna|Anatomy|Physiology|Clinical)/gi, '<span class="font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded border border-orange-200">$1</span>')
-
-
-
-                          // Format special medical abbreviations
-
-                          .replace(/\b([A-Z]{2,})\b/g, '<span class="font-semibold text-green-600 bg-green-50 px-1 rounded text-sm">$1</span>')
-
-
-
-                          // Add spacing and improved paragraph formatting
-
-                          .replace(/\n\n/g, '</p><p class="mb-6 leading-relaxed text-gray-700 text-justify">')
-
-                          .replace(/\n/g, '<br/>')
-
-
-
-                          // Wrap content in well-formatted paragraphs
-
-                          .replace(/^(?!<[h|l|d])(.+)/gm, '<p class="mb-6 leading-relaxed text-gray-700 text-justify">$1</p>')
-
-
-
-                          // Clean up any empty paragraphs
-
-                          .replace(/<p class="mb-6 leading-relaxed text-gray-700 text-justify"><\/p>/g, '')
-
-
-
-                          // Add special formatting for section breaks
-
-                          .replace(/---/g, '<hr class="my-8 border-0 h-1 bg-gradient-to-r from-primary to-blue-600 rounded-full opacity-30" />')
-
-                      }} 
-
-                    />
-
-                  </div>
-
-                ) : (
-
-                  <div className="text-center py-16">
-
-                    <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
-
-                      <Lock className="h-12 w-12 text-purple-600" />
-
-                    </div>
-
-                    <h3 className="text-2xl font-bold text-gray-900 mb-3">
-
-                      Premium Content
-
-                    </h3>
-
-                    <p className="text-gray-600 text-lg mb-6 max-w-md mx-auto">
-
-                      This content requires a {selectedTopic.accessTier} subscription to access comprehensive study materials.
-
-                    </p>
-
-                    <Link href="/pricing">
-
-                      <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-pink-500 hover:to-purple-500 text-white font-semibold px-8 py-3 text-lg">
-
-                        <Star className="mr-2 h-5 w-5" />
-
-                        Upgrade Now
-
-                      </Button>
-
-                    </Link>
-
-                  </div>
-
-                )}
-
-            </CardContent>
-
-          </Card>
-
-
-
-          {/* Subtopics Grid */}
-
-          {selectedTopic.subtopics && (
-
-            <div>
-
-              <div className="flex items-center space-x-3 mb-6">
-
-                <div className="bg-gradient-to-r from-primary to-blue-600 rounded-full p-2">
-
-                  <Users className="h-6 w-6 text-white" />
-
-                </div>
-
-                <h3 className="text-3xl font-bold text-gray-900">
-
-                  Study Topics ({selectedTopic.subtopics.length})
-
-                </h3>
-
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-                {selectedTopic.subtopics.map((subtopic, index) => (
-
-                  <Card 
-
-                    key={subtopic.id} 
-
-                    className="group cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-0 bg-white/80 backdrop-blur-sm overflow-hidden"
-
-                    onClick={() => setSelectedSubtopic(subtopic)}
-
-                  >
-
-                    <CardHeader className="pb-4 relative">
-
-                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-blue-600"></div>
-
-                      <div className="flex items-start justify-between">
-
-                        <div className="flex-1">
-
-                          <CardTitle className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors line-clamp-2">
-
-                            {subtopic.name}
-
-                          </CardTitle>
-
-                          {subtopic.description && (
-
-                            <p className="text-gray-600 text-sm mt-2 line-clamp-3 leading-relaxed">
-
-                              {subtopic.description}
-
-                            </p>
-
-                          )}
-
-                        </div>
-
-                        <Badge variant="secondary" className="ml-2 font-semibold">
-
-                          #{index + 1}
-
-                        </Badge>
-
-                      </div>
-
-                    </CardHeader>
-
-                    <CardContent className="pt-0">
-
-                      <Button 
-
-                        className="w-full bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary text-white font-semibold transition-all duration-300 group-hover:shadow-lg"
-
-                        size="sm"
-
-                      >
-
-                        <BookOpen className="mr-2 h-4 w-4" />
-
-                        Study This Topic
-
-                      </Button>
-
-                    </CardContent>
-
-                  </Card>
-
-                ))}
-
-              </div>
-
-            </div>
-
-          )}
-
-
-
-          {/* Traditional Content Display for topics without subtopics */}
-
-          {!selectedTopic.subtopics && (
-
-            <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-
-              <CardHeader className="bg-gradient-to-r from-primary to-blue-600 text-white rounded-t-lg">
-
-                <CardTitle className="text-3xl font-bold">
-
-                  {selectedTopic.name}
-
-                </CardTitle>
-
-              </CardHeader>
-
-              <CardContent className="p-8">
-
-                {canAccessContent(selectedTopic.accessTier) ? (
-
-                  <div className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-headings:font-bold prose-p:text-gray-700 prose-p:leading-relaxed">
-
-                    <div className="whitespace-pre-wrap">
-
-                      {selectedTopic.content}
-
-                    </div>
-
-                  </div>
-
-                ) : (
-
-                  <div className="text-center py-16">
-
-                    <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
-
-                      <Lock className="h-12 w-12 text-purple-600" />
-
-                    </div>
-
-                    <h3 className="text-2xl font-bold text-gray-900 mb-3">
-
-                      Premium Content
-
-                    </h3>
-
-                    <p className="text-gray-600 text-lg mb-6 max-w-md mx-auto">
-
-                      This content requires a {selectedTopic.accessTier} subscription to access comprehensive study materials.
-
-                    </p>
-
-                    <Link href="/pricing">
-
-                      <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-pink-500 hover:to-purple-500 text-white font-semibold px-8 py-3 text-lg">
-
-                        <Star className="mr-2 h-5 w-5" />
-
-                        Upgrade Now
-
-                      </Button>
-
-                    </Link>
-
-                  </div>
-
-                )}
-
-              </CardContent>
-
-            </Card>
-
-          )}
-
-        </div>
-
-      </div>
-
-    );
-
-  }
-
-
-
-  if (selectedCategory) {
-
-    return (
-
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800">
-
-      <div className="max-w-7xl mx-auto py-8 px-4">
-
-          {/* Header */}
-
-          <div className="flex items-center justify-between mb-8">
-
-            <div className="flex items-center space-x-4">
-
-              <Button 
-
-                variant="ghost" 
-
-                onClick={() => setSelectedCategory(null)}
-
-                className="hover:bg-primary/10 transition-colors"
-
-              >
-
-                <ArrowLeft className="mr-2" size={18} />
-
-                <span className="font-medium">Back to Categories</span>
-
-              </Button>
-
-              <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 shadow-lg">
-
-                <h1 className="text-3xl font-bold text-gray-900">{selectedCategory.name} Notes</h1>
-
-                <p className="text-gray-600 font-medium">{selectedCategory.description}</p>
-
-              </div>
-
-            </div>
-
-          </div>
-
-
-
-          {/* Search */}
-
-          <Card className="mb-8 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-
-            <CardContent className="p-6">
-
-              <div className="relative">
-
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-
-                <Input
-
-                  placeholder="Search topics..."
-
-                  value={searchQuery}
-
-                  onChange={(e) => setSearchQuery(e.target.value)}
-
-                  className="pl-12 h-12 text-lg border-2 border-gray-200 focus:border-primary transition-colors"
-
-                />
-
-              </div>
-
-            </CardContent>
-
-          </Card>
-
-
-
-          {/* Topic Type Tabs */}
-
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
-
-            <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-
-              <CardContent className="p-6">
-
-                <TabsList className="grid w-full grid-cols-3 gap-4 bg-gray-100 p-2 rounded-lg">
-
-                  <TabsTrigger 
-
-                    value="gross_anatomy" 
-
-                    className="flex items-center space-x-3 data-[state=active]:bg-primary data-[state=active]:text-white font-semibold py-3 px-6 transition-all"
-
-                  >
-
-                    <Bone size={20} />
-
-                    <span>Gross Anatomy</span>
-
-                  </TabsTrigger>
-
-                  <TabsTrigger 
-
-                    value="histology" 
-
-                    className="flex items-center space-x-3 data-[state=active]:bg-primary data-[state=active]:text-white font-semibold py-3 px-6 transition-all"
-
-                  >
-
-                    <Microscope size={20} />
-
-                    <span>Histology</span>
-
-                  </TabsTrigger>
-
-                  <TabsTrigger 
-
-                    value="embryology" 
-
-                    className="flex items-center space-x-3 data-[state=active]:bg-primary data-[state=active]:text-white font-semibold py-3 px-6 transition-all"
-
-                  >
-
-                    <Baby size={20} />
-
-                    <span>Embryology</span>
-
-                  </TabsTrigger>
-
-                </TabsList>
-
-
-
-                <TabsContent value={activeTab} className="mt-8">
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-                    {filteredTopics.map((topic) => (
-
-                      <Card 
-
-                        key={topic.id}
-
-                        className="group cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-0 bg-white/90 backdrop-blur-sm overflow-hidden"
-
-                        onClick={() => setSelectedTopic(topic)}
-
-                      >
-
-                        <CardHeader className="relative">
-
-                          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-blue-600"></div>
-
-                          <div className="flex items-center justify-between mb-2">
-
-                            <CardTitle className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors">
-
-                              {topic.name}
-
-                            </CardTitle>
-
-                            {!canAccessContent(topic.accessTier) && (
-
-                              <Lock className="text-gray-400" size={16} />
-
-                            )}
-
-                          </div>
-
-                          <div className="flex items-center justify-between">
-
-                            {getAccessBadge(topic.accessTier)}
-
-                            <div className="flex items-center space-x-1 text-gray-500">
-
-                              <Clock size={12} />
-
-                              <span className="text-xs font-medium">
-
-                                {new Date(topic.lastUpdated).toLocaleDateString()}
-
-                              </span>
-
-                            </div>
-
-                          </div>
-
-                        </CardHeader>
-
-                        <CardContent>
-
-                          <p className="text-gray-600 text-sm line-clamp-3 mb-4 leading-relaxed">
-
-                            {topic.content.substring(0, 120)}...
-
-                          </p>
-
-                          <Button 
-
-                            variant={canAccessContent(topic.accessTier) ? "default" : "outline"}
-
-                            size="sm" 
-
-                            className={`w-full font-semibold transition-all duration-300 ${
-
-                              canAccessContent(topic.accessTier) 
-
-                                ? 'bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary text-white group-hover:shadow-lg' 
-
-                                : 'hover:bg-gray-100'
-
-                            }`}
-
-                          >
-
-                            {canAccessContent(topic.accessTier) ? (
-
-                              <>
-
-                                <BookOpen className="mr-2 h-4 w-4" />
-
-                                Read More
-
-                              </>
-
-                            ) : (
-
-                              <>
-
-                                <Star className="mr-2 h-4 w-4" />
-
-                                Upgrade to Access
-
-                              </>
-
-                            )}
-
-                          </Button>
-
-                        </CardContent>
-
-                      </Card>
-
-                    ))}
-
-                  </div>
-
-
-
-                  {filteredTopics.length === 0 && (
-
-                    <div className="text-center py-16">
-
-                      <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
-
-                        <BookOpen className="h-12 w-12 text-gray-400" />
-
-                      </div>
-
-                      <h3 className="text-2xl font-bold text-gray-900 mb-3">
-
-                        No topics found
-
-                      </h3>
-
-                      <p className="text-gray-600 text-lg max-w-md mx-auto">
-
-                        Try adjusting your search or explore other categories.
-
-                      </p>
-
-                    </div>
-
-                  )}
-
-                </TabsContent>
-
-              </CardContent>
-
-            </Card>
-
-          </Tabs>
-
-        </div>
-
-      </div>
-
-    );
-
-  }
-
-
-
-  return (
-
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800">
-
-      <div className="max-w-7xl mx-auto py-12 px-4">
-
-        {/* Header */}
-
-        <div className="text-center mb-12">
-
-          <div className="flex items-center justify-center space-x-4 mb-6">
-
-            <img 
-
-              src="/DocDot Medical Student Logo.png" 
-
-              alt="DocDot Medical Student Logo" 
-
-              className="h-16 w-auto"
-
-            />
-
-            <div>
-
-              <h1 className="text-5xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-
-                Study Notes
-
-              </h1>
-
-              <p className="text-xl text-gray-600 font-medium mt-2">
-
-                Comprehensive medical education materials for ambitious students
-
-              </p>
-
-            </div>
-
-          </div>
-
-          <div className="flex items-center justify-center space-x-8 opacity-60">
-
-            <div className="flex items-center space-x-2">
-
-              <Star className="h-5 w-5 text-yellow-500" />
-
-              <span className="text-sm font-medium text-gray-600">Expert-Reviewed Content</span>
-
-            </div>
-
-            <div className="flex items-center space-x-2">
-
-              <Users className="h-5 w-5 text-blue-500" />
-
-              <span className="text-sm font-medium text-gray-600">Student-Friendly Format</span>
-
-            </div>
-
-            <div className="flex items-center space-x-2">
-
-              <Download className="h-5 w-5 text-green-500" />
-
-              <span className="text-sm font-medium text-gray-600">Always Updated</span>
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-
-        {/* Categories Grid */}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-
-          {categories.map((category) => {
-
-            const IconComponent = category.icon;
-
-            return (
-
-              <Card 
-
-                key={category.id}
-
-                className="group cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-0 bg-white/80 backdrop-blur-sm overflow-hidden"
-
-                onClick={() => setSelectedCategory(category)}
-
-              >
-
-                <CardHeader className="relative pb-6">
-
-                  <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary to-blue-600"></div>
-
-                  <div className="flex items-center space-x-6 mt-4">
-
-                    <div className={`p-4 rounded-2xl bg-gradient-to-br from-${category.color}-100 to-${category.color}-200 group-hover:from-${category.color}-200 group-hover:to-${category.color}-300 transition-all duration-300`}>
-
-                      <IconComponent className={`text-${category.color}-600 h-12 w-12`} />
-
-                    </div>
-
-                    <div className="flex-1">
-
-                      <CardTitle className="text-2xl font-bold text-gray-900 group-hover:text-primary transition-colors">
-
-                        {category.name}
-
-                      </CardTitle>
-
-                      <p className="text-gray-600 text-lg font-medium mt-1">
-
-                        {category.description}
-
-                      </p>
-
-                    </div>
-
-                  </div>
-
-                </CardHeader>
-
-                <CardContent>
-
-                  <div className="flex items-center justify-between">
-
-                    <div className="flex items-center space-x-2 text-gray-600">
-
-                      <BookOpen size={18} />
-
-                      <span className="font-semibold">{category.topicCount} topics available</span>
-
-                    </div>
-
-                    <Button 
-
-                      className="bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary text-white font-semibold px-6 py-2 transition-all duration-300 group-hover:shadow-lg"
-
-                      size="sm"
-
-                    >
-
-                      Explore Now
-
-                    </Button>
-
-                  </div>
-
-                </CardContent>
-
-              </Card>
-
-            );
-
-          })}
-
-        </div>
-
-      </div>
-
-    </div>
-
-  );
-
 }
