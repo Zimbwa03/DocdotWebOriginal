@@ -5,8 +5,10 @@ import { dbStorage, db, supabase } from "./db";
 import { sql, eq, desc, and } from 'drizzle-orm';
 import { insertQuizAttemptSchema, badges, userBadges, studyPlannerSessions, studyGroups, studyGroupMembers, meetingReminders, users, quizAttempts, userStats, quizzes, mcqQuestions, customExams, customExamStems, stemOptions, examGenerationHistory, lectures, lectureTranscripts, lectureNotes, lectureProcessingLogs } from "@shared/schema";
 import { geminiAI } from './gemini-ai';
+import { pdfGenerator } from './pdf-generator';
 import { v4 as uuidv4 } from "uuid";
 import { readFileSync } from "fs";
+import { join } from "path";
 import { resolve } from "path";
 
 // Using database storage for persistent user data
@@ -2869,6 +2871,106 @@ app.post("/api/study-groups", async (req, res) => {
     } catch (error) {
       console.error("Error saving transcript:", error);
       res.status(500).json({ error: "Failed to save transcript" });
+    }
+  });
+
+  // Generate PDF for lecture notes
+  app.post("/api/lectures/:id/generate-pdf", async (req, res) => {
+    try {
+      const lectureId = req.params.id;
+      
+      // Get lecture details
+      const [lecture] = await db.select().from(lectures)
+        .where(eq(lectures.id, lectureId));
+      
+      if (!lecture) {
+        return res.status(404).json({ error: "Lecture not found" });
+      }
+
+      // Get transcript and notes
+      const [transcript] = await db.select().from(lectureTranscripts)
+        .where(eq(lectureTranscripts.lectureId, lectureId))
+        .limit(1);
+      
+      const [notes] = await db.select().from(lectureNotes)
+        .where(eq(lectureNotes.lectureId, lectureId))
+        .limit(1);
+
+      if (!transcript || !notes) {
+        return res.status(400).json({ error: "Transcript or notes not found" });
+      }
+
+      // Generate PDF
+      const pdfPath = await pdfGenerator.generateLectureNotesPDF(
+        lecture.title,
+        lecture.module,
+        lecture.topic || '',
+        transcript.unifiedTranscript || transcript.rawTranscript || '',
+        notes.finalNotes || notes.liveNotes || '',
+        lecture.lecturer || '',
+        lecture.date?.toISOString()
+      );
+
+      // Return PDF file path for download
+      res.json({ 
+        success: true, 
+        pdfPath: pdfPath,
+        fileName: pdfPath.split('/').pop()
+      });
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      res.status(500).json({ error: "Failed to generate PDF" });
+    }
+  });
+
+  // Download PDF file
+  app.get("/api/lectures/:id/download-pdf", async (req, res) => {
+    try {
+      const lectureId = req.params.id;
+      
+      // Get lecture details
+      const [lecture] = await db.select().from(lectures)
+        .where(eq(lectures.id, lectureId));
+      
+      if (!lecture) {
+        return res.status(404).json({ error: "Lecture not found" });
+      }
+
+      // Get transcript and notes
+      const [transcript] = await db.select().from(lectureTranscripts)
+        .where(eq(lectureTranscripts.lectureId, lectureId))
+        .limit(1);
+      
+      const [notes] = await db.select().from(lectureNotes)
+        .where(eq(lectureNotes.lectureId, lectureId))
+        .limit(1);
+
+      if (!transcript || !notes) {
+        return res.status(400).json({ error: "Transcript or notes not found" });
+      }
+
+      // Generate PDF
+      const pdfPath = await pdfGenerator.generateLectureNotesPDF(
+        lecture.title,
+        lecture.module,
+        lecture.topic || '',
+        transcript.unifiedTranscript || transcript.rawTranscript || '',
+        notes.finalNotes || notes.liveNotes || '',
+        lecture.lecturer || '',
+        lecture.date?.toISOString()
+      );
+
+      // Set headers for PDF download
+      const fileName = pdfPath.split('/').pop() || 'lecture-notes.pdf';
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+      
+      // Send PDF file
+      const pdfBuffer = readFileSync(pdfPath);
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+      res.status(500).json({ error: "Failed to download PDF" });
     }
   });
 

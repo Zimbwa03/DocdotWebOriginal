@@ -87,7 +87,7 @@ ${transcript.substring(0, 300)}...
   }
 
   /**
-   * Generate comprehensive notes for manual generation (simplified)
+   * Generate comprehensive notes for manual generation with enhanced research integration
    */
   async generateComprehensiveNotes(transcript: string, module: string, topic?: string): Promise<string> {
     try {
@@ -112,55 +112,70 @@ Create detailed, structured notes that include:
 ## 🎯 Learning Objectives
 - [Extract and list the main learning objectives from the lecture]
 - [Key skills and knowledge students should gain]
+- [What students should be able to do after studying these notes]
 
 ## 📚 Core Concepts & Definitions
 - [Important medical terms and definitions mentioned in the lecture]
 - [Key concepts explained by the lecturer with clear explanations]
 - [Fundamental principles discussed]
+- [Essential knowledge for medical practice]
 
 ## 🔬 Detailed Content Analysis
 - [Main topics covered in detail during the lecture]
 - [Important explanations, examples, and case studies given]
 - [Step-by-step processes or procedures explained]
+- [Mechanisms and pathophysiology discussed]
 
 ## 🏥 Clinical Applications
 - [Practical applications discussed in the lecture]
 - [Clinical relevance and real-world examples]
 - [How concepts apply to medical practice]
+- [Diagnostic and treatment implications]
 
 ## 📖 Medical Terminology & Definitions
 - [All medical terms mentioned with clear definitions]
 - [Important abbreviations and their meanings]
 - [Technical language explained in simple terms]
+- [Etymology and word roots where relevant]
 
 ## 🔍 Research & Additional Context
 - [Add relevant medical research and current context]
 - [Important facts, statistics, and data mentioned]
 - [Current medical practices, guidelines, and standards]
 - [Recent developments in the field]
+- [Evidence-based medicine references]
 
 ## 📊 Key Information Tables
 - [Create tables for comparisons, classifications, or lists]
 - [Organize complex information in easy-to-read formats]
+- [Differential diagnoses, drug dosages, normal values]
 
 ## ⚠️ Important Points to Remember
 - [Critical information for exams and clinical practice]
 - [Common mistakes or misconceptions to avoid]
 - [Key facts that are frequently tested]
+- [Red flags and warning signs]
 
 ## 📝 Summary & Key Takeaways
 - [Main points to remember for exams]
 - [Critical information for medical practice]
 - [Action items for further study]
+- [Quick reference summary]
 
 ## 🔗 Related Topics & Further Reading
 - [Topics mentioned that relate to other medical subjects]
 - [Suggestions for additional study materials]
+- [Cross-references to other body systems]
 
 ## 📝 Exam Questions
 - [Generate 5 authentic exam questions based on this specific lecture content]
 - [Questions should test knowledge actually covered in this lecture]
 - [Include clinical scenarios and specific details mentioned]
+
+## 🎓 Study Tips
+- [Effective study strategies for this topic]
+- [Memory aids and mnemonics]
+- [Common exam patterns and question types]
 
 Format the notes professionally with:
 - Clear headings and subheadings
@@ -169,6 +184,7 @@ Format the notes professionally with:
 - Bold text for important terms
 - Emojis for visual organization
 - Professional medical writing style
+- Proper medical terminology usage
 
 Focus on:
 1. Exam preparation and clinical relevance
@@ -177,6 +193,8 @@ Focus on:
 4. Comprehensive coverage of all topics mentioned
 5. Additional research context where helpful
 6. Practical applications for medical students
+7. Integration with current medical knowledge
+8. Evidence-based information
 
 Make these notes the best possible study resource for University of Zimbabwe medical students.
 `;

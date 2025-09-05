@@ -196,22 +196,23 @@ export default function Record() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
     
-    // Configure recognition settings
-    recognition.continuous = true; // Keep listening
+    // Configure recognition settings for optimal lecture recording
+    recognition.continuous = true; // Keep listening continuously
     recognition.interimResults = true; // Show interim results
     recognition.lang = speechLanguage; // Use selected language
     recognition.maxAlternatives = 1;
+    recognition.interimResults = true; // Show interim results for better UX
     
     // Start recognition
     recognition.start();
     console.log('🎤 Real-time speech recognition started');
     
-    // Handle results
+    // Handle results with proper text accumulation
     recognition.onresult = (event) => {
       let interimTranscript = '';
       let finalTranscript = '';
       
-      // Process all results
+      // Process all results from the current event
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript;
         
@@ -222,37 +223,44 @@ export default function Record() {
         }
       }
       
-      // Update live transcript - keep all previous content and add new
-      const newTranscript = liveTranscript + finalTranscript;
-      setLiveTranscript(newTranscript + interimTranscript);
-      
-      // Debug: Log transcript content
-      console.log('📝 Final transcript added:', finalTranscript);
-      console.log('📝 Total transcript length:', newTranscript.length);
-      console.log('📝 Current transcript preview:', newTranscript.substring(0, 200));
-      
-      // Show generate button when we have substantial content
-      if (newTranscript.trim().length > 100) {
-        setShowGenerateButton(true);
-      }
-
-      // Auto-save transcript periodically (every 500 characters of new content)
-      if (finalTranscript.trim().length > 0 && newTranscript.length % 500 === 0) {
-        const currentLecture = lectures.find(l => l.status === 'recording');
-        if (currentLecture) {
-          saveLectureData(currentLecture.id, newTranscript, liveNotes);
+      // CRITICAL: Always accumulate text, never replace
+      setLiveTranscript(prevTranscript => {
+        const newAccumulatedTranscript = prevTranscript + finalTranscript;
+        
+        // Debug: Log transcript accumulation
+        console.log('📝 Final transcript added:', finalTranscript);
+        console.log('📝 Total accumulated length:', newAccumulatedTranscript.length);
+        console.log('📝 Current transcript preview:', newAccumulatedTranscript.substring(0, 200));
+        
+        // Show generate button when we have substantial content
+        if (newAccumulatedTranscript.trim().length > 100) {
+          setShowGenerateButton(true);
         }
-      }
+
+        // Auto-save transcript periodically (every 500 characters of new content)
+        if (finalTranscript.trim().length > 0 && newAccumulatedTranscript.length % 500 === 0) {
+          const currentLecture = lectures.find(l => l.status === 'recording');
+          if (currentLecture) {
+            saveLectureData(currentLecture.id, newAccumulatedTranscript, liveNotes);
+          }
+        }
+        
+        // Return the accumulated transcript with interim results
+        return newAccumulatedTranscript + interimTranscript;
+      });
     };
     
-    // Handle errors
+    // Handle errors with automatic restart for certain errors
     recognition.onerror = (event) => {
       console.error('Speech recognition error:', event.error);
       
       let errorMessage = 'Speech recognition error occurred';
+      let shouldRestart = false;
+      
       switch (event.error) {
         case 'no-speech':
           errorMessage = 'No speech detected. Please speak clearly.';
+          shouldRestart = true; // Restart for no-speech errors
           break;
         case 'audio-capture':
           errorMessage = 'Microphone not accessible. Please check permissions.';
@@ -262,22 +270,51 @@ export default function Record() {
           break;
         case 'network':
           errorMessage = 'Network error occurred during speech recognition.';
+          shouldRestart = true; // Restart for network errors
+          break;
+        case 'aborted':
+          // Recognition was aborted, don't show error
+          return;
+        case 'service-not-allowed':
+          errorMessage = 'Speech recognition service not allowed. Please check browser settings.';
           break;
       }
       
-      toast({
-        variant: "destructive",
-        title: "Speech Recognition Error",
-        description: errorMessage
-      });
+      if (event.error !== 'aborted') {
+        toast({
+          variant: "destructive",
+          title: "Speech Recognition Error",
+          description: errorMessage
+        });
+      }
       
       setIsTranscribing(false);
+      
+      // Auto-restart for certain errors
+      if (shouldRestart && recordingState.isRecording) {
+        console.log('🔄 Auto-restarting speech recognition...');
+        setTimeout(() => {
+          if (recordingState.isRecording) {
+            startRealTimeTranscription();
+          }
+        }, 1000);
+      }
     };
     
-    // Handle end of recognition
+    // Handle end of recognition with auto-restart
     recognition.onend = () => {
       console.log('🎤 Speech recognition ended');
       setIsTranscribing(false);
+      
+      // Auto-restart if still recording
+      if (recordingState.isRecording) {
+        console.log('🔄 Restarting speech recognition...');
+        setTimeout(() => {
+          if (recordingState.isRecording) {
+            startRealTimeTranscription();
+          }
+        }, 100);
+      }
     };
     
     // Store recognition instance for stopping
@@ -340,63 +377,36 @@ export default function Record() {
     }
   };
 
-  // Handle downloading lecture notes
+  // Handle downloading lecture notes as PDF
   const handleDownloadLecture = async (lectureId: string, lectureTitle: string) => {
     try {
-      const [transcriptResponse, notesResponse] = await Promise.all([
-        fetch(`/api/lectures/${lectureId}/transcript`),
-        fetch(`/api/lectures/${lectureId}/notes`)
-      ]);
-
-      if (transcriptResponse.ok && notesResponse.ok) {
-        const transcript = await transcriptResponse.json();
-        const notes = await notesResponse.json();
-
-        // Create downloadable content
-        const content = `
-# ${lectureTitle}
-
-## Transcript
-${transcript.transcript || 'No transcript available'}
-
-## Notes
-${notes.notes || 'No notes available'}
-
-## Key Points
-${notes.keyPoints ? notes.keyPoints.map((point: string) => `- ${point}`).join('\n') : 'No key points available'}
-
-## Medical Terms
-${notes.medicalTerms ? notes.medicalTerms.map((term: string) => `- ${term}`).join('\n') : 'No medical terms available'}
-
----
-Generated by Docdot Lecture Assistant
-Date: ${new Date().toLocaleDateString()}
-        `.trim();
-
-        // Create and download file
-        const blob = new Blob([content], { type: 'text/markdown' });
+      // Generate and download PDF
+      const response = await fetch(`/api/lectures/${lectureId}/download-pdf`);
+      
+      if (response.ok) {
+        const blob = await response.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${lectureTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_notes.md`;
+        a.download = `${lectureTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_notes.pdf`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
 
         toast({
-          title: "Download Started",
-          description: "Lecture notes are being downloaded"
+          title: "PDF Download Started",
+          description: "Lecture notes PDF is being downloaded"
         });
       } else {
-        throw new Error('Failed to fetch lecture data');
+        throw new Error('Failed to generate PDF');
       }
     } catch (error) {
-      console.error('Error downloading lecture:', error);
+      console.error('Error downloading lecture PDF:', error);
       toast({
         variant: "destructive",
         title: "Download Failed",
-        description: "Failed to download lecture notes"
+        description: "Failed to download lecture notes PDF"
       });
     }
   };
@@ -1182,43 +1192,54 @@ ${transcript.substring(0, 200)}...
                             )}
                             
                             {/* Real-time speech recognition status */}
-                            <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                              <div className="flex items-center space-x-2 mb-2">
-                                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                                <span className="text-sm text-blue-800 dark:text-blue-200 font-medium">
+                            <div className="mb-3 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 rounded-lg shadow-sm">
+                              <div className="flex items-center space-x-2 mb-3">
+                                <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                                <span className="text-sm text-blue-800 dark:text-blue-200 font-semibold">
                                   Real-time Speech Recognition Active
                                 </span>
+                                <div className="flex items-center space-x-1 ml-auto">
+                                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                  <span className="text-xs text-green-600 dark:text-green-400">LIVE</span>
+                                </div>
                               </div>
-                              <p className="text-xs text-blue-700 dark:text-blue-300">
+                              <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
                                 Speak clearly into your microphone. The system will transcribe your speech in real-time and accumulate the full lecture content. Click "Generate Notes" when ready to process with AI.
                               </p>
-                              {liveTranscript && (
-                                <div className="mt-2 text-xs text-blue-600 dark:text-blue-400">
-                                  <strong>Live Transcript:</strong> {liveTranscript.length} characters
-                                  <span className="ml-2 text-green-600">✓ Transcribing lecture content</span>
+                              
+                              {/* Progress indicators */}
+                              <div className="grid grid-cols-2 gap-4 mb-3">
+                                <div className="bg-white dark:bg-gray-800 p-2 rounded border">
+                                  <div className="text-xs text-gray-600 dark:text-gray-400">Characters Transcribed</div>
+                                  <div className="text-lg font-bold text-blue-600">{liveTranscript.length}</div>
                                 </div>
-                              )}
+                                <div className="bg-white dark:bg-gray-800 p-2 rounded border">
+                                  <div className="text-xs text-gray-600 dark:text-gray-400">Status</div>
+                                  <div className="text-sm font-medium text-green-600">✓ Transcribing</div>
+                                </div>
+                              </div>
                               
                               {showGenerateButton && (
-                                <div className="mt-3">
+                                <div className="mt-4">
                                   <button
                                     onClick={handleGenerateNotes}
                                     disabled={isGeneratingNotes}
-                                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2"
+                                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl"
                                   >
                                     {isGeneratingNotes ? (
                                       <>
-                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                                         <span>Generating AI Notes...</span>
                                       </>
                                     ) : (
                                       <>
-                                        <span>🤖</span>
+                                        <span className="text-xl">🤖</span>
                                         <span>Generate Notes with AI</span>
+                                        <span className="text-sm opacity-90">(Recommended)</span>
                                       </>
                                     )}
                                   </button>
-                                  <p className="text-xs text-gray-500 mt-1 text-center">
+                                  <p className="text-xs text-gray-500 mt-2 text-center">
                                     AI will organize, structure, and research your lecture content
                                   </p>
                                 </div>
@@ -1322,6 +1343,30 @@ ${transcript.substring(0, 200)}...
                     </select>
                   </div>
                 </div>
+                
+                {/* Lecture Statistics */}
+                <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                    <div className="text-sm text-blue-600 dark:text-blue-400">Total Lectures</div>
+                    <div className="text-2xl font-bold text-blue-800 dark:text-blue-200">{lectures.length}</div>
+                  </div>
+                  <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
+                    <div className="text-sm text-green-600 dark:text-green-400">Completed</div>
+                    <div className="text-2xl font-bold text-green-800 dark:text-green-200">
+                      {lectures.filter(l => l.status === 'completed').length}
+                    </div>
+                  </div>
+                  <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg">
+                    <div className="text-sm text-purple-600 dark:text-purple-400">Total Duration</div>
+                    <div className="text-2xl font-bold text-purple-800 dark:text-purple-200">
+                      {formatDuration(lectures.reduce((acc, l) => acc + l.duration, 0))}
+                    </div>
+                  </div>
+                  <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg">
+                    <div className="text-sm text-orange-600 dark:text-orange-400">Modules</div>
+                    <div className="text-2xl font-bold text-orange-800 dark:text-orange-200">{modules.length}</div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
@@ -1396,6 +1441,7 @@ ${transcript.substring(0, 200)}...
                             size="sm"
                             onClick={() => handleViewLecture(lecture.id)}
                             disabled={loadingLectureId === lecture.id}
+                            className="hover:bg-blue-50 hover:border-blue-300"
                           >
                             {loadingLectureId === lecture.id ? (
                               <Loader2 className="w-4 h-4 mr-1 animate-spin" />
@@ -1408,14 +1454,16 @@ ${transcript.substring(0, 200)}...
                             variant="outline" 
                             size="sm"
                             onClick={() => handleDownloadLecture(lecture.id, lecture.title)}
+                            className="hover:bg-green-50 hover:border-green-300 hover:text-green-700"
+                            title="Download as PDF"
                           >
                             <Download className="w-4 h-4 mr-1" />
-                            Download
+                            PDF
                           </Button>
                           <Button 
                             variant="outline" 
                             size="sm" 
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-300"
                             onClick={() => handleDeleteLecture(lecture.id, lecture.title)}
                             title="Delete lecture"
                           >
