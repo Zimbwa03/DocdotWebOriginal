@@ -4,6 +4,7 @@ import { openRouterAI } from "./ai";
 import { dbStorage, db, supabase } from "./db";
 import { sql, eq, desc, and } from 'drizzle-orm';
 import { insertQuizAttemptSchema, badges, userBadges, studyPlannerSessions, studyGroups, studyGroupMembers, meetingReminders, users, quizAttempts, userStats, quizzes, mcqQuestions, customExams, customExamStems, stemOptions, examGenerationHistory, lectures, lectureTranscripts, lectureNotes, lectureProcessingLogs } from "@shared/schema";
+import { geminiAI } from './gemini-ai';
 import { v4 as uuidv4 } from "uuid";
 import { readFileSync } from "fs";
 import { resolve } from "path";
@@ -2698,53 +2699,202 @@ app.post("/api/study-groups", async (req, res) => {
     }
   });
 
-  // Background processing function for lecture analysis
-  async function processLectureInBackground(lectureId: string) {
+  // Generate live notes from transcript
+  app.post("/api/lectures/generate-live-notes", async (req, res) => {
     try {
-      console.log(`🔄 Starting background processing for lecture: ${lectureId}`);
+      const { transcript, module, topic } = req.body;
 
-      // Log processing start
-      const logId = uuidv4();
+      if (!transcript || !module) {
+        return res.status(400).json({ error: "Transcript and module are required" });
+      }
+
+      const liveNotes = await geminiAI.generateLiveNotes(transcript, module, topic);
+      
+      res.json({ 
+        success: true, 
+        liveNotes,
+        message: "Live notes generated successfully" 
+      });
+    } catch (error) {
+      console.error("Error generating live notes:", error);
+      res.status(500).json({ error: "Failed to generate live notes" });
+    }
+  });
+
+  // Get lecture processing status
+  app.get("/api/lectures/:id/processing-status", async (req, res) => {
+    try {
+      const lectureId = req.params.id;
+      
+      const logs = await db.select().from(lectureProcessingLogs)
+        .where(eq(lectureProcessingLogs.lectureId, lectureId))
+        .orderBy(desc(lectureProcessingLogs.startTime));
+
+      const [lecture] = await db.select().from(lectures)
+        .where(eq(lectures.id, lectureId));
+
+      res.json({
+        lectureId,
+        status: lecture?.status || 'unknown',
+        logs: logs.map(log => ({
+          step: log.step,
+          status: log.status,
+          startTime: log.startTime,
+          endTime: log.endTime,
+          duration: log.duration,
+          errorMessage: log.errorMessage
+        }))
+      });
+    } catch (error) {
+      console.error("Error fetching processing status:", error);
+      res.status(500).json({ error: "Failed to fetch processing status" });
+    }
+  });
+
+  // Background processing function for lecture analysis with Gemini AI
+  async function processLectureInBackground(lectureId: string) {
+    const startTime = Date.now();
+    let logId = '';
+
+    try {
+      console.log(`🔄 Starting AI-powered background processing for lecture: ${lectureId}`);
+
+      // Get lecture details
+      const [lecture] = await db.select().from(lectures).where(eq(lectures.id, lectureId));
+      if (!lecture) {
+        throw new Error('Lecture not found');
+      }
+
+      // Step 1: Transcription and Language Detection
+      logId = uuidv4();
       await db.insert(lectureProcessingLogs).values({
         id: logId,
         lectureId,
         step: 'transcription',
         status: 'started',
         startTime: new Date(),
-        metadata: { processingType: 'background' }
+        metadata: { processingType: 'gemini_ai' }
       });
 
-      // Simulate processing time (in real implementation, this would be actual AI processing)
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      // For now, we'll use a sample transcript since we don't have actual audio processing yet
+      // In a real implementation, this would process the actual audio file
+      const sampleTranscript = `
+Welcome to today's lecture on cardiovascular physiology. We will be discussing the structure and function of the heart, which is a four-chambered organ that pumps blood throughout the body. 
 
-      // Create sample transcript and notes
-      const sampleTranscript = "This is a sample transcript of the medical lecture. The lecturer discussed important concepts about human anatomy and physiology.";
-      const sampleNotes = "Key Points:\n1. Introduction to anatomy\n2. Basic physiological processes\n3. Clinical applications\n\nSummary: This lecture covered fundamental concepts in medical education.";
+Let's start with the basic anatomy of the heart chambers. The right atrium receives deoxygenated blood from the body through the superior and inferior vena cava. The left atrium receives oxygenated blood from the lungs through the pulmonary veins.
 
+The ventricles are the main pumping chambers of the heart. The right ventricle pumps blood to the lungs for oxygenation through the pulmonary artery. The left ventricle pumps oxygenated blood to the rest of the body through the aorta.
+
+This creates a double circulation system in the human body - pulmonary circulation and systemic circulation. Understanding this anatomy is crucial for medical practice and diagnosing cardiovascular diseases.
+      `.trim();
+
+      // Detect and translate mixed language content
+      const languageResult = await geminiAI.detectAndTranslate(sampleTranscript);
+      
       // Insert transcript
       await db.insert(lectureTranscripts).values({
         id: uuidv4(),
         lectureId,
         rawTranscript: sampleTranscript,
-        unifiedTranscript: sampleTranscript,
-        languageDetected: 'en',
-        confidence: 0.95
+        unifiedTranscript: languageResult.unifiedTranscript,
+        languageDetected: languageResult.languageDetected,
+        confidence: languageResult.confidence
       });
+
+      // Update transcription log
+      await db.update(lectureProcessingLogs)
+        .set({
+          status: 'completed',
+          endTime: new Date(),
+          duration: Date.now() - startTime
+        })
+        .where(eq(lectureProcessingLogs.id, logId));
+
+      // Step 2: Generate Live Notes
+      logId = uuidv4();
+      await db.insert(lectureProcessingLogs).values({
+        id: logId,
+        lectureId,
+        step: 'note_generation',
+        status: 'started',
+        startTime: new Date(),
+        metadata: { processingType: 'gemini_ai' }
+      });
+
+      const liveNotes = await geminiAI.generateLiveNotes(
+        languageResult.unifiedTranscript,
+        lecture.module,
+        lecture.topic || undefined
+      );
+
+      // Step 3: Generate Comprehensive Summary
+      const comprehensiveResult = await geminiAI.generateComprehensiveSummary(
+        languageResult.unifiedTranscript,
+        liveNotes,
+        lecture.module,
+        lecture.topic || undefined
+      );
 
       // Insert notes
       await db.insert(lectureNotes).values({
         id: uuidv4(),
         lectureId,
-        liveNotes: sampleNotes,
-        finalNotes: sampleNotes,
-        summary: "Comprehensive summary of medical lecture covering anatomy and physiology fundamentals.",
-        keyPoints: ["anatomy", "physiology", "clinical applications"],
-        medicalTerms: ["anatomy", "physiology", "clinical"],
-        researchContext: "Additional research context would be added here.",
+        liveNotes: liveNotes,
+        finalNotes: comprehensiveResult.summary,
+        summary: comprehensiveResult.summary,
+        keyPoints: comprehensiveResult.keyPoints,
+        medicalTerms: comprehensiveResult.medicalTerms,
+        researchContext: comprehensiveResult.researchContext,
         processingStatus: 'completed'
       });
 
-      // Update lecture status
+      // Update note generation log
+      await db.update(lectureProcessingLogs)
+        .set({
+          status: 'completed',
+          endTime: new Date(),
+          duration: Date.now() - startTime
+        })
+        .where(eq(lectureProcessingLogs.id, logId));
+
+      // Step 4: Generate Exam Questions (Optional)
+      try {
+        logId = uuidv4();
+        await db.insert(lectureProcessingLogs).values({
+          id: logId,
+          lectureId,
+          step: 'exam_questions',
+          status: 'started',
+          startTime: new Date(),
+          metadata: { processingType: 'gemini_ai' }
+        });
+
+        const examQuestions = await geminiAI.generateExamQuestions(
+          comprehensiveResult.summary,
+          comprehensiveResult.keyPoints,
+          lecture.module
+        );
+
+        // Store exam questions in metadata (you could create a separate table for this)
+        await db.update(lectureNotes)
+          .set({
+            metadata: { examQuestions: examQuestions }
+          })
+          .where(eq(lectureNotes.lectureId, lectureId));
+
+        await db.update(lectureProcessingLogs)
+          .set({
+            status: 'completed',
+            endTime: new Date(),
+            duration: Date.now() - startTime
+          })
+          .where(eq(lectureProcessingLogs.id, logId));
+      } catch (examError) {
+        console.warn('Failed to generate exam questions:', examError);
+        // Don't fail the entire process for exam questions
+      }
+
+      // Update lecture status to completed
       await db.update(lectures)
         .set({ 
           status: 'completed',
@@ -2752,18 +2902,11 @@ app.post("/api/study-groups", async (req, res) => {
         })
         .where(eq(lectures.id, lectureId));
 
-      // Log processing completion
-      await db.update(lectureProcessingLogs)
-        .set({
-          status: 'completed',
-          endTime: new Date(),
-          duration: 5000
-        })
-        .where(eq(lectureProcessingLogs.id, logId));
+      console.log(`✅ Completed AI-powered background processing for lecture: ${lectureId}`);
+      console.log(`📊 Processing time: ${Date.now() - startTime}ms`);
 
-      console.log(`✅ Completed background processing for lecture: ${lectureId}`);
     } catch (error) {
-      console.error(`❌ Error in background processing for lecture ${lectureId}:`, error);
+      console.error(`❌ Error in AI background processing for lecture ${lectureId}:`, error);
       
       // Update lecture status to failed
       await db.update(lectures)
@@ -2774,13 +2917,16 @@ app.post("/api/study-groups", async (req, res) => {
         .where(eq(lectures.id, lectureId));
 
       // Log processing failure
-      await db.update(lectureProcessingLogs)
-        .set({
-          status: 'failed',
-          endTime: new Date(),
-          errorMessage: error.message
-        })
-        .where(eq(lectureProcessingLogs.lectureId, lectureId));
+      if (logId) {
+        await db.update(lectureProcessingLogs)
+          .set({
+            status: 'failed',
+            endTime: new Date(),
+            errorMessage: error.message,
+            duration: Date.now() - startTime
+          })
+          .where(eq(lectureProcessingLogs.id, logId));
+      }
     }
   }
 

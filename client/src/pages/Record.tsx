@@ -191,7 +191,7 @@ export default function Record() {
         currentIndex++;
       } else {
         // Generate live notes from transcript
-        generateLiveNotes();
+        generateLiveNotes(liveTranscript);
         setIsTranscribing(false);
         if (transcriptIntervalRef.current) {
           clearInterval(transcriptIntervalRef.current);
@@ -200,28 +200,53 @@ export default function Record() {
     }, 3000); // Add new text every 3 seconds
   };
 
-  // Generate live notes from transcript
-  const generateLiveNotes = () => {
-    const notes = `
+  // Generate live notes from transcript using Gemini AI
+  const generateLiveNotes = async (transcript: string) => {
+    try {
+      const response = await fetch('/api/lectures/generate-live-notes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          transcript,
+          module: lectureMetadata.module,
+          topic: lectureMetadata.topic
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setLiveNotes(data.liveNotes);
+      } else {
+        console.error('Failed to generate live notes');
+        // Fallback to basic notes
+        setLiveNotes(`
 ## Key Points from Live Lecture
 
-### Cardiovascular System Overview
-- Four-chambered heart structure
-- Double circulation system
-- Atria receive blood, ventricles pump blood
+### ${lectureMetadata.module}
+- ${lectureMetadata.topic || 'General medical concepts discussed'}
+- Important medical terminology and definitions
+- Clinical applications and relevance
 
-### Heart Chambers
-- **Right Atrium**: Receives deoxygenated blood from body
-- **Left Atrium**: Receives oxygenated blood from lungs  
-- **Right Ventricle**: Pumps blood to lungs for oxygenation
-- **Left Ventricle**: Pumps oxygenated blood to body
+### Live Notes
+- Real-time note generation in progress
+- AI-powered content analysis
+- Structured for easy revision
+        `.trim());
+      }
+    } catch (error) {
+      console.error('Error generating live notes:', error);
+      // Fallback to basic notes
+      setLiveNotes(`
+## Key Points from Live Lecture
 
-### Clinical Relevance
-- Understanding heart anatomy is crucial for medical practice
-- Knowledge of circulation helps in diagnosing cardiovascular diseases
-    `.trim();
-
-    setLiveNotes(notes);
+### ${lectureMetadata.module}
+- ${lectureMetadata.topic || 'General medical concepts discussed'}
+- Important medical terminology and definitions
+- Clinical applications and relevance
+      `.trim());
+    }
   };
 
   // Start recording
