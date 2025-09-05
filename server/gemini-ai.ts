@@ -1,25 +1,28 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 class GeminiAIService {
-  private genAI: GoogleGenerativeAI;
-  private model: any;
+  private genAI: GoogleGenerativeAI | null = null;
+  private model: any = null;
+  private isInitialized: boolean = false;
 
   constructor() {
     const apiKey = process.env.GEMINI_API_KEY;
     console.log('🔑 Gemini AI API Key check:', apiKey ? 'Present' : 'Missing');
     
     if (!apiKey) {
-      console.error('❌ GEMINI_API_KEY environment variable is required');
-      throw new Error('GEMINI_API_KEY environment variable is required');
+      console.warn('⚠️ GEMINI_API_KEY environment variable is missing - Gemini AI features will be disabled');
+      this.isInitialized = false;
+      return; // Don't throw error, just disable functionality
     }
     
     try {
       this.genAI = new GoogleGenerativeAI(apiKey);
       this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      this.isInitialized = true;
       console.log('✅ Gemini AI initialized successfully');
     } catch (error) {
       console.error('❌ Failed to initialize Gemini AI:', error);
-      throw error;
+      this.isInitialized = false;
     }
   }
 
@@ -27,6 +30,10 @@ class GeminiAIService {
    * Generate live notes from transcript (optimized for speed)
    */
   async generateLiveNotes(transcript: string, module: string, topic?: string): Promise<string> {
+    if (!this.isInitialized || !this.model) {
+      return `## ${module} - Notes (AI Disabled)\n\n**Note:** AI features are currently disabled. Please configure GEMINI_API_KEY to enable AI-generated notes.\n\n### Transcript Content:\n${transcript.substring(0, 500)}...`;
+    }
+    
     try {
       console.log(`🤖 Processing transcript for ${module}: ${transcript.substring(0, 100)}...`);
 
@@ -99,6 +106,10 @@ ${transcript.substring(0, 300)}...
    * Generate comprehensive notes for manual generation with enhanced research integration
    */
   async generateComprehensiveNotes(transcript: string, module: string, topic?: string): Promise<string> {
+    if (!this.isInitialized || !this.model) {
+      return `## ${module} - Comprehensive Notes (AI Disabled)\\n\\n**Note:** AI features are currently disabled. Please configure GEMINI_API_KEY to enable AI-generated notes.\\n\\n### Transcript Content:\\n${transcript.substring(0, 1000)}...`;
+    }
+    
     try {
       console.log(`🤖 Generating comprehensive notes for ${module}: ${transcript.length} characters`);
       console.log(`📝 Transcript preview: ${transcript.substring(0, 200)}...`);
@@ -412,6 +423,9 @@ Focus on medical accuracy and academic context.
    * Generate authentic exam questions from specific lecture transcript
    */
   async generateAuthenticExamQuestions(transcript: string, module: string, topic?: string): Promise<string[]> {
+    if (!this.isInitialized || !this.model) {
+      return [];
+    }
     try {
       console.log(`🎯 Generating authentic exam questions for ${module}: ${transcript.length} characters`);
 
@@ -593,4 +607,11 @@ Make questions challenging but fair for medical students.
   }
 }
 
-export const geminiAI = new GeminiAIService();
+let geminiAI: GeminiAIService | null = null;
+
+export function getGeminiAI(): GeminiAIService {
+  if (!geminiAI) {
+    geminiAI = new GeminiAIService();
+  }
+  return geminiAI;
+}

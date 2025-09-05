@@ -4,7 +4,7 @@ import { openRouterAI } from "./ai";
 import { dbStorage, db, supabase } from "./db";
 import { sql, eq, desc, and } from 'drizzle-orm';
 import { insertQuizAttemptSchema, badges, userBadges, studyPlannerSessions, studyGroups, studyGroupMembers, meetingReminders, users, quizAttempts, userStats, quizzes, mcqQuestions, customExams, customExamStems, stemOptions, examGenerationHistory, lectures, lectureTranscripts, lectureNotes, lectureProcessingLogs } from "@shared/schema";
-import { geminiAI } from './gemini-ai';
+import { getGeminiAI } from './gemini-ai';
 import { pdfGenerator } from './pdf-generator';
 import { v4 as uuidv4 } from "uuid";
 import { readFileSync } from "fs";
@@ -929,81 +929,81 @@ app.get("/api/leaderboard", async (req, res) => {
 
   // Removed test endpoint for production
   // app.get("/api/test-supabase", async (req, res) => {
-    try {
-      console.log('Testing complete Supabase integration...');
-
-      // Test basic connection
-      const testQuery = await db.execute(sql`SELECT NOW() as current_time`);
-      console.log('Database connection successful');
-
-      // Get simplified table list
-      const allTables = [
-        'users', 'user_stats', 'quiz_attempts', 'ai_sessions', 'ai_chats', 
-        'leaderboard', 'global_leaderboard', 'categories', 'topics', 'quizzes',
-        'badges', 'user_badges', 'category_stats', 'daily_stats', 'flashcards',
-        'study_plans', 'study_planner_sessions', 'study_groups', 'study_group_members',
-        'subscription_plans', 'user_subscriptions', 'payment_history', 'user_analytics'
-      ];
-      console.log('Supabase schema tables available:', allTables.length);
-
-      // Test key tables with counts
-      const counts = {};
-      const keyTables = ['users', 'user_stats', 'quiz_attempts', 'ai_sessions', 'ai_chats', 'leaderboard', 'categories', 'subscription_plans'];
-
-      for (const table of keyTables) {
-        try {
-          const countQuery = await db.execute(sql.raw(`SELECT COUNT(*) as count FROM ${table}`));
-          counts[table] = countQuery[0]?.count || 0;
-        } catch (error) {
-          counts[table] = `Error: ${error.message}`;
-        }
-      }
-
-      // Test AI session functionality
-      let aiTestResult = 'Not tested';
-      try {
-        const testSession = await dbStorage.createAiSession('test-user-integration', 'tutor', 'Integration Test Session');
-        await dbStorage.addAiMessage(testSession.id, 'test-user-integration', 'user', 'Test message', 'tutor');
-        await dbStorage.addAiMessage(testSession.id, 'test-user-integration', 'assistant', 'Test response', 'tutor');
-
-        const sessions = await dbStorage.getAiSessions('test-user-integration', 1);
-        const messages = await dbStorage.getAiMessages(testSession.id);
-
-        // Cleanup test data
-        await db.execute(sql`DELETE FROM ai_chats WHERE session_id = ${testSession.id}`);
-        await db.execute(sql`DELETE FROM ai_sessions WHERE id = ${testSession.id}`);
-
-        aiTestResult = `Success: Created session with ${messages.length} messages`;
-      } catch (error) {
-        aiTestResult = `Failed: ${error.message}`;
-      }
-
-      res.json({
-        success: true,
-        connection: 'Connected to Supabase PostgreSQL',
-        currentTime: testQuery[0].current_time,
-        database: 'Supabase PostgreSQL 16.9',
-        totalTables: allTables.length,
-        tables: allTables,
-        tableCounts: counts,
-        aiTutorTest: aiTestResult,
-        features: {
-          authentication: 'Supabase Auth configured',
-          database: 'Complete schema with 23+ tables',
-          aiTracking: 'AI session and message tracking active',
-          analytics: 'User performance analytics enabled',
-          billing: 'Subscription management ready',
-          studyGroups: 'Collaboration features available'
-        }
-      });
-    } catch (error) {
-      console.error('Supabase integration test error:', error);
-      res.status(500).json({
-        success: false,
-        error: error.message,
-        message: 'Failed to connect to Supabase or schema not properly set up'
-      });
-    }
+  //  try {
+  //    console.log('Testing complete Supabase integration...');
+  //
+  //    // Test basic connection
+  //    const testQuery = await db.execute(sql`SELECT NOW() as current_time`);
+  //    console.log('Database connection successful');
+  //
+  //    // Get simplified table list
+  //    const allTables = [
+  //      'users', 'user_stats', 'quiz_attempts', 'ai_sessions', 'ai_chats', 
+  //      'leaderboard', 'global_leaderboard', 'categories', 'topics', 'quizzes',
+  //      'badges', 'user_badges', 'category_stats', 'daily_stats', 'flashcards',
+  //      'study_plans', 'study_planner_sessions', 'study_groups', 'study_group_members',
+  //      'subscription_plans', 'user_subscriptions', 'payment_history', 'user_analytics'
+  //    ];
+  //    console.log('Supabase schema tables available:', allTables.length);
+  //
+  //    // Test key tables with counts
+  //    const counts = {};
+  //    const keyTables = ['users', 'user_stats', 'quiz_attempts', 'ai_sessions', 'ai_chats', 'leaderboard', 'categories', 'subscription_plans'];
+  //
+  //    for (const table of keyTables) {
+  //      try {
+  //        const countQuery = await db.execute(sql.raw(`SELECT COUNT(*) as count FROM ${table}`));
+  //        counts[table] = countQuery[0]?.count || 0;
+  //      } catch (error) {
+  //        counts[table] = `Error: ${error.message}`;
+  //      }
+  //    }
+  //
+  //    // Test AI session functionality
+  //    let aiTestResult = 'Not tested';
+  //    try {
+  //      const testSession = await dbStorage.createAiSession('test-user-integration', 'tutor', 'Integration Test Session');
+  //      await dbStorage.addAiMessage(testSession.id, 'test-user-integration', 'user', 'Test message', 'tutor');
+  //      await dbStorage.addAiMessage(testSession.id, 'test-user-integration', 'assistant', 'Test response', 'tutor');
+  //
+  //      const sessions = await dbStorage.getAiSessions('test-user-integration', 1);
+  //      const messages = await dbStorage.getAiMessages(testSession.id);
+  //
+  //      // Cleanup test data
+  //      await db.execute(sql`DELETE FROM ai_chats WHERE session_id = ${testSession.id}`);
+  //      await db.execute(sql`DELETE FROM ai_sessions WHERE id = ${testSession.id}`);
+  //
+  //      aiTestResult = `Success: Created session with ${messages.length} messages`;
+  //    } catch (error) {
+  //      aiTestResult = `Failed: ${error.message}`;
+  //    }
+  //
+  //    res.json({
+  //      success: true,
+  //      connection: 'Connected to Supabase PostgreSQL',
+  //      currentTime: testQuery[0].current_time,
+  //      database: 'Supabase PostgreSQL 16.9',
+  //      totalTables: allTables.length,
+  //      tables: allTables,
+  //      tableCounts: counts,
+  //      aiTutorTest: aiTestResult,
+  //      features: {
+  //        authentication: 'Supabase Auth configured',
+  //        database: 'Complete schema with 23+ tables',
+  //        aiTracking: 'AI session and message tracking active',
+  //        analytics: 'User performance analytics enabled',
+  //        billing: 'Subscription management ready',
+  //        studyGroups: 'Collaboration features available'
+  //      }
+  //    });
+  //  } catch (error) {
+  //    console.error('Supabase integration test error:', error);
+  //    res.status(500).json({
+  //      success: false,
+  //      error: error.message,
+  //      message: 'Failed to connect to Supabase or schema not properly set up'
+  //    });
+  //  }
   // });
 
   // Generate Custom Exam with AI
@@ -1201,96 +1201,96 @@ app.get("/api/leaderboard", async (req, res) => {
 
   // Test DeepSeek API connection - Removed for production
   // app.get("/api/ai/test", async (req, res) => {
-    try {
-      if (!process.env.DEEPSEEK_API_KEY) {
-        return res.json({ 
-          connected: false, 
-          message: "DeepSeek API key not configured" 
-        });
-      }
-
-      // Test with a simple request
-      const testResponse = await openRouterAI.generateResponse([
-        { role: 'user', content: 'Say "Hello from DeepSeek!" if you can read this.' }
-      ], 0.1);
-
-      res.json({ 
-        connected: true, 
-        message: "DeepSeek API is working",
-        testResponse: testResponse.substring(0, 100)
-      });
-    } catch (error: any) {
-      res.json({ 
-        connected: false, 
-        message: error.message || "Connection failed" 
-      });
-    }
+  //  try {
+  //    if (!process.env.DEEPSEEK_API_KEY) {
+  //      return res.json({ 
+  //        connected: false, 
+  //        message: "DeepSeek API key not configured" 
+  //      });
+  //    }
+  //
+  //    // Test with a simple request
+  //    const testResponse = await openRouterAI.generateResponse([
+  //      { role: 'user', content: 'Say "Hello from DeepSeek!" if you can read this.' }
+  //    ], 0.1);
+  //
+  //    res.json({ 
+  //      connected: true, 
+  //      message: "DeepSeek API is working",
+  //      testResponse: testResponse.substring(0, 100)
+  //    });
+  //  } catch (error: any) {
+  //    res.json({ 
+  //      connected: false, 
+  //      message: error.message || "Connection failed" 
+  //    });
+  //  }
   // });
 
   // Comprehensive system debug endpoint - Removed for production
   // app.get("/api/debug/system", async (req, res) => {
-    try {
-      // Test database connection
-      const dbTest = await db.execute(sql`SELECT NOW() as current_time`);
-
-      // Test key tables
-      const userCount = await db.execute(sql`SELECT COUNT(*) as count FROM users`);
-      const statsCount = await db.execute(sql`SELECT COUNT(*) as count FROM user_stats`);
-      const quizCount = await db.execute(sql`SELECT COUNT(*) as count FROM quiz_attempts`);
-
-      // Test AI service
-      let aiStatus = 'Not configured';
-      if (process.env.DEEPSEEK_API_KEY) {
-        try {
-          await openRouterAI.generateResponse([
-            { role: 'user', content: 'Test' }
-          ], 0.1);
-          aiStatus = 'Working';
-        } catch (error) {
-          aiStatus = `Error: ${error.message}`;
-        }
-      }
-
-      // Test Google Drive
-      let driveStatus = 'Not tested';
-      try {
-        const { checkFolderAccess } = await import('./googleDrive');
-        const hasAccess = await checkFolderAccess();
-        driveStatus = hasAccess ? 'Working' : 'No access';
-      } catch (error: any) {
-        driveStatus = `Error: ${error.message}`;
-      }
-
-      res.json({
-        success: true,
-        timestamp: new Date().toISOString(),
-        environment: process.env.NODE_ENV || 'development',
-        database: {
-          status: 'Connected',
-          users: userCount[0]?.count || 0,
-          userStats: statsCount[0]?.count || 0,
-          quizAttempts: quizCount[0]?.count || 0
-        },
-        ai: {
-          status: aiStatus,
-          provider: 'DeepSeek'
-        },
-        googleDrive: {
-          status: driveStatus
-        },
-        server: {
-          port: 5000,
-          uptime: process.uptime(),
-          memory: process.memoryUsage()
-        }
-      });
-    } catch (error: any) {
-      res.status(500).json({
-        success: false,
-        error: error.message,
-        timestamp: new Date().toISOString()
-      });
-    }
+  //  try {
+  //    // Test database connection
+  //    const dbTest = await db.execute(sql`SELECT NOW() as current_time`);
+  //
+  //    // Test key tables
+  //    const userCount = await db.execute(sql`SELECT COUNT(*) as count FROM users`);
+  //    const statsCount = await db.execute(sql`SELECT COUNT(*) as count FROM user_stats`);
+  //    const quizCount = await db.execute(sql`SELECT COUNT(*) as count FROM quiz_attempts`);
+  //
+  //    // Test AI service
+  //    let aiStatus = 'Not configured';
+  //    if (process.env.DEEPSEEK_API_KEY) {
+  //      try {
+  //        await openRouterAI.generateResponse([
+  //          { role: 'user', content: 'Test' }
+  //        ], 0.1);
+  //        aiStatus = 'Working';
+  //      } catch (error) {
+  //        aiStatus = `Error: ${error.message}`;
+  //      }
+  //    }
+  //
+  //    // Test Google Drive
+  //    let driveStatus = 'Not tested';
+  //    try {
+  //      const { checkFolderAccess } = await import('./googleDrive');
+  //      const hasAccess = await checkFolderAccess();
+  //      driveStatus = hasAccess ? 'Working' : 'No access';
+  //    } catch (error: any) {
+  //      driveStatus = `Error: ${error.message}`;
+  //    }
+  //
+  //    res.json({
+  //      success: true,
+  //      timestamp: new Date().toISOString(),
+  //      environment: process.env.NODE_ENV || 'development',
+  //      database: {
+  //        status: 'Connected',
+  //        users: userCount[0]?.count || 0,
+  //        userStats: statsCount[0]?.count || 0,
+  //        quizAttempts: quizCount[0]?.count || 0
+  //      },
+  //      ai: {
+  //        status: aiStatus,
+  //        provider: 'DeepSeek'
+  //      },
+  //      googleDrive: {
+  //        status: driveStatus
+  //      },
+  //      server: {
+  //        port: 5000,
+  //        uptime: process.uptime(),
+  //        memory: process.memoryUsage()
+  //      }
+  //    });
+  //  } catch (error: any) {
+  //    res.status(500).json({
+  //      success: false,
+  //      error: error.message,
+  //      timestamp: new Date().toISOString()
+  //    });
+  //  }
   // });
 
   // AI Chat Route with full session tracking
@@ -1644,34 +1644,34 @@ app.get("/api/leaderboard", async (req, res) => {
 
   // Test Google Drive connection - Removed for production
   // app.get("/api/google-drive/test", async (req, res) => {
-    try {
-      console.log("🧪 Testing Google Drive connection...");
-      const { checkFolderAccess } = await import('./googleDrive');
-      const hasAccess = await checkFolderAccess();
-
-      if (hasAccess) {
-        console.log("✅ Google Drive folder access confirmed");
-        res.json({ 
-          success: true, 
-          message: "Google Drive folder is accessible",
-          folderId: "1C3IdOlXofYJcUXuVRD8FHsLcPBjSTlEj"
-        });
-      } else {
-        console.log("❌ Google Drive folder access denied");
-        res.json({ 
-          success: false, 
-          message: "Cannot access Google Drive folder",
-          suggestion: "Ensure folder is shared with service account: docdot-drive-access@docdotwp.iam.gserviceaccount.com"
-        });
-      }
-    } catch (error: any) {
-      console.error("Google Drive test error:", error);
-      res.json({ 
-        success: false, 
-        error: error.message,
-        details: error.code || "UNKNOWN_ERROR"
-      });
-    }
+  //  try {
+  //    console.log("🧪 Testing Google Drive connection...");
+  //    const { checkFolderAccess } = await import('./googleDrive');
+  //    const hasAccess = await checkFolderAccess();
+  //
+  //    if (hasAccess) {
+  //      console.log("✅ Google Drive folder access confirmed");
+  //      res.json({ 
+  //        success: true, 
+  //        message: "Google Drive folder is accessible",
+  //        folderId: "1C3IdOlXofYJcUXuVRD8FHsLcPBjSTlEj"
+  //      });
+  //    } else {
+  //      console.log("❌ Google Drive folder access denied");
+  //      res.json({ 
+  //        success: false, 
+  //        message: "Cannot access Google Drive folder",
+  //        suggestion: "Ensure folder is shared with service account: docdot-drive-access@docdotwp.iam.gserviceaccount.com"
+  //      });
+  //    }
+  //  } catch (error: any) {
+  //    console.error("Google Drive test error:", error);
+  //    res.json({ 
+  //      success: false, 
+  //      error: error.message,
+  //      details: error.code || "UNKNOWN_ERROR"
+  //    });
+  //  }
   // });
 
   // Ensure user has stats entry
@@ -2712,30 +2712,30 @@ app.post("/api/study-groups", async (req, res) => {
 
   // Test endpoint for note generation - Removed for production
   // app.post("/api/lectures/test-notes", async (req, res) => {
-    try {
-      const { transcript, module, topic } = req.body;
-      
-      console.log('🧪 Test notes request:', { transcriptLength: transcript?.length, module, topic });
-      
-      if (!transcript || !module) {
-        return res.status(400).json({ error: "Transcript and module are required" });
-      }
-
-      // Test Gemini AI connection
-      const testNotes = await geminiAI.generateComprehensiveNotes(transcript, module, topic);
-      
-      res.json({ 
-        success: true,
-        testNotes,
-        message: 'Test notes generated successfully'
-      });
-    } catch (error) {
-      console.error("Error in test notes:", error);
-      res.status(500).json({ 
-        error: "Failed to generate test notes",
-        details: error.message 
-      });
-    }
+  //  try {
+  //    const { transcript, module, topic } = req.body;
+  //    
+  //    console.log('🧪 Test notes request:', { transcriptLength: transcript?.length, module, topic });
+  //    
+  //    if (!transcript || !module) {
+  //      return res.status(400).json({ error: "Transcript and module are required" });
+  //    }
+  //
+  //    // Test Gemini AI connection
+  //    const testNotes = await getGeminiAI().generateComprehensiveNotes(transcript, module, topic);
+  //    
+  //    res.json({ 
+  //      success: true,
+  //      testNotes,
+  //      message: 'Test notes generated successfully'
+  //    });
+  //  } catch (error) {
+  //    console.error("Error in test notes:", error);
+  //    res.status(500).json({ 
+  //      error: "Failed to generate test notes",
+  //      details: error.message 
+  //    });
+  //  }
   // });
 
   // Process complete lecture after recording stops
@@ -2753,7 +2753,7 @@ app.post("/api/study-groups", async (req, res) => {
       console.log(`🤖 Processing complete lecture ${lectureId} with ${transcript.length} characters`);
 
       // Generate comprehensive notes from the complete lecture
-      const processedNotes = await geminiAI.generateComprehensiveNotes(transcript, module, topic);
+      const processedNotes = await getGeminiAI().generateComprehensiveNotes(transcript, module, topic);
       
       console.log(`✅ Generated notes: ${processedNotes.length} characters`);
       
@@ -2798,7 +2798,7 @@ app.post("/api/study-groups", async (req, res) => {
         return res.status(400).json({ error: "Transcript and module are required" });
       }
 
-      const liveNotes = await geminiAI.generateLiveNotes(transcript, module, topic);
+      const liveNotes = await getGeminiAI().generateLiveNotes(transcript, module, topic);
       
       res.json({ 
         success: true, 
@@ -2823,10 +2823,10 @@ app.post("/api/study-groups", async (req, res) => {
       console.log(`🔄 Processing transcript with language: ${sourceLanguage}`);
 
       // First, detect and translate mixed language content
-      const languageResult = await geminiAI.detectAndTranslate(transcript);
+      const languageResult = await getGeminiAI().detectAndTranslate(transcript);
       
       // Generate live notes from the translated transcript
-      const liveNotes = await geminiAI.generateLiveNotes(
+      const liveNotes = await getGeminiAI().generateLiveNotes(
         languageResult.unifiedTranscript, 
         module, 
         topic
@@ -3104,7 +3104,7 @@ This creates a double circulation system in the human body - pulmonary circulati
       `.trim();
 
       // Detect and translate mixed language content
-      const languageResult = await geminiAI.detectAndTranslate(sampleTranscript);
+      const languageResult = await getGeminiAI().detectAndTranslate(sampleTranscript);
       
       // Insert transcript
       await db.insert(lectureTranscripts).values({
@@ -3136,14 +3136,14 @@ This creates a double circulation system in the human body - pulmonary circulati
         metadata: { processingType: 'gemini_ai' }
       });
 
-      const liveNotes = await geminiAI.generateLiveNotes(
+      const liveNotes = await getGeminiAI().generateLiveNotes(
         languageResult.unifiedTranscript,
         lecture.module,
         lecture.topic || undefined
       );
 
       // Step 3: Generate Comprehensive Summary
-      const comprehensiveResult = await geminiAI.generateComprehensiveSummary(
+      const comprehensiveResult = await getGeminiAI().generateComprehensiveSummary(
         languageResult.unifiedTranscript,
         liveNotes,
         lecture.module,
@@ -3184,7 +3184,7 @@ This creates a double circulation system in the human body - pulmonary circulati
           metadata: { processingType: 'gemini_ai' }
         });
 
-        const examQuestions = await geminiAI.generateExamQuestions(
+        const examQuestions = await getGeminiAI().generateExamQuestions(
           comprehensiveResult.summary,
           comprehensiveResult.keyPoints,
           lecture.module
