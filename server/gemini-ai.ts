@@ -6,12 +6,21 @@ class GeminiAIService {
 
   constructor() {
     const apiKey = process.env.GEMINI_API_KEY;
+    console.log('🔑 Gemini AI API Key check:', apiKey ? 'Present' : 'Missing');
+    
     if (!apiKey) {
+      console.error('❌ GEMINI_API_KEY environment variable is required');
       throw new Error('GEMINI_API_KEY environment variable is required');
     }
     
-    this.genAI = new GoogleGenerativeAI(apiKey);
-    this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    try {
+      this.genAI = new GoogleGenerativeAI(apiKey);
+      this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      console.log('✅ Gemini AI initialized successfully');
+    } catch (error) {
+      console.error('❌ Failed to initialize Gemini AI:', error);
+      throw error;
+    }
   }
 
   /**
@@ -200,11 +209,15 @@ Focus on:
 Make these notes the best possible study resource for University of Zimbabwe medical students.
 `;
 
+      console.log('🤖 Sending request to Gemini AI...');
       const result = await this.model.generateContent(prompt);
+      console.log('✅ Received response from Gemini AI');
+      
       const response = await result.response;
       let generatedNotes = response.text();
       
       console.log(`✅ Generated base notes: ${generatedNotes.length} characters`);
+      console.log(`📝 Notes preview: ${generatedNotes.substring(0, 200)}...`);
       
       // Generate authentic exam questions and append them
       try {

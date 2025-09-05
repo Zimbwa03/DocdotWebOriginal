@@ -528,17 +528,21 @@ export default function Record() {
       setIsGeneratingNotes(true);
       
       // Call backend to process the complete lecture
+      const requestBody = {
+        lectureId: currentLecture.id,
+        transcript: cleanTranscript,
+        module: lectureMetadata.module,
+        topic: lectureMetadata.topic
+      };
+      
+      console.log('📤 Sending request to API:', requestBody);
+      
       const response = await fetch('/api/lectures/process-complete-lecture', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          lectureId: currentLecture.id,
-          transcript: cleanTranscript,
-          module: lectureMetadata.module,
-          topic: lectureMetadata.topic
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       console.log('📡 Response status:', response.status);
@@ -1367,6 +1371,10 @@ ${transcript.substring(0, 200)}...
                                   onClick={async () => {
                                     console.log('🧪 Testing note generation API...');
                                     try {
+                                      // First test if server is running
+                                      const healthResponse = await fetch('/api/health');
+                                      console.log('🏥 Health check:', healthResponse.status);
+                                      
                                       const response = await fetch('/api/lectures/test-notes', {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
@@ -1377,6 +1385,8 @@ ${transcript.substring(0, 200)}...
                                         })
                                       });
                                       
+                                      console.log('📡 Test API response status:', response.status);
+                                      
                                       if (response.ok) {
                                         const data = await response.json();
                                         console.log('✅ Test API successful:', data);
@@ -1385,11 +1395,23 @@ ${transcript.substring(0, 200)}...
                                           description: "Note generation API is working correctly."
                                         });
                                       } else {
-                                        const error = await response.json();
-                                        console.error('❌ Test API failed:', error);
+                                        const errorText = await response.text();
+                                        console.error('❌ Test API failed:', {
+                                          status: response.status,
+                                          statusText: response.statusText,
+                                          body: errorText
+                                        });
+                                        
+                                        let errorData;
+                                        try {
+                                          errorData = JSON.parse(errorText);
+                                        } catch {
+                                          errorData = { error: errorText };
+                                        }
+                                        
                                         toast({
                                           title: "API Test Failed",
-                                          description: `Error: ${error.error || 'Unknown error'}`,
+                                          description: `Status ${response.status}: ${errorData.error || errorData.details || 'Unknown error'}`,
                                           variant: "destructive"
                                         });
                                       }
@@ -1397,7 +1419,7 @@ ${transcript.substring(0, 200)}...
                                       console.error('❌ Test API error:', error);
                                       toast({
                                         title: "API Test Error",
-                                        description: `Network error: ${error.message}`,
+                                        description: `Network error: ${error.message}. Is the server running?`,
                                         variant: "destructive"
                                       });
                                     }
