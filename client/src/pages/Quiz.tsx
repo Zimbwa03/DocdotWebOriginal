@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,7 +47,9 @@ interface Question {
   option_d: string;
   correct_answer: string;
   explanation: string;
+  detailedExplanation?: string;
   ai_explanation: string;
+  reference?: string;
   reference_data: string;
   category: string;
   difficulty: string;
@@ -653,7 +656,7 @@ export default function Quiz() {
 
         const aiResponse = { 
           role: 'assistant' as const, 
-          content: `🎯 **Quiz Generated Successfully with DeepSeek AI!** \n\nI've created **${data.questions.length} medical questions** about "${aiPrompt}". \n\n✨ **Features:**\n• True/False format\n• Detailed explanations\n• Instant feedback\n• Progress tracking\n• AI-powered content\n\n🚀 **Ready to start?** Your personalized quiz is loaded and ready to go! Click "Start Quiz" below to begin practicing.`
+          content: `🎯 **Quiz Generated Successfully with DeepSeek AI!** \n\nI've created **${data.questions.length} medical questions** about "${aiPrompt}". \n\n✨ **Features:**\n• True/False format\n• Short & detailed explanations\n• Book references with chapters & pages\n• Instant feedback\n• Progress tracking\n• AI-powered content\n\n🚀 **Ready to start?** Your personalized quiz is loaded and ready to go! Click "Start Quiz" below to begin practicing.`
         };
         setAiMessages((prev) => [...prev, aiResponse]);
 
@@ -2270,8 +2273,14 @@ export default function Quiz() {
                   </h4>
                   {currentQuestion.explanation && (
                     <div className="mb-3">
-                      <p className="text-sm font-medium mb-1" style={{ color: '#1C1C1C' }}>Explanation:</p>
+                      <p className="text-sm font-medium mb-1" style={{ color: '#1C1C1C' }}>Short Explanation:</p>
                       <p className="text-sm" style={{ color: '#2E2E2E' }}>{currentQuestion.explanation}</p>
+                    </div>
+                  )}
+                  {currentQuestion.detailedExplanation && (
+                    <div className="mb-3">
+                      <p className="text-sm font-medium mb-1" style={{ color: '#1C1C1C' }}>Detailed Explanation:</p>
+                      <p className="text-sm" style={{ color: '#2E2E2E' }}>{currentQuestion.detailedExplanation}</p>
                     </div>
                   )}
                   {currentQuestion.ai_explanation && (
@@ -2280,9 +2289,15 @@ export default function Quiz() {
                       <p className="text-sm" style={{ color: '#2E2E2E' }}>{currentQuestion.ai_explanation}</p>
                     </div>
                   )}
+                  {currentQuestion.reference && (
+                    <div className="mb-3">
+                      <p className="text-sm font-medium mb-1" style={{ color: '#1C1C1C' }}>Reference:</p>
+                      <p className="text-sm font-mono text-blue-600" style={{ color: '#1E40AF' }}>{currentQuestion.reference}</p>
+                    </div>
+                  )}
                   {currentQuestion.reference_data && (
                     <div>
-                      <p className="text-sm font-medium mb-1" style={{ color: '#1C1C1C' }}>Reference:</p>
+                      <p className="text-sm font-medium mb-1" style={{ color: '#1C1C1C' }}>Additional Reference:</p>
                       <p className="text-sm" style={{ color: '#2E2E2E' }}>{currentQuestion.reference_data}</p>
                     </div>
                   )}
@@ -2481,8 +2496,14 @@ export default function Quiz() {
                   </h4>
                   {currentQuestion.explanation && (
                     <div className="mb-3">
-                      <p className="text-sm font-medium mb-1" style={{ color: '#1C1C1C' }}>Explanation:</p>
+                      <p className="text-sm font-medium mb-1" style={{ color: '#1C1C1C' }}>Short Explanation:</p>
                       <p className="text-sm" style={{ color: '#2E2E2E' }}>{currentQuestion.explanation}</p>
+                    </div>
+                  )}
+                  {currentQuestion.detailedExplanation && (
+                    <div className="mb-3">
+                      <p className="text-sm font-medium mb-1" style={{ color: '#1C1C1C' }}>Detailed Explanation:</p>
+                      <p className="text-sm" style={{ color: '#2E2E2E' }}>{currentQuestion.detailedExplanation}</p>
                     </div>
                   )}
                   {currentQuestion.ai_explanation && (
@@ -2491,9 +2512,15 @@ export default function Quiz() {
                       <p className="text-sm" style={{ color: '#2E2E2E' }}>{currentQuestion.ai_explanation}</p>
                     </div>
                   )}
+                  {currentQuestion.reference && (
+                    <div className="mb-3">
+                      <p className="text-sm font-medium mb-1" style={{ color: '#1C1C1C' }}>Reference:</p>
+                      <p className="text-sm font-mono text-blue-600" style={{ color: '#1E40AF' }}>{currentQuestion.reference}</p>
+                    </div>
+                  )}
                   {currentQuestion.reference_data && (
                     <div>
-                      <p className="text-sm font-medium mb-1" style={{ color: '#1C1C1C' }}>Reference:</p>
+                      <p className="text-sm font-medium mb-1" style={{ color: '#1C1C1C' }}>Additional Reference:</p>
                       <p className="text-sm" style={{ color: '#2E2E2E' }}>{currentQuestion.reference_data}</p>
                     </div>
                   )}
@@ -2574,7 +2601,20 @@ export default function Quiz() {
                           : 'bg-gray-100 dark:bg-gray-600 text-gray-800 dark:text-gray-200'
                       }`}
                     >
-                      <p className="whitespace-pre-wrap">{message.content}</p>
+                      <ReactMarkdown 
+                        className="prose prose-sm max-w-none prose-headings:text-gray-800 prose-strong:text-gray-800 prose-p:text-gray-700 prose-li:text-gray-700"
+                        components={{
+                          p: ({ children }: { children: React.ReactNode }) => <p className="mb-2 last:mb-0">{children}</p>,
+                          ul: ({ children }: { children: React.ReactNode }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
+                          li: ({ children }: { children: React.ReactNode }) => <li className="text-sm">{children}</li>,
+                          strong: ({ children }: { children: React.ReactNode }) => <strong className="font-semibold text-gray-800">{children}</strong>,
+                          h1: ({ children }: { children: React.ReactNode }) => <h1 className="text-lg font-bold text-gray-800 mb-2">{children}</h1>,
+                          h2: ({ children }: { children: React.ReactNode }) => <h2 className="text-base font-bold text-gray-800 mb-2">{children}</h2>,
+                          h3: ({ children }: { children: React.ReactNode }) => <h3 className="text-sm font-bold text-gray-800 mb-1">{children}</h3>,
+                        }}
+                      >
+                        {message.content}
+                      </ReactMarkdown>
                     </div>
                   </div>
                 ))

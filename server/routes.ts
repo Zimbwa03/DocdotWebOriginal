@@ -1462,7 +1462,7 @@ app.get("/api/leaderboard", async (req, res) => {
   // AI Quiz Generator Route
   app.post("/api/ai/quiz-generator", async (req, res) => {
     try {
-      const { topic, difficulty = 'intermediate', count = 5 } = req.body;
+      const { topic, difficulty = 'intermediate', count = 20 } = req.body;
 
       if (!topic) {
         return res.status(400).json({ error: 'Topic is required' });

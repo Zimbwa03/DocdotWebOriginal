@@ -164,7 +164,7 @@ class OpenRouterAI {
     }
 
     const sanitizedTopic = topic.trim();
-    const validCount = Math.min(Math.max(count, 1), 10);
+    const validCount = Math.min(Math.max(count, 1), 50); // Allow up to 50 questions
 
     const systemPrompt = `You are an expert medical educator and DeepSeek AI assistant creating high-quality True/False questions for medical students.
 
@@ -181,6 +181,8 @@ class OpenRouterAI {
         "question": "The heart has four chambers",
         "correctAnswer": "True",
         "explanation": "The heart consists of two atria and two ventricles, making four chambers total",
+        "detailedExplanation": "The human heart is a four-chambered organ consisting of two atria (upper chambers) and two ventricles (lower chambers). The right atrium receives deoxygenated blood from the body, the right ventricle pumps it to the lungs, the left atrium receives oxygenated blood from the lungs, and the left ventricle pumps it to the body. This four-chamber structure is essential for the double circulation system.",
+        "reference": "Snell's Clinical Anatomy by Regions, 10th Edition, Chapter 3: Thorax, Page 145-150",
         "category": "${sanitizedTopic}",
         "difficulty": "${difficulty}"
       }
@@ -188,11 +190,14 @@ class OpenRouterAI {
 
     Question Quality Standards:
     - Questions must be True/False only
-    - Include clear, educational explanations (2-3 sentences)
+    - Include clear, educational explanations (2-3 sentences for 'explanation')
+    - Include detailed explanations (4-6 sentences for 'detailedExplanation')
+    - Add proper book references with specific chapters and page numbers
     - Use proper medical terminology
     - Test conceptual understanding, not just facts
     - Vary question complexity based on difficulty level
     - Ensure questions are clinically relevant
+    - References should include: Snell's Clinical Anatomy, Gray's Anatomy, Moore's Clinical Anatomy, or similar authoritative texts
     - Return ONLY the JSON array - no other text`;
 
     const messages: AIMessage[] = [
@@ -238,7 +243,7 @@ class OpenRouterAI {
       let parsedResponse;
       try {
         parsedResponse = JSON.parse(jsonString);
-      } catch (parseError) {
+              } catch (parseError: any) {
         console.error('JSON parsing failed:', parseError);
         console.error('Failed JSON string:', jsonString);
         console.error('Original response:', response.substring(0, 1000));
@@ -277,6 +282,8 @@ class OpenRouterAI {
           correctAnswer: q.correctAnswer || q.correct_answer || 'True',
           correct_answer: q.correctAnswer || q.correct_answer || 'True',
           explanation: q.explanation || `Explanation for question about ${sanitizedTopic}`,
+          detailedExplanation: q.detailedExplanation || q.detailed_explanation || q.explanation || `Detailed explanation for question about ${sanitizedTopic}`,
+          reference: q.reference || `Reference for ${sanitizedTopic} question`,
           category: sanitizedTopic,
           difficulty: difficulty
         };
@@ -582,7 +589,7 @@ Return ONLY valid JSON in the specified format. No additional text.`;
       }
 
       // Validate each stem has proper format
-      examData.stems.forEach((stem, index) => {
+      examData.stems.forEach((stem: any, index: number) => {
         if (!stem.stemText || !stem.stemText.startsWith('Concerning')) {
           throw new Error(`Stem ${index + 1} missing proper "Concerning" format`);
         }
@@ -592,7 +599,7 @@ Return ONLY valid JSON in the specified format. No additional text.`;
 
         // Ensure proper option letters
         const expectedLetters = ['a', 'b', 'c', 'd', 'e'];
-        stem.options.forEach((option, optIndex) => {
+        stem.options.forEach((option: any, optIndex: number) => {
           if (option.optionLetter !== expectedLetters[optIndex]) {
             option.optionLetter = expectedLetters[optIndex];
           }
@@ -602,7 +609,7 @@ Return ONLY valid JSON in the specified format. No additional text.`;
       console.log(`✅ Successfully parsed and validated ${examData.stems.length} stems from AI`);
       return examData;
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ DeepSeek AI generation failed:', error);
       throw new Error(`AI generation failed: ${error.message}`);
     }
