@@ -19,38 +19,70 @@ class GeminiAIService {
    */
   async generateLiveNotes(transcript: string, module: string, topic?: string): Promise<string> {
     try {
-      // Use a more concise prompt for faster processing
+      console.log(`🤖 Processing transcript for ${module}: ${transcript.substring(0, 100)}...`);
+
+      // Use a more detailed prompt that emphasizes using the actual transcript content
       const prompt = `
-Generate concise medical lecture notes for University of Zimbabwe students.
+You are an AI assistant helping medical students at the University of Zimbabwe. 
+Generate structured, concise notes from this ACTUAL LECTURE TRANSCRIPT.
+
+IMPORTANT: Base your notes ONLY on the actual speech content provided below. Do not generate generic notes.
 
 Module: ${module}
 Topic: ${topic || 'General'}
 
-Transcript: ${transcript}
+ACTUAL LECTURE TRANSCRIPT:
+${transcript}
 
-Format:
-## Key Points
-- [Main concept 1]
-- [Main concept 2]
+Please generate notes in the following format based on the ACTUAL CONTENT:
 
-## Medical Terms
-- [Term 1]: [Definition]
-- [Term 2]: [Definition]
+## Key Points from Lecture
+- [Extract main concepts from the actual speech]
+- [Identify important points mentioned by the lecturer]
+
+## Medical Terms & Definitions
+- [Extract medical terms mentioned in the speech]
+- [Include definitions if provided in the speech]
 
 ## Clinical Applications
-- [Application 1]
-- [Application 2]
+- [Identify clinical applications discussed in the speech]
+- [Note any practical examples mentioned]
 
-Keep it brief, focused on exam preparation, medical terminology, and clinical relevance.
+## Important Details
+- [Capture specific details, numbers, or facts mentioned]
+- [Include any important explanations from the lecturer]
+
+Focus on:
+1. What was ACTUALLY said in the transcript
+2. Medical terminology mentioned in the speech
+3. Key concepts discussed by the lecturer
+4. Clinical applications mentioned
+5. Important details and facts provided
+
+Make sure the notes reflect the actual content of the lecture, not generic information.
 `;
 
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
-      return response.text();
+      const generatedNotes = response.text();
+      
+      console.log(`✅ Generated notes from actual transcript content`);
+      return generatedNotes;
     } catch (error) {
       console.error('Error generating live notes:', error);
-      // Return a quick fallback instead of throwing
-      return `## Key Points from ${module}\n- ${topic || 'Medical concepts discussed'}\n- Important terminology and clinical applications\n- AI processing in progress...`;
+      // Return a fallback that includes actual transcript content
+      return `## Key Points from ${module}
+
+### Based on Lecture Content:
+${transcript.substring(0, 300)}...
+
+### Notes:
+- Processing actual lecture content
+- AI analysis in progress
+- Content will be updated with more details
+
+**Note: This is based on the actual speech transcript provided.**
+`;
     }
   }
 

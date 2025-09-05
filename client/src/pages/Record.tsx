@@ -223,9 +223,17 @@ export default function Record() {
       const newTranscript = liveTranscript + finalTranscript;
       setLiveTranscript(newTranscript + interimTranscript);
       
+      // Debug: Log transcript content
+      console.log('📝 Final transcript added:', finalTranscript);
+      console.log('📝 Total transcript length:', newTranscript.length);
+      console.log('📝 Current transcript preview:', newTranscript.substring(0, 200));
+      
       // Generate notes when we have substantial content (use the full accumulated transcript)
       if (finalTranscript.trim().length > 50) {
-        generateLiveNotes(newTranscript); // Use the full accumulated transcript
+        // Only generate notes if we have actual speech content, not just metadata
+        if (newTranscript.trim().length > 100) {
+          generateLiveNotes(newTranscript); // Use the full accumulated transcript
+        }
       }
 
       // Auto-save transcript periodically (every 500 characters of new content)
@@ -432,6 +440,14 @@ Date: ${new Date().toLocaleDateString()}
 
   // Generate live notes from transcript using Gemini AI
   const generateLiveNotes = async (transcript: string) => {
+    // Only generate notes if we have actual speech content
+    if (!transcript || transcript.trim().length < 50) {
+      console.log('Not enough transcript content to generate notes');
+      return;
+    }
+
+    console.log('🎯 Generating notes from transcript:', transcript.substring(0, 100) + '...');
+
     try {
       const response = await fetch('/api/lectures/generate-live-notes', {
         method: 'POST',
@@ -439,7 +455,7 @@ Date: ${new Date().toLocaleDateString()}
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          transcript,
+          transcript: transcript, // Use the actual transcript content
           module: lectureMetadata.module,
           topic: lectureMetadata.topic
         }),
@@ -447,23 +463,25 @@ Date: ${new Date().toLocaleDateString()}
 
       if (response.ok) {
         const data = await response.json();
+        console.log('✅ AI notes generated successfully');
         setLiveNotes(data.liveNotes);
         
         // Auto-save notes when generated (use full accumulated transcript)
         const currentLecture = lectures.find(l => l.status === 'recording');
         if (currentLecture) {
-          saveLectureData(currentLecture.id, liveTranscript, data.liveNotes);
+          saveLectureData(currentLecture.id, transcript, data.liveNotes);
         }
       } else {
         console.error('Failed to generate live notes');
-        // Fallback to basic notes
+        // Fallback to basic notes based on actual transcript
         const fallbackNotes = `
 ## Key Points from Live Lecture
 
 ### ${lectureMetadata.module}
 - ${lectureMetadata.topic || 'General medical concepts discussed'}
-- Important medical terminology and definitions
-- Clinical applications and relevance
+
+### Transcript Summary
+${transcript.substring(0, 200)}...
 
 ### Live Notes
 - Real-time note generation in progress
@@ -476,19 +494,25 @@ Date: ${new Date().toLocaleDateString()}
         // Auto-save fallback notes too (use full accumulated transcript)
         const currentLecture = lectures.find(l => l.status === 'recording');
         if (currentLecture) {
-          saveLectureData(currentLecture.id, liveTranscript, fallbackNotes);
+          saveLectureData(currentLecture.id, transcript, fallbackNotes);
         }
       }
     } catch (error) {
       console.error('Error generating live notes:', error);
-      // Fallback to basic notes
+      // Fallback to basic notes based on actual transcript
       const fallbackNotes = `
 ## Key Points from Live Lecture
 
 ### ${lectureMetadata.module}
 - ${lectureMetadata.topic || 'General medical concepts discussed'}
-- Important medical terminology and definitions
-- Clinical applications and relevance
+
+### Transcript Summary
+${transcript.substring(0, 200)}...
+
+### Live Notes
+- Real-time note generation in progress
+- AI-powered content analysis
+- Structured for easy revision
       `.trim();
       
       setLiveNotes(fallbackNotes);
@@ -496,7 +520,7 @@ Date: ${new Date().toLocaleDateString()}
       // Auto-save fallback notes on error too (use full accumulated transcript)
       const currentLecture = lectures.find(l => l.status === 'recording');
       if (currentLecture) {
-        saveLectureData(currentLecture.id, liveTranscript, fallbackNotes);
+        saveLectureData(currentLecture.id, transcript, fallbackNotes);
       }
     }
   };
@@ -1024,6 +1048,9 @@ Date: ${new Date().toLocaleDateString()}
                               {liveTranscript && (
                                 <div className="mt-2 text-xs text-blue-600 dark:text-blue-400">
                                   <strong>Transcript Length:</strong> {liveTranscript.length} characters
+                                  {liveTranscript.length > 100 && (
+                                    <span className="ml-2 text-green-600">✓ Ready for AI processing</span>
+                                  )}
                                 </div>
                               )}
                             </div>
