@@ -30,7 +30,7 @@ Create a `.env` file in your project root with:
 # Supabase Configuration
 SUPABASE_URL=https://jncxejkssgvxhdurmvxy.supabase.co
 SUPABASE_ANON_KEY=your-supabase-anon-key-here
-DATABASE_URL=postgresql://postgres:Ngonidzashe2003.@db.jncxejkssgvxhdurmvxy.supabase.co:5432/postgres
+DATABASE_URL=postgresql://postgres:your-password@db.jncxejkssgvxhdurmvxy.supabase.co:5432/postgres
 
 # Gemini AI Configuration
 GEMINI_API_KEY=your-gemini-api-key-here
