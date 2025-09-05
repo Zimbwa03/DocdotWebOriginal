@@ -149,8 +149,6 @@ export function Navigation() {
     { path: '/study-guide', label: 'Study Guide', icon: GraduationCap },
     { path: '/ai-tools', label: 'AI Tools', icon: Brain },
     { path: '/analytics', label: 'Analytics', icon: BarChart3 },
-    { path: '/badges', label: 'Badges', icon: Star },
-    { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
     { path: '/pricing', label: 'Pricing', icon: DollarSign },
   ];
 

@@ -3716,10 +3716,58 @@ The cardiovascular system consists of the heart and blood vessels, each with dis
               </CardHeader>
               <CardContent className="p-8">
                 {canAccessContent(selectedTopic.accessTier) ? (
-                  <div className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-headings:font-bold prose-p:text-gray-700 prose-p:leading-relaxed">
-                    <div className="whitespace-pre-wrap">
-                      {selectedTopic.content}
-                    </div>
+                  <div className="formatted-content prose prose-lg max-w-none">
+                    <div 
+                      dangerouslySetInnerHTML={{ 
+                        __html: selectedTopic.content
+                          // Convert markdown headers with advanced styling
+                          .replace(/^### (.*$)/gim, '<h3 class="text-2xl font-black text-black mt-8 mb-4 border-l-4 border-black pl-4 bg-gradient-to-r from-gray-50 to-gray-100 py-3 rounded-r-lg shadow-lg">$1</h3>')
+                          .replace(/^## (.*$)/gim, '<h2 class="text-3xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent mt-10 mb-6 border-b-3 border-primary pb-3">$1</h2>')
+                          .replace(/^# (.*$)/gim, '<h1 class="text-4xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent mb-8 text-center">$1</h1>')
+
+                          // Enhanced bold text with medical theme colors - handle both ** and <strong> tags
+                          .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-blue-700 bg-gradient-to-r from-blue-50 to-blue-100 px-2 py-1 rounded-md border border-blue-200 shadow-sm">$1</strong>')
+                          .replace(/<strong>(.*?)<\/strong>/g, '<strong class="font-bold text-blue-700 bg-gradient-to-r from-blue-50 to-blue-100 px-2 py-1 rounded-md border border-blue-200 shadow-sm">$1</strong>')
+
+                          // Enhanced italic text with purple accent
+                          .replace(/\*(.*?)\*/g, '<em class="italic text-purple-700 font-semibold bg-purple-50 px-1 rounded">$1</em>')
+
+                          // Enhanced bullet points with medical theme
+                          .replace(/^\* (.*$)/gim, '<div class="flex items-start mb-3"><div class="w-2 h-2 bg-gradient-to-r from-primary to-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></div><span class="text-gray-800 leading-relaxed">$1</span></div>')
+                          .replace(/^- (.*$)/gim, '<div class="flex items-start mb-3"><div class="w-2 h-2 bg-gradient-to-r from-primary to-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></div><span class="text-gray-800 leading-relaxed">$1</span></div>')
+
+                          // Enhanced numbered lists
+                          .replace(/^(\d+)\. (.*$)/gim, '<div class="flex items-start mb-3"><div class="w-6 h-6 bg-gradient-to-r from-primary to-blue-500 rounded-full mt-1 mr-3 flex-shrink-0 flex items-center justify-center text-white text-sm font-bold">$1</div><span class="text-gray-800 leading-relaxed">$2</span></div>')
+
+                          // Enhanced code blocks with medical theme
+                          .replace(/```([\s\S]*?)```/g, '<div class="bg-gradient-to-r from-gray-900 to-gray-800 text-green-400 p-4 rounded-lg font-mono text-sm overflow-x-auto border border-gray-700 my-4"><pre>$1</pre></div>')
+                          .replace(/`([^`]+)`/g, '<code class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-sm font-mono border">$1</code>')
+
+                          // Enhanced blockquotes
+                          .replace(/^> (.*$)/gim, '<blockquote class="border-l-4 border-primary bg-gradient-to-r from-blue-50 to-indigo-50 p-4 my-4 rounded-r-lg italic text-gray-700">$1</blockquote>')
+
+                          // Enhanced tables with medical theme
+                          .replace(/\|(.+)\|/g, (match: string, content: string) => {
+                            const cells = content.split('|').map((cell: string) => cell.trim());
+                            if (cells.length > 1) {
+                              return `<div class="overflow-x-auto my-4"><table class="min-w-full border-collapse border border-gray-300"><tr>${cells.map((cell: string) => `<td class="border border-gray-300 px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 font-semibold">${cell}</td>`).join('')}</tr></table></div>`;
+                            }
+                            return match;
+                          })
+
+                          // Enhanced horizontal rules
+                          .replace(/^---$/gim, '<hr class="my-8 border-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent">')
+
+                          // Enhanced links
+                          .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary hover:text-blue-600 underline font-medium" target="_blank" rel="noopener noreferrer">$1</a>')
+
+                          // Enhanced images
+                          .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<div class="my-6 text-center"><img src="$2" alt="$1" class="max-w-full h-auto rounded-lg shadow-lg mx-auto" /></div>')
+
+                          // Convert line breaks to proper HTML
+                          .replace(/\n/g, '<br>')
+                      }}
+                    />
                   </div>
                 ) : (
                   <div className="text-center py-16">

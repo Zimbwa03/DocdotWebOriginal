@@ -349,43 +349,43 @@ export default function Home() {
     enabled: !!user?.id,
   });
 
-  // Fetch badges
-  const { data: badgeData } = useQuery({
-    queryKey: ['/api/badges', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return { earned: [], available: [] };
-      console.log('📊 Fetching badges for user:', user.id);
-      const response = await fetch(`/api/badges/${user.id}`);
-      if (!response.ok) {
-        console.error('Failed to fetch badges:', response.status);
-        return { earned: [], available: [] };
-      }
-      const badges = await response.json();
-      console.log('📊 Badges updated:', badges.earned?.length || 0, 'earned');
-      return badges;
-    },
-    enabled: !!user?.id,
-  });
+  // Badges functionality removed - keeping code for future use
+  // const { data: badgeData } = useQuery({
+  //   queryKey: ['/api/badges', user?.id],
+  //   queryFn: async () => {
+  //     if (!user?.id) return { earned: [], available: [] };
+  //     console.log('📊 Fetching badges for user:', user.id);
+  //     const response = await fetch(`/api/badges/${user.id}`);
+  //     if (!response.ok) {
+  //       console.error('Failed to fetch badges:', response.status);
+  //       return { earned: [], available: [] };
+  //     }
+  //     const badges = await response.json();
+  //     console.log('📊 Badges updated:', badges.earned?.length || 0, 'earned');
+  //     return badges;
+  //   },
+  //   enabled: !!user?.id,
+  // });
 
-  // Fetch user rank
-  const { data: userRankResponse } = useQuery({
-    queryKey: ['/api/user-rank', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return { rank: 1, totalUsers: 1 };
-      const response = await fetch(`/api/user-rank/${user.id}`);
-      if (!response.ok) {
-        console.error('Failed to fetch user rank:', response.status);
-        return { rank: 1, totalUsers: 1 };
-      }
-      const data = await response.json();
-      console.log('📊 User rank data:', data);
-      return {
-        rank: Number(data.rank) || 1,
-        totalUsers: Number(data.totalUsers) || 1
-      };
-    },
-    enabled: !!user?.id,
-  });
+  // User rank functionality removed - keeping code for future use
+  // const { data: userRankResponse } = useQuery({
+  //   queryKey: ['/api/user-rank', user?.id],
+  //   queryFn: async () => {
+  //     if (!user?.id) return { rank: 1, totalUsers: 1 };
+  //     const response = await fetch(`/api/user-rank/${user.id}`);
+  //     if (!response.ok) {
+  //       console.error('Failed to fetch user rank:', response.status);
+  //       return { rank: 1, totalUsers: 1 };
+  //     }
+  //     const data = await response.json();
+  //     console.log('📊 User rank data:', data);
+  //     return {
+  //       rank: Number(data.rank) || 1,
+  //       totalUsers: Number(data.totalUsers) || 1
+  //     };
+  //   },
+  //   enabled: !!user?.id,
+  // });
 
   // Fetch recent quiz attempts
   const { data: recentQuizzes } = useQuery({
@@ -458,12 +458,13 @@ export default function Home() {
     totalXp: 0,
     currentLevel: 1,
     totalStudyTime: 0,
-    rank: userRankResponse?.rank || 11,
+    rank: 11, // Default rank since leaderboard is disabled
     studyTimeToday: todayStudyTime
   };
 
   const greeting = getGreeting();
-  const earnedBadges = badgeData?.earned || [];
+  // const earnedBadges = badgeData?.earned || [];
+  const earnedBadges: any[] = []; // Empty array for UI compatibility
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
@@ -652,14 +653,7 @@ export default function Home() {
                         <div className="text-xs text-body">{item.extraText}</div>
                       )}
 
-                      {item.hasButton && (
-                        <Link href="/leaderboard">
-                          <Button variant="ghost" size="sm" className="mt-2 p-0 h-auto text-primary-docdot hover:text-primary-docdot/80 group/btn">
-                            View Leaderboard 
-                            <ArrowRight className="w-3 h-3 ml-1 group-hover/btn:translate-x-1 transition-transform duration-200" />
-                          </Button>
-                        </Link>
-                      )}
+                      {/* Leaderboard functionality removed - keeping code for future use */}
                     </CardContent>
                   </Card>
                 </div>
@@ -671,32 +665,18 @@ export default function Home() {
         {/* Gamification Hub with Interactive Elements */}
         <div className="mb-12">
           <h2 className="text-3xl font-bold text-heading mb-8">
-            Gamification Hub
+            Study Progress
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-8 max-w-md mx-auto">
             {[
-              {
-                title: 'Badge Collection',
-                description: 'Earn achievements for your study milestones',
-                value: earnedBadges.length,
-                valueLabel: 'Badges Earned',
-                icon: Award,
-                badges: true,
-                link: '/badges'
-              },
-              {
-                title: 'Leaderboard',
-                description: 'Compete with fellow medical students',
-                value: `#${stats.rank}`,
-                valueLabel: 'Global Rank',
-                icon: Trophy
-              },
               {
                 title: 'Study Motivation',
                 description: 'Keep your learning streak alive',
                 hasWelcome: true,
-                icon: Brain
+                icon: Brain,
+                value: stats.currentStreak,
+                valueLabel: 'Day Streak'
               }
             ].map((item, index) => {
               const IconComponent = item.icon;
@@ -737,29 +717,7 @@ export default function Home() {
                         </div>
                       )}
 
-                      {item.badges && (
-                        <Link href="/badges">
-                          <div className="flex justify-center space-x-2 cursor-pointer">
-                            {earnedBadges.slice(0, 4).map((badge, i) => (
-                              <div 
-                                key={`badge-${badge.badgeId || i}`} 
-                                className="w-8 h-8 rounded-full shadow-lg transform hover:scale-125 transition-transform duration-200 cursor-pointer flex items-center justify-center text-white text-xs font-bold"
-                                style={{
-                                  backgroundColor: badge.color || '#3399FF',
-                                  animationDelay: `${i * 100}ms`,
-                                  animation: 'bounceIn 0.6s ease-out forwards'
-                                }}
-                                title={badge.name}
-                              >
-                                {badge.name?.charAt(0) || '🏆'}
-                              </div>
-                            ))}
-                            {earnedBadges.length === 0 && (
-                              <div className="text-sm text-gray-500">No badges yet - start quizzing!</div>
-                            )}
-                          </div>
-                        </Link>
-                      )}
+                      {/* Badges functionality removed - keeping code for future use */}
 
                       {item.hasWelcome && (
                         <div className="bg-docdot-white/80 backdrop-blur-sm rounded-xl p-4 border border-[#D1E8F9]">
@@ -787,9 +745,9 @@ export default function Home() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
             {[
               { title: 'Start Quiz', description: 'Test your knowledge', icon: Play, href: '/quiz' },
-              { title: 'Achievements', description: 'View your badges', icon: Award, href: '/badges' },
-              { title: 'Leaderboard', description: 'See rankings', icon: Trophy, href: '/leaderboard' },
-              { title: 'Analytics', description: 'Track progress', icon: BarChart3, href: '/analytics' }
+              { title: 'Analytics', description: 'Track progress', icon: BarChart3, href: '/analytics' },
+              { title: 'Study Guide', description: 'Comprehensive study materials', icon: BookOpen, href: '/study-guide' },
+              { title: 'AI Tools', description: 'AI-powered learning assistance', icon: Brain, href: '/ai-tools' }
             ].map((action, index) => {
               const IconComponent = action.icon;
               return (
