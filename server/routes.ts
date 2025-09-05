@@ -2786,6 +2786,96 @@ app.post("/api/study-groups", async (req, res) => {
     }
   });
 
+  // Save lecture transcript
+  app.post("/api/lectures/:id/save-transcript", async (req, res) => {
+    try {
+      const lectureId = req.params.id;
+      const { transcript, languageDetected, confidence } = req.body;
+
+      if (!transcript) {
+        return res.status(400).json({ error: "Transcript is required" });
+      }
+
+      // Check if transcript already exists
+      const existingTranscript = await db.select().from(lectureTranscripts)
+        .where(eq(lectureTranscripts.lectureId, lectureId))
+        .limit(1);
+
+      if (existingTranscript.length > 0) {
+        // Update existing transcript
+        await db.update(lectureTranscripts)
+          .set({
+            rawTranscript: transcript,
+            unifiedTranscript: transcript,
+            languageDetected: languageDetected || 'en',
+            confidence: confidence || 0.9,
+            updatedAt: new Date()
+          })
+          .where(eq(lectureTranscripts.lectureId, lectureId));
+      } else {
+        // Create new transcript
+        await db.insert(lectureTranscripts).values({
+          id: uuidv4(),
+          lectureId,
+          rawTranscript: transcript,
+          unifiedTranscript: transcript,
+          languageDetected: languageDetected || 'en',
+          confidence: confidence || 0.9
+        });
+      }
+
+      console.log(`✅ Transcript saved for lecture: ${lectureId}`);
+      res.json({ success: true, message: "Transcript saved successfully" });
+    } catch (error) {
+      console.error("Error saving transcript:", error);
+      res.status(500).json({ error: "Failed to save transcript" });
+    }
+  });
+
+  // Save lecture notes
+  app.post("/api/lectures/:id/save-notes", async (req, res) => {
+    try {
+      const lectureId = req.params.id;
+      const { liveNotes, processingStatus } = req.body;
+
+      if (!liveNotes) {
+        return res.status(400).json({ error: "Notes are required" });
+      }
+
+      // Check if notes already exist
+      const existingNotes = await db.select().from(lectureNotes)
+        .where(eq(lectureNotes.lectureId, lectureId))
+        .limit(1);
+
+      if (existingNotes.length > 0) {
+        // Update existing notes
+        await db.update(lectureNotes)
+          .set({
+            liveNotes: liveNotes,
+            finalNotes: liveNotes,
+            processingStatus: processingStatus || 'completed',
+            updatedAt: new Date()
+          })
+          .where(eq(lectureNotes.lectureId, lectureId));
+      } else {
+        // Create new notes
+        await db.insert(lectureNotes).values({
+          id: uuidv4(),
+          lectureId,
+          liveNotes: liveNotes,
+          finalNotes: liveNotes,
+          processingStatus: processingStatus || 'completed'
+        });
+      }
+
+      console.log(`✅ Notes saved for lecture: ${lectureId}`);
+      res.json({ success: true, message: "Notes saved successfully" });
+    } catch (error) {
+      console.error("Error saving notes:", error);
+      res.status(500).json({ error: "Failed to save notes" });
+    }
+  });
+
   // Background processing function for lecture analysis with Gemini AI
   async function processLectureInBackground(lectureId: string) {
     const startTime = Date.now();

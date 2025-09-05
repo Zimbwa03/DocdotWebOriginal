@@ -219,13 +219,21 @@ export default function Record() {
         }
       }
       
-      // Update live transcript
-      const currentTranscript = liveTranscript + finalTranscript;
-      setLiveTranscript(currentTranscript + interimTranscript);
+      // Update live transcript - keep all previous content and add new
+      const newTranscript = liveTranscript + finalTranscript;
+      setLiveTranscript(newTranscript + interimTranscript);
       
-      // Generate notes when we have substantial content
+      // Generate notes when we have substantial content (use the full accumulated transcript)
       if (finalTranscript.trim().length > 50) {
-        generateLiveNotes(currentTranscript);
+        generateLiveNotes(newTranscript); // Use the full accumulated transcript
+      }
+
+      // Auto-save transcript periodically (every 500 characters of new content)
+      if (finalTranscript.trim().length > 0 && newTranscript.length % 500 === 0) {
+        const currentLecture = lectures.find(l => l.status === 'recording');
+        if (currentLecture) {
+          saveLectureData(currentLecture.id, newTranscript, liveNotes);
+        }
       }
     };
     
@@ -440,10 +448,16 @@ Date: ${new Date().toLocaleDateString()}
       if (response.ok) {
         const data = await response.json();
         setLiveNotes(data.liveNotes);
+        
+        // Auto-save notes when generated (use full accumulated transcript)
+        const currentLecture = lectures.find(l => l.status === 'recording');
+        if (currentLecture) {
+          saveLectureData(currentLecture.id, liveTranscript, data.liveNotes);
+        }
       } else {
         console.error('Failed to generate live notes');
         // Fallback to basic notes
-        setLiveNotes(`
+        const fallbackNotes = `
 ## Key Points from Live Lecture
 
 ### ${lectureMetadata.module}
@@ -455,19 +469,35 @@ Date: ${new Date().toLocaleDateString()}
 - Real-time note generation in progress
 - AI-powered content analysis
 - Structured for easy revision
-        `.trim());
+        `.trim();
+        
+        setLiveNotes(fallbackNotes);
+        
+        // Auto-save fallback notes too (use full accumulated transcript)
+        const currentLecture = lectures.find(l => l.status === 'recording');
+        if (currentLecture) {
+          saveLectureData(currentLecture.id, liveTranscript, fallbackNotes);
+        }
       }
     } catch (error) {
       console.error('Error generating live notes:', error);
       // Fallback to basic notes
-      setLiveNotes(`
+      const fallbackNotes = `
 ## Key Points from Live Lecture
 
 ### ${lectureMetadata.module}
 - ${lectureMetadata.topic || 'General medical concepts discussed'}
 - Important medical terminology and definitions
 - Clinical applications and relevance
-      `.trim());
+      `.trim();
+      
+      setLiveNotes(fallbackNotes);
+      
+      // Auto-save fallback notes on error too (use full accumulated transcript)
+      const currentLecture = lectures.find(l => l.status === 'recording');
+      if (currentLecture) {
+        saveLectureData(currentLecture.id, liveTranscript, fallbackNotes);
+      }
     }
   };
 
@@ -579,11 +609,51 @@ Date: ${new Date().toLocaleDateString()}
       }
       setIsTranscribing(false);
 
-      // Stop recording on backend
+      // Stop recording on backend and save transcript/notes
       const currentLecture = lectures.find(l => l.status === 'recording');
       if (currentLecture) {
+        // Save the complete accumulated transcript and notes to the database
+        await saveLectureData(currentLecture.id, liveTranscript, liveNotes);
         await stopRecordingMutation.mutateAsync(currentLecture.id);
       }
+    }
+  };
+
+  // Save lecture transcript and notes to database
+  const saveLectureData = async (lectureId: string, transcript: string, notes: string) => {
+    try {
+      // Save transcript
+      if (transcript.trim()) {
+        await fetch(`/api/lectures/${lectureId}/save-transcript`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            transcript: transcript,
+            languageDetected: speechLanguage,
+            confidence: 0.9
+          }),
+        });
+      }
+
+      // Save notes
+      if (notes.trim()) {
+        await fetch(`/api/lectures/${lectureId}/save-notes`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            liveNotes: notes,
+            processingStatus: 'completed'
+          }),
+        });
+      }
+
+      console.log('✅ Lecture data saved successfully');
+    } catch (error) {
+      console.error('❌ Error saving lecture data:', error);
     }
   };
 
@@ -949,13 +1019,21 @@ Date: ${new Date().toLocaleDateString()}
                                 </span>
                               </div>
                               <p className="text-xs text-blue-700 dark:text-blue-300">
-                                Speak clearly into your microphone. The system will transcribe your speech in real-time and generate AI-powered notes.
+                                Speak clearly into your microphone. The system will transcribe your speech in real-time, accumulate the full conversation, and generate AI-powered notes from the complete transcript.
                               </p>
+                              {liveTranscript && (
+                                <div className="mt-2 text-xs text-blue-600 dark:text-blue-400">
+                                  <strong>Transcript Length:</strong> {liveTranscript.length} characters
+                                </div>
+                              )}
                             </div>
-                                              <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border">
+                                              <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border max-h-96 overflow-y-auto">
                     {liveTranscript ? (
-                      <div className="text-gray-800 dark:text-gray-200">
+                      <div className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
                         {liveTranscript}
+                        {isTranscribing && (
+                          <span className="text-blue-500 animate-pulse">|</span>
+                        )}
                       </div>
                     ) : (
                       <div className="flex items-center space-x-2 text-gray-500">
