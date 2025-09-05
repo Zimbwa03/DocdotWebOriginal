@@ -103,6 +103,7 @@ export default function Record() {
   const [isGeneratingNotes, setIsGeneratingNotes] = useState(false);
   const [noteGenerationTimeout, setNoteGenerationTimeout] = useState<NodeJS.Timeout | null>(null);
   const [showGenerateButton, setShowGenerateButton] = useState(false);
+  const [finalTranscript, setFinalTranscript] = useState(''); // Store only final, clean transcript
 
   // Refs
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -179,6 +180,7 @@ export default function Record() {
   const startRealTimeTranscription = () => {
     setIsTranscribing(true);
     setLiveTranscript('');
+    setFinalTranscript('');
     
     // Check if browser supports Web Speech API
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -201,7 +203,6 @@ export default function Record() {
     recognition.interimResults = true; // Show interim results
     recognition.lang = speechLanguage; // Use selected language
     recognition.maxAlternatives = 1;
-    recognition.interimResults = true; // Show interim results for better UX
     
     // Start recognition
     recognition.start();
@@ -209,55 +210,53 @@ export default function Record() {
     
     // Handle results with proper text accumulation
     recognition.onresult = (event) => {
-      let interimTranscript = '';
-      let finalTranscript = '';
+      let newFinalText = '';
+      let interimText = '';
       
-      // Process only NEW results to avoid repetition
+      // Process all results from the current event
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript;
         
         if (event.results[i].isFinal) {
-          finalTranscript += transcript + ' ';
+          newFinalText += transcript + ' ';
         } else {
-          interimTranscript += transcript;
+          interimText += transcript;
         }
       }
       
-      // Only update if we have new final transcript
-      if (finalTranscript.trim()) {
-        setLiveTranscript(prevTranscript => {
-          const newAccumulatedTranscript = prevTranscript + finalTranscript;
+      // Update final transcript (append only)
+      if (newFinalText.trim()) {
+        setFinalTranscript(prev => {
+          const updatedFinal = prev + newFinalText;
           
           // Debug: Log transcript accumulation
-          console.log('📝 Final transcript added:', finalTranscript);
-          console.log('📝 Total accumulated length:', newAccumulatedTranscript.length);
-          console.log('📝 Current transcript preview:', newAccumulatedTranscript.substring(0, 200));
+          console.log('📝 Final transcript added:', newFinalText);
+          console.log('📝 Total accumulated length:', updatedFinal.length);
+          console.log('📝 Current transcript preview:', updatedFinal.substring(0, 200));
           
           // Show generate button when we have substantial content
-          if (newAccumulatedTranscript.trim().length > 100) {
+          if (updatedFinal.trim().length > 100) {
             setShowGenerateButton(true);
           }
 
           // Auto-save transcript periodically (every 500 characters of new content)
-          if (finalTranscript.trim().length > 0 && newAccumulatedTranscript.length % 500 === 0) {
+          if (newFinalText.trim().length > 0 && updatedFinal.length % 500 === 0) {
             const currentLecture = lectures.find(l => l.status === 'recording');
             if (currentLecture) {
-              saveLectureData(currentLecture.id, newAccumulatedTranscript, liveNotes);
+              saveLectureData(currentLecture.id, updatedFinal, liveNotes);
             }
           }
           
-          return newAccumulatedTranscript;
+          return updatedFinal;
         });
       }
       
-      // Update interim results separately to avoid repetition
-      if (interimTranscript.trim()) {
-        setLiveTranscript(prevTranscript => {
-          // Remove any existing interim text and add new interim text
-          const finalText = prevTranscript.replace(/\s*\[interim\]\s*$/, '');
-          return finalText + ' [interim] ' + interimTranscript;
-        });
-      }
+      // Update display with final transcript + interim results
+      setLiveTranscript(prev => {
+        const currentFinal = prev.replace(/\s*\[interim\].*$/, '');
+        const displayText = currentFinal + (interimText.trim() ? ' [interim] ' + interimText : '');
+        return displayText;
+      });
     };
     
     // Handle errors with automatic restart for certain errors
@@ -321,6 +320,8 @@ export default function Record() {
         console.log('🔄 Restarting speech recognition...');
         setTimeout(() => {
           if (recordingState.isRecording) {
+            // Clean up any interim markers before restarting
+            setLiveTranscript(prev => prev.replace(/\s*\[interim\].*$/, ''));
             startRealTimeTranscription();
           }
         }, 100);
@@ -460,8 +461,8 @@ export default function Record() {
 
   // Manual generate notes button handler
   const handleGenerateNotes = async () => {
-    // Clean the transcript to remove interim markers
-    const cleanTranscript = liveTranscript.replace(/\s*\[interim\]\s*$/, '').trim();
+    // Use the clean final transcript (no interim markers)
+    const cleanTranscript = finalTranscript.trim();
     
     if (!cleanTranscript) {
       toast({
@@ -1233,7 +1234,7 @@ ${transcript.substring(0, 200)}...
                               <div className="grid grid-cols-2 gap-4 mb-3">
                                 <div className="bg-white dark:bg-gray-800 p-2 rounded border">
                                   <div className="text-xs text-gray-600 dark:text-gray-400">Characters Transcribed</div>
-                                  <div className="text-lg font-bold text-blue-600">{liveTranscript.length}</div>
+                                  <div className="text-lg font-bold text-blue-600">{finalTranscript.length}</div>
                                 </div>
                                 <div className="bg-white dark:bg-gray-800 p-2 rounded border">
                                   <div className="text-xs text-gray-600 dark:text-gray-400">Status</div>
@@ -1241,7 +1242,7 @@ ${transcript.substring(0, 200)}...
                                 </div>
                               </div>
                               
-                              {showGenerateButton && (
+                              {finalTranscript.trim().length > 100 && (
                                 <div className="mt-4">
                                   <button
                                     onClick={handleGenerateNotes}
@@ -1271,9 +1272,16 @@ ${transcript.substring(0, 200)}...
                     <div className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap min-h-[200px]">
                       {liveTranscript ? (
                         <div>
-                          {liveTranscript.replace(/\s*\[interim\]\s*$/, '')}
+                          <span className="text-gray-800 dark:text-gray-200">
+                            {liveTranscript.replace(/\s*\[interim\].*$/, '')}
+                          </span>
+                          {isTranscribing && liveTranscript.includes('[interim]') && (
+                            <span className="text-blue-500 animate-pulse">
+                              {liveTranscript.match(/\[interim\]\s*(.*)$/)?.[1] || ''}
+                            </span>
+                          )}
                           {isTranscribing && (
-                            <span className="text-blue-500 animate-pulse">|</span>
+                            <span className="text-blue-500 animate-pulse ml-1">|</span>
                           )}
                         </div>
                       ) : (
