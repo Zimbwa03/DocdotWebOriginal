@@ -3,35 +3,20 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { db } from "./db";
 import { sql } from "drizzle-orm";
-import { comprehensiveSupabaseTest } from "./supabase-test";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Production logging middleware
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
 
   res.on("finish", () => {
     const duration = Date.now() - start;
     if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
+      const logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
       log(logLine);
     }
   });
@@ -39,40 +24,20 @@ app.use((req, res, next) => {
   next();
 });
 
-// Test Supabase connection on startup
-async function testDatabaseConnection() {
+// Verify database connection on startup
+async function verifyDatabaseConnection() {
   try {
-    console.log('🔗 Testing Supabase database connection...');
-    const result = await db.execute(sql`SELECT NOW() as current_time`);
-    console.log('✅ Supabase connection successful!');
-
-    // Test if main tables exist
-    const tables = await db.execute(sql`
-      SELECT table_name 
-      FROM information_schema.tables 
-      WHERE table_schema = 'public' 
-      AND table_name IN ('users', 'user_stats', 'quiz_attempts', 'ai_sessions', 'ai_chats')
-      ORDER BY table_name
-    `);
-
-    if (tables && tables.length > 0) {
-      console.log(`📊 Database tables found: ${tables.length} tables`);
-      console.log('✅ Supabase schema is properly configured');
-    } else {
-      console.log('📊 Database connected, checking table availability...');
-    }
-
+    await db.execute(sql`SELECT NOW() as current_time`);
+    console.log('✅ Database connection verified');
   } catch (error) {
-    console.error('❌ Database connection test failed:', error.message);
+    console.error('❌ Database connection failed:', error.message);
+    process.exit(1);
   }
 }
 
 (async () => {
-  // Test database connection before starting server
-  await testDatabaseConnection();
-
-  // Skip comprehensive test to avoid duplicate key errors
-  console.log('ℹ️  Skipping comprehensive database test to prevent duplicate key conflicts');
+  // Verify database connection before starting server
+  await verifyDatabaseConnection();
 
   const server = await registerRoutes(app);
 
