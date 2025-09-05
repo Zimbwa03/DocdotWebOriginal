@@ -178,6 +178,7 @@ export default function Record() {
 
   // Real-time transcription using Web Speech API
   const startRealTimeTranscription = () => {
+    console.log('🎤 Initializing speech recognition...');
     setIsTranscribing(true);
     setLiveTranscript('');
     setFinalTranscript('');
@@ -204,20 +205,50 @@ export default function Record() {
     recognition.lang = speechLanguage; // Use selected language
     recognition.maxAlternatives = 1;
     
+    console.log('🎤 Speech recognition configured:', {
+      continuous: recognition.continuous,
+      interimResults: recognition.interimResults,
+      lang: recognition.lang
+    });
+    
     // Start recognition
-    recognition.start();
-    console.log('🎤 Real-time speech recognition started');
+    try {
+      recognition.start();
+      console.log('✅ Speech recognition started successfully');
+    } catch (error) {
+      console.error('❌ Failed to start speech recognition:', error);
+      toast({
+        variant: "destructive",
+        title: "Speech Recognition Error",
+        description: "Failed to start speech recognition. Please try again."
+      });
+      setIsTranscribing(false);
+      return;
+    }
     
     // Handle results with proper text accumulation
     recognition.onresult = (event) => {
+      console.log('🎤 Speech recognition result received:', {
+        resultIndex: event.resultIndex,
+        resultsLength: event.results.length,
+        isFinal: event.results[event.results.length - 1]?.isFinal
+      });
+      
       let newFinalText = '';
       let interimText = '';
       
       // Process all results from the current event
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript;
+        const isFinal = event.results[i].isFinal;
         
-        if (event.results[i].isFinal) {
+        console.log(`📝 Processing result ${i}:`, {
+          transcript: transcript,
+          isFinal: isFinal,
+          confidence: event.results[i][0].confidence
+        });
+        
+        if (isFinal) {
           newFinalText += transcript + ' ';
         } else {
           interimText += transcript;
@@ -226,6 +257,7 @@ export default function Record() {
       
       // Update final transcript (append only)
       if (newFinalText.trim()) {
+        console.log('📝 Adding final text:', newFinalText);
         setFinalTranscript(prev => {
           const updatedFinal = prev + newFinalText;
           
@@ -252,6 +284,10 @@ export default function Record() {
       }
       
       // Update display with final transcript + interim results
+      if (interimText.trim()) {
+        console.log('📝 Adding interim text:', interimText);
+      }
+      
       setLiveTranscript(prev => {
         const currentFinal = prev.replace(/\s*\[interim\].*$/, '');
         const displayText = currentFinal + (interimText.trim() ? ' [interim] ' + interimText : '');
@@ -506,11 +542,13 @@ export default function Record() {
       });
 
       console.log('📡 Response status:', response.status);
+      console.log('📡 Response headers:', response.headers);
       
       if (response.ok) {
         const data = await response.json();
         console.log('✅ Notes generated successfully');
         console.log('📝 Generated notes length:', data.processedNotes?.length || 0);
+        console.log('📝 Generated notes preview:', data.processedNotes?.substring(0, 200) || 'No content');
         
         // Update the live notes with the processed content
         const notes = data.processedNotes || 'Notes generation completed but no content returned.';
@@ -525,20 +563,56 @@ export default function Record() {
           description: "AI has created structured, well-researched notes from your lecture.",
         });
       } else {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        console.error('Failed to generate notes:', errorData);
+        let errorData;
+        try {
+          errorData = await response.json();
+          console.error('❌ API Error Response:', errorData);
+        } catch (parseError) {
+          console.error('❌ Failed to parse error response:', parseError);
+          errorData = { error: `HTTP ${response.status}: ${response.statusText}` };
+        }
+        
+        console.error('❌ Failed to generate notes:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData
+        });
+        
         toast({
           title: "Generation Failed",
-          description: `Could not generate notes: ${errorData.error || 'Unknown error'}`,
+          description: `Could not generate notes: ${errorData.error || errorData.details || 'Unknown error'}`,
           variant: "destructive"
         });
       }
     } catch (error) {
       console.error('Error generating notes:', error);
+      
+      // Create fallback notes if API fails
+      const fallbackNotes = `# ${lectureMetadata.module} - ${lectureMetadata.topic || 'Lecture Notes'}
+
+## 📝 Lecture Transcript
+${cleanTranscript}
+
+## 🎯 Key Points
+- This is a fallback note generation due to API error
+- Original transcript is preserved above
+- Please try generating notes again later
+
+## 📚 Manual Notes
+Please review the transcript above and create your own structured notes based on the lecture content.
+
+---
+*Note: AI note generation failed. This is a fallback version.*
+*Error: ${error.message}*
+*Generated: ${new Date().toLocaleString()}*
+`;
+
+      setLiveNotes(fallbackNotes);
+      
       toast({
-        title: "Generation Error",
-        description: `An error occurred while generating notes: ${error.message}`,
-        variant: "destructive"
+        title: "Fallback Notes Created",
+        description: "API failed, but fallback notes with transcript have been created.",
+        variant: "default"
       });
     } finally {
       setIsGeneratingNotes(false);
@@ -691,6 +765,18 @@ ${transcript.substring(0, 200)}...
     }
   };
 
+  // Check microphone permissions
+  const checkMicrophonePermission = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(track => track.stop());
+      return true;
+    } catch (error) {
+      console.error('Microphone permission denied:', error);
+      return false;
+    }
+  };
+
   // Start recording
   const startRecording = async () => {
     if (!lectureMetadata.title || !lectureMetadata.module) {
@@ -703,6 +789,19 @@ ${transcript.substring(0, 200)}...
     }
 
     try {
+      console.log('🎤 Starting recording process...');
+      
+      // Check microphone permission first
+      const hasPermission = await checkMicrophonePermission();
+      if (!hasPermission) {
+        toast({
+          variant: "destructive",
+          title: "Microphone Access Required",
+          description: "Please allow microphone access to record lectures."
+        });
+        return;
+      }
+      
       // Request microphone access with high quality settings
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
@@ -713,6 +812,8 @@ ${transcript.substring(0, 200)}...
           channelCount: 1
         } 
       });
+      
+      console.log('✅ Microphone access granted');
       
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'audio/webm;codecs=opus'
@@ -760,7 +861,13 @@ ${transcript.substring(0, 200)}...
       await startRecordingMutation.mutateAsync(lectureMetadata);
 
       // Start real-time transcription
+      console.log('🎤 Starting speech recognition...');
       startRealTimeTranscription();
+      
+      toast({
+        title: "Recording Started",
+        description: "Microphone is active. Start speaking to see transcription.",
+      });
     } catch (error) {
       console.error('Error starting recording:', error);
       toast({
@@ -1238,12 +1345,69 @@ ${transcript.substring(0, 200)}...
                                 </div>
                                 <div className="bg-white dark:bg-gray-800 p-2 rounded border">
                                   <div className="text-xs text-gray-600 dark:text-gray-400">Status</div>
-                                  <div className="text-sm font-medium text-green-600">✓ Transcribing</div>
+                                  <div className="text-sm font-medium text-green-600">
+                                    {isTranscribing ? '✓ Listening' : '⏸️ Not Listening'}
+                                  </div>
                                 </div>
                               </div>
                               
-                              {finalTranscript.trim().length > 100 && (
-                                <div className="mt-4">
+                              {/* Debug buttons */}
+                              <div className="mt-4 space-y-2">
+                                <button
+                                  onClick={() => {
+                                    console.log('🧪 Testing speech recognition...');
+                                    startRealTimeTranscription();
+                                  }}
+                                  className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200"
+                                >
+                                  🧪 Test Speech Recognition
+                                </button>
+                                
+                                <button
+                                  onClick={async () => {
+                                    console.log('🧪 Testing note generation API...');
+                                    try {
+                                      const response = await fetch('/api/lectures/test-notes', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                          transcript: 'This is a test lecture about anatomy and physiology.',
+                                          module: 'Anatomy',
+                                          topic: 'Test Topic'
+                                        })
+                                      });
+                                      
+                                      if (response.ok) {
+                                        const data = await response.json();
+                                        console.log('✅ Test API successful:', data);
+                                        toast({
+                                          title: "API Test Successful",
+                                          description: "Note generation API is working correctly."
+                                        });
+                                      } else {
+                                        const error = await response.json();
+                                        console.error('❌ Test API failed:', error);
+                                        toast({
+                                          title: "API Test Failed",
+                                          description: `Error: ${error.error || 'Unknown error'}`,
+                                          variant: "destructive"
+                                        });
+                                      }
+                                    } catch (error) {
+                                      console.error('❌ Test API error:', error);
+                                      toast({
+                                        title: "API Test Error",
+                                        description: `Network error: ${error.message}`,
+                                        variant: "destructive"
+                                      });
+                                    }
+                                  }}
+                                  className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200"
+                                >
+                                  🧪 Test Note Generation API
+                                </button>
+                                
+                                {finalTranscript.trim().length > 100 && (
                                   <button
                                     onClick={handleGenerateNotes}
                                     disabled={isGeneratingNotes}
@@ -1262,11 +1426,15 @@ ${transcript.substring(0, 200)}...
                                       </>
                                     )}
                                   </button>
-                                  <p className="text-xs text-gray-500 mt-2 text-center">
-                                    AI will organize, structure, and research your lecture content
-                                  </p>
-                                </div>
-                              )}
+                                )}
+                                
+                                <p className="text-xs text-gray-500 text-center">
+                                  {finalTranscript.trim().length > 100 
+                                    ? "AI will organize, structure, and research your lecture content"
+                                    : "Speak clearly into your microphone to see transcription"
+                                  }
+                                </p>
+                              </div>
                             </div>
                                               <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border max-h-96 overflow-y-auto">
                     <div className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap min-h-[200px]">

@@ -2701,6 +2701,34 @@ app.post("/api/study-groups", async (req, res) => {
     }
   });
 
+  // Test endpoint for note generation
+  app.post("/api/lectures/test-notes", async (req, res) => {
+    try {
+      const { transcript, module, topic } = req.body;
+      
+      console.log('🧪 Test notes request:', { transcriptLength: transcript?.length, module, topic });
+      
+      if (!transcript || !module) {
+        return res.status(400).json({ error: "Transcript and module are required" });
+      }
+
+      // Test Gemini AI connection
+      const testNotes = await geminiAI.generateComprehensiveNotes(transcript, module, topic);
+      
+      res.json({ 
+        success: true,
+        testNotes,
+        message: 'Test notes generated successfully'
+      });
+    } catch (error) {
+      console.error("Error in test notes:", error);
+      res.status(500).json({ 
+        error: "Failed to generate test notes",
+        details: error.message 
+      });
+    }
+  });
+
   // Process complete lecture after recording stops
   app.post("/api/lectures/process-complete-lecture", async (req, res) => {
     try {
