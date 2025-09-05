@@ -38,6 +38,7 @@ import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link } from 'wouter';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useQuery } from '@tanstack/react-query';
 
 // Animation variants
@@ -149,7 +150,7 @@ function QuizSection() {
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full blur animate-pulse"></div>
             <img 
-              src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview-removebg-preview_1750075531418.png" 
+              src="/DocDot Medical Student Logo.png" 
               alt="DocDot Medical Student Logo" 
               className="relative h-16 w-auto transform hover:scale-110 transition-all duration-500"
               onError={(e) => {
@@ -258,6 +259,7 @@ function QuizSection() {
 
 export default function Home() {
   const { user } = useAuth();
+  const { theme } = useTheme();
   const queryClient = useQueryClient();
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -412,7 +414,7 @@ export default function Home() {
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full blur-lg animate-pulse"></div>
                 <img 
-                  src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview-removebg-preview_1750075531418.png" 
+                  src="/DocDot Medical Student Logo.png" 
                   alt="DocDot Medical Student Logo" 
                   className="relative h-20 w-auto"
                   onError={(e) => {
@@ -464,11 +466,11 @@ export default function Home() {
   const earnedBadges = badgeData?.earned || [];
 
   return (
-    <div className="min-h-screen bg-docdot-light dark:bg-docdot-light">
+    <div className="min-h-screen bg-white dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Animated Header */}
         <div className={`text-center mb-12 ${isLoaded ? 'animate-fade-in' : 'opacity-0'}`}>
-          <div className="relative bg-gradient-to-br from-[#D1E8F9] to-[#F7FAFC] rounded-2xl py-8 px-6">
+          <div className="relative bg-gradient-to-br from-[#D1E8F9] to-[#F7FAFC] dark:from-gray-800 dark:to-gray-700 rounded-2xl py-8 px-6">
             <div className="relative z-10">
               <h1 className="text-4xl sm:text-5xl font-bold text-heading mb-4 transform hover:scale-105 transition-transform duration-300">
                 {greeting.text} <span className="text-6xl">{greeting.emoji}</span>
@@ -495,7 +497,7 @@ export default function Home() {
               <div className="relative mr-4">
                 <div className="absolute inset-0 bg-gradient-to-r from-[#3399FF] to-[#66CCFF] rounded-full blur animate-pulse"></div>
                 <img 
-                  src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview-removebg-preview_1750075531418.png" 
+                  src="/DocDot Medical Student Logo.png" 
                   alt="DocDot Medical Student Logo" 
                   className="relative h-12 w-auto transform group-hover:rotate-12 transition-transform duration-500"
                   onError={(e) => {

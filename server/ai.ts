@@ -166,15 +166,16 @@ class OpenRouterAI {
     const sanitizedTopic = topic.trim();
     const validCount = Math.min(Math.max(count, 1), 10);
 
-    const systemPrompt = `You are an expert medical educator creating True/False questions for medical students.
+    const systemPrompt = `You are an expert medical educator and DeepSeek AI assistant creating high-quality True/False questions for medical students.
 
     CRITICAL REQUIREMENTS:
     1. Generate EXACTLY ${validCount} True/False questions about "${sanitizedTopic}"
     2. Difficulty level: ${difficulty}
-    3. Respond with ONLY a valid JSON array - no extra text
-    4. Each question must be medically accurate and evidence-based
+    3. Respond with ONLY a valid JSON array - no extra text, no markdown, no explanations
+    4. Each question must be medically accurate, evidence-based, and educationally valuable
+    5. Questions should test understanding, not just memorization
 
-    JSON Format (EXACT):
+    JSON Format (EXACT - NO OTHER TEXT):
     [
       {
         "question": "The heart has four chambers",
@@ -185,15 +186,18 @@ class OpenRouterAI {
       }
     ]
 
-    Requirements:
+    Question Quality Standards:
     - Questions must be True/False only
-    - Include clear, educational explanations
+    - Include clear, educational explanations (2-3 sentences)
     - Use proper medical terminology
-    - Return ONLY the JSON array`;
+    - Test conceptual understanding, not just facts
+    - Vary question complexity based on difficulty level
+    - Ensure questions are clinically relevant
+    - Return ONLY the JSON array - no other text`;
 
     const messages: AIMessage[] = [
       { role: 'system', content: systemPrompt },
-      { role: 'user', content: `Generate ${validCount} medical True/False questions about "${sanitizedTopic}" at ${difficulty} level for medical students. Return only valid JSON.` }
+      { role: 'user', content: `Generate ${validCount} medical True/False questions about "${sanitizedTopic}" at ${difficulty} level for medical students. Focus on clinically relevant concepts and ensure educational value. Return only valid JSON array.` }
     ];
 
     try {
@@ -209,19 +213,27 @@ class OpenRouterAI {
       // Clean the response to extract JSON
       let jsonString = response.trim();
 
-      // Remove common prefixes/suffixes
+      // Remove common prefixes/suffixes that AI might add
       jsonString = jsonString.replace(/^```json\s*/, '').replace(/\s*```$/, '');
       jsonString = jsonString.replace(/^```\s*/, '').replace(/\s*```$/, '');
+      jsonString = jsonString.replace(/^Here are the questions:\s*/i, '');
+      jsonString = jsonString.replace(/^Generated questions:\s*/i, '');
+      jsonString = jsonString.replace(/^Questions:\s*/i, '');
 
       // Find JSON array bounds
       const jsonStart = jsonString.indexOf('[');
       const jsonEnd = jsonString.lastIndexOf(']');
 
       if (jsonStart === -1 || jsonEnd === -1) {
-        throw new Error('No valid JSON array found in response');
+        console.error('No JSON array found. Response:', response.substring(0, 500));
+        throw new Error('No valid JSON array found in AI response. The AI may have provided text instead of JSON.');
       }
 
       jsonString = jsonString.substring(jsonStart, jsonEnd + 1);
+      
+      // Additional cleaning for common AI response issues
+      jsonString = jsonString.replace(/\n\s*/g, ' '); // Remove newlines and extra spaces
+      jsonString = jsonString.replace(/\s+/g, ' '); // Normalize spaces
 
       let parsedResponse;
       try {
@@ -229,7 +241,21 @@ class OpenRouterAI {
       } catch (parseError) {
         console.error('JSON parsing failed:', parseError);
         console.error('Failed JSON string:', jsonString);
-        throw new Error('Invalid JSON format in AI response');
+        console.error('Original response:', response.substring(0, 1000));
+        
+        // Try to fix common JSON issues
+        try {
+          // Fix common AI response issues
+          let fixedJson = jsonString
+            .replace(/,(\s*[}\]])/g, '$1') // Remove trailing commas
+            .replace(/([{,]\s*)(\w+):/g, '$1"$2":') // Add quotes to unquoted keys
+            .replace(/:(\s*)([^",{\[\s][^,}\]]*?)(\s*[,}])/g, ': "$2"$3'); // Add quotes to unquoted string values
+          
+          parsedResponse = JSON.parse(fixedJson);
+          console.log('Successfully parsed after fixing common issues');
+        } catch (secondError) {
+          throw new Error(`Invalid JSON format in AI response. Parse error: ${parseError.message}`);
+        }
       }
 
       // Ensure it's an array

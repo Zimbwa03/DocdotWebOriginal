@@ -1,68 +1,89 @@
-import postgres from 'postgres';
+// Simple test to check database connection and topic names
+import { createClient } from '@supabase/supabase-js';
 
-async function testConnection() {
-  const connectionString = process.env.DATABASE_URL;
-  
-  console.log('Testing Supabase connection...');
-  console.log('DATABASE_URL configured:', !!connectionString);
-  
-  if (!connectionString) {
-    console.error('❌ DATABASE_URL not found');
+const supabaseUrl = 'https://jncxejkssgvxhdurmvxy.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpuY3hlamtzc2d2eGhkdXJtdnh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc4NjUwNDEsImV4cCI6MjA2MzQ0MTA0MX0.vB91dobZ0zsFTEAQiZ1nU5n94ppxdolpaDs2lUNox38';
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+async function testDatabase() {
+  try {
+    console.log('🔍 Testing Supabase connection...');
+    
+    // Test basic connection
+    const { data: testData, error: testError } = await supabase
+      .from('mcq_questions')
+      .select('count')
+      .limit(1);
+    
+    if (testError) {
+      console.error('❌ Connection failed:', testError);
     return;
   }
 
-  try {
-    const sql = postgres(connectionString);
+    console.log('✅ Supabase connection successful');
     
-    // Test basic connection
-    const result = await sql`SELECT version()`;
-    console.log('✅ Database connected successfully');
-    console.log('PostgreSQL version:', result[0].version.split(' ')[1]);
+    // Get all distinct topics for Upper Limb
+    console.log('\n📋 Fetching all topics for Upper Limb...');
+    const { data: topics, error: topicsError } = await supabase
+      .from('mcq_questions')
+      .select('topic')
+      .eq('category', 'Upper Limb')
+      .order('topic');
     
-    // Test if our tables exist
-    const tables = await sql`
-      SELECT table_name 
-      FROM information_schema.tables 
-      WHERE table_schema = 'public' 
-      AND table_name IN ('users', 'quiz_attempts', 'user_stats', 'ai_sessions', 'study_groups')
-      ORDER BY table_name
-    `;
+    if (topicsError) {
+      console.error('❌ Error fetching topics:', topicsError);
+      return;
+    }
     
-    console.log('✅ Found tables:', tables.map(t => t.table_name));
+    const distinctTopics = [...new Set(topics.map(t => t.topic))];
+    console.log('Available topics in Upper Limb:');
+    distinctTopics.forEach((topic, i) => {
+      console.log(`${i + 1}. "${topic}"`);
+    });
     
-    // Test users table structure
-    const userColumns = await sql`
-      SELECT column_name, data_type 
-      FROM information_schema.columns 
-      WHERE table_name = 'users' 
-      ORDER BY ordinal_position
-    `;
+    // Test Pectoral Region specifically
+    console.log('\n🔍 Testing Pectoral Region questions...');
+    const { data: pectoralQuestions, error: pectoralError } = await supabase
+      .from('mcq_questions')
+      .select('id, question, topic, category')
+      .eq('category', 'Upper Limb')
+      .eq('topic', 'Pectoral Region')
+      .limit(3);
     
-    console.log('✅ Users table columns:', userColumns.length);
+    if (pectoralError) {
+      console.error('❌ Error fetching Pectoral Region questions:', pectoralError);
+      return;
+    }
     
-    // Test inserting a test record
-    const testUserId = 'test-user-' + Date.now();
-    const testEmail = `test-${Date.now()}@example.com`;
+    console.log(`Found ${pectoralQuestions.length} Pectoral Region questions:`);
+    pectoralQuestions.forEach((q, i) => {
+      console.log(`${i + 1}. [${q.topic}] ${q.question.substring(0, 80)}...`);
+    });
     
-    await sql`
-      INSERT INTO users (id, email, first_name, subscription_tier) 
-      VALUES (${testUserId}, ${testEmail}, 'Test User', 'free')
-    `;
-    console.log('✅ Test user inserted successfully');
+    // Test if there are any questions with similar topic names
+    console.log('\n🔍 Checking for similar topic names...');
+    const { data: similarTopics, error: similarError } = await supabase
+      .from('mcq_questions')
+      .select('topic')
+      .eq('category', 'Upper Limb')
+      .ilike('topic', '%pector%')
+      .order('topic');
     
-    // Clean up test data
-    await sql`DELETE FROM users WHERE id = ${testUserId}`;
-    console.log('✅ Test data cleaned up');
+    if (similarError) {
+      console.error('❌ Error fetching similar topics:', similarError);
+      return;
+    }
     
-    await sql.end();
-    console.log('✅ All database tests passed');
+    const distinctSimilar = [...new Set(similarTopics.map(t => t.topic))];
+    console.log('Topics containing "pector":');
+    distinctSimilar.forEach((topic, i) => {
+      console.log(`${i + 1}. "${topic}"`);
+    });
     
   } catch (error) {
-    console.error('❌ Database test failed:', error.message);
-    if (error.code) {
-      console.error('Error code:', error.code);
-    }
+    console.error('❌ Database test failed:', error);
   }
 }
 
-testConnection();
+testDatabase();

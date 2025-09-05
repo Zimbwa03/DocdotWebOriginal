@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +24,7 @@ export function AuthForm() {
   const [confirmPassword, setConfirmPassword] = useState('');
   
   const { signIn, signUp, signInWithOAuth } = useAuth();
+  const { theme } = useTheme();
   const [, setLocation] = useLocation();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -88,26 +90,31 @@ export function AuthForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: '#FFFFFF' }}>
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-900">
       <div className="max-w-md w-full space-y-8">
         
         {/* Header */}
         <div className="text-center">
           <div className="mx-auto mb-6">
             <img 
-              src="/attached_assets/20250526_2027_Young_Medical_Student_remix_01jw6xh6h8fe1ahpkyns3pw1dw-removebg-preview-removebg-preview_1750075531418.png" 
+              src="/DocDot Medical Student Logo.png" 
               alt="DocDot Medical Student Logo" 
               className="w-24 h-24 mx-auto object-contain rounded-xl shadow-sm"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = '/DocDot Medical Student Logo.png';
+                target.onerror = null; // Prevent infinite loop
+              }}
             />
           </div>
-          <h1 className="text-3xl font-bold mb-2" style={{ color: '#1C1C1C' }}>DocDot</h1>
-          <p className="text-sm" style={{ color: '#2E2E2E' }}>Your Medical Education Platform</p>
+          <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">DocDot</h1>
+          <p className="text-sm text-gray-600 dark:text-gray-300">Your Medical Education Platform</p>
         </div>
 
         {/* Auth Tabs */}
-        <Card className="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <Card className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
           {/* Tab Navigation */}
-          <div className="flex border-b border-gray-200">
+          <div className="flex border-b border-gray-200 dark:border-gray-600">
             <button
               onClick={() => setIsLogin(true)}
               className={`flex-1 py-4 px-6 text-center font-medium transition-all duration-200 border-b-2 ${
@@ -144,7 +151,7 @@ export function AuthForm() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Email Field */}
               <div>
-                <Label htmlFor="email" className="block text-sm font-medium mb-2" style={{ color: '#1C1C1C' }}>
+                <Label htmlFor="email" className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">
                   Email Address
                 </Label>
                 <Input
@@ -154,11 +161,7 @@ export function AuthForm() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 transition-colors duration-200"
-                  style={{ 
-                    color: '#2E2E2E',
-                    borderColor: '#E5E7EB'
-                  }}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 transition-colors duration-200 text-gray-900 dark:text-white bg-white dark:bg-gray-700"
                   placeholder="Enter your email"
                 />
               </div>

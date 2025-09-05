@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { 
   Brain, 
@@ -31,7 +32,8 @@ import {
   Play,
   Database,
   Zap,
-  Timer
+  Timer,
+  Heart
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
@@ -52,7 +54,9 @@ interface Question {
 
 export default function Quiz() {
   const { user } = useAuth();
+  const { theme } = useTheme();
   const queryClient = useQueryClient();
+  
   const [selectedQuizType, setSelectedQuizType] = useState<string | null>(null);
   const [selectedMCQSubject, setSelectedMCQSubject] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -94,6 +98,17 @@ export default function Quiz() {
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [examResults, setExamResults] = useState<any>(null);
   const [isGeneratingExam, setIsGeneratingExam] = useState(false);
+  const [examError, setExamError] = useState<string | null>(null);
+  const [examTimer, setExamTimer] = useState<number | null>(null);
+
+  // Cleanup effect for timers
+  useEffect(() => {
+    return () => {
+      if (examTimer) {
+        clearInterval(examTimer);
+      }
+    };
+  }, [examTimer]);
 
   const cadaverTopics = [
     { id: 'head-neck', name: 'Head and Neck', icon: Eye, description: 'Cranial anatomy, facial structures, cervical region' },
@@ -210,15 +225,25 @@ export default function Quiz() {
   // Fetch MCQ questions from database by topic
   const fetchMcqQuestions = async (topic: string, category: string = 'Upper Limb') => {
     setLoading(true);
+    console.log(`🔍 Frontend: Fetching MCQ questions for topic: "${topic}", category: "${category}"`);
+    
     try {
-      const response = await fetch(`/api/mcq-questions?topic=${encodeURIComponent(topic)}&category=${encodeURIComponent(category)}&limit=10`);
+      const url = `/api/mcq-questions?topic=${encodeURIComponent(topic)}&category=${encodeURIComponent(category)}&limit=10`;
+      console.log(`🌐 Frontend: Making request to: ${url}`);
+      
+      const response = await fetch(url);
       if (!response.ok) {
-        throw new Error('Failed to load MCQ questions');
+        throw new Error(`HTTP ${response.status}: Failed to load MCQ questions`);
       }
 
       const data = await response.json();
+      console.log(`📊 Frontend: Received ${data.length} questions from API`);
 
       if (data.length > 0) {
+        // Log the first question to see its topic
+        console.log(`📝 Frontend: First question topic: "${data[0].topic}"`);
+        console.log(`📝 Frontend: First question: ${data[0].question.substring(0, 100)}...`);
+        
         // Transform MCQ questions to match our quiz format
         const transformed = data.map((q: any) => ({
           ...q,
@@ -236,8 +261,10 @@ export default function Quiz() {
         setSelectedMcqAnswer('');
         setIsMcqAnswered(false);
         setQuestionStartTime(Date.now());
+        
+        console.log(`✅ Frontend: Successfully loaded ${transformed.length} questions for ${topic}`);
       } else {
-        console.error('No MCQ questions available for this topic.');
+        console.log(`❌ Frontend: No questions found for topic: "${topic}"`);
         toast({
           variant: "destructive",
           title: "No Questions Available",
@@ -359,9 +386,9 @@ export default function Quiz() {
         const errorData = await response.json();
         console.error('Error details:', errorData);
       }
-          } catch (error) {
-      console.error('Error recording quiz attempt:', error);
-    }
+      } catch (error) {
+        console.error('Error recording quiz attempt:', error);
+      }
   };
 
   // Handle MCQ answer selection
@@ -582,7 +609,7 @@ export default function Quiz() {
 
     setIsGenerating(true);
     const userMessage = { role: 'user' as const, content: aiPrompt };
-    setAiMessages(prev => [...prev, userMessage]);
+    setAiMessages((prev) => [...prev, userMessage]);
 
     try {
       console.log('Generating AI quiz for topic:', aiPrompt);
@@ -626,9 +653,9 @@ export default function Quiz() {
 
         const aiResponse = { 
           role: 'assistant' as const, 
-          content: `🎯 **Quiz Generated Successfully!** \n\nI've created **${data.questions.length} medical questions** about "${aiPrompt}". \n\n✨ **Features:**\n• True/False format\n• Detailed explanations\n• Instant feedback\n• Progress tracking\n\n🚀 **Ready to start?** Your personalized quiz is loaded and ready to go! Click "Start Quiz" below to begin practicing.`
+          content: `🎯 **Quiz Generated Successfully with DeepSeek AI!** \n\nI've created **${data.questions.length} medical questions** about "${aiPrompt}". \n\n✨ **Features:**\n• True/False format\n• Detailed explanations\n• Instant feedback\n• Progress tracking\n• AI-powered content\n\n🚀 **Ready to start?** Your personalized quiz is loaded and ready to go! Click "Start Quiz" below to begin practicing.`
         };
-        setAiMessages(prev => [...prev, aiResponse]);
+        setAiMessages((prev) => [...prev, aiResponse]);
 
         toast({
           title: "🎉 Quiz Generated!",
@@ -652,9 +679,9 @@ export default function Quiz() {
 
       const errorResponse = { 
         role: 'assistant' as const, 
-        content: `❌ **Sorry, I couldn't generate the quiz.** \n\n**Error:** ${errorMessage}\n\nPlease try:\n\n• **Different topic**: Try a more specific medical topic\n• **Simpler request**: Use clear, medical terminology\n• **Check connection**: Ensure you have internet access\n\n💡 **Example topics:**\n• "Cardiovascular anatomy"\n• "Diabetes pathophysiology"\n• "Respiratory physiology"\n• "Cell biology basics"`
+        content: `❌ **Sorry, I couldn't generate the quiz with DeepSeek AI.** \n\n**Error:** ${errorMessage}\n\nPlease try:\n\n• **Different topic**: Try a more specific medical topic\n• **Simpler request**: Use clear, medical terminology\n• **Check connection**: Ensure you have internet access\n• **API Status**: DeepSeek AI service might be temporarily unavailable\n\n💡 **Example topics:**\n• "Cardiovascular anatomy"\n• "Diabetes pathophysiology"\n• "Respiratory physiology"\n• "Cell biology basics"\n\n🔄 **Try again** with a different topic or check back later.`
       };
-      setAiMessages(prev => [...prev, errorResponse]);
+      setAiMessages((prev) => [...prev, errorResponse]);
 
       toast({
         variant: "destructive",
@@ -668,14 +695,39 @@ export default function Quiz() {
     setAiPrompt('');
   };
 
+  // Reset exam state
+  const resetExamState = () => {
+    setExamStep('select-type');
+    setExamType('');
+    setSelectedTopics([]);
+    setStemCount(10);
+    setCurrentExam(null);
+    setCurrentStemIndex(0);
+    setExamAnswers({});
+    setTimeRemaining(0);
+    setExamResults(null);
+    setIsGeneratingExam(false);
+    setExamError(null);
+    
+    // Clear any existing timer
+    if (examTimer) {
+      clearInterval(examTimer);
+      setExamTimer(null);
+    }
+  };
+
   // Generate custom exam with AI
   const generateCustomExam = async (topics: number[], stemCount: number, examType: string) => {
     setIsGeneratingExam(true);
+    setExamError(null);
+    
     try {
       const topicNames = topics.map(id => {
         const topic = [...anatomyTopics, ...physiologyTopics].find(t => t.id === id);
         return topic?.name || '';
       }).filter(Boolean);
+
+      console.log('Generating exam with:', { topicNames, stemCount, examType });
 
       const response = await fetch('/api/generate-custom-exam', {
         method: 'POST',
@@ -691,10 +743,17 @@ export default function Quiz() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate exam');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to generate exam`);
       }
 
       const examData = await response.json();
+      console.log('Exam generated successfully:', examData);
+      
+      if (!examData || !examData.stems || examData.stems.length === 0) {
+        throw new Error('Invalid exam data received from server');
+      }
+      
       setCurrentExam(examData);
 
       // Set timer: 2 minutes per stem as specified
@@ -716,10 +775,13 @@ export default function Quiz() {
 
     } catch (error) {
       console.error('Error generating exam:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to generate exam. Please try again.';
+      setExamError(errorMessage);
+      
       toast({
         variant: "destructive",
         title: "Generation Failed",
-        description: "Could not generate your custom exam. Please try again."
+        description: errorMessage
       });
     } finally {
       setIsGeneratingExam(false);
@@ -728,10 +790,16 @@ export default function Quiz() {
 
   // Timer management for automatic exam submission
   const startExamTimer = (totalSeconds: number) => {
+    // Clear any existing timer
+    if (examTimer) {
+      clearInterval(examTimer);
+    }
+    
     const timer = setInterval(() => {
-      setTimeRemaining(prev => {
+      setTimeRemaining((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
+          setExamTimer(null);
           // Auto-submit exam when time expires
           handleSubmitCustomExam();
           toast({
@@ -746,7 +814,7 @@ export default function Quiz() {
     }, 1000);
 
     // Store timer reference for cleanup
-    return timer;
+    setExamTimer(timer as unknown as number);
   };
 
   // Handle customize exam subject selection
@@ -901,7 +969,7 @@ export default function Quiz() {
                                 : 'border-black text-black hover:bg-green-100 bg-white'
                             }`}
                             onClick={() => {
-                              setExamAnswers(prev => ({
+                              setExamAnswers((prev) => ({
                                 ...prev,
                                 [optionKey]: true
                               }));
@@ -918,7 +986,7 @@ export default function Quiz() {
                                 : 'border-black text-black hover:bg-red-100 bg-white'
                             }`}
                             onClick={() => {
-                              setExamAnswers(prev => ({
+                              setExamAnswers((prev) => ({
                                 ...prev,
                                 [optionKey]: false
                               }));
@@ -1308,7 +1376,10 @@ export default function Quiz() {
         </div>
         <Button 
           variant="outline" 
-          onClick={() => setSelectedMCQSubject(null)}
+          onClick={() => {
+            resetExamState();
+            setSelectedMCQSubject(null);
+          }}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to MCQ Options
@@ -1538,6 +1609,22 @@ export default function Quiz() {
                 </>
               )}
             </Button>
+            
+            {examError && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-600 text-sm">
+                  <strong>Error:</strong> {examError}
+                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-2"
+                  onClick={() => setExamError(null)}
+                >
+                  Dismiss
+            </Button>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -1602,8 +1689,7 @@ export default function Quiz() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 max-w-4xl mx-auto px-3 sm:px-4">
         {/* AI Generator */}
         <Card 
-          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300 dark:bg-gray-800 dark:border-gray-600"
-          style={{ backgroundColor: '#F7FAFC' }}
+          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300 bg-gray-50 dark:bg-gray-800 dark:border-gray-600"
           onClick={() => setSelectedQuizType('ai-generator')}
         >
           <CardHeader className="text-center p-4 sm:p-6">
@@ -1615,17 +1701,16 @@ export default function Quiz() {
           </CardHeader>
           <CardContent className="p-4 sm:p-6 pt-0">
             <div className="flex flex-wrap gap-1 sm:gap-2">
-              <Badge variant="secondary" className="text-xs">AI-Powered</Badge>
-              <Badge variant="secondary" className="text-xs">Personalized</Badge>
-              <Badge variant="secondary" className="text-xs">Adaptive</Badge>
+              <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">AI-Powered</Badge>
+              <Badge variant="secondary" className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Personalized</Badge>
+              <Badge variant="secondary" className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">Adaptive</Badge>
             </div>
           </CardContent>
         </Card>
 
         {/* Cadaver Quiz */}
         <Card 
-          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300 dark:bg-gray-800 dark:border-gray-600"
-          style={{ backgroundColor: '#F7FAFC' }}
+          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300 bg-gray-50 dark:bg-gray-800 dark:border-gray-600"
           onClick={() => setSelectedQuizType('cadaver')}
         >
           <CardHeader className="text-center p-4 sm:p-6">
@@ -1637,17 +1722,16 @@ export default function Quiz() {
           </CardHeader>
           <CardContent className="p-4 sm:p-6 pt-0">
             <div className="flex flex-wrap gap-1 sm:gap-2">
-              <Badge variant="secondary" className="text-xs">Real Images</Badge>
-              <Badge variant="secondary" className="text-xs">7 Topics</Badge>
-              <Badge variant="secondary" className="text-xs">Interactive</Badge>
+              <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">Real Images</Badge>
+              <Badge variant="secondary" className="text-xs bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">7 Topics</Badge>
+              <Badge variant="secondary" className="text-xs bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200">Interactive</Badge>
             </div>
           </CardContent>
         </Card>
 
         {/* Histology Slide Quiz */}
         <Card 
-          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300 dark:bg-gray-800 dark:border-gray-600"
-          style={{ backgroundColor: '#F7FAFC' }}
+          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300 bg-gray-50 dark:bg-gray-800 dark:border-gray-600"
           onClick={() => setSelectedQuizType('histology')}
         >
           <CardHeader className="text-center p-4 sm:p-6">
@@ -1659,17 +1743,16 @@ export default function Quiz() {
           </CardHeader>
           <CardContent className="p-4 sm:p-6 pt-0">
             <div className="flex flex-wrap gap-1 sm:gap-2">
-              <Badge variant="secondary" className="text-xs">Microscopic Images</Badge>
-              <Badge variant="secondary" className="text-xs">Histology</Badge>
-              <Badge variant="secondary" className="text-xs">Detailed</Badge>
+              <Badge variant="secondary" className="text-xs bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200">Microscopic Images</Badge>
+              <Badge variant="secondary" className="text-xs bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200">Histology</Badge>
+              <Badge variant="secondary" className="text-xs bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">Detailed</Badge>
             </div>
           </CardContent>
         </Card>
 
         {/* MCQ Questions */}
         <Card 
-          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300 dark:bg-gray-800 dark:border-gray-600"
-          style={{ backgroundColor: '#F7FAFC' }}
+          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300 bg-gray-50 dark:bg-gray-800 dark:border-gray-600"
           onClick={() => setSelectedQuizType('mcq')}
         >
           <CardHeader className="text-center p-4 sm:p-6">
@@ -1681,9 +1764,9 @@ export default function Quiz() {
           </CardHeader>
           <CardContent className="p-4 sm:p-6 pt-0">
             <div className="flex flex-wrap gap-1 sm:gap-2">
-              <Badge variant="secondary" className="text-xs">Anatomy & Physiology</Badge>
-              <Badge variant="secondary" className="text-xs">Categorized</Badge>
-              <Badge variant="secondary">Instant Feedback</Badge>
+              <Badge variant="secondary" className="text-xs bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Anatomy & Physiology</Badge>
+              <Badge variant="secondary" className="text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">Categorized</Badge>
+              <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">Instant Feedback</Badge>
             </div>
           </CardContent>
         </Card>
@@ -1806,7 +1889,7 @@ export default function Quiz() {
   );
 
   const renderMCQCategories = () => {
-    let categories = [];
+    let categories: string[] = [];
     let subjectTitle = 'MCQ Categories';
 
     if (selectedMCQSubject === 'anatomy') {
@@ -1854,8 +1937,8 @@ export default function Quiz() {
                   setSelectedUpperLimbMode('topical'); // Default to topical
                   fetchUpperLimbTopics();
                 } else {
-                  setSelectedCategory(category);
-                  fetchQuestions(category);
+                setSelectedCategory(category);
+                fetchQuestions(category);
                 }
               }}
             >
@@ -1871,7 +1954,7 @@ export default function Quiz() {
                       <Badge variant="secondary">Exam Mode</Badge>
                     </div>
                   ) : (
-                    <Badge variant="secondary">Practice Questions</Badge>
+                  <Badge variant="secondary">Practice Questions</Badge>
                   )}
                 </div>
               </CardContent>
@@ -2442,8 +2525,8 @@ export default function Quiz() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold" style={{ color: '#1C1C1C' }}>AI Question Generator</h2>
-          <p style={{ color: '#2E2E2E' }}>Create personalized medical questions using advanced AI</p>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">AI Question Generator</h2>
+          <p className="text-gray-600 dark:text-gray-300">Create personalized medical questions using DeepSeek AI</p>
         </div>
         <Button 
           variant="outline" 
@@ -2454,29 +2537,31 @@ export default function Quiz() {
         </Button>
       </div>
 
-      <Card style={{ backgroundColor: '#F7FAFC' }}>
+      <Card className="bg-gray-50 dark:bg-gray-800">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2" style={{ color: '#1C1C1C' }}>
+          <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
             <Sparkles className="w-5 h-5" style={{ color: '#3399FF' }} />
-            Professional AI Medical Tutor
+            DeepSeek AI Medical Tutor
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-gray-600 dark:text-gray-300">
             Ask me to generate questions on any medical topic, specify difficulty level, or request explanations
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {/* Chat Messages */}
-            <div className="h-96 overflow-y-auto border rounded-lg p-4 space-y-4" style={{ backgroundColor: '#FFFFFF' }}>
+            <div className="h-96 overflow-y-auto border rounded-lg p-4 space-y-4 bg-white dark:bg-gray-700">
               {aiMessages.length === 0 ? (
-                <div className="text-center text-gray-500 mt-20">
+                <div className="text-center text-gray-500 dark:text-gray-400 mt-20">
                   <Bot className="w-12 h-12 mx-auto mb-4" style={{ color: '#3399FF' }} />
                   <p>Start a conversation! Ask me to generate questions on any medical topic.</p>
                   <div className="mt-4 space-y-2 text-sm">
-                    <p><strong>Example prompts:</strong></p>
-                    <p>"Generate 5 cardiology questions about arrhythmias"</p>
-                    <p>"Create anatomy questions on the nervous system"</p>
-                    <p>"I need pharmacology questions, intermediate level"</p>
+                    <p className="font-semibold text-gray-700 dark:text-gray-300">Example prompts:</p>
+                    <div className="space-y-1 text-left max-w-md mx-auto">
+                      <p className="bg-blue-50 dark:bg-blue-900/20 p-2 rounded">"Generate 5 cardiology questions about arrhythmias"</p>
+                      <p className="bg-green-50 dark:bg-green-900/20 p-2 rounded">"Create anatomy questions on the nervous system"</p>
+                      <p className="bg-purple-50 dark:bg-purple-900/20 p-2 rounded">"I need pharmacology questions, intermediate level"</p>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -2486,7 +2571,7 @@ export default function Quiz() {
                       className={`max-w-[80%] p-3 rounded-lg ${
                         message.role === 'user' 
                           ? 'bg-blue-500 text-white' 
-                          : 'bg-gray-100 text-gray-800'
+                          : 'bg-gray-100 dark:bg-gray-600 text-gray-800 dark:text-gray-200'
                       }`}
                     >
                       <p className="whitespace-pre-wrap">{message.content}</p>
@@ -2496,10 +2581,10 @@ export default function Quiz() {
               )}
               {isGenerating && (
                 <div className="flex justify-start">
-                  <div className="bg-gray-100 p-3 rounded-lg">
-                    <div className="flex items-center space-x-2">
+                  <div className="bg-gray-100 dark:bg-gray-600 p-3 rounded-lg">
+                    <div className="flex items-center space-x-2 text-gray-800 dark:text-gray-200">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2" style={{ borderColor: '#3399FF' }}></div>
-                      <span>Generating questions...</span>
+                      <span>Generating questions with DeepSeek AI...</span>
                     </div>
                   </div>
                 </div>
@@ -2510,7 +2595,7 @@ export default function Quiz() {
             <div className="space-y-3">
               <div className="flex space-x-2">
                 <Textarea
-                  placeholder="Ask me to generate questions on any medical topic..."
+                  placeholder="Ask me to generate questions on any medical topic... (e.g., 'Generate 5 cardiology questions about arrhythmias')"
                   value={aiPrompt}
                   onChange={(e) => setAiPrompt(e.target.value)}
                   onKeyDown={(e) => {
@@ -2519,19 +2604,77 @@ export default function Quiz() {
                       handleAiSubmit();
                     }
                   }}
-                  className="flex-1"
+                  className="flex-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
+                  rows={3}
                 />
                 <Button 
                   onClick={handleAiSubmit}
                   disabled={!aiPrompt.trim() || isGenerating}
-                  style={{ backgroundColor: '#3399FF' }}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
-                  <Send className="w-4 h-4" />
+                  {isGenerating ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
+              
+              {/* Quick Action Buttons */}
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setAiPrompt("Generate 5 anatomy questions about the cardiovascular system")}
+                  disabled={isGenerating}
+                  className="text-xs"
+                >
+                  <Heart className="w-3 h-3 mr-1" />
+                  Cardiovascular
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setAiPrompt("Create 5 physiology questions about respiratory system")}
+                  disabled={isGenerating}
+                  className="text-xs"
+                >
+                  <Activity className="w-3 h-3 mr-1" />
+                  Respiratory
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setAiPrompt("Generate 5 pharmacology questions about antibiotics")}
+                  disabled={isGenerating}
+                  className="text-xs"
+                >
+                  <Brain className="w-3 h-3 mr-1" />
+                  Pharmacology
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setAiPrompt("Create 5 pathology questions about cancer")}
+                  disabled={isGenerating}
+                  className="text-xs"
+                >
+                  <Microscope className="w-3 h-3 mr-1" />
+                  Pathology
                 </Button>
               </div>
 
               {questions.length > 0 && (
-                <div className="text-center">
+                <div className="text-center space-y-4">
+                  <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                    <div className="flex items-center justify-center space-x-2 text-green-800 dark:text-green-200">
+                      <CheckCircle className="w-5 h-5" />
+                      <span className="font-semibold">Quiz Ready!</span>
+                    </div>
+                    <p className="text-sm text-green-600 dark:text-green-300 mt-1">
+                      {questions.length} AI-generated questions loaded successfully
+                    </p>
+                  </div>
                   <Button 
                     onClick={() => setSelectedQuizType('ai-quiz')}
                     size="lg"
@@ -2904,10 +3047,10 @@ export default function Quiz() {
               className="h-16 w-auto"
             />
             <div>
-              <h1 className="text-4xl font-bold" style={{ color: '#1C1C1C' }}>Medical Quiz Platform</h1>
+              <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Medical Quiz Platform</h1>
             </div>
           </div>
-          <h2 className="text-2xl font-bold mb-4" style={{ color: '#1C1C1C' }}>Medical Quiz Platform</h2>
+          <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Medical Quiz Platform</h2>
           <p className="text-gray-700 dark:text-gray-300">Test your knowledge with our comprehensive medical quizzes</p>
         </div>
         {renderQuizTypeSelection()}

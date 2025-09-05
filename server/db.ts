@@ -1,5 +1,6 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
+import { createClient } from '@supabase/supabase-js';
 import { 
   users, userStats, categoryStats, dailyStats, leaderboard, quizAttempts, badges, userBadges,
   aiSessions, aiChats, studyPlannerSessions, studyGroups, studyGroupMembers,
@@ -13,7 +14,7 @@ import {
 import { eq, desc, sql, and, gte, isNotNull, lte, gt, lt, count, sum, avg } from 'drizzle-orm';
 
 // Use Supabase connection string - prioritize SUPABASE_DATABASE_URL
-const connectionString = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL!;
+const connectionString = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL || 'postgresql://postgres:Ngonidzashe2003.@db.jncxejkssgvxhdurmvxy.supabase.co:5432/postgres';
 
 if (!connectionString) {
   throw new Error('Database connection string not found. Please set SUPABASE_DATABASE_URL or DATABASE_URL environment variable.');
@@ -24,16 +25,33 @@ console.log('- URL configured:', !!connectionString);
 console.log('- URL starts with postgres:', connectionString.startsWith('postgres://'));
 console.log('- Using Supabase:', connectionString.includes('supabase.co'));
 
+// Initialize Supabase client for direct queries
+const supabaseUrl = 'https://jncxejkssgvxhdurmvxy.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpuY3hlamtzc2d2eGhkdXJtdnh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc4NjUwNDEsImV4cCI6MjA2MzQ0MTA0MX0.vB91dobZ0zsFTEAQiZ1nU5n94ppxdolpaDs2lUNox38';
+export const supabase = createClient(supabaseUrl, supabaseKey);
+
 // Configure postgres client with proper timeout and SSL settings for Supabase
-const client = postgres(connectionString, {
+let client;
+let db;
+
+try {
+  client = postgres(connectionString, {
   ssl: 'require',
   connect_timeout: 60,
   idle_timeout: 60,
   max: 10,
   onnotice: () => {} // Suppress notices
 });
+  db = drizzle(client);
+  console.log('✅ Postgres client initialized successfully');
+} catch (error) {
+  console.error('❌ Postgres client initialization failed:', error.message);
+  console.log('🔄 Falling back to Supabase client for database operations');
+  // We'll use Supabase client for queries instead
+  db = null;
+}
 
-export const db = drizzle(client);
+export { db };
 
 export class DatabaseStorage {
   async getUser(userId: string): Promise<User | null> {
@@ -524,63 +542,7 @@ export class DatabaseStorage {
     }
   }
 
-  // Enhanced leaderboard with time frame support and user data
-  async getLeaderboard(limit: number = 50, timeFrame: string = 'all-time', category?: string) {
-    try {
-      console.log(`Getting leaderboard: limit=${limit}, timeFrame=${timeFrame}, category=${category}`);
-
-      const query = db
-        .select({
-          id: userStats.id,
-          userId: userStats.userId,
-          rank: userStats.rank,
-          totalXP: userStats.totalXP,
-          currentLevel: userStats.currentLevel,
-          weeklyXP: sql<number>`0`.as('weeklyXP'),
-          monthlyXP: sql<number>`0`.as('monthlyXP'),
-          averageAccuracy: userStats.averageScore,
-          totalBadges: sql<number>`0`.as('totalBadges'),
-          lastActive: userStats.updatedAt,
-          // User data
-          firstName: users.firstName,
-          lastName: users.lastName,
-          fullName: users.fullName,
-          email: users.email
-        })
-        .from(userStats)
-        .leftJoin(users, eq(userStats.userId, users.id))
-        .where(gt(userStats.totalXP, 0)) // Only users with XP
-        .orderBy(desc(userStats.totalXP), desc(userStats.averageScore))
-        .limit(limit);
-
-      const results = await query;
-
-      console.log(`Leaderboard query returned ${results.length} entries`);
-
-      // Format for frontend
-      return results.map((entry, index) => ({
-        id: entry.id,
-        userId: entry.userId,
-        rank: index + 1, // Calculate rank based on order
-        totalXP: entry.totalXP,
-        currentLevel: entry.currentLevel,
-        weeklyXP: entry.weeklyXP,
-        monthlyXP: entry.monthlyXP,
-        averageAccuracy: entry.averageAccuracy,
-        totalBadges: entry.totalBadges,
-        lastActive: entry.lastActive?.toISOString() || new Date().toISOString(),
-        user: {
-          firstName: entry.firstName,
-          lastName: entry.lastName,
-          fullName: entry.fullName,
-          email: entry.email
-        }
-      }));
-    } catch (error) {
-      console.error('Error getting leaderboard:', error);
-      return [];
-    }
-  }
+  // Enhanced leaderboard method removed - using the first one above
 
   async getUserRank(userId: string, timeFrame: string = 'all-time', category?: string) {
     try {

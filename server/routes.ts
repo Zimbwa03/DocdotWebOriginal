@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { openRouterAI } from "./ai";
-import { dbStorage, db } from "./db";
+import { dbStorage, db, supabase } from "./db";
 import { sql, eq, desc, and } from 'drizzle-orm';
 import { insertQuizAttemptSchema, badges, userBadges, studyPlannerSessions, studyGroups, studyGroupMembers, meetingReminders, users, quizAttempts, userStats, quizzes, mcqQuestions, customExams, customExamStems, stemOptions, examGenerationHistory } from "@shared/schema";
 import { v4 as uuidv4 } from "uuid";
@@ -30,20 +30,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { topic, category, limit = 10 } = req.query;
       
+      console.log(`🔍 Fetching MCQ questions - Topic: "${topic}", Category: "${category}", Limit: ${limit}`);
+      
+      // Validate required parameters
+      if (!topic || !category) {
+        return res.status(400).json({ 
+          error: "Both topic and category parameters are required" 
+        });
+      }
+      
+      let questions = [];
+      
+      // Try using Drizzle ORM first, fallback to Supabase client on any error
+      try {
+        if (db) {
       let query = db.select().from(mcqQuestions);
       
-      if (topic) {
-        query = query.where(eq(mcqQuestions.topic, topic as string));
-      }
-      
-      if (category) {
-        query = query.where(eq(mcqQuestions.category, category as string));
-      }
+      // Use exact match for topic and category
+      query = query.where(eq(mcqQuestions.topic, topic as string));
+      query = query.where(eq(mcqQuestions.category, category as string));
       
       // Add random ordering and limit
       query = query.orderBy(sql`RANDOM()`).limit(parseInt(limit as string));
       
-      const questions = await query;
+          questions = await query;
+          console.log(`📊 Drizzle: Found ${questions.length} questions for topic "${topic}" in category "${category}"`);
+        } else {
+          throw new Error('Drizzle client not available');
+        }
+      } catch (drizzleError) {
+        console.error('❌ Drizzle query failed:', drizzleError.message);
+        console.log('🔄 Falling back to Supabase client for MCQ questions query');
+        
+        // Fallback to Supabase client
+        const { data, error } = await supabase
+          .from('mcq_questions')
+          .select('*')
+          .eq('topic', topic as string)
+          .eq('category', category as string)
+          .order('random()')
+          .limit(parseInt(limit as string));
+        
+        if (error) {
+          throw new Error(`Supabase query failed: ${error.message}`);
+        }
+        
+        questions = data || [];
+        console.log(`📊 Supabase: Found ${questions.length} questions for topic "${topic}" in category "${category}"`);
+      }
+      console.log(`📊 Found ${questions.length} questions for topic "${topic}" in category "${category}"`);
+      
+      if (questions.length > 0) {
+        console.log(`📝 Sample question: ${questions[0].question.substring(0, 100)}...`);
+        console.log(`🏷️  Question topic: "${questions[0].topic}"`);
+        console.log(`📂 Question category: "${questions[0].category}"`);
+        
+        // Verify all questions have the correct topic
+        const incorrectTopics = questions.filter(q => q.topic !== topic);
+        if (incorrectTopics.length > 0) {
+          console.warn(`⚠️  Found ${incorrectTopics.length} questions with incorrect topics:`, 
+            incorrectTopics.map(q => q.topic));
+        }
+      } else {
+        console.log(`❌ No questions found for exact match: topic="${topic}", category="${category}"`);
+        
+        // Try to find similar topics for debugging
+        const similarQuery = db.selectDistinct({ topic: mcqQuestions.topic })
+          .from(mcqQuestions)
+          .where(eq(mcqQuestions.category, category as string));
+        const similarTopics = await similarQuery;
+        console.log(`🔍 Available topics in "${category}":`, similarTopics.map(t => t.topic));
+      }
+      
       res.json(questions);
     } catch (error) {
       console.error("Error fetching MCQ questions:", error);
@@ -56,6 +114,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { category } = req.query;
       
+      console.log(`🔍 Fetching MCQ topics for category: "${category}"`);
+      
+      let topicNames = [];
+      
+      // Try using Drizzle ORM first, fallback to Supabase client on any error
+      try {
+        if (db) {
       let query = db.selectDistinct({ topic: mcqQuestions.topic })
         .from(mcqQuestions);
       
@@ -64,7 +129,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const topics = await query;
-      res.json(topics.map(t => t.topic));
+          topicNames = topics.map(t => t.topic);
+          console.log(`📊 Drizzle: Found ${topicNames.length} topics for category "${category}"`);
+        } else {
+          throw new Error('Drizzle client not available');
+        }
+      } catch (drizzleError) {
+        console.error('❌ Drizzle topics query failed:', drizzleError.message);
+        console.log('🔄 Falling back to Supabase client for MCQ topics query');
+        
+        // Fallback to Supabase client
+        const { data, error } = await supabase
+          .from('mcq_questions')
+          .select('topic')
+          .eq('category', category as string);
+        
+        if (error) {
+          throw new Error(`Supabase topics query failed: ${error.message}`);
+        }
+        
+        // Get unique topics
+        const uniqueTopics = [...new Set((data || []).map(item => item.topic))];
+        topicNames = uniqueTopics;
+        console.log(`📊 Supabase: Found ${topicNames.length} topics for category "${category}"`);
+      }
+      
+      console.log(`📋 Available topics for "${category}":`, topicNames);
+      
+      res.json(topicNames);
     } catch (error) {
       console.error("Error fetching MCQ topics:", error);
       res.status(500).json({ error: "Failed to fetch MCQ topics" });
