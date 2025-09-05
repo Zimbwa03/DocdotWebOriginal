@@ -927,8 +927,8 @@ app.get("/api/leaderboard", async (req, res) => {
     }
   });
 
-  // Comprehensive Supabase integration test
-  app.get("/api/test-supabase", async (req, res) => {
+  // Removed test endpoint for production
+  // app.get("/api/test-supabase", async (req, res) => {
     try {
       console.log('Testing complete Supabase integration...');
 
@@ -1004,7 +1004,7 @@ app.get("/api/leaderboard", async (req, res) => {
         message: 'Failed to connect to Supabase or schema not properly set up'
       });
     }
-  });
+  // });
 
   // Generate Custom Exam with AI
   app.post("/api/generate-custom-exam", async (req, res) => {
@@ -1199,8 +1199,8 @@ app.get("/api/leaderboard", async (req, res) => {
     }
   });
 
-  // Test DeepSeek API connection
-  app.get("/api/ai/test", async (req, res) => {
+  // Test DeepSeek API connection - Removed for production
+  // app.get("/api/ai/test", async (req, res) => {
     try {
       if (!process.env.DEEPSEEK_API_KEY) {
         return res.json({ 
@@ -1225,10 +1225,10 @@ app.get("/api/leaderboard", async (req, res) => {
         message: error.message || "Connection failed" 
       });
     }
-  });
+  // });
 
-  // Comprehensive system debug endpoint
-  app.get("/api/debug/system", async (req, res) => {
+  // Comprehensive system debug endpoint - Removed for production
+  // app.get("/api/debug/system", async (req, res) => {
     try {
       // Test database connection
       const dbTest = await db.execute(sql`SELECT NOW() as current_time`);
@@ -1291,7 +1291,7 @@ app.get("/api/leaderboard", async (req, res) => {
         timestamp: new Date().toISOString()
       });
     }
-  });
+  // });
 
   // AI Chat Route with full session tracking
   app.post("/api/ai/chat", async (req, res) => {
@@ -1642,8 +1642,8 @@ app.get("/api/leaderboard", async (req, res) => {
     }
   });
 
-  // Test Google Drive connection
-  app.get("/api/google-drive/test", async (req, res) => {
+  // Test Google Drive connection - Removed for production
+  // app.get("/api/google-drive/test", async (req, res) => {
     try {
       console.log("🧪 Testing Google Drive connection...");
       const { checkFolderAccess } = await import('./googleDrive');
@@ -1672,7 +1672,7 @@ app.get("/api/leaderboard", async (req, res) => {
         details: error.code || "UNKNOWN_ERROR"
       });
     }
-  });
+  // });
 
   // Ensure user has stats entry
   app.post('/api/ensure-user-stats', async (req, res) => {
@@ -2710,8 +2710,8 @@ app.post("/api/study-groups", async (req, res) => {
     });
   });
 
-  // Test endpoint for note generation
-  app.post("/api/lectures/test-notes", async (req, res) => {
+  // Test endpoint for note generation - Removed for production
+  // app.post("/api/lectures/test-notes", async (req, res) => {
     try {
       const { transcript, module, topic } = req.body;
       
@@ -2736,7 +2736,7 @@ app.post("/api/study-groups", async (req, res) => {
         details: error.message 
       });
     }
-  });
+  // });
 
   // Process complete lecture after recording stops
   app.post("/api/lectures/process-complete-lecture", async (req, res) => {

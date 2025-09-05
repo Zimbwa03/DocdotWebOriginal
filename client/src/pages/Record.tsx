@@ -242,11 +242,6 @@ export default function Record() {
         const transcript = event.results[i][0].transcript;
         const isFinal = event.results[i].isFinal;
         
-        console.log(`📝 Processing result ${i}:`, {
-          transcript: transcript,
-          isFinal: isFinal,
-          confidence: event.results[i][0].confidence
-        });
         
         if (isFinal) {
           newFinalText += transcript + ' ';
@@ -257,14 +252,9 @@ export default function Record() {
       
       // Update final transcript (append only)
       if (newFinalText.trim()) {
-        console.log('📝 Adding final text:', newFinalText);
         setFinalTranscript(prev => {
           const updatedFinal = prev + newFinalText;
           
-          // Debug: Log transcript accumulation
-          console.log('📝 Final transcript added:', newFinalText);
-          console.log('📝 Total accumulated length:', updatedFinal.length);
-          console.log('📝 Current transcript preview:', updatedFinal.substring(0, 200));
           
           // Show generate button when we have substantial content
           if (updatedFinal.trim().length > 100) {
@@ -285,7 +275,6 @@ export default function Record() {
       
       // Update display with final transcript + interim results
       if (interimText.trim()) {
-        console.log('📝 Adding interim text:', interimText);
       }
       
       setLiveTranscript(prev => {
@@ -368,13 +357,6 @@ export default function Record() {
     setRecordingState(prev => ({ ...prev, speechRecognition: recognition }));
   };
 
-  // Manual transcript input for testing (temporary)
-  const handleManualTranscript = (transcript: string) => {
-    setLiveTranscript(transcript);
-    if (transcript.trim()) {
-      generateLiveNotes(transcript);
-    }
-  };
 
   // Handle viewing a lecture
   const handleViewLecture = async (lectureId: string) => {
@@ -520,10 +502,6 @@ export default function Record() {
     }
 
     try {
-      console.log('🎯 Manual generate notes triggered...');
-      console.log('📝 Transcript length:', cleanTranscript.length);
-      console.log('📝 Module:', lectureMetadata.module);
-      console.log('📝 Topic:', lectureMetadata.topic);
       
       setIsGeneratingNotes(true);
       
@@ -545,14 +523,9 @@ export default function Record() {
         body: JSON.stringify(requestBody),
       });
 
-      console.log('📡 Response status:', response.status);
-      console.log('📡 Response headers:', response.headers);
       
       if (response.ok) {
         const data = await response.json();
-        console.log('✅ Notes generated successfully');
-        console.log('📝 Generated notes length:', data.processedNotes?.length || 0);
-        console.log('📝 Generated notes preview:', data.processedNotes?.substring(0, 200) || 'No content');
         
         // Update the live notes with the processed content
         const notes = data.processedNotes || 'Notes generation completed but no content returned.';
@@ -1355,79 +1328,6 @@ ${transcript.substring(0, 200)}...
                                 </div>
                               </div>
                               
-                              {/* Debug buttons */}
-                              <div className="mt-4 space-y-2">
-                                <button
-                                  onClick={() => {
-                                    console.log('🧪 Testing speech recognition...');
-                                    startRealTimeTranscription();
-                                  }}
-                                  className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200"
-                                >
-                                  🧪 Test Speech Recognition
-                                </button>
-                                
-                                <button
-                                  onClick={async () => {
-                                    console.log('🧪 Testing note generation API...');
-                                    try {
-                                      // First test if server is running
-                                      const healthResponse = await fetch('/api/health');
-                                      console.log('🏥 Health check:', healthResponse.status);
-                                      
-                                      const response = await fetch('/api/lectures/test-notes', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({
-                                          transcript: 'This is a test lecture about anatomy and physiology.',
-                                          module: 'Anatomy',
-                                          topic: 'Test Topic'
-                                        })
-                                      });
-                                      
-                                      console.log('📡 Test API response status:', response.status);
-                                      
-                                      if (response.ok) {
-                                        const data = await response.json();
-                                        console.log('✅ Test API successful:', data);
-                                        toast({
-                                          title: "API Test Successful",
-                                          description: "Note generation API is working correctly."
-                                        });
-                                      } else {
-                                        const errorText = await response.text();
-                                        console.error('❌ Test API failed:', {
-                                          status: response.status,
-                                          statusText: response.statusText,
-                                          body: errorText
-                                        });
-                                        
-                                        let errorData;
-                                        try {
-                                          errorData = JSON.parse(errorText);
-                                        } catch {
-                                          errorData = { error: errorText };
-                                        }
-                                        
-                                        toast({
-                                          title: "API Test Failed",
-                                          description: `Status ${response.status}: ${errorData.error || errorData.details || 'Unknown error'}`,
-                                          variant: "destructive"
-                                        });
-                                      }
-                                    } catch (error) {
-                                      console.error('❌ Test API error:', error);
-                                      toast({
-                                        title: "API Test Error",
-                                        description: `Network error: ${error.message}. Is the server running?`,
-                                        variant: "destructive"
-                                      });
-                                    }
-                                  }}
-                                  className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200"
-                                >
-                                  🧪 Test Note Generation API
-                                </button>
                                 
                                 {finalTranscript.trim().length > 100 && (
                                   <button
