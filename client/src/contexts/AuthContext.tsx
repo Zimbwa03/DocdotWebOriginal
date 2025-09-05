@@ -1,226 +1,146 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { User, Session, AuthError } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
+
+// Simplified user interface for built-in backend
+interface User {
+  id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+}
 
 interface AuthContextType {
   user: User | null;
-  session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string) => Promise<{ error: AuthError | null }>;
-  signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
-  signInWithOAuth: (provider: 'google' | 'apple') => Promise<{ error: AuthError | null }>;
-  signOut: () => Promise<{ error: AuthError | null }>;
+  signUp: (email: string, password: string) => Promise<{ error: any | null }>;
+  signIn: (email: string, password: string) => Promise<{ error: any | null }>;
+  signInWithOAuth: (provider: 'google' | 'apple') => Promise<{ error: any | null }>;
+  signOut: () => Promise<{ error: any | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-      
-      // If user is signed in, sync profile data
-      if (session?.user) {
-        syncUserProfile(session.user);
-      }
-    });
+    // Check for existing session on mount
+    checkAuthSession();
+  }, []);
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-
-        if (event === 'SIGNED_IN' && session?.user) {
-          await syncUserProfile(session.user);
-          toast({
-            title: "Welcome to Docdot!",
-            description: "You have successfully signed in.",
-          });
-        } else if (event === 'SIGNED_OUT') {
-          localStorage.removeItem('profileSetupComplete');
-          toast({
-            title: "Signed out",
-            description: "You have been signed out successfully.",
-          });
-        }
-      }
-    );
-
-    return () => subscription.unsubscribe();
-  }, [toast]);
-
-  const syncUserProfile = async (user: any) => {
+  const checkAuthSession = async () => {
     try {
-      console.log('Syncing user profile with Supabase database...', user.id);
-      
-      // Create or update user profile in Supabase database
-      const response = await fetch('/api/user', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: user.id,
-          email: user.email,
-          firstName: user.user_metadata?.firstName || user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0],
-          lastName: user.user_metadata?.lastName || user.user_metadata?.last_name || user.user_metadata?.full_name?.split(' ')[1],
-          fullName: user.user_metadata?.full_name || `${user.user_metadata?.first_name || ''} ${user.user_metadata?.last_name || ''}`.trim(),
-        }),
+      const response = await fetch('/api/auth/session', {
+        credentials: 'include'
       });
       
       if (response.ok) {
         const userData = await response.json();
-        console.log('User profile synced successfully with Supabase');
-        
-        if (userData.profileCompleted) {
-          localStorage.setItem('profileSetupComplete', 'true');
-        }
-        
-        // Initialize user analytics and badge system automatically
-        await initializeUserData(user.id);
+        setUser(userData);
       } else {
-        console.error('Failed to sync user profile:', response.status);
+        setUser(null);
       }
     } catch (error) {
-      console.error('Error syncing user profile with Supabase:', error);
+      console.log('No active session found');
+      setUser(null);
     }
-  };
-
-  const initializeUserData = async (userId: string) => {
-    try {
-      // Initialize fresh user stats
-      await fetch('/api/ensure-user-stats', { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId })
-      });
-      
-      console.log('Fresh user data initialized for:', userId);
-    } catch (error) {
-      console.error('Error initializing user data:', error);
-    }
+    setLoading(false);
   };
 
   const signUp = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/home`
-        }
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, password })
       });
 
-      if (error) {
-        console.error('Supabase sign up error:', error);
+      const data = await response.json();
+      
+      if (response.ok) {
+        setUser(data.user);
         toast({
-          variant: "destructive",
-          title: "Sign up failed",
-          description: error.message || "Failed to connect to authentication service",
+          title: "Account Created",
+          description: "Welcome to Docdot! Your account has been created successfully."
         });
+        return { error: null };
       } else {
-        toast({
-          title: "Check your email",
-          description: "We've sent you a verification link to complete your registration.",
-        });
+        return { error: data };
       }
-
-      return { error };
-    } catch (networkError) {
-      console.error('Network error during sign up:', networkError);
-      toast({
-        variant: "destructive",
-        title: "Connection failed",
-        description: "Unable to connect to authentication service. Please check your internet connection.",
-      });
-      return { error: networkError as any };
+    } catch (error) {
+      return { error: { message: 'Network error occurred' } };
     }
   };
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const response = await fetch('/api/auth/signin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, password })
       });
 
-      if (error) {
-        console.error('Supabase sign in error:', error);
+      const data = await response.json();
+      
+      if (response.ok) {
+        setUser(data.user);
         toast({
-          variant: "destructive",
-          title: "Sign in failed",
-          description: error.message || "Failed to connect to authentication service",
+          title: "Welcome Back!",
+          description: "You have successfully signed in."
         });
+        return { error: null };
+      } else {
+        return { error: data };
       }
-
-      return { error };
-    } catch (networkError) {
-      console.error('Network error during sign in:', networkError);
-      toast({
-        variant: "destructive",
-        title: "Connection failed",
-        description: "Unable to connect to authentication service. Please check your internet connection.",
-      });
-      return { error: networkError as any };
+    } catch (error) {
+      return { error: { message: 'Network error occurred' } };
     }
   };
 
   const signInWithOAuth = async (provider: 'google' | 'apple') => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/home`
-      }
+    // OAuth not implemented for built-in backend yet
+    toast({
+      title: "OAuth Not Available",
+      description: `${provider} sign-in is not yet configured. Please use email/password.`,
+      variant: "destructive"
     });
-
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: `${provider} sign in failed`,
-        description: error.message,
-      });
-    }
-
-    return { error };
+    return { error: { message: 'OAuth not implemented' } };
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: "Sign out failed",
-        description: error.message,
+    try {
+      const response = await fetch('/api/auth/signout', {
+        method: 'POST',
+        credentials: 'include'
       });
+
+      setUser(null);
+      toast({
+        title: "Signed Out",
+        description: "You have been signed out successfully."
+      });
+      return { error: null };
+    } catch (error) {
+      return { error: { message: 'Sign out failed' } };
     }
-
-    return { error };
-  };
-
-  const value = {
-    user,
-    session,
-    loading,
-    signUp,
-    signIn,
-    signInWithOAuth,
-    signOut,
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider 
+      value={{
+        user,
+        loading,
+        signUp,
+        signIn,
+        signInWithOAuth,
+        signOut
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

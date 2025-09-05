@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { openRouterAI } from "./ai";
-import { dbStorage, db, supabase } from "./db";
+import { dbStorage, db } from "./db";
 import { sql, eq, desc, and } from 'drizzle-orm';
 import { insertQuizAttemptSchema, badges, userBadges, studyPlannerSessions, studyGroups, studyGroupMembers, meetingReminders, users, quizAttempts, userStats, quizzes, mcqQuestions, customExams, customExamStems, stemOptions, examGenerationHistory, lectures, lectureTranscripts, lectureNotes, lectureProcessingLogs } from "@shared/schema";
 import { getGeminiAI } from './gemini-ai';
@@ -62,24 +62,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           throw new Error('Drizzle client not available');
         }
       } catch (drizzleError) {
-        console.error('❌ Drizzle query failed:', drizzleError.message);
-        console.log('🔄 Falling back to Supabase client for MCQ questions query');
-        
-        // Fallback to Supabase client
-        const { data, error } = await supabase
-          .from('mcq_questions')
-          .select('*')
-          .eq('topic', topic as string)
-          .eq('category', category as string)
-          .order('random()')
-          .limit(parseInt(limit as string));
-        
-        if (error) {
-          throw new Error(`Supabase query failed: ${error.message}`);
-        }
-        
-        questions = data || [];
-        console.log(`📊 Supabase: Found ${questions.length} questions for topic "${topic}" in category "${category}"`);
+        console.error('❌ Database query failed:', drizzleError.message);
+        return res.status(500).json({ error: "Database connection error" });
       }
       console.log(`📊 Found ${questions.length} questions for topic "${topic}" in category "${category}"`);
       
@@ -138,23 +122,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           throw new Error('Drizzle client not available');
         }
       } catch (drizzleError) {
-        console.error('❌ Drizzle topics query failed:', drizzleError.message);
-        console.log('🔄 Falling back to Supabase client for MCQ topics query');
-        
-        // Fallback to Supabase client
-        const { data, error } = await supabase
-          .from('mcq_questions')
-          .select('topic')
-          .eq('category', category as string);
-        
-        if (error) {
-          throw new Error(`Supabase topics query failed: ${error.message}`);
-        }
-        
-        // Get unique topics
-        const uniqueTopics = [...new Set((data || []).map(item => item.topic))];
-        topicNames = uniqueTopics;
-        console.log(`📊 Supabase: Found ${topicNames.length} topics for category "${category}"`);
+        console.error('❌ Database topics query failed:', drizzleError.message);
+        return res.status(500).json({ error: "Database connection error" });
       }
       
       console.log(`📋 Available topics for "${category}":`, topicNames);

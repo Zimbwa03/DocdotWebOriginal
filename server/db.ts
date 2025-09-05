@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { createClient } from '@supabase/supabase-js';
+// import { createClient } from '@supabase/supabase-js'; // Removed - using built-in Replit PostgreSQL
 import { 
   users, userStats, categoryStats, dailyStats, leaderboard, quizAttempts, badges, userBadges,
   aiSessions, aiChats, studyPlannerSessions, studyGroups, studyGroupMembers,
@@ -13,42 +13,38 @@ import {
 } from '@shared/schema';
 import { eq, desc, sql, and, gte, isNotNull, lte, gt, lt, count, sum, avg } from 'drizzle-orm';
 
-// Use Supabase connection string - prioritize SUPABASE_DATABASE_URL
-const connectionString = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL || 'postgresql://postgres:Ngonidzashe2003.@db.jncxejkssgvxhdurmvxy.supabase.co:5432/postgres';
+// Use built-in Replit PostgreSQL database
+const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
-  throw new Error('Database connection string not found. Please set SUPABASE_DATABASE_URL or DATABASE_URL environment variable.');
+  throw new Error('DATABASE_URL environment variable not found. Please ensure the built-in Replit PostgreSQL database is configured.');
 }
 
 console.log('Database connection details:');
 console.log('- URL configured:', !!connectionString);
 console.log('- URL starts with postgres:', connectionString.startsWith('postgres://'));
-console.log('- Using Supabase:', connectionString.includes('supabase.co'));
+console.log('- Using built-in Replit PostgreSQL:', connectionString.includes('postgresql://')); 
 
-// Initialize Supabase client for direct queries
-const supabaseUrl = 'https://jncxejkssgvxhdurmvxy.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpuY3hlamtzc2d2eGhkdXJtdnh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc4NjUwNDEsImV4cCI6MjA2MzQ0MTA0MX0.vB91dobZ0zsFTEAQiZ1nU5n94ppxdolpaDs2lUNox38';
-export const supabase = createClient(supabaseUrl, supabaseKey);
+// Remove Supabase client - using built-in Replit PostgreSQL only
+// export const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Configure postgres client with proper timeout and SSL settings for Supabase
+// Configure postgres client for built-in Replit PostgreSQL database
 let client;
 let db;
 
 try {
   client = postgres(connectionString, {
-  ssl: 'require',
-  connect_timeout: 60,
-  idle_timeout: 60,
-  max: 10,
-  onnotice: () => {} // Suppress notices
-});
+    ssl: 'require', // Built-in Replit PostgreSQL requires SSL
+    connect_timeout: 30,
+    idle_timeout: 30,
+    max: 10,
+    onnotice: () => {} // Suppress notices
+  });
   db = drizzle(client);
-  console.log('✅ Postgres client initialized successfully');
+  console.log('✅ Built-in Replit PostgreSQL client initialized successfully');
 } catch (error) {
-  console.error('❌ Postgres client initialization failed:', error.message);
-  console.log('🔄 Falling back to Supabase client for database operations');
-  // We'll use Supabase client for queries instead
-  db = null;
+  console.error('❌ PostgreSQL client initialization failed:', error.message);
+  throw new Error('Failed to connect to built-in Replit PostgreSQL database');
 }
 
 export { db };
