@@ -1,67 +1,17 @@
-// Replaced Supabase with built-in Replit PostgreSQL backend
-// This file is kept for compatibility but redirects to backend auth
+import { createClient } from '@supabase/supabase-js';
 
-console.log('✅ Authentication now handled by built-in Replit backend');
+const supabaseUrl = 'https://jncxejkssgvxhdurmvxy.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOnN1cHBhc2UiLCJyZWYiOiJqbmN4ZWprc3NndnhoZHVybXZ4eSIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzQ3NTgwMjU2LCJleHAiOjIwNjMxNTYyNTZ9.YanAtJ88RrKlnMW8YhRJOkxoGEK8OhOqP9jcI-ZYB7o';
 
-// Mock auth client for compatibility
-export const supabase = {
+console.log('Supabase URL:', supabaseUrl);
+console.log('Supabase Key (first 20 chars):', supabaseKey.substring(0, 20) + '...');
+
+export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
-    getSession: async () => {
-      // Check with backend for current session
-      try {
-        const response = await fetch('/api/auth/session');
-        const session = response.ok ? await response.json() : null;
-        console.log('Auth session:', session ? 'Active' : 'No session');
-        return { data: { session }, error: null };
-      } catch (error) {
-        console.log('Auth session: No session');
-        return { data: { session: null }, error: null };
-      }
-    },
-    onAuthStateChange: (callback: any) => {
-      // Simplified auth state management
-      console.log('Auth state change listener registered');
-      return {
-        data: {
-          subscription: {
-            unsubscribe: () => console.log('Auth listener unsubscribed')
-          }
-        }
-      };
-    },
-    signUp: async (credentials: { email: string; password: string }) => {
-      try {
-        const response = await fetch('/api/auth/signup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(credentials)
-        });
-        const data = await response.json();
-        return response.ok ? { data, error: null } : { data: null, error: data };
-      } catch (error) {
-        return { data: null, error };
-      }
-    },
-    signInWithPassword: async (credentials: { email: string; password: string }) => {
-      try {
-        const response = await fetch('/api/auth/signin', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(credentials)
-        });
-        const data = await response.json();
-        return response.ok ? { data, error: null } : { data: null, error: data };
-      } catch (error) {
-        return { data: null, error };
-      }
-    },
-    signOut: async () => {
-      try {
-        const response = await fetch('/api/auth/signout', { method: 'POST' });
-        return { error: null };
-      } catch (error) {
-        return { error };
-      }
-    }
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
   }
-};
+});
+
+console.log('✅ Supabase client initialized successfully');

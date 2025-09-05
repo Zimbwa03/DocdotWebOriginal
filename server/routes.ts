@@ -32,30 +32,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/mcq-questions", async (req, res) => {
     try {
       const { topic, category, limit = 10 } = req.query;
-      
+
       console.log(`🔍 Fetching MCQ questions - Topic: "${topic}", Category: "${category}", Limit: ${limit}`);
-      
+
       // Validate required parameters
       if (!topic || !category) {
         return res.status(400).json({ 
           error: "Both topic and category parameters are required" 
         });
       }
-      
+
       let questions = [];
-      
+
       // Try using Drizzle ORM first, fallback to Supabase client on any error
       try {
         if (db) {
       let query = db.select().from(mcqQuestions);
-      
+
       // Use exact match for topic and category
       query = query.where(eq(mcqQuestions.topic, topic as string));
       query = query.where(eq(mcqQuestions.category, category as string));
-      
+
       // Add random ordering and limit
       query = query.orderBy(sql`RANDOM()`).limit(parseInt(limit as string));
-      
+
           questions = await query;
           console.log(`📊 Drizzle: Found ${questions.length} questions for topic "${topic}" in category "${category}"`);
         } else {
@@ -66,12 +66,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ error: "Database connection error" });
       }
       console.log(`📊 Found ${questions.length} questions for topic "${topic}" in category "${category}"`);
-      
+
       if (questions.length > 0) {
         console.log(`📝 Sample question: ${questions[0].question.substring(0, 100)}...`);
         console.log(`🏷️  Question topic: "${questions[0].topic}"`);
         console.log(`📂 Question category: "${questions[0].category}"`);
-        
+
         // Verify all questions have the correct topic
         const incorrectTopics = questions.filter(q => q.topic !== topic);
         if (incorrectTopics.length > 0) {
@@ -80,7 +80,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       } else {
         console.log(`❌ No questions found for exact match: topic="${topic}", category="${category}"`);
-        
+
         // Try to find similar topics for debugging
         const similarQuery = db.selectDistinct({ topic: mcqQuestions.topic })
           .from(mcqQuestions)
@@ -88,7 +88,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const similarTopics = await similarQuery;
         console.log(`🔍 Available topics in "${category}":`, similarTopics.map(t => t.topic));
       }
-      
+
       res.json(questions);
     } catch (error) {
       console.error("Error fetching MCQ questions:", error);
@@ -100,21 +100,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/mcq-topics", async (req, res) => {
     try {
       const { category } = req.query;
-      
+
       console.log(`🔍 Fetching MCQ topics for category: "${category}"`);
-      
+
       let topicNames = [];
-      
+
       // Try using Drizzle ORM first, fallback to Supabase client on any error
       try {
         if (db) {
       let query = db.selectDistinct({ topic: mcqQuestions.topic })
         .from(mcqQuestions);
-      
+
       if (category) {
         query = query.where(eq(mcqQuestions.category, category as string));
       }
-      
+
       const topics = await query;
           topicNames = topics.map(t => t.topic);
           console.log(`📊 Drizzle: Found ${topicNames.length} topics for category "${category}"`);
@@ -125,9 +125,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error('❌ Database topics query failed:', drizzleError.message);
         return res.status(500).json({ error: "Database connection error" });
       }
-      
+
       console.log(`📋 Available topics for "${category}":`, topicNames);
-      
+
       res.json(topicNames);
     } catch (error) {
       console.error("Error fetching MCQ topics:", error);
@@ -974,6 +974,16 @@ app.get("/api/leaderboard", async (req, res) => {
   //    });
   //  }
   // });
+  
+  // Auth routes - delegated to Supabase client-side
+  app.get("/api/auth/session", async (req, res) => {
+    try {
+      // Session management is handled client-side by Supabase
+      res.json({ message: "Session managed by Supabase client" });
+    } catch (error) {
+      res.status(500).json({ error: "Session check failed" });
+    }
+  });
 
   // Generate Custom Exam with AI
   app.post("/api/generate-custom-exam", async (req, res) => {
@@ -2029,8 +2039,7 @@ app.post("/api/study-groups", async (req, res) => {
         meetingType,
         scheduledTime,
         duration,
-        maxMembers,
-        category
+        maxMembers,        category
       });
 
       // Use basic insert with only required fields
@@ -2160,32 +2169,32 @@ app.post("/api/study-groups", async (req, res) => {
   app.post("/api/add-homeostasis-questions", async (req, res) => {
     try {
       console.log('📚 Adding homeostasis MCQ questions to database...');
-      
+
       // Read the questions file
       const fs = await import('fs');
       const fileContent = fs.readFileSync('attached_assets/Pasted--question-Concerning-Homeostasis-Homeostatic-control-systems-minimize-changes-in-t-1750555872562_1750555872600.txt', 'utf8');
-      
+
       // Extract questions using regex
       const questionPattern = /"question":\s*"([^"]+)"/g;
       const answerPattern = /"answer":\s*(True|False)/g;
       const explanationPattern = /"explanation":\s*"([^"]+)"/g;
-      
+
       const questions: any[] = [];
       let questionMatch, answerMatch, explanationMatch;
-      
+
       questionPattern.lastIndex = 0;
       answerPattern.lastIndex = 0;
       explanationPattern.lastIndex = 0;
-      
+
       while ((questionMatch = questionPattern.exec(fileContent)) !== null) {
         answerMatch = answerPattern.exec(fileContent);
         explanationMatch = explanationPattern.exec(fileContent);
-        
+
         if (questionMatch && answerMatch && explanationMatch) {
           const questionText = questionMatch[1];
           const answerValue = answerMatch[1] === 'True';
           const explanationText = explanationMatch[1];
-          
+
           if (questionText.length >= 10) {
             questions.push({
               question: questionText,
@@ -2201,9 +2210,9 @@ app.post("/api/study-groups", async (req, res) => {
           }
         }
       }
-      
+
       console.log(`📝 Parsed ${questions.length} homeostasis questions`);
-      
+
       // Insert questions using database insert
       let successCount = 0;
       for (const question of questions) {
@@ -2217,9 +2226,9 @@ app.post("/api/study-groups", async (req, res) => {
           console.error(`❌ Error inserting question: ${insertError}`);
         }
       }
-      
+
       console.log(`🎉 Successfully added ${successCount} homeostasis MCQ questions!`);
-      
+
       res.json({ 
         success: true,
         message: `Successfully added ${successCount} homeostasis MCQ questions to the database`,
@@ -2237,7 +2246,7 @@ app.post("/api/study-groups", async (req, res) => {
     try {
       const totalQuestions = await db.execute(sql`SELECT COUNT(*) as count FROM quizzes`);
       const count = totalQuestions[0]?.count || 0;
-      
+
       console.log(`📊 Total questions in database: ${count}`);
       res.json({ totalQuestions: count });
     } catch (error) {
@@ -2615,7 +2624,7 @@ app.post("/api/study-groups", async (req, res) => {
   app.get("/api/lectures/:id/transcript", async (req, res) => {
     try {
       const lectureId = req.params.id;
-      
+
       const transcript = await db.select().from(lectureTranscripts)
         .where(eq(lectureTranscripts.lectureId, lectureId))
         .limit(1);
@@ -2634,7 +2643,7 @@ app.post("/api/study-groups", async (req, res) => {
   app.get("/api/lectures/:id/notes", async (req, res) => {
     try {
       const lectureId = req.params.id;
-      
+
       const notes = await db.select().from(lectureNotes)
         .where(eq(lectureNotes.lectureId, lectureId))
         .limit(1);
@@ -2658,7 +2667,7 @@ app.post("/api/study-groups", async (req, res) => {
       await db.delete(lectureNotes).where(eq(lectureNotes.lectureId, lectureId));
       await db.delete(lectureTranscripts).where(eq(lectureTranscripts.lectureId, lectureId));
       await db.delete(lectureProcessingLogs).where(eq(lectureProcessingLogs.lectureId, lectureId));
-      
+
       // Delete the lecture
       await db.delete(lectures).where(eq(lectures.id, lectureId));
 
@@ -2723,9 +2732,9 @@ app.post("/api/study-groups", async (req, res) => {
 
       // Generate comprehensive notes from the complete lecture
       const processedNotes = await getGeminiAI().generateComprehensiveNotes(transcript, module, topic);
-      
+
       console.log(`✅ Generated notes: ${processedNotes.length} characters`);
-      
+
       // Save the processed notes to database
       await db.insert(lectureNotes).values({
         lectureId,
@@ -2768,7 +2777,7 @@ app.post("/api/study-groups", async (req, res) => {
       }
 
       const liveNotes = await getGeminiAI().generateLiveNotes(transcript, module, topic);
-      
+
       res.json({ 
         success: true, 
         liveNotes,
@@ -2793,14 +2802,14 @@ app.post("/api/study-groups", async (req, res) => {
 
       // First, detect and translate mixed language content
       const languageResult = await getGeminiAI().detectAndTranslate(transcript);
-      
+
       // Generate live notes from the translated transcript
       const liveNotes = await getGeminiAI().generateLiveNotes(
         languageResult.unifiedTranscript, 
         module, 
         topic
       );
-      
+
       res.json({ 
         success: true, 
         liveNotes,
@@ -2819,7 +2828,7 @@ app.post("/api/study-groups", async (req, res) => {
   app.get("/api/lectures/:id/processing-status", async (req, res) => {
     try {
       const lectureId = req.params.id;
-      
+
       const logs = await db.select().from(lectureProcessingLogs)
         .where(eq(lectureProcessingLogs.lectureId, lectureId))
         .orderBy(desc(lectureProcessingLogs.startTime));
@@ -2895,11 +2904,11 @@ app.post("/api/study-groups", async (req, res) => {
   app.post("/api/lectures/:id/generate-pdf", async (req, res) => {
     try {
       const lectureId = req.params.id;
-      
+
       // Get lecture details
       const [lecture] = await db.select().from(lectures)
         .where(eq(lectures.id, lectureId));
-      
+
       if (!lecture) {
         return res.status(404).json({ error: "Lecture not found" });
       }
@@ -2908,7 +2917,7 @@ app.post("/api/study-groups", async (req, res) => {
       const [transcript] = await db.select().from(lectureTranscripts)
         .where(eq(lectureTranscripts.lectureId, lectureId))
         .limit(1);
-      
+
       const [notes] = await db.select().from(lectureNotes)
         .where(eq(lectureNotes.lectureId, lectureId))
         .limit(1);
@@ -2944,11 +2953,11 @@ app.post("/api/study-groups", async (req, res) => {
   app.get("/api/lectures/:id/download-pdf", async (req, res) => {
     try {
       const lectureId = req.params.id;
-      
+
       // Get lecture details
       const [lecture] = await db.select().from(lectures)
         .where(eq(lectures.id, lectureId));
-      
+
       if (!lecture) {
         return res.status(404).json({ error: "Lecture not found" });
       }
@@ -2957,7 +2966,7 @@ app.post("/api/study-groups", async (req, res) => {
       const [transcript] = await db.select().from(lectureTranscripts)
         .where(eq(lectureTranscripts.lectureId, lectureId))
         .limit(1);
-      
+
       const [notes] = await db.select().from(lectureNotes)
         .where(eq(lectureNotes.lectureId, lectureId))
         .limit(1);
@@ -2981,7 +2990,7 @@ app.post("/api/study-groups", async (req, res) => {
       const fileName = pdfPath.split('/').pop() || 'lecture-notes.pdf';
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-      
+
       // Send PDF file
       const pdfBuffer = readFileSync(pdfPath);
       res.send(pdfBuffer);
@@ -3074,7 +3083,7 @@ This creates a double circulation system in the human body - pulmonary circulati
 
       // Detect and translate mixed language content
       const languageResult = await getGeminiAI().detectAndTranslate(sampleTranscript);
-      
+
       // Insert transcript
       await db.insert(lectureTranscripts).values({
         id: uuidv4(),
@@ -3191,7 +3200,7 @@ This creates a double circulation system in the human body - pulmonary circulati
 
     } catch (error) {
       console.error(`❌ Error in AI background processing for lecture ${lectureId}:`, error);
-      
+
       // Update lecture status to failed
       await db.update(lectures)
         .set({ 

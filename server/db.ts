@@ -13,38 +13,37 @@ import {
 } from '@shared/schema';
 import { eq, desc, sql, and, gte, isNotNull, lte, gt, lt, count, sum, avg } from 'drizzle-orm';
 
-// Use built-in Replit PostgreSQL database
-const connectionString = process.env.DATABASE_URL;
+// Use Supabase PostgreSQL database
+import { DATABASE_URL } from './supabase-config';
+
+const connectionString = DATABASE_URL;
 
 if (!connectionString) {
-  throw new Error('DATABASE_URL environment variable not found. Please ensure the built-in Replit PostgreSQL database is configured.');
+  throw new Error('DATABASE_URL not found. Please check your Supabase configuration.');
 }
 
 console.log('Database connection details:');
 console.log('- URL configured:', !!connectionString);
 console.log('- URL starts with postgres:', connectionString.startsWith('postgres://'));
-console.log('- Using built-in Replit PostgreSQL:', connectionString.includes('postgresql://')); 
+console.log('- Using Supabase PostgreSQL:', connectionString.includes('supabase.co')); 
 
-// Remove Supabase client - using built-in Replit PostgreSQL only
-// export const supabase = createClient(supabaseUrl, supabaseKey);
-
-// Configure postgres client for built-in Replit PostgreSQL database
+// Configure postgres client for Supabase PostgreSQL database
 let client;
 let db;
 
 try {
   client = postgres(connectionString, {
-    ssl: 'require', // Built-in Replit PostgreSQL requires SSL
+    ssl: 'require', // Supabase requires SSL
     connect_timeout: 30,
     idle_timeout: 30,
     max: 10,
     onnotice: () => {} // Suppress notices
   });
   db = drizzle(client);
-  console.log('✅ Built-in Replit PostgreSQL client initialized successfully');
+  console.log('✅ Supabase PostgreSQL client initialized successfully');
 } catch (error) {
-  console.error('❌ PostgreSQL client initialization failed:', error.message);
-  throw new Error('Failed to connect to built-in Replit PostgreSQL database');
+  console.error('❌ Supabase PostgreSQL client initialization failed:', error.message);
+  throw new Error('Failed to connect to Supabase PostgreSQL database');
 }
 
 export { db };

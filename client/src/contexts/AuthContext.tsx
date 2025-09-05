@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/utils/supabaseClient'; // Assuming supabase client is exported from here
 
 // Simplified user interface for built-in backend
 interface User {
@@ -27,67 +28,92 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check for existing session on mount
-    checkAuthSession();
-  }, []);
-
-  const checkAuthSession = async () => {
-    try {
-      const response = await fetch('/api/auth/session', {
-        credentials: 'include'
-      });
-      
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
-      } else {
-        setUser(null);
+    // Get initial session
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Error getting session:', error);
+          setLoading(false);
+        } else if (session?.user) {
+          console.log('Active session found:', session.user.email);
+          setUser(session.user);
+          setLoading(false);
+        } else {
+          console.log('No active session found');
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Session check failed:', error);
+        setLoading(false);
       }
-    } catch (error) {
-      console.log('No active session found');
-      setUser(null);
-    }
-    setLoading(false);
-  };
+    };
+
+    getInitialSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
+        if (session?.user) {
+          setUser(session.user);
+        } else {
+          setUser(null);
+        }
+        setLoading(false);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const signUp = async (email: string, password: string) => {
     try {
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email, password })
+      const { data, error } = await supabase.auth.signUp({
+        email: email,
+        password: password,
       });
 
-      const data = await response.json();
-      
-      if (response.ok) {
+      if (error) {
+        toast({
+          title: "Sign Up Failed",
+          description: error.message,
+          variant: "destructive"
+        });
+        return { error: error };
+      } else {
         setUser(data.user);
         toast({
           title: "Account Created",
           description: "Welcome to Docdot! Your account has been created successfully."
         });
         return { error: null };
-      } else {
-        return { error: data };
       }
-    } catch (error) {
+    } catch (error: any) {
+      toast({
+        title: "Sign Up Error",
+        description: error.message,
+        variant: "destructive"
+      });
       return { error: { message: 'Network error occurred' } };
     }
   };
 
   const signIn = async (email: string, password: string) => {
     try {
-      const response = await fetch('/api/auth/signin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email, password })
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
       });
 
-      const data = await response.json();
-      
-      if (response.ok) {
+      if (error) {
+        toast({
+          title: "Sign In Failed",
+          description: error.message,
+          variant: "destructive"
+        });
+        return { error: error };
+      } else if (data.user) {
         setUser(data.user);
         toast({
           title: "Welcome Back!",
@@ -95,43 +121,84 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
         return { error: null };
       } else {
-        return { error: data };
+        // This case should ideally not happen if no error and no user
+        toast({
+          title: "Sign In Error",
+          description: "An unexpected error occurred during sign-in.",
+          variant: "destructive"
+        });
+        return { error: { message: 'Unexpected sign-in result' } };
       }
-    } catch (error) {
+    } catch (error: any) {
+      toast({
+        title: "Sign In Error",
+        description: error.message,
+        variant: "destructive"
+      });
       return { error: { message: 'Network error occurred' } };
     }
   };
 
   const signInWithOAuth = async (provider: 'google' | 'apple') => {
-    // OAuth not implemented for built-in backend yet
-    toast({
-      title: "OAuth Not Available",
-      description: `${provider} sign-in is not yet configured. Please use email/password.`,
-      variant: "destructive"
-    });
-    return { error: { message: 'OAuth not implemented' } };
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback` // Ensure this callback route exists
+        }
+      });
+
+      if (error) {
+        toast({
+          title: "OAuth Sign In Failed",
+          description: error.message,
+          variant: "destructive"
+        });
+        return { error: error };
+      }
+      // The redirect should handle the user flow, so no need to setUser here.
+      // The onAuthStateChange listener will pick up the changes after redirect.
+      return { error: null };
+    } catch (error: any) {
+      toast({
+        title: "OAuth Sign In Error",
+        description: error.message,
+        variant: "destructive"
+      });
+      return { error: { message: 'Network error occurred' } };
+    }
   };
 
   const signOut = async () => {
     try {
-      const response = await fetch('/api/auth/signout', {
-        method: 'POST',
-        credentials: 'include'
-      });
-
+      const { error } = await supabase.auth.signOut();
       setUser(null);
+      if (error) {
+        toast({
+          title: "Sign Out Failed",
+          description: error.message,
+          variant: "destructive"
+        });
+        return { error: error };
+      } else {
+        toast({
+          title: "Signed Out",
+          description: "You have been signed out successfully."
+        });
+        return { error: null };
+      }
+    } catch (error: any) {
       toast({
-        title: "Signed Out",
-        description: "You have been signed out successfully."
+        title: "Sign Out Error",
+        description: error.message,
+        variant: "destructive"
       });
-      return { error: null };
-    } catch (error) {
       return { error: { message: 'Sign out failed' } };
     }
   };
 
   return (
-    <AuthContext.Provider 
+    <AuthContext.Provider
       value={{
         user,
         loading,

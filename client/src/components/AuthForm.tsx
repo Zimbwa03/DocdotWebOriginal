@@ -10,6 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { Loader2, Eye, EyeOff, Stethoscope } from 'lucide-react';
 import { FaGoogle, FaApple } from 'react-icons/fa';
+import { supabase } from '@/lib/supabaseClient'; // Assuming supabase client is exported from here
 
 export function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
@@ -18,11 +19,11 @@ export function AuthForm() {
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
-  
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  
+
   const { signIn, signUp, signInWithOAuth } = useAuth();
   const { theme } = useTheme();
   const [, setLocation] = useLocation();
@@ -58,23 +59,39 @@ export function AuthForm() {
 
     try {
       console.log('Attempting authentication...', { isLogin, email });
-      
+
       if (isLogin) {
-        const { error } = await signIn(email, password);
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email,
+          password: password
+        });
         if (!error) {
           console.log('Sign in successful, redirecting...');
           setLocation('/home');
         } else {
           console.error('Sign in error:', error);
+          alert(`Sign in failed: ${error.message}`);
         }
       } else {
         console.log('Attempting signup...');
-        const { error } = await signUp(email, password);
+        const { data, error } = await supabase.auth.signUp({
+          email: email,
+          password: password,
+          options: {
+            data: {
+              firstName: '', // Placeholder, as these fields are not in the current form
+              lastName: '',
+              specialization: '',
+              institution: ''
+            }
+          }
+        });
         if (!error) {
           console.log('Signup successful - check email for verification');
           alert('Account created successfully! Please check your email for a verification link.');
         } else {
           console.error('Signup error:', error);
+          alert(`Signup failed: ${error.message}`);
         }
       }
     } catch (error) {
@@ -86,19 +103,36 @@ export function AuthForm() {
   };
 
   const handleOAuthSignIn = async (provider: 'google' | 'apple') => {
-    await signInWithOAuth(provider);
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (error) {
+        console.error(`OAuth sign in with ${provider} error:`, error);
+        alert(`Failed to sign in with ${provider}: ${error.message}`);
+      }
+    } catch (error) {
+      console.error('OAuth authentication error:', error);
+      alert('An unexpected error occurred during OAuth sign-in. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-900">
       <div className="max-w-md w-full space-y-8">
-        
+
         {/* Header */}
         <div className="text-center">
           <div className="mx-auto mb-6">
-            <img 
-              src="/DocDot Medical Student Logo.png" 
-              alt="DocDot Medical Student Logo" 
+            <img
+              src="/DocDot Medical Student Logo.png"
+              alt="DocDot Medical Student Logo"
               className="w-24 h-24 mx-auto object-contain rounded-xl shadow-sm"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
@@ -122,10 +156,10 @@ export function AuthForm() {
                   ? 'border-b-2 bg-opacity-30'
                   : 'text-gray-500 border-transparent hover:text-blue-600'
               }`}
-              style={isLogin ? { 
-                color: '#3399FF', 
-                borderColor: '#3399FF', 
-                backgroundColor: '#D1E8F9' 
+              style={isLogin ? {
+                color: '#3399FF',
+                borderColor: '#3399FF',
+                backgroundColor: '#D1E8F9'
               } : {}}
             >
               Sign In
@@ -137,10 +171,10 @@ export function AuthForm() {
                   ? 'border-b-2 bg-opacity-30'
                   : 'text-gray-500 border-transparent hover:text-blue-600'
               }`}
-              style={!isLogin ? { 
-                color: '#3399FF', 
-                borderColor: '#3399FF', 
-                backgroundColor: '#D1E8F9' 
+              style={!isLogin ? {
+                color: '#3399FF',
+                borderColor: '#3399FF',
+                backgroundColor: '#D1E8F9'
               } : {}}
             >
               Sign Up
