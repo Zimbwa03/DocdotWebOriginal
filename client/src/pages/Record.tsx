@@ -60,6 +60,7 @@ interface RecordingState {
   audioBlob: Blob | null;
   mediaRecorder: MediaRecorder | null;
   audioChunks: Blob[];
+  speechRecognition: any; // Web Speech API recognition instance
 }
 
 export default function Record() {
@@ -74,7 +75,8 @@ export default function Record() {
     duration: 0,
     audioBlob: null,
     mediaRecorder: null,
-    audioChunks: []
+    audioChunks: [],
+    speechRecognition: null
   });
 
   // Lecture metadata
@@ -84,6 +86,9 @@ export default function Record() {
     topic: '',
     lecturer: ''
   });
+
+  // Speech recognition language
+  const [speechLanguage, setSpeechLanguage] = useState('en-ZW'); // English (Zimbabwe)
 
   // UI state
   const [activeTab, setActiveTab] = useState<'record' | 'notes' | 'history'>('record');
@@ -166,38 +171,108 @@ export default function Record() {
     }
   });
 
-  // Simulate real-time transcription
-  const simulateTranscription = () => {
-    const sampleTranscripts = [
-      "Welcome to today's lecture on cardiovascular physiology.",
-      "We will be discussing the structure and function of the heart.",
-      "The heart is a four-chambered organ that pumps blood throughout the body.",
-      "Let's start with the basic anatomy of the heart chambers.",
-      "The right atrium receives deoxygenated blood from the body.",
-      "The left atrium receives oxygenated blood from the lungs.",
-      "The ventricles are the main pumping chambers of the heart.",
-      "The right ventricle pumps blood to the lungs for oxygenation.",
-      "The left ventricle pumps oxygenated blood to the rest of the body.",
-      "This creates a double circulation system in the human body."
-    ];
-
-    let currentIndex = 0;
+  // Real-time transcription using Web Speech API
+  const startRealTimeTranscription = () => {
     setIsTranscribing(true);
     setLiveTranscript('');
+    
+    // Check if browser supports Web Speech API
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      console.error('Web Speech API not supported in this browser');
+      toast({
+        variant: "destructive",
+        title: "Speech Recognition Not Supported",
+        description: "Your browser doesn't support speech recognition. Please use Chrome, Edge, or Safari."
+      });
+      setIsTranscribing(false);
+      return;
+    }
 
-    transcriptIntervalRef.current = setInterval(() => {
-      if (currentIndex < sampleTranscripts.length) {
-        setLiveTranscript(prev => prev + (prev ? ' ' : '') + sampleTranscripts[currentIndex]);
-        currentIndex++;
-      } else {
-        // Generate live notes from transcript
-        generateLiveNotes(liveTranscript);
-        setIsTranscribing(false);
-        if (transcriptIntervalRef.current) {
-          clearInterval(transcriptIntervalRef.current);
+    // Initialize Speech Recognition
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    
+    // Configure recognition settings
+    recognition.continuous = true; // Keep listening
+    recognition.interimResults = true; // Show interim results
+    recognition.lang = speechLanguage; // Use selected language
+    recognition.maxAlternatives = 1;
+    
+    // Start recognition
+    recognition.start();
+    console.log('🎤 Real-time speech recognition started');
+    
+    // Handle results
+    recognition.onresult = (event) => {
+      let interimTranscript = '';
+      let finalTranscript = '';
+      
+      // Process all results
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript + ' ';
+        } else {
+          interimTranscript += transcript;
         }
       }
-    }, 3000); // Add new text every 3 seconds
+      
+      // Update live transcript
+      const currentTranscript = liveTranscript + finalTranscript;
+      setLiveTranscript(currentTranscript + interimTranscript);
+      
+      // Generate notes when we have substantial content
+      if (finalTranscript.trim().length > 50) {
+        generateLiveNotes(currentTranscript);
+      }
+    };
+    
+    // Handle errors
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+      
+      let errorMessage = 'Speech recognition error occurred';
+      switch (event.error) {
+        case 'no-speech':
+          errorMessage = 'No speech detected. Please speak clearly.';
+          break;
+        case 'audio-capture':
+          errorMessage = 'Microphone not accessible. Please check permissions.';
+          break;
+        case 'not-allowed':
+          errorMessage = 'Microphone access denied. Please allow microphone access.';
+          break;
+        case 'network':
+          errorMessage = 'Network error occurred during speech recognition.';
+          break;
+      }
+      
+      toast({
+        variant: "destructive",
+        title: "Speech Recognition Error",
+        description: errorMessage
+      });
+      
+      setIsTranscribing(false);
+    };
+    
+    // Handle end of recognition
+    recognition.onend = () => {
+      console.log('🎤 Speech recognition ended');
+      setIsTranscribing(false);
+    };
+    
+    // Store recognition instance for stopping
+    setRecordingState(prev => ({ ...prev, speechRecognition: recognition }));
+  };
+
+  // Manual transcript input for testing (temporary)
+  const handleManualTranscript = (transcript: string) => {
+    setLiveTranscript(transcript);
+    if (transcript.trim()) {
+      generateLiveNotes(transcript);
+    }
   };
 
   // Generate live notes from transcript using Gemini AI
@@ -317,8 +392,8 @@ export default function Record() {
       // Start recording on backend
       await startRecordingMutation.mutateAsync(lectureMetadata);
 
-      // Start simulated transcription
-      simulateTranscription();
+      // Start real-time transcription
+      startRealTimeTranscription();
     } catch (error) {
       console.error('Error starting recording:', error);
       toast({
@@ -334,11 +409,17 @@ export default function Record() {
     if (recordingState.mediaRecorder && recordingState.isRecording) {
       recordingState.mediaRecorder.stop();
       
+      // Stop speech recognition
+      if (recordingState.speechRecognition) {
+        recordingState.speechRecognition.stop();
+      }
+      
       setRecordingState(prev => ({
         ...prev,
         isRecording: false,
         isPaused: false,
-        mediaRecorder: null
+        mediaRecorder: null,
+        speechRecognition: null
       }));
 
       if (intervalRef.current) {
@@ -514,6 +595,31 @@ export default function Record() {
                       disabled={recordingState.isRecording}
                     />
                   </div>
+                  
+                  <div>
+                    <Label htmlFor="language">Speech Recognition Language</Label>
+                    <select
+                      id="language"
+                      value={speechLanguage}
+                      onChange={(e) => setSpeechLanguage(e.target.value)}
+                      disabled={recordingState.isRecording}
+                      className="mt-1 w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                    >
+                      <option value="en-ZW">English (Zimbabwe)</option>
+                      <option value="en-US">English (US)</option>
+                      <option value="en-GB">English (UK)</option>
+                      <option value="en-AU">English (Australia)</option>
+                      <option value="en-ZA">English (South Africa)</option>
+                      <option value="en-NG">English (Nigeria)</option>
+                      <option value="en-KE">English (Kenya)</option>
+                      <option value="en-GH">English (Ghana)</option>
+                      <option value="en-TZ">English (Tanzania)</option>
+                      <option value="en-UG">English (Uganda)</option>
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Select the language that best matches your lecture. English (Zimbabwe) is optimized for mixed Shona-English content.
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -686,14 +792,31 @@ export default function Record() {
                                 <span className="text-blue-600 font-medium">Transcribing live...</span>
                               </div>
                             )}
-                            <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border">
-                              {liveTranscript || (
-                                <div className="flex items-center space-x-2 text-gray-500">
-                                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
-                                  <span>Waiting for speech...</span>
-                                </div>
-                              )}
+                            
+                            {/* Real-time speech recognition status */}
+                            <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                              <div className="flex items-center space-x-2 mb-2">
+                                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                                <span className="text-sm text-blue-800 dark:text-blue-200 font-medium">
+                                  Real-time Speech Recognition Active
+                                </span>
+                              </div>
+                              <p className="text-xs text-blue-700 dark:text-blue-300">
+                                Speak clearly into your microphone. The system will transcribe your speech in real-time and generate AI-powered notes.
+                              </p>
                             </div>
+                                              <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border">
+                    {liveTranscript ? (
+                      <div className="text-gray-800 dark:text-gray-200">
+                        {liveTranscript}
+                      </div>
+                    ) : (
+                      <div className="flex items-center space-x-2 text-gray-500">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                        <span>Listening for speech... Speak into your microphone</span>
+                      </div>
+                    )}
+                  </div>
                           </div>
                         ) : (
                           <p className="text-gray-500 italic">Start recording to see live transcript</p>
@@ -726,8 +849,8 @@ export default function Record() {
                               </div>
                             ) : (
                               <div className="flex items-center space-x-2 text-gray-500">
-                                <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
-                                <span>Waiting for content to generate notes...</span>
+                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                <span>Waiting for speech to generate notes...</span>
                               </div>
                             )}
                           </div>
