@@ -2721,6 +2721,41 @@ app.post("/api/study-groups", async (req, res) => {
     }
   });
 
+  // Translate and process transcript (for mixed language support)
+  app.post("/api/lectures/translate-and-process", async (req, res) => {
+    try {
+      const { transcript, module, topic, sourceLanguage } = req.body;
+
+      if (!transcript || !module) {
+        return res.status(400).json({ error: "Transcript and module are required" });
+      }
+
+      console.log(`🔄 Processing transcript with language: ${sourceLanguage}`);
+
+      // First, detect and translate mixed language content
+      const languageResult = await geminiAI.detectAndTranslate(transcript);
+      
+      // Generate live notes from the translated transcript
+      const liveNotes = await geminiAI.generateLiveNotes(
+        languageResult.unifiedTranscript, 
+        module, 
+        topic
+      );
+      
+      res.json({ 
+        success: true, 
+        liveNotes,
+        translatedTranscript: languageResult.unifiedTranscript,
+        languageDetected: languageResult.languageDetected,
+        confidence: languageResult.confidence,
+        message: "Transcript translated and notes generated successfully" 
+      });
+    } catch (error) {
+      console.error("Error translating and processing transcript:", error);
+      res.status(500).json({ error: "Failed to translate and process transcript" });
+    }
+  });
+
   // Get lecture processing status
   app.get("/api/lectures/:id/processing-status", async (req, res) => {
     try {

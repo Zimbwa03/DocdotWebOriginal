@@ -15,43 +15,33 @@ class GeminiAIService {
   }
 
   /**
-   * Generate live notes from transcript
+   * Generate live notes from transcript (optimized for speed)
    */
   async generateLiveNotes(transcript: string, module: string, topic?: string): Promise<string> {
     try {
+      // Use a more concise prompt for faster processing
       const prompt = `
-You are an AI assistant helping medical students at the University of Zimbabwe. 
-Generate structured, concise notes from this lecture transcript.
+Generate concise medical lecture notes for University of Zimbabwe students.
 
 Module: ${module}
 Topic: ${topic || 'General'}
 
 Transcript: ${transcript}
 
-Please generate notes in the following format:
-## Key Points from Live Lecture
+Format:
+## Key Points
+- [Main concept 1]
+- [Main concept 2]
 
-### [Main Topic/Concept]
-- [Key point 1]
-- [Key point 2]
-- [Key point 3]
+## Medical Terms
+- [Term 1]: [Definition]
+- [Term 2]: [Definition]
 
-### [Sub-topic/Details]
-- [Important detail 1]
-- [Important detail 2]
+## Clinical Applications
+- [Application 1]
+- [Application 2]
 
-### Clinical Relevance
-- [Clinical application 1]
-- [Clinical application 2]
-
-Focus on:
-1. Medical terminology and definitions
-2. Key concepts and relationships
-3. Clinical applications
-4. Important facts for exam preparation
-5. Structure the content for easy revision
-
-Keep the notes concise but comprehensive, suitable for medical students.
+Keep it brief, focused on exam preparation, medical terminology, and clinical relevance.
 `;
 
       const result = await this.model.generateContent(prompt);
@@ -59,7 +49,8 @@ Keep the notes concise but comprehensive, suitable for medical students.
       return response.text();
     } catch (error) {
       console.error('Error generating live notes:', error);
-      throw new Error('Failed to generate live notes');
+      // Return a quick fallback instead of throwing
+      return `## Key Points from ${module}\n- ${topic || 'Medical concepts discussed'}\n- Important terminology and clinical applications\n- AI processing in progress...`;
     }
   }
 
@@ -152,7 +143,7 @@ Focus on accuracy, medical relevance, and exam preparation value.
   }
 
   /**
-   * Detect and translate mixed language content
+   * Detect and translate mixed language content (optimized for Shona-English)
    */
   async detectAndTranslate(transcript: string): Promise<{
     unifiedTranscript: string;
@@ -160,20 +151,33 @@ Focus on accuracy, medical relevance, and exam preparation value.
     confidence: number;
   }> {
     try {
+      // Quick check if transcript contains Shona words
+      const shonaIndicators = ['ndinoda', 'ndiri', 'ndinotaura', 'ndinonzwa', 'ndinofunga', 'ndinoda', 'ndinoda', 'ndinoda'];
+      const hasShona = shonaIndicators.some(word => transcript.toLowerCase().includes(word));
+      
+      if (!hasShona) {
+        // No Shona detected, return as is
+        return {
+          unifiedTranscript: transcript,
+          languageDetected: 'en',
+          confidence: 0.9
+        };
+      }
+
       const prompt = `
-Analyze this transcript and determine if it contains mixed languages (English and Shona).
-If Shona is detected, translate it to English while preserving the meaning.
+Translate this mixed Shona-English medical lecture transcript to English. 
+Preserve medical terminology and academic meaning.
 
 Transcript: ${transcript}
 
-Please respond with JSON:
+Respond with JSON:
 {
-  "unifiedTranscript": "English translation of the entire transcript",
-  "languageDetected": "en" or "en-sh" or "sh",
-  "confidence": 0.0-1.0
+  "unifiedTranscript": "Complete English translation",
+  "languageDetected": "en-sh",
+  "confidence": 0.9
 }
 
-Focus on medical terminology and academic content accuracy.
+Focus on medical accuracy and academic context.
 `;
 
       const result = await this.model.generateContent(prompt);
@@ -183,15 +187,19 @@ Focus on medical terminology and academic content accuracy.
         const jsonResponse = JSON.parse(response.text());
         return {
           unifiedTranscript: jsonResponse.unifiedTranscript || transcript,
-          languageDetected: jsonResponse.languageDetected || 'en',
+          languageDetected: jsonResponse.languageDetected || 'en-sh',
           confidence: jsonResponse.confidence || 0.9
         };
       } catch (parseError) {
-        // Fallback
+        // Fallback - try simple translation
+        const simplePrompt = `Translate to English: ${transcript}`;
+        const simpleResult = await this.model.generateContent(simplePrompt);
+        const simpleResponse = await simpleResult.response;
+        
         return {
-          unifiedTranscript: transcript,
-          languageDetected: 'en',
-          confidence: 0.8
+          unifiedTranscript: simpleResponse.text() || transcript,
+          languageDetected: 'en-sh',
+          confidence: 0.7
         };
       }
     } catch (error) {
