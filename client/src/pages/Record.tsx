@@ -100,6 +100,8 @@ export default function Record() {
   const [liveTranscript, setLiveTranscript] = useState('');
   const [liveNotes, setLiveNotes] = useState('');
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const [isGeneratingNotes, setIsGeneratingNotes] = useState(false);
+  const [noteGenerationTimeout, setNoteGenerationTimeout] = useState<NodeJS.Timeout | null>(null);
 
   // Refs
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -229,10 +231,22 @@ export default function Record() {
       console.log('📝 Current transcript preview:', newTranscript.substring(0, 200));
       
       // Generate notes when we have substantial content (use the full accumulated transcript)
-      if (finalTranscript.trim().length > 50) {
-        // Only generate notes if we have actual speech content, not just metadata
-        if (newTranscript.trim().length > 100) {
-          generateLiveNotes(newTranscript); // Use the full accumulated transcript
+      if (finalTranscript.trim().length > 20) {
+        // Generate notes more frequently for real-time updates
+        if (newTranscript.trim().length > 50) {
+          console.log('🚀 Triggering real-time note generation...');
+          
+          // Clear existing timeout
+          if (noteGenerationTimeout) {
+            clearTimeout(noteGenerationTimeout);
+          }
+          
+          // Set new timeout for debounced note generation
+          const timeout = setTimeout(() => {
+            generateLiveNotes(newTranscript);
+          }, 1000); // 1 second delay for real-time feel
+          
+          setNoteGenerationTimeout(timeout);
         }
       }
 
@@ -441,12 +455,13 @@ Date: ${new Date().toLocaleDateString()}
   // Generate live notes from transcript using Gemini AI
   const generateLiveNotes = async (transcript: string) => {
     // Only generate notes if we have actual speech content
-    if (!transcript || transcript.trim().length < 50) {
+    if (!transcript || transcript.trim().length < 30) {
       console.log('Not enough transcript content to generate notes');
       return;
     }
 
     console.log('🎯 Generating notes from transcript:', transcript.substring(0, 100) + '...');
+    setIsGeneratingNotes(true);
 
     try {
       const response = await fetch('/api/lectures/generate-live-notes', {
@@ -465,6 +480,7 @@ Date: ${new Date().toLocaleDateString()}
         const data = await response.json();
         console.log('✅ AI notes generated successfully');
         setLiveNotes(data.liveNotes);
+        setIsGeneratingNotes(false);
         
         // Auto-save notes when generated (use full accumulated transcript)
         const currentLecture = lectures.find(l => l.status === 'recording');
@@ -490,6 +506,7 @@ ${transcript.substring(0, 200)}...
         `.trim();
         
         setLiveNotes(fallbackNotes);
+        setIsGeneratingNotes(false);
         
         // Auto-save fallback notes too (use full accumulated transcript)
         const currentLecture = lectures.find(l => l.status === 'recording');
@@ -516,6 +533,7 @@ ${transcript.substring(0, 200)}...
       `.trim();
       
       setLiveNotes(fallbackNotes);
+      setIsGeneratingNotes(false);
       
       // Auto-save fallback notes on error too (use full accumulated transcript)
       const currentLecture = lectures.find(l => l.status === 'recording');
@@ -613,6 +631,12 @@ ${transcript.substring(0, 200)}...
       // Stop speech recognition
       if (recordingState.speechRecognition) {
         recordingState.speechRecognition.stop();
+      }
+
+      // Clear note generation timeout
+      if (noteGenerationTimeout) {
+        clearTimeout(noteGenerationTimeout);
+        setNoteGenerationTimeout(null);
       }
       
       setRecordingState(prev => ({
@@ -1048,8 +1072,11 @@ ${transcript.substring(0, 200)}...
                               {liveTranscript && (
                                 <div className="mt-2 text-xs text-blue-600 dark:text-blue-400">
                                   <strong>Transcript Length:</strong> {liveTranscript.length} characters
-                                  {liveTranscript.length > 100 && (
+                                  {liveTranscript.length > 50 && !isGeneratingNotes && (
                                     <span className="ml-2 text-green-600">✓ Ready for AI processing</span>
+                                  )}
+                                  {isGeneratingNotes && (
+                                    <span className="ml-2 text-orange-600">🔄 Generating AI notes...</span>
                                   )}
                                 </div>
                               )}
@@ -1095,7 +1122,12 @@ ${transcript.substring(0, 200)}...
                             </div>
                           )}
                           <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border">
-                            {liveNotes ? (
+                            {isGeneratingNotes ? (
+                              <div className="flex items-center space-x-2 text-orange-600">
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-600"></div>
+                                <span>Generating AI notes from your speech...</span>
+                              </div>
+                            ) : liveNotes ? (
                               <div className="prose prose-sm max-w-none">
                                 <pre className="whitespace-pre-wrap font-sans">{liveNotes}</pre>
                               </div>
