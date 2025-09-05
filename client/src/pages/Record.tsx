@@ -1328,72 +1328,67 @@ ${transcript.substring(0, 200)}...
                                 </div>
                               </div>
                               
-                                
-                                {finalTranscript.trim().length > 100 && (
-                                  <button
-                                    onClick={handleGenerateNotes}
-                                    disabled={isGeneratingNotes}
-                                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl"
-                                  >
-                                    {isGeneratingNotes ? (
-                                      <>
-                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                                        <span>Generating AI Notes...</span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <span className="text-xl">🤖</span>
-                                        <span>Generate Notes with AI</span>
-                                        <span className="text-sm opacity-90">(Recommended)</span>
-                                      </>
-                                    )}
-                                  </button>
-                                )}
-                                
-                                <p className="text-xs text-gray-500 text-center">
-                                  {finalTranscript.trim().length > 100 
-                                    ? "AI will organize, structure, and research your lecture content"
-                                    : "Speak clearly into your microphone to see transcription"
-                                  }
-                                </p>
-                              </div>
+                              {finalTranscript.trim().length > 100 && (
+                                <button
+                                  onClick={handleGenerateNotes}
+                                  disabled={isGeneratingNotes}
+                                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl"
+                                >
+                                  {isGeneratingNotes ? (
+                                    <>
+                                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                                      <span>Generating AI Notes...</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <span className="text-xl">🤖</span>
+                                      <span>Generate Notes with AI</span>
+                                      <span className="text-sm opacity-90">(Recommended)</span>
+                                    </>
+                                  )}
+                                </button>
+                              )}
+                              
+                              <p className="text-xs text-gray-500 text-center">
+                                {finalTranscript.trim().length > 100 
+                                  ? "AI will organize, structure, and research your lecture content"
+                                  : "Speak clearly into your microphone to see transcription"
+                                }
+                              </p>
                             </div>
-                                              <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border max-h-96 overflow-y-auto">
-                    <div className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap min-h-[200px]">
-                      {liveTranscript ? (
-                        <div>
-                          <span className="text-gray-800 dark:text-gray-200">
-                            {liveTranscript.replace(/\s*\[interim\].*$/, '')}
-                          </span>
-                          {isTranscribing && liveTranscript.includes('[interim]') && (
-                            <span className="text-blue-500 animate-pulse">
-                              {liveTranscript.match(/\[interim\]\s*(.*)$/)?.[1] || ''}
-                            </span>
-                          )}
-                          {isTranscribing && (
-                            <span className="text-blue-500 animate-pulse ml-1">|</span>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="flex items-center space-x-2 text-gray-500">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                          <span>Listening for speech... Speak into your microphone</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                          </div>
-                        ) : (
-                          <p className="text-gray-500 italic">Start recording to see live transcript</p>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8 text-gray-500">
-                        <EyeOff className="w-8 h-8 mx-auto mb-2" />
-                        <p>Transcript hidden</p>
-                      </div>
-                    )}
-                  </div>
+                            
+                            {/* Live Transcript Display */}
+                            {showTranscript ? (
+                              <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border max-h-96 overflow-y-auto">
+                                <div className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap min-h-[200px]">
+                                  {liveTranscript ? (
+                                    <div>
+                                      <span className="text-gray-800 dark:text-gray-200">
+                                        {liveTranscript.replace(/\s*\[interim\].*$/, '')}
+                                      </span>
+                                      {isTranscribing && liveTranscript.includes('[interim]') && (
+                                        <span className="text-blue-500 animate-pulse">
+                                          {liveTranscript.match(/\[interim\]\s*(.*)$/)?.[1] || ''}
+                                        </span>
+                                      )}
+                                      {isTranscribing && (
+                                        <span className="text-blue-500 animate-pulse ml-1">|</span>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center space-x-2 text-gray-500">
+                                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                                      <span>Listening for speech... Speak into your microphone</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="text-center py-8 text-gray-500">
+                                <EyeOff className="w-8 h-8 mx-auto mb-2" />
+                                <p>Transcript hidden</p>
+                              </div>
+                            )}
 
                   {/* Live Notes */}
                   <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 min-h-[200px]">
