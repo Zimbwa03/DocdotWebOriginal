@@ -92,6 +92,7 @@ ${transcript.substring(0, 300)}...
   async generateComprehensiveNotes(transcript: string, module: string, topic?: string): Promise<string> {
     try {
       console.log(`🤖 Generating comprehensive notes for ${module}: ${transcript.length} characters`);
+      console.log(`📝 Transcript preview: ${transcript.substring(0, 200)}...`);
 
       const prompt = `
 You are an expert medical education assistant for University of Zimbabwe students. 
@@ -203,12 +204,15 @@ Make these notes the best possible study resource for University of Zimbabwe med
       const response = await result.response;
       let generatedNotes = response.text();
       
+      console.log(`✅ Generated base notes: ${generatedNotes.length} characters`);
+      
       // Generate authentic exam questions and append them
       try {
         const examQuestions = await this.generateAuthenticExamQuestions(transcript, module, topic);
         if (examQuestions.length > 0) {
           generatedNotes += '\n\n## 📝 Exam Questions\n\n';
           generatedNotes += examQuestions.join('\n\n');
+          console.log(`✅ Added ${examQuestions.length} exam questions`);
         }
       } catch (error) {
         console.error('Error adding exam questions:', error);

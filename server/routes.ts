@@ -2706,7 +2706,10 @@ app.post("/api/study-groups", async (req, res) => {
     try {
       const { lectureId, transcript, module, topic } = req.body;
 
+      console.log('📝 Received request:', { lectureId, transcriptLength: transcript?.length, module, topic });
+
       if (!lectureId || !transcript || !module) {
+        console.error('Missing required fields:', { lectureId: !!lectureId, transcript: !!transcript, module: !!module });
         return res.status(400).json({ error: "Lecture ID, transcript, and module are required" });
       }
 
@@ -2714,6 +2717,8 @@ app.post("/api/study-groups", async (req, res) => {
 
       // Generate comprehensive notes from the complete lecture
       const processedNotes = await geminiAI.generateComprehensiveNotes(transcript, module, topic);
+      
+      console.log(`✅ Generated notes: ${processedNotes.length} characters`);
       
       // Save the processed notes to database
       await db.insert(lectureNotes).values({
@@ -2731,13 +2736,19 @@ app.post("/api/study-groups", async (req, res) => {
         }
       });
 
+      console.log('✅ Notes saved to database');
+
       res.json({ 
+        success: true,
         processedNotes,
         message: 'Lecture processed successfully'
       });
     } catch (error) {
       console.error("Error processing complete lecture:", error);
-      res.status(500).json({ error: "Failed to process complete lecture" });
+      res.status(500).json({ 
+        error: "Failed to process complete lecture",
+        details: error.message 
+      });
     }
   });
 

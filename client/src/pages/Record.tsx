@@ -212,7 +212,7 @@ export default function Record() {
       let interimTranscript = '';
       let finalTranscript = '';
       
-      // Process all results from the current event
+      // Process only NEW results to avoid repetition
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript;
         
@@ -223,31 +223,41 @@ export default function Record() {
         }
       }
       
-      // CRITICAL: Always accumulate text, never replace
-      setLiveTranscript(prevTranscript => {
-        const newAccumulatedTranscript = prevTranscript + finalTranscript;
-        
-        // Debug: Log transcript accumulation
-        console.log('📝 Final transcript added:', finalTranscript);
-        console.log('📝 Total accumulated length:', newAccumulatedTranscript.length);
-        console.log('📝 Current transcript preview:', newAccumulatedTranscript.substring(0, 200));
-        
-        // Show generate button when we have substantial content
-        if (newAccumulatedTranscript.trim().length > 100) {
-          setShowGenerateButton(true);
-        }
-
-        // Auto-save transcript periodically (every 500 characters of new content)
-        if (finalTranscript.trim().length > 0 && newAccumulatedTranscript.length % 500 === 0) {
-          const currentLecture = lectures.find(l => l.status === 'recording');
-          if (currentLecture) {
-            saveLectureData(currentLecture.id, newAccumulatedTranscript, liveNotes);
+      // Only update if we have new final transcript
+      if (finalTranscript.trim()) {
+        setLiveTranscript(prevTranscript => {
+          const newAccumulatedTranscript = prevTranscript + finalTranscript;
+          
+          // Debug: Log transcript accumulation
+          console.log('📝 Final transcript added:', finalTranscript);
+          console.log('📝 Total accumulated length:', newAccumulatedTranscript.length);
+          console.log('📝 Current transcript preview:', newAccumulatedTranscript.substring(0, 200));
+          
+          // Show generate button when we have substantial content
+          if (newAccumulatedTranscript.trim().length > 100) {
+            setShowGenerateButton(true);
           }
-        }
-        
-        // Return the accumulated transcript with interim results
-        return newAccumulatedTranscript + interimTranscript;
-      });
+
+          // Auto-save transcript periodically (every 500 characters of new content)
+          if (finalTranscript.trim().length > 0 && newAccumulatedTranscript.length % 500 === 0) {
+            const currentLecture = lectures.find(l => l.status === 'recording');
+            if (currentLecture) {
+              saveLectureData(currentLecture.id, newAccumulatedTranscript, liveNotes);
+            }
+          }
+          
+          return newAccumulatedTranscript;
+        });
+      }
+      
+      // Update interim results separately to avoid repetition
+      if (interimTranscript.trim()) {
+        setLiveTranscript(prevTranscript => {
+          // Remove any existing interim text and add new interim text
+          const finalText = prevTranscript.replace(/\s*\[interim\]\s*$/, '');
+          return finalText + ' [interim] ' + interimTranscript;
+        });
+      }
     };
     
     // Handle errors with automatic restart for certain errors
@@ -450,7 +460,10 @@ export default function Record() {
 
   // Manual generate notes button handler
   const handleGenerateNotes = async () => {
-    if (!liveTranscript.trim()) {
+    // Clean the transcript to remove interim markers
+    const cleanTranscript = liveTranscript.replace(/\s*\[interim\]\s*$/, '').trim();
+    
+    if (!cleanTranscript) {
       toast({
         title: "No Content",
         description: "Please record some lecture content first.",
@@ -471,6 +484,10 @@ export default function Record() {
 
     try {
       console.log('🎯 Manual generate notes triggered...');
+      console.log('📝 Transcript length:', cleanTranscript.length);
+      console.log('📝 Module:', lectureMetadata.module);
+      console.log('📝 Topic:', lectureMetadata.topic);
+      
       setIsGeneratingNotes(true);
       
       // Call backend to process the complete lecture
@@ -481,21 +498,25 @@ export default function Record() {
         },
         body: JSON.stringify({
           lectureId: currentLecture.id,
-          transcript: liveTranscript,
+          transcript: cleanTranscript,
           module: lectureMetadata.module,
           topic: lectureMetadata.topic
         }),
       });
 
+      console.log('📡 Response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
         console.log('✅ Notes generated successfully');
+        console.log('📝 Generated notes length:', data.processedNotes?.length || 0);
         
         // Update the live notes with the processed content
-        setLiveNotes(data.processedNotes);
+        const notes = data.processedNotes || 'Notes generation completed but no content returned.';
+        setLiveNotes(notes);
         
         // Save the processed notes to database
-        await saveLectureData(currentLecture.id, liveTranscript, data.processedNotes);
+        await saveLectureData(currentLecture.id, cleanTranscript, notes);
         
         // Show success message
         toast({
@@ -503,10 +524,11 @@ export default function Record() {
           description: "AI has created structured, well-researched notes from your lecture.",
         });
       } else {
-        console.error('Failed to generate notes');
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('Failed to generate notes:', errorData);
         toast({
           title: "Generation Failed",
-          description: "Could not generate notes. Please try again.",
+          description: `Could not generate notes: ${errorData.error || 'Unknown error'}`,
           variant: "destructive"
         });
       }
@@ -514,7 +536,7 @@ export default function Record() {
       console.error('Error generating notes:', error);
       toast({
         title: "Generation Error",
-        description: "An error occurred while generating notes.",
+        description: `An error occurred while generating notes: ${error.message}`,
         variant: "destructive"
       });
     } finally {
@@ -1247,14 +1269,18 @@ ${transcript.substring(0, 200)}...
                             </div>
                                               <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border max-h-96 overflow-y-auto">
                     <div className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap min-h-[200px]">
-                      {liveTranscript || (
+                      {liveTranscript ? (
+                        <div>
+                          {liveTranscript.replace(/\s*\[interim\]\s*$/, '')}
+                          {isTranscribing && (
+                            <span className="text-blue-500 animate-pulse">|</span>
+                          )}
+                        </div>
+                      ) : (
                         <div className="flex items-center space-x-2 text-gray-500">
                           <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                           <span>Listening for speech... Speak into your microphone</span>
                         </div>
-                      )}
-                      {isTranscribing && liveTranscript && (
-                        <span className="text-blue-500 animate-pulse">|</span>
                       )}
                     </div>
                   </div>
