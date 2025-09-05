@@ -87,6 +87,135 @@ ${transcript.substring(0, 300)}...
   }
 
   /**
+   * Generate comprehensive notes for manual generation (simplified)
+   */
+  async generateComprehensiveNotes(transcript: string, module: string, topic?: string): Promise<string> {
+    try {
+      console.log(`🤖 Generating comprehensive notes for ${module}: ${transcript.length} characters`);
+
+      const prompt = `
+You are an expert medical education assistant for University of Zimbabwe students. 
+Generate comprehensive, well-researched, and highly structured lecture notes from this medical lecture transcript.
+
+IMPORTANT: This is a complete lecture transcript. Create detailed, exam-ready notes that will help medical students excel in their studies.
+
+Module: ${module}
+Topic: ${topic || 'General Medical Concepts'}
+
+COMPLETE LECTURE TRANSCRIPT:
+${transcript}
+
+Create detailed, structured notes that include:
+
+# ${module} - ${topic || 'Comprehensive Lecture Notes'}
+
+## 🎯 Learning Objectives
+- [Extract and list the main learning objectives from the lecture]
+- [Key skills and knowledge students should gain]
+
+## 📚 Core Concepts & Definitions
+- [Important medical terms and definitions mentioned in the lecture]
+- [Key concepts explained by the lecturer with clear explanations]
+- [Fundamental principles discussed]
+
+## 🔬 Detailed Content Analysis
+- [Main topics covered in detail during the lecture]
+- [Important explanations, examples, and case studies given]
+- [Step-by-step processes or procedures explained]
+
+## 🏥 Clinical Applications
+- [Practical applications discussed in the lecture]
+- [Clinical relevance and real-world examples]
+- [How concepts apply to medical practice]
+
+## 📖 Medical Terminology & Definitions
+- [All medical terms mentioned with clear definitions]
+- [Important abbreviations and their meanings]
+- [Technical language explained in simple terms]
+
+## 🔍 Research & Additional Context
+- [Add relevant medical research and current context]
+- [Important facts, statistics, and data mentioned]
+- [Current medical practices, guidelines, and standards]
+- [Recent developments in the field]
+
+## 📊 Key Information Tables
+- [Create tables for comparisons, classifications, or lists]
+- [Organize complex information in easy-to-read formats]
+
+## ⚠️ Important Points to Remember
+- [Critical information for exams and clinical practice]
+- [Common mistakes or misconceptions to avoid]
+- [Key facts that are frequently tested]
+
+## 📝 Summary & Key Takeaways
+- [Main points to remember for exams]
+- [Critical information for medical practice]
+- [Action items for further study]
+
+## 🔗 Related Topics & Further Reading
+- [Topics mentioned that relate to other medical subjects]
+- [Suggestions for additional study materials]
+
+## 📝 Exam Questions
+- [Generate 5 authentic exam questions based on this specific lecture content]
+- [Questions should test knowledge actually covered in this lecture]
+- [Include clinical scenarios and specific details mentioned]
+
+Format the notes professionally with:
+- Clear headings and subheadings
+- Bullet points and numbered lists
+- Tables for organized information
+- Bold text for important terms
+- Emojis for visual organization
+- Professional medical writing style
+
+Focus on:
+1. Exam preparation and clinical relevance
+2. Clear, concise explanations
+3. Well-organized structure
+4. Comprehensive coverage of all topics mentioned
+5. Additional research context where helpful
+6. Practical applications for medical students
+
+Make these notes the best possible study resource for University of Zimbabwe medical students.
+`;
+
+      const result = await this.model.generateContent(prompt);
+      const response = await result.response;
+      let generatedNotes = response.text();
+      
+      // Generate authentic exam questions and append them
+      try {
+        const examQuestions = await this.generateAuthenticExamQuestions(transcript, module, topic);
+        if (examQuestions.length > 0) {
+          generatedNotes += '\n\n## 📝 Exam Questions\n\n';
+          generatedNotes += examQuestions.join('\n\n');
+        }
+      } catch (error) {
+        console.error('Error adding exam questions:', error);
+        generatedNotes += '\n\n## 📝 Exam Questions\n\n*Error generating exam questions. Please try again.*';
+      }
+      
+      console.log(`✅ Generated comprehensive notes with exam questions: ${generatedNotes.length} characters`);
+      return generatedNotes;
+    } catch (error) {
+      console.error('Error generating comprehensive notes:', error);
+      return `# ${module} - ${topic || 'Lecture Notes'}
+
+## Transcript Summary
+${transcript.substring(0, 500)}...
+
+## Error Note
+*AI processing encountered an error. Please try generating notes again.*
+
+## Manual Notes
+Please review the transcript above and create your own structured notes based on the lecture content.
+`;
+    }
+  }
+
+  /**
    * Generate comprehensive summary with research context
    */
   async generateComprehensiveSummary(
@@ -241,6 +370,103 @@ Focus on medical accuracy and academic context.
         languageDetected: 'en',
         confidence: 0.5
       };
+    }
+  }
+
+  /**
+   * Generate authentic exam questions from specific lecture transcript
+   */
+  async generateAuthenticExamQuestions(transcript: string, module: string, topic?: string): Promise<string[]> {
+    try {
+      console.log(`🎯 Generating authentic exam questions for ${module}: ${transcript.length} characters`);
+
+      const prompt = `
+You are a medical education expert creating authentic, high-quality exam questions for University of Zimbabwe medical students.
+
+IMPORTANT: Generate questions based ONLY on the specific content discussed in this actual lecture transcript. Do NOT create generic questions.
+
+Module: ${module}
+Topic: ${topic || 'General'}
+
+ACTUAL LECTURE TRANSCRIPT:
+${transcript}
+
+Create 5 authentic, exam-quality questions that:
+
+1. **Based on Specific Lecture Content**: Questions must be directly related to what was actually discussed in this lecture
+2. **Medical School Level**: Appropriate difficulty for medical students
+3. **Clinical Relevance**: Include real clinical scenarios when possible
+4. **Specific Details**: Reference specific facts, numbers, or concepts mentioned in the lecture
+5. **Exam Format**: Multiple choice with 4 options (A, B, C, D)
+
+For each question, provide:
+- **Question**: Clear, specific question based on lecture content
+- **Options**: 4 plausible multiple choice options (A, B, C, D)
+- **Correct Answer**: The correct option with letter
+- **Explanation**: Detailed explanation referencing specific lecture content
+
+Format as JSON array:
+[
+  {
+    "question": "Based on the lecture, what specific mechanism was discussed for...?",
+    "options": {
+      "A": "Option 1 (specific to lecture)",
+      "B": "Option 2 (specific to lecture)", 
+      "C": "Option 3 (specific to lecture)",
+      "D": "Option 4 (specific to lecture)"
+    },
+    "correctAnswer": "A",
+    "explanation": "As mentioned in the lecture, the lecturer specifically stated that... [reference actual lecture content]"
+  }
+]
+
+Focus on:
+- Specific facts mentioned in the lecture
+- Clinical examples discussed
+- Medical terminology used
+- Procedures or processes explained
+- Important details or statistics mentioned
+- Case studies or examples given
+
+Make sure each question tests knowledge that was actually covered in this specific lecture.
+`;
+
+      const result = await this.model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      
+      console.log(`✅ Generated authentic exam questions: ${text.length} characters`);
+      
+      // Try to parse JSON, fallback to simple array
+      try {
+        const questions = JSON.parse(text);
+        if (Array.isArray(questions)) {
+          return questions.map((q, index) => {
+            if (typeof q === 'string') return q;
+            if (q.question) {
+              return `**Question ${index + 1}:** ${q.question}
+
+A) ${q.options?.A || ''}
+B) ${q.options?.B || ''}
+C) ${q.options?.C || ''}
+D) ${q.options?.D || ''}
+
+**Correct Answer:** ${q.correctAnswer}
+**Explanation:** ${q.explanation}
+
+---`;
+            }
+            return JSON.stringify(q);
+          });
+        }
+        return [text];
+      } catch (parseError) {
+        console.log('Could not parse JSON, returning raw text');
+        return [text];
+      }
+    } catch (error) {
+      console.error('Error generating authentic exam questions:', error);
+      return ['Error generating questions. Please try again.'];
     }
   }
 

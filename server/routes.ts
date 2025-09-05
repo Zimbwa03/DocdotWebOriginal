@@ -2711,7 +2711,7 @@ app.post("/api/study-groups", async (req, res) => {
       console.log(`🤖 Processing complete lecture ${lectureId} with ${transcript.length} characters`);
 
       // Generate comprehensive notes from the complete lecture
-      const processedNotes = await geminiAI.generateComprehensiveSummary(transcript, module, topic);
+      const processedNotes = await geminiAI.generateComprehensiveNotes(transcript, module, topic);
       
       // Save the processed notes to database
       await db.insert(lectureNotes).values({

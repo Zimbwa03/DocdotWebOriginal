@@ -102,6 +102,7 @@ export default function Record() {
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [isGeneratingNotes, setIsGeneratingNotes] = useState(false);
   const [noteGenerationTimeout, setNoteGenerationTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [showGenerateButton, setShowGenerateButton] = useState(false);
 
   // Refs
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -230,8 +231,10 @@ export default function Record() {
       console.log('📝 Total transcript length:', newTranscript.length);
       console.log('📝 Current transcript preview:', newTranscript.substring(0, 200));
       
-      // During lecture: Just accumulate transcript, no AI processing
-      // AI processing will happen only after lecture stops
+      // Show generate button when we have substantial content
+      if (newTranscript.trim().length > 100) {
+        setShowGenerateButton(true);
+      }
 
       // Auto-save transcript periodically (every 500 characters of new content)
       if (finalTranscript.trim().length > 0 && newTranscript.length % 500 === 0) {
@@ -432,6 +435,80 @@ Date: ${new Date().toLocaleDateString()}
         title: "Delete Failed",
         description: "Failed to delete lecture. Please try again."
       });
+    }
+  };
+
+  // Manual generate notes button handler
+  const handleGenerateNotes = async () => {
+    if (!liveTranscript.trim()) {
+      toast({
+        title: "No Content",
+        description: "Please record some lecture content first.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const currentLecture = lectures.find(l => l.status === 'recording');
+    if (!currentLecture) {
+      toast({
+        title: "No Active Lecture",
+        description: "Please start recording a lecture first.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      console.log('🎯 Manual generate notes triggered...');
+      setIsGeneratingNotes(true);
+      
+      // Call backend to process the complete lecture
+      const response = await fetch('/api/lectures/process-complete-lecture', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          lectureId: currentLecture.id,
+          transcript: liveTranscript,
+          module: lectureMetadata.module,
+          topic: lectureMetadata.topic
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Notes generated successfully');
+        
+        // Update the live notes with the processed content
+        setLiveNotes(data.processedNotes);
+        
+        // Save the processed notes to database
+        await saveLectureData(currentLecture.id, liveTranscript, data.processedNotes);
+        
+        // Show success message
+        toast({
+          title: "Notes Generated!",
+          description: "AI has created structured, well-researched notes from your lecture.",
+        });
+      } else {
+        console.error('Failed to generate notes');
+        toast({
+          title: "Generation Failed",
+          description: "Could not generate notes. Please try again.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error generating notes:', error);
+      toast({
+        title: "Generation Error",
+        description: "An error occurred while generating notes.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingNotes(false);
     }
   };
 
@@ -704,11 +781,11 @@ ${transcript.substring(0, 200)}...
         // Stop recording in database
         await stopRecordingMutation.mutateAsync(currentLecture.id);
         
-        // Now trigger AI processing for the complete lecture
-        if (liveTranscript.trim().length > 100) {
-          console.log('🎯 Starting AI processing for complete lecture...');
-          await processCompleteLecture(currentLecture.id, liveTranscript);
-        }
+        // Show success message
+        toast({
+          title: "Recording Stopped",
+          description: "Lecture recorded successfully. Click 'Generate Notes' to process with AI.",
+        });
       }
     }
   };
@@ -1113,7 +1190,7 @@ ${transcript.substring(0, 200)}...
                                 </span>
                               </div>
                               <p className="text-xs text-blue-700 dark:text-blue-300">
-                                Speak clearly into your microphone. The system will transcribe your speech in real-time and accumulate the full lecture content. AI processing will happen after you stop recording.
+                                Speak clearly into your microphone. The system will transcribe your speech in real-time and accumulate the full lecture content. Click "Generate Notes" when ready to process with AI.
                               </p>
                               {liveTranscript && (
                                 <div className="mt-2 text-xs text-blue-600 dark:text-blue-400">
@@ -1121,21 +1198,44 @@ ${transcript.substring(0, 200)}...
                                   <span className="ml-2 text-green-600">✓ Transcribing lecture content</span>
                                 </div>
                               )}
+                              
+                              {showGenerateButton && (
+                                <div className="mt-3">
+                                  <button
+                                    onClick={handleGenerateNotes}
+                                    disabled={isGeneratingNotes}
+                                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2"
+                                  >
+                                    {isGeneratingNotes ? (
+                                      <>
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                        <span>Generating AI Notes...</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <span>🤖</span>
+                                        <span>Generate Notes with AI</span>
+                                      </>
+                                    )}
+                                  </button>
+                                  <p className="text-xs text-gray-500 mt-1 text-center">
+                                    AI will organize, structure, and research your lecture content
+                                  </p>
+                                </div>
+                              )}
                             </div>
                                               <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border max-h-96 overflow-y-auto">
-                    {liveTranscript ? (
-                      <div className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
-                        {liveTranscript}
-                        {isTranscribing && (
-                          <span className="text-blue-500 animate-pulse">|</span>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="flex items-center space-x-2 text-gray-500">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                        <span>Listening for speech... Speak into your microphone</span>
-                      </div>
-                    )}
+                    <div className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap min-h-[200px]">
+                      {liveTranscript || (
+                        <div className="flex items-center space-x-2 text-gray-500">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                          <span>Listening for speech... Speak into your microphone</span>
+                        </div>
+                      )}
+                      {isTranscribing && liveTranscript && (
+                        <span className="text-blue-500 animate-pulse">|</span>
+                      )}
+                    </div>
                   </div>
                           </div>
                         ) : (
@@ -1163,14 +1263,19 @@ ${transcript.substring(0, 200)}...
                             </div>
                           )}
                           <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border">
-                            {liveNotes ? (
+                            {isGeneratingNotes ? (
+                              <div className="flex items-center space-x-2 text-orange-600">
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-600"></div>
+                                <span>AI is organizing and researching your lecture content...</span>
+                              </div>
+                            ) : liveNotes ? (
                               <div className="prose prose-sm max-w-none">
                                 <pre className="whitespace-pre-wrap font-sans">{liveNotes}</pre>
                               </div>
                             ) : (
                               <div className="flex items-center space-x-2 text-gray-500">
                                 <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                                <span>AI will process notes after lecture ends...</span>
+                                <span>Click "Generate Notes" to process your lecture with AI...</span>
                               </div>
                             )}
                           </div>
