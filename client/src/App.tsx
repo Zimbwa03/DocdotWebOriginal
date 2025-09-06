@@ -28,6 +28,7 @@ import AiTools from "@/pages/AiTools";
 import Badges from "@/pages/Badges";
 import Leaderboard from "@/pages/Leaderboard";
 import Resources from "@/pages/Resources";
+import Lectures from "@/pages/Lectures";
 import NotFound from "@/pages/not-found";
 import { AchievementNotifications } from '@/components/AchievementNotifications';
 
@@ -146,6 +147,12 @@ function Router() {
         <ProtectedRoute>
           <Navigation />
           <Resources />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/lectures">
+        <ProtectedRoute>
+          <Navigation />
+          <Lectures />
         </ProtectedRoute>
       </Route>
       <Route path="/ai-tools">
