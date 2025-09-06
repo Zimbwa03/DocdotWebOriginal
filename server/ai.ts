@@ -152,7 +152,198 @@ class OpenRouterAI {
     }
   }
 
-  // Medical Question Generation
+  // Histopathology MCQ Generation with Robbins References
+  async generateHistopathologyMCQs(topic: string, subtopics: string[], count: number = 5): Promise<any[]> {
+    if (!this.checkApiKey()) {
+      throw new Error('AI service not available - API key not configured');
+    }
+
+    // Validate inputs
+    if (!topic || topic.trim().length === 0) {
+      throw new Error('Topic is required');
+    }
+
+    const sanitizedTopic = topic.trim();
+    const validCount = Math.min(Math.max(count, 1), 20); // Limit to 20 MCQs
+    const subtopicsList = subtopics.length > 0 ? subtopics.join(', ') : sanitizedTopic;
+
+    const systemPrompt = `You are an expert pathologist and medical educator creating high-quality multiple-choice questions for medical students studying histopathology.
+
+    CRITICAL REQUIREMENTS:
+    1. Generate EXACTLY ${validCount} multiple-choice questions about "${sanitizedTopic}"
+    2. Focus on these subtopics: ${subtopicsList}
+    3. Use latest DeepSeek AI knowledge and current medical standards
+    4. Each question MUST have 4 options (A, B, C, D) with ONE correct answer
+    5. Respond with ONLY a valid JSON array - no extra text, no markdown, no explanations
+    
+    Answer Format Requirements:
+    - correctAnswer: "A", "B", "C", or "D"  
+    - shortExplanation: Brief 1-2 sentence explanation
+    - detailedExplanation: Comprehensive 3-4 sentence explanation with mechanisms
+    - robbinsReference: "Robbins Basic Pathology, Chapter [X], Page [Y-Z]" format
+
+    JSON Format (EXACT - NO OTHER TEXT):
+    [
+      {
+        "question": "Which of the following is the most common cause of acute myocardial infarction?",
+        "options": {
+          "A": "Coronary artery spasm",
+          "B": "Atherosclerotic plaque rupture with thrombosis",
+          "C": "Coronary artery embolism", 
+          "D": "Coronary artery dissection"
+        },
+        "correctAnswer": "B",
+        "shortExplanation": "Atherosclerotic plaque rupture with subsequent thrombosis accounts for over 90% of acute myocardial infarctions.",
+        "detailedExplanation": "Acute myocardial infarction most commonly results from rupture of an atherosclerotic plaque in a coronary artery, leading to platelet aggregation and thrombus formation. This process occludes the coronary artery, causing ischemic necrosis of the myocardium supplied by that vessel. The vulnerable plaques typically have a thin fibrous cap overlying a large lipid core with abundant inflammatory cells.",
+        "robbinsReference": "Robbins Basic Pathology, Chapter 12, Page 387-395",
+        "topic": "${sanitizedTopic}",
+        "subtopic": "Ischemic heart disease"
+      }
+    ]
+
+    Question Quality Standards:
+    - Questions must test UNDERSTANDING, not just memorization
+    - Include clinically relevant scenarios when appropriate
+    - Use current pathological classification systems
+    - Ensure distractors (wrong answers) are plausible but clearly incorrect
+    - Reference standard textbook: Robbins Basic Pathology (10th Edition)
+    - Include specific chapter and page numbers in robbinsReference
+    - Questions should span different subtopics within the main topic
+    - Vary difficulty from basic concepts to advanced pathophysiology
+    - Use proper medical terminology and current nomenclature
+    
+    Return ONLY the JSON array - no other text or formatting.`;
+
+    const userPrompt = `Generate ${validCount} high-quality histopathology MCQs about "${sanitizedTopic}" covering these subtopics: ${subtopicsList}. Ensure each question tests understanding of pathological processes, mechanisms, and clinical correlations.`;
+
+    try {
+      console.log(`🧠 Generating ${validCount} histopathology MCQs for topic: ${sanitizedTopic}`);
+      
+      const response = await this.generateResponse([
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ], 0.7);
+
+      // Parse the JSON response
+      let questions;
+      try {
+        // Remove any markdown formatting if present
+        const cleanResponse = response.replace(/```json\n?|\n?```/g, '').trim();
+        questions = JSON.parse(cleanResponse);
+      } catch (parseError) {
+        console.error('Failed to parse AI response as JSON:', parseError);
+        console.error('Raw response:', response);
+        throw new Error('Invalid JSON response from AI service');
+      }
+
+      // Validate response structure
+      if (!Array.isArray(questions)) {
+        throw new Error('AI response is not an array');
+      }
+
+      if (questions.length === 0) {
+        throw new Error('AI returned empty questions array');
+      }
+
+      // Validate each question structure
+      const validatedQuestions = questions.map((q, index) => {
+        if (!q.question || !q.options || !q.correctAnswer || !q.shortExplanation || !q.detailedExplanation || !q.robbinsReference) {
+          throw new Error(`Question ${index + 1} is missing required fields`);
+        }
+
+        if (!q.options.A || !q.options.B || !q.options.C || !q.options.D) {
+          throw new Error(`Question ${index + 1} does not have all 4 options (A, B, C, D)`);
+        }
+
+        if (!['A', 'B', 'C', 'D'].includes(q.correctAnswer)) {
+          throw new Error(`Question ${index + 1} has invalid correct answer: ${q.correctAnswer}`);
+        }
+
+        return {
+          ...q,
+          topic: sanitizedTopic,
+          subtopic: q.subtopic || subtopics[Math.floor(Math.random() * subtopics.length)] || sanitizedTopic,
+          generatedAt: new Date().toISOString(),
+          difficulty: 'intermediate'
+        };
+      });
+
+      console.log(`✅ Successfully generated ${validatedQuestions.length} histopathology MCQs`);
+      return validatedQuestions;
+
+    } catch (error: any) {
+      console.error('Error generating histopathology MCQs:', error);
+      
+      // If AI fails, provide educational fallback
+      if (error.message?.includes('API key') || error.message?.includes('not configured')) {
+        throw error;
+      }
+
+      console.log('Providing fallback histopathology MCQ due to AI error');
+      return this.generateHistopathologyFallback(sanitizedTopic, subtopics, validCount);
+    }
+  }
+
+  // Fallback histopathology MCQs when AI fails
+  private generateHistopathologyFallback(topic: string, subtopics: string[], count: number): any[] {
+    const fallbackQuestions = [
+      {
+        question: "Which of the following is the most characteristic feature of acute inflammation?",
+        options: {
+          A: "Granuloma formation",
+          B: "Vascular dilation and increased permeability",
+          C: "Fibroblast proliferation",
+          D: "Chronic cellular infiltration"
+        },
+        correctAnswer: "B",
+        shortExplanation: "Acute inflammation is primarily characterized by vascular changes including dilation and increased permeability.",
+        detailedExplanation: "Acute inflammation involves immediate vascular responses to injury, including arteriolar dilation and increased capillary permeability. These changes allow plasma proteins and inflammatory cells to enter tissues, resulting in the classic signs of inflammation: redness, heat, swelling, pain, and loss of function.",
+        robbinsReference: "Robbins Basic Pathology, Chapter 3, Page 78-85",
+        topic: topic,
+        subtopic: subtopics[0] || topic
+      },
+      {
+        question: "What is the primary difference between apoptosis and necrosis?",
+        options: {
+          A: "Apoptosis affects single cells while necrosis affects groups of cells",
+          B: "Apoptosis is always pathological while necrosis is physiological",
+          C: "Apoptosis involves DNA fragmentation while necrosis does not",
+          D: "Apoptosis occurs only in cancer while necrosis occurs in normal tissues"
+        },
+        correctAnswer: "A",
+        shortExplanation: "Apoptosis is programmed cell death affecting individual cells, while necrosis typically involves groups of cells due to injury.",
+        detailedExplanation: "Apoptosis is a controlled process of programmed cell death that affects individual cells without causing inflammation. In contrast, necrosis is uncontrolled cell death usually affecting groups of cells due to injury, hypoxia, or toxins, and it triggers inflammatory responses. Apoptotic cells are quickly phagocytosed by neighboring cells or macrophages.",
+        robbinsReference: "Robbins Basic Pathology, Chapter 2, Page 45-52",
+        topic: topic,
+        subtopic: subtopics[1] || topic
+      },
+      {
+        question: "Which cellular adaptation is characterized by an increase in cell size without an increase in cell number?",
+        options: {
+          A: "Hyperplasia",
+          B: "Metaplasia", 
+          C: "Hypertrophy",
+          D: "Dysplasia"
+        },
+        correctAnswer: "C",
+        shortExplanation: "Hypertrophy involves increased cell size while hyperplasia involves increased cell number.",
+        detailedExplanation: "Hypertrophy is the increase in cell size and organ size due to increased synthesis of cellular components, without an increase in cell number. This commonly occurs in muscle cells that cannot divide, such as cardiac myocytes in response to increased workload. Hyperplasia, in contrast, involves an increase in cell number.",
+        robbinsReference: "Robbins Basic Pathology, Chapter 2, Page 32-38",
+        topic: topic,
+        subtopic: subtopics[2] || topic
+      }
+    ];
+
+    // Return only the requested number of questions
+    return fallbackQuestions.slice(0, count).map((q, index) => ({
+      ...q,
+      generatedAt: new Date().toISOString(),
+      difficulty: 'intermediate',
+      fallback: true
+    }));
+  }
+
+  // Medical Question Generation (existing True/False format)
   async generateMedicalQuestions(topic: string, difficulty: string, count: number = 5): Promise<any[]> {
     if (!this.checkApiKey()) {
       throw new Error('AI service not available - API key not configured');
