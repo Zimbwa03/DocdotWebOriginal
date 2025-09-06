@@ -278,17 +278,17 @@ export default function SimpleLanding() {
       </section>
 
       {/* Features Grid */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 animate-on-scroll">
-            <div className="inline-flex items-center bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
+            <div className="inline-flex items-center bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 text-blue-800 dark:text-blue-200 px-4 py-2 rounded-full text-sm font-medium mb-4">
               <Heart className="w-4 h-4 mr-2" />
               Loved by Medical Students Worldwide
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
               Everything You Need to Excel in Medical Studies
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               Our platform combines cutting-edge AI technology with proven educational methods 
               to accelerate your medical learning journey.
             </p>
@@ -306,10 +306,10 @@ export default function SimpleLanding() {
                       <feature.icon className="w-6 h-6 text-white" />
                     </div>
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                     {feature.title}
                   </h3>
-                  <p className="text-gray-600 group-hover:text-gray-700 transition-colors">
+                  <p className="text-gray-600 dark:text-gray-300 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors">
                     {feature.description}
                   </p>
                   <div className="mt-4 flex items-center text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -335,27 +335,27 @@ export default function SimpleLanding() {
       </section>
 
       {/* Benefits Section */}
-      <section className="py-16 bg-gradient-to-br from-gray-50 to-blue-50">
+      <section className="py-16 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-800 dark:to-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="animate-on-scroll">
-              <div className="inline-flex items-center bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium mb-6">
+              <div className="inline-flex items-center bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-4 py-2 rounded-full text-sm font-medium mb-6">
                 <Award className="w-4 h-4 mr-2" />
                 Why Choose DocDot?
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
                 Join the Future of Medical Education
               </h2>
               <div className="space-y-4">
                 {benefits.map((benefit, index) => (
                   <div 
                     key={index} 
-                    className="flex items-center space-x-4 p-3 rounded-lg hover:bg-white hover:shadow-md transition-all duration-200 group cursor-pointer"
+                    className="flex items-center space-x-4 p-3 rounded-lg hover:bg-white dark:hover:bg-gray-700 hover:shadow-md transition-all duration-200 group cursor-pointer"
                   >
-                    <div className="p-2 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
+                    <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg group-hover:bg-green-200 dark:group-hover:bg-green-800 transition-colors">
                       <benefit.icon className="w-5 h-5 text-green-600" />
                     </div>
-                    <span className="text-gray-700 group-hover:text-gray-900 transition-colors font-medium">
+                    <span className="text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors font-medium">
                       {benefit.text}
                     </span>
                   </div>
@@ -373,14 +373,14 @@ export default function SimpleLanding() {
             
             <div className="lg:pl-8 space-y-6">
               {/* Main Testimonial */}
-              <div className="bg-white rounded-2xl shadow-2xl p-8 transform hover:scale-105 transition-transform duration-300">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 transform hover:scale-105 transition-transform duration-300">
                 <div className="text-center">
                   <div className="flex justify-center space-x-1 mb-4">
                     {[...Array(5)].map((_, i) => (
                       <Star key={i} className="w-6 h-6 text-yellow-400 fill-current animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />
                     ))}
                   </div>
-                  <blockquote className="text-lg text-gray-600 mb-6 italic">
+                  <blockquote className="text-lg text-gray-600 dark:text-gray-300 mb-6 italic">
                     "DocDot has completely transformed how I study for medical exams. 
                     The AI explanations are incredibly detailed and the progress tracking 
                     keeps me motivated every single day."
@@ -392,8 +392,8 @@ export default function SimpleLanding() {
                       className="h-12 w-12 rounded-full border-2 border-blue-200"
                     />
                     <div className="text-left">
-                      <p className="font-semibold text-gray-900">Sarah Chen</p>
-                      <p className="text-sm text-gray-500">Medical Student, Johns Hopkins</p>
+                      <p className="font-semibold text-gray-900 dark:text-white">Sarah Chen</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Medical Student, Johns Hopkins</p>
                     </div>
                   </div>
                 </div>
@@ -401,7 +401,7 @@ export default function SimpleLanding() {
 
               {/* Mini testimonials */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition-shadow">
+                <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg hover:shadow-xl transition-shadow">
                   <div className="flex items-center space-x-2 mb-2">
                     <div className="flex space-x-1">
                       {[...Array(5)].map((_, i) => (
@@ -409,11 +409,11 @@ export default function SimpleLanding() {
                       ))}
                     </div>
                   </div>
-                  <p className="text-sm text-gray-600 mb-2">"Best study platform ever!"</p>
-                  <p className="text-xs text-gray-500">- Alex M., Harvard</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">"Best study platform ever!"</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">- Alex M., Harvard</p>
                 </div>
                 
-                <div className="bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition-shadow">
+                <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg hover:shadow-xl transition-shadow">
                   <div className="flex items-center space-x-2 mb-2">
                     <div className="flex space-x-1">
                       {[...Array(5)].map((_, i) => (
@@ -421,8 +421,8 @@ export default function SimpleLanding() {
                       ))}
                     </div>
                   </div>
-                  <p className="text-sm text-gray-600 mb-2">"AI tutor is amazing!"</p>
-                  <p className="text-xs text-gray-500">- Maria L., Stanford</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">"AI tutor is amazing!"</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">- Maria L., Stanford</p>
                 </div>
               </div>
 
@@ -514,7 +514,7 @@ export default function SimpleLanding() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
+      <footer className="bg-gray-900 dark:bg-gray-950 text-white dark:text-gray-100 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             {/* Logo and description */}
@@ -529,7 +529,7 @@ export default function SimpleLanding() {
                   DocDot
                 </span>
               </div>
-              <p className="text-gray-400 mb-4 max-w-md">
+              <p className="text-gray-400 dark:text-gray-300 mb-4 max-w-md">
                 Empowering the next generation of medical professionals with AI-powered learning tools, 
                 comprehensive study materials, and collaborative features.
               </p>
@@ -548,9 +548,9 @@ export default function SimpleLanding() {
 
             {/* Quick Links */}
             <div>
-              <h3 className="text-lg font-semibold mb-4 text-blue-400">Platform</h3>
+              <h3 className="text-lg font-semibold mb-4 text-blue-400 dark:text-blue-300">Platform</h3>
               <div className="space-y-2">
-                <Link href="/auth" className="block text-gray-400 hover:text-white transition-colors">Features</Link>
+                <Link href="/auth" className="block text-gray-400 dark:text-gray-300 hover:text-white dark:hover:text-gray-100 transition-colors">Features</Link>
                 <Link href="/auth" className="block text-gray-400 hover:text-white transition-colors">AI Tutor</Link>
                 <Link href="/auth" className="block text-gray-400 hover:text-white transition-colors">Study Groups</Link>
                 <Link href="/auth" className="block text-gray-400 hover:text-white transition-colors">Analytics</Link>
@@ -559,7 +559,7 @@ export default function SimpleLanding() {
 
             {/* Support */}
             <div>
-              <h3 className="text-lg font-semibold mb-4 text-purple-400">Support</h3>
+              <h3 className="text-lg font-semibold mb-4 text-purple-400 dark:text-purple-300">Support</h3>
               <div className="space-y-2">
                 <Link href="/auth" className="block text-gray-400 hover:text-white transition-colors">Help Center</Link>
                 <Link href="/auth" className="block text-gray-400 hover:text-white transition-colors">Contact Us</Link>
