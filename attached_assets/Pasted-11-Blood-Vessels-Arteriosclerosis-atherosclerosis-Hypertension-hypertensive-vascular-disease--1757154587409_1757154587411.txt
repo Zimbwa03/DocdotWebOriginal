@@ -1,0 +1,213 @@
+11. Blood Vessels
+
+Arteriosclerosis & atherosclerosis
+
+Hypertension & hypertensive vascular disease
+
+Aneurysms & dissections
+
+Vasculitis syndromes
+
+Veins & lymphatics (varicose veins, thrombophlebitis, lymphedema)
+
+12. The Heart
+
+Ischemic heart disease (MI, angina, sudden death)
+
+Hypertensive heart disease
+
+Valvular heart disease (rheumatic, degenerative, infective endocarditis)
+
+Myocardial diseases (myocarditis, cardiomyopathies)
+
+Pericardial diseases
+
+Cardiac tumors
+
+13. Diseases of White Blood Cells, Lymph Nodes, Spleen, Thymus
+
+Leukopenia and leukocytosis
+
+Lymphoid neoplasms (Hodgkin & Non-Hodgkin lymphomas, multiple myeloma)
+
+Myeloid neoplasms (AML, CML, myelodysplastic syndromes)
+
+Histiocytic neoplasms
+
+14. Red Blood Cell and Bleeding Disorders
+
+Anemias (blood loss, hemolytic, megaloblastic, iron deficiency, aplastic)
+
+Polycythemia
+
+Hemostasis and coagulation disorders
+
+Bleeding disorders (platelet vs clotting factor defects)
+
+15. The Lung
+
+Congenital anomalies
+
+Atelectasis
+
+Pulmonary edema
+
+ARDS & diffuse alveolar damage
+
+COPD (emphysema, chronic bronchitis)
+
+Asthma
+
+Restrictive diseases (pneumoconioses, idiopathic pulmonary fibrosis)
+
+Pulmonary infections (pneumonia, TB, fungal)
+
+Pulmonary tumors (carcinoma types)
+
+16. The Head and Neck
+
+Oral cavity diseases (caries, periodontitis, leukoplakia, squamous carcinoma)
+
+Salivary gland disorders (sialadenitis, tumors)
+
+Nasopharyngeal pathology
+
+Laryngeal lesions
+
+17. The Gastrointestinal Tract
+
+Esophagus (GERD, Barrett’s, carcinoma)
+
+Stomach (gastritis, peptic ulcers, carcinoma)
+
+Small & large intestine (IBD, ischemia, polyps, carcinoma)
+
+Appendix (appendicitis, tumors)
+
+18. The Liver, Gallbladder, and Biliary Tract
+
+Hepatitis (viral, autoimmune, alcoholic, drug-induced)
+
+Cirrhosis
+
+Hepatic tumors (HCC, cholangiocarcinoma)
+
+Gallstones
+
+Cholecystitis and carcinoma
+
+19. The Pancreas
+
+Congenital anomalies
+
+Pancreatitis (acute, chronic)
+
+Pancreatic carcinoma
+
+Endocrine pancreas tumors (insulinoma, glucagonoma, etc.)
+
+20. The Kidney
+
+Glomerular diseases (nephritic vs nephrotic syndromes)
+
+Tubulointerstitial diseases (pyelonephritis, drug-induced)
+
+Vascular diseases (HTN nephrosclerosis, HUS, TTP)
+
+Cystic diseases
+
+Renal tumors (RCC, Wilms tumor)
+
+21. The Lower Urinary Tract and Male Genital System
+
+Congenital anomalies
+
+Inflammatory conditions
+
+Benign prostatic hyperplasia
+
+Prostate carcinoma
+
+Testicular tumors (seminomas, non-seminomatous tumors)
+
+22. The Female Genital Tract
+
+Vulva and vagina disorders
+
+Cervical intraepithelial neoplasia & carcinoma
+
+Endometrial hyperplasia and carcinoma
+
+Ovarian tumors (serous, mucinous, germ cell, stromal)
+
+Gestational trophoblastic diseases
+
+23. The Breast
+
+Benign breast disease (fibrocystic changes, fibroadenoma)
+
+Breast carcinoma (molecular subtypes, pathology)
+
+24. The Endocrine System
+
+Pituitary disorders (adenomas, hypopituitarism)
+
+Thyroid (goiter, thyroiditis, carcinoma)
+
+Parathyroid disorders
+
+Adrenal cortex (Cushing, Addison, tumors)
+
+Pancreatic endocrine tumors
+
+25. The Skin
+
+Inflammatory skin diseases (eczema, psoriasis, lichen planus)
+
+Blistering disorders (pemphigus, bullous pemphigoid)
+
+Benign and malignant skin tumors (BCC, SCC, melanoma)
+
+26. The Bones, Joints, and Soft Tissues
+
+Bone diseases (osteoporosis, osteomyelitis, metabolic bone disease)
+
+Bone tumors (osteosarcoma, chondrosarcoma, Ewing sarcoma)
+
+Joint diseases (RA, gout, OA)
+
+Soft tissue tumors (lipoma, sarcomas)
+
+27. Peripheral Nerve and Skeletal Muscle
+
+Peripheral neuropathies
+
+Muscular dystrophies
+
+Myasthenia gravis
+
+Inflammatory myopathies
+
+28. The Central Nervous System
+
+Congenital malformations
+
+Cerebrovascular diseases
+
+Infections (meningitis, encephalitis)
+
+Demyelinating diseases (MS)
+
+Neurodegenerative diseases (Alzheimer’s, Parkinson’s)
+
+CNS tumors (gliomas, meningiomas, medulloblastoma)
+
+29. The Eye
+
+Cornea, lens, retina disorders
+
+Glaucoma, cataracts
+
+Retinoblastoma
+
+Ocular melanomas
