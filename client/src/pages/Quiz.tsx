@@ -60,7 +60,8 @@ export default function Quiz() {
   const { user } = useAuth();
   const { theme } = useTheme();
   const queryClient = useQueryClient();
-  
+  const { toast } = useToast();
+
   const [selectedQuizType, setSelectedQuizType] = useState<string | null>(null);
   const [selectedMCQSubject, setSelectedMCQSubject] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -102,7 +103,7 @@ export default function Quiz() {
   const [histoScore, setHistoScore] = useState(0);
   const [histoCompleted, setHistoCompleted] = useState(false);
   const [isGeneratingHisto, setIsGeneratingHisto] = useState(false);
-  
+
   // Single question histopathology mode states
   const [histoSingleMode, setHistoSingleMode] = useState(false);
   const [currentHistoQuestion, setCurrentHistoQuestion] = useState<any>(null);
@@ -270,13 +271,13 @@ export default function Quiz() {
   // Fetch histopathology topics from API
   const fetchHistopathologyTopics = async () => {
     try {
-      console.log('🧠 Fetching histopathology topics');
+      console.log('🧠 Fetching histopathology topics...');
       const response = await fetch('/api/histopathology/topics');
       if (!response.ok) {
         throw new Error('Failed to fetch histopathology topics');
       }
       const topics = await response.json();
-      console.log(`📊 Received ${topics.length} histopathology topics`);
+      console.log(`📊 Received ${topics.length} histopathology topics:`, topics);
       setHistopathologyTopics(topics);
     } catch (error) {
       console.error('Error fetching histopathology topics:', error);
@@ -296,7 +297,7 @@ export default function Quiz() {
     setHistoSingleMode(true);
     setHistoScore(0);
     setStartTime(new Date());
-    
+
     // Generate the first question
     await generateSingleHistopathologyQuestion(topicId, topicName);
   };
@@ -306,7 +307,7 @@ export default function Quiz() {
     setIsGeneratingHisto(true);
     try {
       console.log(`🧠 Generating single histopathology question for: ${topicName}`);
-      
+
       // Get subtopics for the topic
       const subtopicsResponse = await fetch(`/api/histopathology/topics/${topicId}/subtopics`);
       let subtopics: string[] = [];
@@ -370,18 +371,18 @@ export default function Quiz() {
   // Handle single histopathology answer selection  
   const handleSingleHistoAnswer = async (answer: string) => {
     if (isHistoAnswered) return;
-    
+
     setSelectedHistoAnswer(answer);
     setIsHistoAnswered(true);
-    
+
     // Check if answer is correct and update score
     const isCorrect = answer === currentHistoQuestion?.correctAnswer;
     if (isCorrect) {
       setHistoScore(prev => prev + 1);
     }
-    
+
     setHistoQuestionCount(prev => prev + 1);
-    
+
     // Record the attempt in the database
     try {
       const responseTime = questionStartTime ? Date.now() - questionStartTime : 0;
@@ -477,11 +478,11 @@ export default function Quiz() {
   const fetchMcqQuestions = async (topic: string, category: string = 'Upper Limb') => {
     setLoading(true);
     console.log(`🔍 Frontend: Fetching MCQ questions for topic: "${topic}", category: "${category}"`);
-    
+
     try {
       const url = `/api/mcq-questions?topic=${encodeURIComponent(topic)}&category=${encodeURIComponent(category)}&limit=10`;
       console.log(`🌐 Frontend: Making request to: ${url}`);
-      
+
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: Failed to load MCQ questions`);
@@ -494,7 +495,7 @@ export default function Quiz() {
         // Log the first question to see its topic
         console.log(`📝 Frontend: First question topic: "${data[0].topic}"`);
         console.log(`📝 Frontend: First question: ${data[0].question.substring(0, 100)}...`);
-        
+
         // Transform MCQ questions to match our quiz format
         const transformed = data.map((q: any) => ({
           ...q,
@@ -512,7 +513,7 @@ export default function Quiz() {
         setSelectedMcqAnswer('');
         setIsMcqAnswered(false);
         setQuestionStartTime(Date.now());
-        
+
         console.log(`✅ Frontend: Successfully loaded ${transformed.length} questions for ${topic}`);
       } else {
         console.log(`❌ Frontend: No questions found for topic: "${topic}"`);
@@ -642,97 +643,6 @@ export default function Quiz() {
       }
   };
 
-  // Handle MCQ answer selection
-  const handleMcqAnswerSelect = async (answer: string) => {
-    if (isMcqAnswered) return;
-
-    setSelectedMcqAnswer(answer);
-
-    const currentQuestion = mcqQuestions[currentMcqIndex];
-    const isCorrect = answer === currentQuestion.correct_answer;
-    const timeSpent = questionStartTime ? Math.floor((Date.now() - questionStartTime) / 1000) : 0;
-
-    setIsMcqAnswered(true);
-
-    if (isCorrect) {
-      setMcqScore(mcqScore + 1);
-    }
-
-    // Record quiz attempt with comprehensive analytics using authenticated Supabase user
-    if (!user?.id) {
-      console.warn('User not authenticated, skipping analytics recording');
-      return;
-    }
-    const userId = user.id;
-
-    // Ensure user profile is fully initialized
-    try {
-      await fetch('/api/initialize-user', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId })
-      });
-    } catch (initError) {
-      console.error('Error ensuring user initialization:', initError);
-    }
-
-    try {
-      // Calculate XP based on correctness and streak (like the Python code)
-      const baseXP = isCorrect ? 10 : 2;
-      const streakBonus = isCorrect ? (mcqScore * 2) : 0; // Streak bonus for correct answers
-      const xpEarned = baseXP + streakBonus;
-
-      const response = await fetch('/api/quiz/record-attempt', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: userId,
-          category: `Upper Limb - ${selectedTopic}`,
-          selectedAnswer: answer,
-          correctAnswer: currentQuestion.correct_answer,
-          isCorrect,
-          timeSpent,
-          xpEarned,
-          difficulty: 'medium',
-          questionId: currentQuestion.id,
-          currentQuestionIndex: currentMcqIndex + 1,
-          totalQuestions: mcqQuestions.length
-        })
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        console.log('✅ MCQ attempt recorded:', result);
-
-        if (result.newBadges && result.newBadges.length > 0) {
-          console.log('🏆 New badges earned:', result.newBadges);
-        }
-
-        if (result.updatedStats) {
-          console.log('📊 Updated stats:', result.updatedStats);
-        }
-
-        if (result.analyticsRefreshed) {
-          console.log('📈 Analytics data refreshed successfully');
-        }
-
-        // Trigger a small delay to ensure database updates are complete
-        setTimeout(() => {
-          // Force refresh of any cached analytics data
-          window.dispatchEvent(new CustomEvent('analytics-update'));
-        }, 1000);
-      } else {
-        console.error('Failed to record MCQ attempt:', response.status);
-        const errorData = await response.json();
-        console.error('Error details:', errorData);
-      }
-    } catch (error) {
-      console.error('Error recording MCQ attempt:', error);
-    }
-  };
-
   const getRandomQuestionIndex = () => {
     let randomIndex;
     do {
@@ -751,7 +661,7 @@ export default function Quiz() {
 
   const handleNextQuestionAfterAnswer = () => {
     if (currentQuestionIndex < questions.length - 1) {
-      const randomIndex = getRandomQuestionIndex();
+      const randomIndex = getRandomQuestionIndex(); // Randomize next question
       setCurrentQuestionIndex(randomIndex);
       setSelectedAnswer('');
       setIsAnswered(false);
@@ -959,11 +869,10 @@ export default function Quiz() {
     setExamResults(null);
     setIsGeneratingExam(false);
     setExamError(null);
-    
+
     // Clear any existing timer
     if (examTimer) {
       clearInterval(examTimer);
-      setExamTimer(null);
     }
   };
 
@@ -971,7 +880,7 @@ export default function Quiz() {
   const generateCustomExam = async (topics: number[], stemCount: number, examType: string) => {
     setIsGeneratingExam(true);
     setExamError(null);
-    
+
     try {
       const topicNames = topics.map(id => {
         const topic = [...anatomyTopics, ...physiologyTopics].find(t => t.id === id);
@@ -1000,11 +909,11 @@ export default function Quiz() {
 
       const examData = await response.json();
       console.log('Exam generated successfully:', examData);
-      
+
       if (!examData || !examData.stems || examData.stems.length === 0) {
         throw new Error('Invalid exam data received from server');
       }
-      
+
       setCurrentExam(examData);
 
       // Set timer: 2 minutes per stem as specified
@@ -1028,7 +937,7 @@ export default function Quiz() {
       console.error('Error generating exam:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to generate exam. Please try again.';
       setExamError(errorMessage);
-      
+
       toast({
         variant: "destructive",
         title: "Generation Failed",
@@ -1045,7 +954,7 @@ export default function Quiz() {
     if (examTimer) {
       clearInterval(examTimer);
     }
-    
+
     const timer = setInterval(() => {
       setTimeRemaining((prev) => {
         if (prev <= 1) {
@@ -1860,7 +1769,7 @@ export default function Quiz() {
                 </>
               )}
             </Button>
-            
+
             {examError && (
               <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                 <p className="text-red-600 text-sm">
@@ -1925,103 +1834,6 @@ export default function Quiz() {
           </div>
         </div>
       )}
-    </div>
-  );
-
-
-
-  const renderQuizTypeSelection = () => (
-    <div className="space-y-6 sm:space-y-8">
-      <div className="text-center px-3 sm:px-4">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 text-gray-900 dark:text-white">Medical Quizzes</h1>
-        <p className="text-sm sm:text-base lg:text-lg text-gray-700 dark:text-gray-300">Choose your learning path and start practicing</p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 max-w-4xl mx-auto px-3 sm:px-4">
-        {/* AI Generator */}
-        <Card 
-          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300 bg-gray-50 dark:bg-gray-800 dark:border-gray-600"
-          onClick={() => setSelectedQuizType('ai-generator')}
-        >
-          <CardHeader className="text-center p-4 sm:p-6">
-            <Bot className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4" style={{ color: '#3399FF' }} />
-            <CardTitle className="text-lg sm:text-xl text-gray-900 dark:text-white">AI Generator</CardTitle>
-            <CardDescription className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
-              Create personalized questions using advanced AI technology
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6 pt-0">
-            <div className="flex flex-wrap gap-1 sm:gap-2">
-              <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">AI-Powered</Badge>
-              <Badge variant="secondary" className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Personalized</Badge>
-              <Badge variant="secondary" className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">Adaptive</Badge>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Cadaver Quiz */}
-        <Card 
-          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300 bg-gray-50 dark:bg-gray-800 dark:border-gray-600"
-          onClick={() => setSelectedQuizType('cadaver')}
-        >
-          <CardHeader className="text-center p-4 sm:p-6">
-            <ImageIcon className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4" style={{ color: '#3399FF' }} />
-            <CardTitle className="text-lg sm:text-xl text-gray-900 dark:text-white">Cadaver Quiz</CardTitle>
-            <CardDescription className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
-              Visual anatomy with real cadaver images and structures
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6 pt-0">
-            <div className="flex flex-wrap gap-1 sm:gap-2">
-              <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">Real Images</Badge>
-              <Badge variant="secondary" className="text-xs bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">7 Topics</Badge>
-              <Badge variant="secondary" className="text-xs bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200">Interactive</Badge>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Histology Slide Quiz */}
-        <Card 
-          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300 bg-gray-50 dark:bg-gray-800 dark:border-gray-600"
-          onClick={() => setSelectedQuizType('histology')}
-        >
-          <CardHeader className="text-center p-4 sm:p-6">
-            <Microscope className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4" style={{ color: '#3399FF' }} />
-            <CardTitle className="text-lg sm:text-xl text-gray-900 dark:text-white">Histology Slide Quiz</CardTitle>
-            <CardDescription className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
-              Microscopic anatomy and histological structures
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6 pt-0">
-            <div className="flex flex-wrap gap-1 sm:gap-2">
-              <Badge variant="secondary" className="text-xs bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200">Microscopic Images</Badge>
-              <Badge variant="secondary" className="text-xs bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200">Histology</Badge>
-              <Badge variant="secondary" className="text-xs bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">Detailed</Badge>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* MCQ Questions */}
-        <Card 
-          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300 bg-gray-50 dark:bg-gray-800 dark:border-gray-600"
-          onClick={() => setSelectedQuizType('mcq')}
-        >
-          <CardHeader className="text-center p-4 sm:p-6">
-            <BookOpen className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4" style={{ color: '#3399FF' }} />
-            <CardTitle className="text-lg sm:text-xl text-gray-900 dark:text-white">MCQ Questions</CardTitle>
-            <CardDescription className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
-              Multiple choice questions from our comprehensive question bank
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6 pt-0">
-            <div className="flex flex-wrap gap-1 sm:gap-2">
-              <Badge variant="secondary" className="text-xs bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Anatomy & Physiology</Badge>
-              <Badge variant="secondary" className="text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">Categorized</Badge>
-              <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">Instant Feedback</Badge>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 
@@ -2218,10 +2030,10 @@ export default function Quiz() {
                 } else if (selectedMCQSubject === 'histopathology') {
                   // For histopathology, start single question generation mode
                   setSelectedCategory(category);
-                  
+
                   // First try to find in loaded topics
                   let topic = histopathologyTopics.find(t => t.name === category);
-                  
+
                   // If topics aren't loaded yet, fetch them first
                   if (!topic && histopathologyTopics.length === 0) {
                     console.log('🔄 Histopathology topics not loaded, fetching first...');
@@ -2240,7 +2052,7 @@ export default function Quiz() {
                     });
                     return;
                   }
-                  
+
                   if (topic) {
                     startHistopathologyMode(topic.id.toString(), category);
                   } else {
@@ -2704,23 +2516,23 @@ export default function Quiz() {
               <div className="mt-6 p-6 bg-gray-50 rounded-lg">
                 <div className="flex items-start gap-3">
                   {selectedHistoAnswer === currentHistoQuestion.correctAnswer ? (
-                    <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
+                    <CheckCircle className="w-5 h-5 text-green-600" />
                   ) : (
-                    <XCircle className="w-5 h-5 text-red-600 mt-0.5" />
+                    <XCircle className="w-5 h-5 text-red-600" />
                   )}
                   <div className="flex-1">
                     <h4 className="font-semibold text-gray-900 mb-2">
                       {selectedHistoAnswer === currentHistoQuestion.correctAnswer ? 'Correct!' : 'Incorrect'}
                     </h4>
                     <p className="text-gray-700 mb-3">{currentHistoQuestion.explanation}</p>
-                    
+
                     {currentHistoQuestion.detailedExplanation && (
                       <div className="mt-4">
                         <h5 className="font-medium text-gray-900 mb-2">Detailed Explanation:</h5>
                         <p className="text-gray-700">{currentHistoQuestion.detailedExplanation}</p>
                       </div>
                     )}
-                    
+
                     {currentHistoQuestion.robbins_reference && (
                       <div className="mt-4 p-3 bg-blue-50 rounded">
                         <h5 className="font-medium text-blue-900 mb-1">Robbins Reference:</h5>
@@ -3110,7 +2922,7 @@ export default function Quiz() {
                   )}
                 </Button>
               </div>
-              
+
               {/* Quick Action Buttons */}
               <div className="flex flex-wrap gap-2">
                 <Button
@@ -3224,7 +3036,7 @@ export default function Quiz() {
           const IconComponent = topic.icon;
           return (
             <Card 
-              key={topic.id}
+              key={topic.id} 
               className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300"
               style={{ backgroundColor: '#F7FAFC' }}
               onClick={() => setSelectedCadaverTopic(topic.id)}
@@ -3549,7 +3361,7 @@ export default function Quiz() {
               className="h-16 w-auto"
             />
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Medical Quiz Platform</h1>
+              <h1 className="text-4xl font-bold" style={{ color: '#1C1C1C' }}>Customize Exam</h1>
             </div>
           </div>
           <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Medical Quiz Platform</h2>

@@ -3459,6 +3459,15 @@ This lecture covers important concepts in ${lecture.module}, focusing on ${lectu
 
       console.log(`🧠 Generating single histopathology MCQ for topic: ${topicName}`);
 
+      // Check if DeepSeek API key is available
+      if (!process.env.DEEPSEEK_API_KEY) {
+        console.error("DeepSeek API key not found");
+        return res.status(503).json({ 
+          error: "AI service not configured",
+          message: "DeepSeek API key is missing. Please configure DEEPSEEK_API_KEY environment variable."
+        });
+      }
+
       // Generate ONE question using DeepSeek AI
       const questions = await openRouterAI.generateHistopathologyMCQs(
         topicName,
@@ -3472,35 +3481,34 @@ This lecture covers important concepts in ${lecture.module}, focusing on ${lectu
 
       const question = questions[0];
       
-      // Store the generated question in the database
+      // Store the generated question in the existing quizzes table instead
       const questionId = uuidv4();
-      const storedQuestion = await db.insert(sql`histopathology_questions`).values({
-        id: questionId,
-        topic_id: topicId,
+      const [storedQuestion] = await db.insert(quizzes).values({
         question: question.question,
-        correct_answer: question.correctAnswer,
-        short_explanation: question.shortExplanation,
-        detailed_explanation: question.detailedExplanation,
-        robbins_reference: question.robbinsReference,
+        options: ['True', 'False'],
+        correctAnswer: question.correctAnswer === 'True' ? 0 : 1,
+        explanation: question.shortExplanation || question.detailedExplanation,
         difficulty: question.difficulty || 'intermediate',
-        subtopic: question.subtopic || topicName,
-        generated_by: 'deepseek_ai',
-        created_at: new Date()
+        xpReward: 15, // Higher XP for histopathology questions
+        topicId: null
       }).returning();
 
-      console.log(`✅ Generated and stored histopathology question: ${questionId}`);
+      console.log(`✅ Generated and stored histopathology question: ${storedQuestion.id}`);
       
       res.json({
         question: {
-          id: questionId,
+          id: storedQuestion.id,
           question: question.question,
           correctAnswer: question.correctAnswer,
           shortExplanation: question.shortExplanation,
           detailedExplanation: question.detailedExplanation,
           robbinsReference: question.robbinsReference,
           topic: topicName,
-          subtopic: question.subtopic,
-          generatedAt: new Date().toISOString()
+          subtopic: question.subtopic || topicName,
+          generatedAt: new Date().toISOString(),
+          options: ['True', 'False'],
+          explanation: question.shortExplanation || question.detailedExplanation,
+          dbId: storedQuestion.id
         },
         stored: true
       });
