@@ -366,7 +366,61 @@ export default function Quiz() {
     }
   };
 
-  // Handle histopathology answer selection
+  // Handle single histopathology answer selection  
+  const handleSingleHistoAnswer = async (answer: string) => {
+    if (isHistoAnswered) return;
+    
+    setSelectedHistoAnswer(answer);
+    setIsHistoAnswered(true);
+    
+    // Check if answer is correct and update score
+    const isCorrect = answer === currentHistoQuestion?.correctAnswer;
+    if (isCorrect) {
+      setHistoScore(prev => prev + 1);
+    }
+    
+    setHistoQuestionCount(prev => prev + 1);
+    
+    // Record the attempt in the database
+    try {
+      const responseTime = questionStartTime ? Date.now() - questionStartTime : 0;
+      await fetch('/api/quiz-attempts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user?.id,
+          questionId: currentHistoQuestion?.id,
+          selectedAnswer: answer,
+          isCorrect,
+          responseTime,
+          category: 'Histopathology',
+          topic: currentHistoTopic
+        })
+      });
+    } catch (error) {
+      console.error('Error recording quiz attempt:', error);
+    }
+  };
+
+  // Generate next histopathology question
+  const generateNextHistoQuestion = async () => {
+    if (!currentHistoTopicId || !currentHistoTopic) return;
+    await generateSingleHistopathologyQuestion(currentHistoTopicId, currentHistoTopic);
+  };
+
+  // Exit single question mode and return to topic selection
+  const exitHistoSingleMode = () => {
+    setHistoSingleMode(false);
+    setCurrentHistoQuestion(null);
+    setCurrentHistoTopicId('');
+    setCurrentHistoTopic('');
+    setHistoQuestionCount(0);
+    setHistoScore(0);
+    setSelectedHistoAnswer('');
+    setIsHistoAnswered(false);
+  };
+
+  // Handle histopathology answer selection (legacy function for batch mode)
   const handleHistopathologyAnswer = async (answer: string) => {
     if (isHistoAnswered) return;
 
@@ -2545,6 +2599,145 @@ export default function Quiz() {
     );
   };
 
+  // Render single histopathology question
+  const renderSingleHistoQuestion = () => {
+    if (!currentHistoQuestion || isGeneratingHisto) {
+      return (
+        <div className="text-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" style={{ color: '#3399FF' }} />
+          <p className="text-gray-600">Generating your histopathology question...</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <Button
+            onClick={exitHistoSingleMode}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Topics
+          </Button>
+          <div className="text-right">
+            <p className="text-sm text-gray-600">Topic: {currentHistoTopic}</p>
+            <p className="text-sm text-gray-600">Score: {histoScore} / {histoQuestionCount}</p>
+          </div>
+        </div>
+
+        {/* Question Card */}
+        <Card className="p-8">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Histopathology Question
+              </h2>
+              <Badge variant="secondary" className="px-3 py-1">
+                True/False
+              </Badge>
+            </div>
+
+            <div className="text-lg text-gray-800 leading-relaxed">
+              {currentHistoQuestion.question}
+            </div>
+
+            {/* Answer Options */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {['True', 'False'].map((option) => (
+                <Button
+                  key={option}
+                  onClick={() => handleSingleHistoAnswer(option)}
+                  disabled={isHistoAnswered}
+                  variant={
+                    !isHistoAnswered
+                      ? "outline"
+                      : option === currentHistoQuestion.correctAnswer
+                      ? "default"
+                      : selectedHistoAnswer === option
+                      ? "destructive"
+                      : "outline"
+                  }
+                  className={`p-4 h-auto text-left justify-start transition-all ${
+                    !isHistoAnswered 
+                      ? "hover:bg-blue-50" 
+                      : option === currentHistoQuestion.correctAnswer
+                      ? "bg-green-100 text-green-800 border-green-300"
+                      : selectedHistoAnswer === option
+                      ? "bg-red-100 text-red-800 border-red-300"
+                      : "opacity-50"
+                  }`}
+                >
+                  <span className="font-semibold mr-3">{option}</span>
+                </Button>
+              ))}
+            </div>
+
+            {/* Explanation (shown after answering) */}
+            {isHistoAnswered && (
+              <div className="mt-6 p-6 bg-gray-50 rounded-lg">
+                <div className="flex items-start gap-3">
+                  {selectedHistoAnswer === currentHistoQuestion.correctAnswer ? (
+                    <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
+                  ) : (
+                    <XCircle className="w-5 h-5 text-red-600 mt-0.5" />
+                  )}
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-gray-900 mb-2">
+                      {selectedHistoAnswer === currentHistoQuestion.correctAnswer ? 'Correct!' : 'Incorrect'}
+                    </h4>
+                    <p className="text-gray-700 mb-3">{currentHistoQuestion.explanation}</p>
+                    
+                    {currentHistoQuestion.detailedExplanation && (
+                      <div className="mt-4">
+                        <h5 className="font-medium text-gray-900 mb-2">Detailed Explanation:</h5>
+                        <p className="text-gray-700">{currentHistoQuestion.detailedExplanation}</p>
+                      </div>
+                    )}
+                    
+                    {currentHistoQuestion.robbins_reference && (
+                      <div className="mt-4 p-3 bg-blue-50 rounded">
+                        <h5 className="font-medium text-blue-900 mb-1">Robbins Reference:</h5>
+                        <p className="text-blue-800 text-sm">{currentHistoQuestion.robbins_reference}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Next Question Button */}
+            {isHistoAnswered && (
+              <div className="flex justify-center pt-4">
+                <Button
+                  onClick={generateNextHistoQuestion}
+                  disabled={isGeneratingHisto}
+                  className="px-8 py-3 text-lg"
+                  style={{ backgroundColor: '#3399FF' }}
+                >
+                  {isGeneratingHisto ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <ArrowRight className="w-5 h-5 mr-2" />
+                      Next Question
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+          </div>
+        </Card>
+      </div>
+    );
+  };
+
   const renderMCQQuiz = () => {
     if (loading) {
       return (
@@ -3167,6 +3360,17 @@ export default function Quiz() {
       <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
         <div className="max-w-6xl mx-auto px-8 py-12">
           {renderMCQCategories()}
+        </div>
+      </div>
+    );
+  }
+
+  // Single Question Histopathology Mode
+  if (histoSingleMode && currentHistoQuestion) {
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
+        <div className="max-w-4xl mx-auto px-8 py-12">
+          {renderSingleHistoQuestion()}
         </div>
       </div>
     );
