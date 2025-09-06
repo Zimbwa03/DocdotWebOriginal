@@ -3211,7 +3211,7 @@ This lecture covers important concepts in ${lecture.module}, focusing on ${lectu
       await updateProgress(35, 'Analyzing language and content...');
       
       // Detect and translate mixed language content
-      const languageResult = await getGeminiAI().detectAndTranslate(sampleTranscript);
+      const languageResult = await getGeminiAI().detectAndTranslate(actualTranscript);
       
       await updateProgress(40, 'Transcription completed');
 
@@ -3219,7 +3219,7 @@ This lecture covers important concepts in ${lecture.module}, focusing on ${lectu
       await db.insert(lectureTranscripts).values({
         id: uuidv4(),
         lectureId,
-        rawTranscript: sampleTranscript,
+        rawTranscript: actualTranscript,
         unifiedTranscript: languageResult.unifiedTranscript,
         languageDetected: languageResult.languageDetected,
         confidence: languageResult.confidence

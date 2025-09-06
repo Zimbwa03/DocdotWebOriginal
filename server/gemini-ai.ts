@@ -358,9 +358,26 @@ Focus on accuracy, medical relevance, and exam preparation value.
     confidence: number;
   }> {
     try {
-      // Quick check if transcript contains Shona words
-      const shonaIndicators = ['ndinoda', 'ndiri', 'ndinotaura', 'ndinonzwa', 'ndinofunga', 'ndinoda', 'ndinoda', 'ndinoda'];
-      const hasShona = shonaIndicators.some(word => transcript.toLowerCase().includes(word));
+      // Enhanced Shona language detection for medical contexts
+      const shonaIndicators = [
+        // Common Shona words
+        'ndinoda', 'ndiri', 'ndinotaura', 'ndinozwa', 'ndinofunga', 'tinoda', 'takanaka',
+        'hapana', 'kana', 'asi', 'zvakare', 'chokwadi', 'mukoma', 'mukadzi', 'murume',
+        'mwana', 'vana', 'mudzimai', 'mambo', 'vanhu', 'chinhu', 'zvinhu',
+        // Medical/Body parts in Shona
+        'musoro', 'maziso', 'nzeve', 'muromo', 'mazino', 'ruvara', 'pfupa', 'muviri',
+        'moyo', 'maoko', 'makumbo', 'dumbu', 'chiropa', 'mupfuri', 'mazambuko',
+        // Common Shona verbs and expressions
+        'kuona', 'kunzwa', 'kufamba', 'kukura', 'kutanga', 'kupera', 'kufanana',
+        'zvakanaka', 'zvakaipa', 'zvishoma', 'zvakawanda', 'nguva', 'zuva', 'usiku',
+        // Question words and academic terms
+        'chii', 'ani', 'riini', 'papi', 'sei', 'mangani', 'kufundira', 'dzidzo'
+      ];
+      
+      // Check for Shona words in transcript (case insensitive)
+      const hasShona = shonaIndicators.some(word => 
+        transcript.toLowerCase().includes(word.toLowerCase())
+      );
       
       if (!hasShona) {
         // No Shona detected, return as is
@@ -372,19 +389,31 @@ Focus on accuracy, medical relevance, and exam preparation value.
       }
 
       const prompt = `
-Translate this mixed Shona-English medical lecture transcript to English. 
-Preserve medical terminology and academic meaning.
+You are translating a medical lecture from Zimbabwe containing mixed Shona and English.
 
-Transcript: ${transcript}
+CRITICAL INSTRUCTIONS:
+1. **Preserve English medical terms exactly** (anatomy, physiology, pathology terms)
+2. **Translate Shona portions to English** while maintaining medical context
+3. **Keep academic tone and structure**
+4. **Maintain clinical accuracy**
+5. **Convert Zimbabwe English expressions to standard medical English**
 
-Respond with JSON:
+Mixed Language Medical Lecture Transcript:
+${transcript}
+
+Respond ONLY with JSON (no extra text):
 {
-  "unifiedTranscript": "Complete English translation",
+  "unifiedTranscript": "Complete English medical transcript with all Shona translated to English, medical terms preserved, academic tone maintained",
   "languageDetected": "en-sh",
-  "confidence": 0.9
+  "confidence": 0.95
 }
 
-Focus on medical accuracy and academic context.
+Examples of Shona medical translations:
+- "musoro" → "head"
+- "moyo" → "heart"  
+- "muviri" → "body"
+- "pfupa" → "bone"
+- "ruvara" → "skin"
 `;
 
       const result = await this.model.generateContent(prompt);

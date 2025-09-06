@@ -205,7 +205,20 @@ export default function Record() {
     
     recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.lang = speechLanguage;
+    // Configure for Zimbabwe English with fallback support for mixed languages
+    recognition.lang = 'en-ZW'; // Zimbabwe English primary
+    recognition.maxAlternatives = 3; // Allow multiple alternatives for better mixed language recognition
+    
+    // Fallback to general English if Zimbabwe English not supported
+    recognition.onerror = (event: any) => {
+      if (event.error === 'language-not-supported') {
+        console.log('⚠️ Zimbabwe English not supported, falling back to en-US');
+        recognition.lang = 'en-US';
+        recognition.start();
+      } else {
+        console.error('Speech recognition error:', event.error);
+      }
+    };
     
     recognition.onstart = () => {
       console.log('✅ Speech recognition started successfully');
@@ -232,9 +245,8 @@ export default function Record() {
       }
     };
     
-    recognition.onerror = (event: any) => {
-      console.error('Speech recognition error:', event.error);
-    };
+    // Error handling moved above - this line is now duplicate
+    // recognition.onerror moved to language configuration section
     
     recognition.start();
     setRecordingState(prev => ({ ...prev, speechRecognition: recognition }));
