@@ -10,7 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { Loader2, Eye, EyeOff, Stethoscope } from 'lucide-react';
 import { FaGoogle, FaApple } from 'react-icons/fa';
-import { supabase } from '@/lib/supabaseClient'; // Assuming supabase client is exported from here
+import { supabase } from '@/lib/supabase';
 
 export function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
