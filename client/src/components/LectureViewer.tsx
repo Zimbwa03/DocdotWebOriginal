@@ -180,9 +180,9 @@ export function LectureViewer({ lecture, onBack }: LectureViewerProps) {
               AI is transcribing audio, detecting languages, and generating comprehensive notes. This may take a few minutes.
             </p>
             
-            {processingStatus?.logs && processingStatus.logs.length > 0 && (
+            {processingStatus && (processingStatus as any).logs && (processingStatus as any).logs.length > 0 && (
               <div className="mt-4 space-y-2">
-                {processingStatus.logs.slice(0, 3).map((log: any, index: number) => (
+                {(processingStatus as any).logs.slice(0, 3).map((log: any, index: number) => (
                   <div key={index} className="flex items-center space-x-2 text-xs text-yellow-600">
                     <div className={`w-2 h-2 rounded-full ${log.status === 'completed' ? 'bg-green-500' : log.status === 'failed' ? 'bg-red-500' : 'bg-yellow-500'}`}></div>
                     <span className="capitalize">{log.step.replace(/_/g, ' ')}</span>
@@ -455,14 +455,16 @@ export function LectureViewer({ lecture, onBack }: LectureViewerProps) {
                 {notes?.keyPoints && (
                   <div>
                     <label className="text-sm font-medium text-gray-600">Key Points Extracted</label>
-                    <p className="text-lg">{Array.isArray(notes.keyPoints) ? notes.keyPoints.length : 0}</p>
+                    <p className="text-lg">{Array.isArray(notes.keyPoints) ? notes.keyPoints.length.toString() : "0"}</p>
                   </div>
                 )}
                 {notes?.medicalTerms && (
                   <div>
                     <label className="text-sm font-medium text-gray-600">Medical Terms</label>
                     <p className="text-lg">
-                      {typeof notes.medicalTerms === 'object' ? Object.keys(notes.medicalTerms).length : 0}
+                      {typeof notes.medicalTerms === 'object' && notes.medicalTerms !== null 
+                        ? Object.keys(notes.medicalTerms as object).length.toString()
+                        : "0"}
                     </p>
                   </div>
                 )}
