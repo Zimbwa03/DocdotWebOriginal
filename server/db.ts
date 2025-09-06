@@ -5,11 +5,14 @@ import {
   users, userStats, categoryStats, dailyStats, leaderboard, quizAttempts, badges, userBadges,
   aiSessions, aiChats, studyPlannerSessions, studyGroups, studyGroupMembers,
   customExams, customExamStems, stemOptions, customExamAttempts, examGenerationHistory,
+  lectures, lectureTranscripts, lectureNotes, lectureProcessingLogs,
   type User, type InsertUser, type UserStats, type CategoryStats, 
   type DailyStats, type LeaderboardEntry, type QuizAttempt,
   type InsertQuizAttempt, type InsertUserStats, type InsertCategoryStats,
   type InsertDailyStats, type InsertLeaderboard, type CustomExam, type CustomExamStem,
-  type StemOption, type InsertCustomExam, type InsertCustomExamStem, type InsertStemOption
+  type StemOption, type InsertCustomExam, type InsertCustomExamStem, type InsertStemOption,
+  type Lecture, type LectureTranscript, type LectureNotes, type LectureProcessingLog,
+  type InsertLecture, type InsertLectureTranscript, type InsertLectureNotes, type InsertLectureProcessingLog
 } from '@shared/schema';
 import { eq, desc, sql, and, gte, isNotNull, lte, gt, lt, count, sum, avg } from 'drizzle-orm';
 
