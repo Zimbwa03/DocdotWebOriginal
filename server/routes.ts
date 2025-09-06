@@ -2927,16 +2927,38 @@ app.post("/api/study-groups", async (req, res) => {
         }
       }
       
-      // Generate PDF with correct parameter format
-      const pdfPath = await pdfGenerator.generateLectureNotesPDF(
-        lecture.title,
-        lecture.module,
-        lecture.topic || '',
-        '', // transcript - empty for now since we focus on notes
-        notesContent,
-        lecture.lecturer || '',
-        lecture.date.toISOString()
-      );
+      // Parse key points and medical terms
+      let keyPoints: string[] = [];
+      let medicalTerms: Array<{term: string; definition: string}> = [];
+      
+      try {
+        keyPoints = typeof notes.keyPoints === 'string' 
+          ? JSON.parse(notes.keyPoints) 
+          : Array.isArray(notes.keyPoints) ? notes.keyPoints : [];
+      } catch (e) {
+        keyPoints = [];
+      }
+      
+      try {
+        medicalTerms = typeof notes.medicalTerms === 'string' 
+          ? JSON.parse(notes.medicalTerms) 
+          : Array.isArray(notes.medicalTerms) ? notes.medicalTerms : [];
+      } catch (e) {
+        medicalTerms = [];
+      }
+      
+      // Generate HTML file (printable as PDF)
+      const pdfPath = await pdfGenerator.generateLectureNotesPDF({
+        title: lecture.title,
+        module: lecture.module,
+        topic: lecture.topic || '',
+        lecturer: lecture.lecturer || '',
+        date: lecture.date.toISOString(),
+        notes: notesContent,
+        summary: notes.summary || '',
+        keyPoints: keyPoints,
+        medicalTerms: medicalTerms
+      });
       
       // Send the PDF file
       res.download(pdfPath, `${lecture.title}_notes.pdf`, (err) => {

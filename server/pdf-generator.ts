@@ -1,287 +1,191 @@
-import puppeteer from 'puppeteer';
+// Alternative PDF generation using HTML export (browser-printable)
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
 
-export class PDFGenerator {
-  private browser: any = null;
+interface LectureData {
+  title: string;
+  module: string;
+  topic: string;
+  lecturer: string;
+  date: string;
+  notes: string;
+  summary: string;
+  keyPoints: string[];
+  medicalTerms: Array<{term: string; definition: string}>;
+}
 
+export class PDFGenerator {
+  
   async initialize() {
-    if (!this.browser) {
-      this.browser = await puppeteer.launch({
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-      });
-    }
+    // No initialization needed for HTML-based approach
+    return Promise.resolve();
   }
 
-  async generateLectureNotesPDF(
-    title: string,
-    module: string,
-    topic: string,
-    transcript: string,
-    notes: string,
-    lecturer?: string,
-    date?: string
-  ): Promise<string> {
+  async generateLectureNotesPDF(lectureData: LectureData): Promise<string> {
     await this.initialize();
     
-    const page = await this.browser.newPage();
+    // Create a printable HTML file instead of PDF
+    const htmlContent = this.generatePrintableHTML(lectureData);
     
-    // Create HTML content for the PDF
-    const htmlContent = this.generateHTMLContent(title, module, topic, transcript, notes, lecturer, date);
-    
-    await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-    
-    // Generate PDF
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      margin: {
-        top: '20mm',
-        right: '15mm',
-        bottom: '20mm',
-        left: '15mm'
-      }
-    });
-    
-    await page.close();
-    
-    // Save PDF to file
-    const fileName = this.generateFileName(title, module, date);
-    const filePath = this.savePDF(fileName, pdfBuffer);
+    // Save as HTML file that can be printed to PDF by browser
+    const fileName = this.generateFileName(lectureData.title, lectureData.module, lectureData.date);
+    const htmlFileName = fileName.replace('.pdf', '.html');
+    const filePath = this.saveHTML(htmlFileName, htmlContent);
     
     return filePath;
   }
 
-  private generateHTMLContent(
-    title: string,
-    module: string,
-    topic: string,
-    transcript: string,
-    notes: string,
-    lecturer?: string,
-    date?: string
-  ): string {
+  private generatePrintableHTML(data: LectureData): string {
+    const formattedDate = new Date(data.date).toLocaleDateString();
+    
     return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${title} - Lecture Notes</title>
+    <title>Lecture Notes - ${data.title}</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background: white;
+        @media print {
+            body { margin: 0; }
+            .no-print { display: none; }
         }
-        
+        body {
+            font-family: 'Times New Roman', serif;
+            line-height: 1.6;
+            margin: 20px;
+            color: #333;
+        }
         .header {
             text-align: center;
-            border-bottom: 3px solid #3399FF;
+            border-bottom: 2px solid #3399FF;
             padding-bottom: 20px;
             margin-bottom: 30px;
         }
-        
-        .header h1 {
+        .title {
+            font-size: 24px;
+            font-weight: bold;
             color: #3399FF;
-            font-size: 2.2em;
-            margin: 0 0 10px 0;
-            font-weight: 700;
+            margin-bottom: 10px;
         }
-        
-        .header .subtitle {
+        .meta {
             color: #666;
-            font-size: 1.1em;
-            margin: 5px 0;
+            font-size: 14px;
         }
-        
-        .lecture-info {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            border-left: 4px solid #3399FF;
-        }
-        
-        .lecture-info h3 {
-            margin: 0 0 10px 0;
-            color: #3399FF;
-            font-size: 1.2em;
-        }
-        
-        .lecture-info p {
-            margin: 5px 0;
-            color: #555;
-        }
-        
         .section {
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
-        
-        .section h2 {
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
             color: #3399FF;
-            font-size: 1.5em;
-            margin-bottom: 15px;
+            border-bottom: 1px solid #ddd;
             padding-bottom: 5px;
-            border-bottom: 2px solid #e9ecef;
-        }
-        
-        .section h3 {
-            color: #495057;
-            font-size: 1.2em;
-            margin: 20px 0 10px 0;
-        }
-        
-        .transcript {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #e9ecef;
-            white-space: pre-wrap;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9em;
-            line-height: 1.5;
-        }
-        
-        .notes {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #e9ecef;
-        }
-        
-        .notes h1, .notes h2, .notes h3, .notes h4, .notes h5, .notes h6 {
-            color: #3399FF;
-            margin-top: 25px;
             margin-bottom: 15px;
         }
-        
-        .notes h1:first-child {
-            margin-top: 0;
+        .notes-content {
+            white-space: pre-wrap;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-left: 4px solid #3399FF;
+            margin-bottom: 20px;
         }
-        
-        .notes ul, .notes ol {
-            margin: 10px 0;
-            padding-left: 25px;
+        .key-points {
+            list-style: none;
+            padding: 0;
         }
-        
-        .notes li {
-            margin: 5px 0;
+        .key-points li {
+            background: #f0f8ff;
+            margin: 8px 0;
+            padding: 10px;
+            border-left: 3px solid #3399FF;
         }
-        
-        .notes strong {
+        .medical-terms {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .term {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 3px solid #3399FF;
+        }
+        .term-name {
+            font-weight: bold;
             color: #3399FF;
-            font-weight: 600;
+            margin-bottom: 5px;
         }
-        
-        .notes table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 15px 0;
-        }
-        
-        .notes table th,
-        .notes table td {
-            border: 1px solid #dee2e6;
-            padding: 8px 12px;
-            text-align: left;
-        }
-        
-        .notes table th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-            color: #3399FF;
-        }
-        
-        .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #e9ecef;
+        .print-info {
+            margin-top: 30px;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 5px;
             text-align: center;
-            color: #666;
-            font-size: 0.9em;
-        }
-        
-        .page-break {
-            page-break-before: always;
-        }
-        
-        @media print {
-            body {
-                margin: 0;
-                padding: 15px;
-            }
-            
-            .page-break {
-                page-break-before: always;
-            }
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>${title}</h1>
-        <div class="subtitle">${module}</div>
-        ${topic ? `<div class="subtitle">Topic: ${topic}</div>` : ''}
-        ${lecturer ? `<div class="subtitle">Lecturer: ${lecturer}</div>` : ''}
-        ${date ? `<div class="subtitle">Date: ${new Date(date).toLocaleDateString()}</div>` : ''}
+        <div class="title">${data.title}</div>
+        <div class="meta">
+            Module: ${data.module} | Topic: ${data.topic}<br>
+            Lecturer: ${data.lecturer} | Date: ${formattedDate}
+        </div>
     </div>
-    
-    <div class="lecture-info">
-        <h3>📚 Lecture Information</h3>
-        <p><strong>Module:</strong> ${module}</p>
-        ${topic ? `<p><strong>Topic:</strong> ${topic}</p>` : ''}
-        ${lecturer ? `<p><strong>Lecturer:</strong> ${lecturer}</p>` : ''}
-        ${date ? `<p><strong>Date:</strong> ${new Date(date).toLocaleDateString()}</p>` : ''}
-        <p><strong>Generated:</strong> ${new Date().toLocaleDateString()}</p>
-    </div>
-    
-    <div class="section">
-        <h2>📝 Complete Lecture Transcript</h2>
-        <div class="transcript">${transcript}</div>
-    </div>
-    
-    <div class="page-break"></div>
-    
-    <div class="section">
-        <h2>🎓 AI-Generated Lecture Notes</h2>
-        <div class="notes">${this.formatNotesForHTML(notes)}</div>
-    </div>
-    
-    <div class="footer">
-        <p>Generated by Docdot Lecture Assistant</p>
-        <p>University of Zimbabwe Medical Education Platform</p>
-        <p>Generated on ${new Date().toLocaleString()}</p>
-    </div>
-</body>
-</html>
-    `;
-  }
 
-  private formatNotesForHTML(notes: string): string {
-    // Convert markdown-like formatting to HTML
-    return notes
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-      .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-      .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-      .replace(/^#### (.*$)/gim, '<h4>$1</h4>')
-      .replace(/^##### (.*$)/gim, '<h5>$1</h5>')
-      .replace(/^###### (.*$)/gim, '<h6>$1</h6>')
-      .replace(/^- (.*$)/gim, '<li>$1</li>')
-      .replace(/^\d+\. (.*$)/gim, '<li>$1</li>')
-      .replace(/\n\n/g, '</p><p>')
-      .replace(/^(?!<[h|l])/gm, '<p>')
-      .replace(/(?<!>)$/gm, '</p>')
-      .replace(/<p><\/p>/g, '')
-      .replace(/<p>(<[h|l])/g, '$1')
-      .replace(/(<\/[h|l]>)<\/p>/g, '$1');
+    <div class="section">
+        <div class="section-title">📝 Lecture Notes</div>
+        <div class="notes-content">${data.notes || 'No notes available'}</div>
+    </div>
+
+    ${data.summary ? `
+    <div class="section">
+        <div class="section-title">📚 Summary</div>
+        <div style="text-align: justify; line-height: 1.8;">
+            ${data.summary}
+        </div>
+    </div>
+    ` : ''}
+
+    ${data.keyPoints && data.keyPoints.length > 0 ? `
+    <div class="section">
+        <div class="section-title">🎯 Key Learning Points</div>
+        <ul class="key-points">
+            ${data.keyPoints.map((point, index) => `
+                <li><strong>${index + 1}.</strong> ${point}</li>
+            `).join('')}
+        </ul>
+    </div>
+    ` : ''}
+
+    ${data.medicalTerms && data.medicalTerms.length > 0 ? `
+    <div class="section">
+        <div class="section-title">🧠 Medical Terminology</div>
+        <div class="medical-terms">
+            ${data.medicalTerms.map(term => `
+                <div class="term">
+                    <div class="term-name">${term.term}</div>
+                    <div>${term.definition}</div>
+                </div>
+            `).join('')}
+        </div>
+    </div>
+    ` : ''}
+
+    <div class="print-info no-print">
+        <strong>To save as PDF:</strong> Use your browser's print function (Ctrl+P) and select "Save as PDF"
+    </div>
+
+    <script>
+        // Auto-trigger print dialog
+        window.onload = function() {
+            window.print();
+        }
+    </script>
+</body>
+</html>`;
   }
 
   private generateFileName(title: string, module: string, date?: string): string {
@@ -292,7 +196,7 @@ export class PDFGenerator {
     return `${cleanModule}_${cleanTitle}_${dateStr}.pdf`;
   }
 
-  private savePDF(fileName: string, pdfBuffer: Buffer): string {
+  private saveHTML(fileName: string, htmlContent: string): string {
     // Create uploads directory if it doesn't exist
     const uploadsDir = join(process.cwd(), 'uploads', 'lecture-notes');
     if (!existsSync(uploadsDir)) {
@@ -300,17 +204,15 @@ export class PDFGenerator {
     }
     
     const filePath = join(uploadsDir, fileName);
-    writeFileSync(filePath, pdfBuffer);
+    writeFileSync(filePath, htmlContent);
     
-    console.log(`📄 PDF saved: ${filePath}`);
+    console.log(`📄 HTML file saved: ${filePath}`);
     return filePath;
   }
 
   async close() {
-    if (this.browser) {
-      await this.browser.close();
-      this.browser = null;
-    }
+    // No cleanup needed for HTML-based approach
+    return Promise.resolve();
   }
 }
 
