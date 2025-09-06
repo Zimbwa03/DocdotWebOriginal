@@ -81,24 +81,67 @@ export const LectureNotesDisplay: React.FC<LectureNotesProps> = ({ lectureId }) 
     );
   }
 
-  // Parse key points and medical terms if they're strings
+  // Clean and parse data that might be in JSON format
   let keyPoints: string[] = [];
   let medicalTerms: { term: string; definition: string }[] = [];
+  let cleanSummary = notes.summary || '';
+  let cleanFinalNotes = notes.finalNotes || '';
   
-  try {
-    keyPoints = typeof notes.keyPoints === 'string' 
-      ? JSON.parse(notes.keyPoints) 
-      : notes.keyPoints || [];
-  } catch {
-    keyPoints = [];
+  // Clean JSON formatting from summary if it exists
+  if (cleanSummary.includes('```json') || cleanSummary.startsWith('{')) {
+    try {
+      // Extract JSON content if wrapped in markdown code blocks
+      let jsonStr = cleanSummary.replace(/```json\s*/, '').replace(/```\s*$/, '');
+      if (jsonStr.startsWith('{')) {
+        const parsed = JSON.parse(jsonStr);
+        cleanSummary = parsed.summary || cleanSummary;
+      }
+    } catch {
+      // If parsing fails, try to extract readable text
+      cleanSummary = cleanSummary.replace(/```json\s*/, '').replace(/```\s*$/, '').replace(/^\{.*?"summary":\s*"/, '').replace(/",.*\}$/, '').trim();
+    }
   }
   
-  try {
-    medicalTerms = typeof notes.medicalTerms === 'string' 
-      ? JSON.parse(notes.medicalTerms) 
-      : notes.medicalTerms || [];
-  } catch {
-    medicalTerms = [];
+  // Clean JSON formatting from final notes if it exists
+  if (cleanFinalNotes.includes('```json') || cleanFinalNotes.startsWith('{')) {
+    try {
+      let jsonStr = cleanFinalNotes.replace(/```json\s*/, '').replace(/```\s*$/, '');
+      if (jsonStr.startsWith('{')) {
+        const parsed = JSON.parse(jsonStr);
+        cleanFinalNotes = parsed.summary || parsed.notes || cleanFinalNotes;
+        
+        // Extract key points and medical terms if available
+        if (parsed.keyPoints) keyPoints = parsed.keyPoints;
+        if (parsed.medicalTerms) medicalTerms = parsed.medicalTerms;
+      }
+    } catch {
+      // Keep original if parsing fails
+      cleanFinalNotes = cleanFinalNotes.replace(/```json\s*/, '').replace(/```\s*$/, '');
+    }
+  }
+  
+  // Parse key points if not already parsed
+  if (keyPoints.length === 0) {
+    try {
+      const keyPointsData = typeof notes.keyPoints === 'string' 
+        ? JSON.parse(notes.keyPoints) 
+        : notes.keyPoints || [];
+      keyPoints = Array.isArray(keyPointsData) ? keyPointsData : [];
+    } catch {
+      keyPoints = [];
+    }
+  }
+  
+  // Parse medical terms if not already parsed
+  if (medicalTerms.length === 0) {
+    try {
+      const medicalTermsData = typeof notes.medicalTerms === 'string' 
+        ? JSON.parse(notes.medicalTerms) 
+        : notes.medicalTerms || [];
+      medicalTerms = Array.isArray(medicalTermsData) ? medicalTermsData : [];
+    } catch {
+      medicalTerms = [];
+    }
   }
 
   return (
@@ -141,15 +184,15 @@ export const LectureNotesDisplay: React.FC<LectureNotesProps> = ({ lectureId }) 
         </CardHeader>
         <CardContent>
           <div className="prose prose-sm max-w-none bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-            <pre className="whitespace-pre-wrap font-sans text-gray-900 dark:text-gray-100">
-              {notes.liveNotes || notes.finalNotes || 'No notes content available'}
-            </pre>
+            <div className="whitespace-pre-wrap font-sans text-gray-900 dark:text-gray-100 leading-relaxed">
+              {notes.liveNotes || cleanFinalNotes || 'No notes content available'}
+            </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Summary Section */}
-      {notes.summary && (
+      {cleanSummary && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
@@ -160,7 +203,7 @@ export const LectureNotesDisplay: React.FC<LectureNotesProps> = ({ lectureId }) 
           <CardContent>
             <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
               <p className="text-gray-900 dark:text-gray-100 leading-relaxed">
-                {notes.summary}
+                {cleanSummary}
               </p>
             </div>
           </CardContent>

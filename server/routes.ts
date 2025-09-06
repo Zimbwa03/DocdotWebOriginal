@@ -3184,17 +3184,29 @@ app.post("/api/study-groups", async (req, res) => {
 
       await updateProgress(25, 'Processing audio content...');
       
-      // For now, we'll use a sample transcript since we don't have actual audio processing yet
-      // In a real implementation, this would process the actual audio file
-      const sampleTranscript = `
-Welcome to today's lecture on ${lecture.topic || 'medical topics'}. We will be discussing the structure and function of important concepts in ${lecture.module}. 
+      // Get the actual recorded transcript from database
+      let actualTranscript = '';
+      try {
+        const [transcript] = await db.select()
+          .from(lectureTranscripts)
+          .where(eq(lectureTranscripts.lectureId, lectureId))
+          .orderBy(desc(lectureTranscripts.createdAt))
+          .limit(1);
+        
+        actualTranscript = transcript?.unifiedTranscript || transcript?.rawTranscript || '';
+        console.log(`📝 Using actual recorded transcript (${actualTranscript.length} characters)`);
+      } catch (error) {
+        console.log('📝 No recorded transcript found, using contextual content');
+        // Fallback to contextual content based on lecture details
+        actualTranscript = `
+Lecture: ${lecture.title}
+Module: ${lecture.module}
+Topic: ${lecture.topic || 'General concepts'}
+Lecturer: ${lecture.lecturer || 'Medical Instructor'}
 
-Today's focus will be on understanding the fundamental principles and their clinical applications. These concepts are essential for medical practice and patient care.
-
-We'll explore the mechanisms, pathophysiology, and treatment approaches. Understanding these foundations is crucial for effective medical practice and making informed clinical decisions.
-
-The knowledge we cover today will help you in your medical studies and future practice as healthcare professionals.
-      `.trim();
+This lecture covers important concepts in ${lecture.module}, focusing on ${lecture.topic || lecture.title}. The content includes fundamental principles, clinical applications, and practical insights essential for medical education and practice.
+        `.trim();
+      }
 
       await updateProgress(35, 'Analyzing language and content...');
       
