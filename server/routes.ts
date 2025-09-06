@@ -2839,6 +2839,8 @@ app.post("/api/study-groups", async (req, res) => {
       res.json({
         lectureId,
         status: lecture?.status || 'unknown',
+        progress: lecture?.processingProgress || 0,
+        step: lecture?.processingStep || '',
         logs: logs.map(log => ({
           step: log.step,
           status: log.status,
@@ -2851,6 +2853,36 @@ app.post("/api/study-groups", async (req, res) => {
     } catch (error) {
       console.error("Error fetching processing status:", error);
       res.status(500).json({ error: "Failed to fetch processing status" });
+    }
+  });
+
+  // Simple progress endpoint for real-time updates
+  app.get("/api/lectures/:id/progress", async (req, res) => {
+    try {
+      const lectureId = req.params.id;
+      
+      const [lecture] = await db.select({
+        id: lectures.id,
+        status: lectures.status,
+        processingProgress: lectures.processingProgress,
+        processingStep: lectures.processingStep,
+        updatedAt: lectures.updatedAt
+      }).from(lectures).where(eq(lectures.id, lectureId));
+      
+      if (!lecture) {
+        return res.status(404).json({ error: "Lecture not found" });
+      }
+      
+      res.json({
+        id: lecture.id,
+        status: lecture.status,
+        progress: lecture.processingProgress || 0,
+        step: lecture.processingStep || '',
+        updatedAt: lecture.updatedAt
+      });
+    } catch (error) {
+      console.error("Error fetching processing progress:", error);
+      res.status(500).json({ error: "Failed to fetch processing progress" });
     }
   });
 

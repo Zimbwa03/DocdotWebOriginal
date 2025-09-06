@@ -39,6 +39,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import ProcessingProgress from '@/components/ProcessingProgress';
 
 interface Lecture {
   id: string;
@@ -560,6 +561,21 @@ export default function Record() {
                       )}
                     </div>
                   </div>
+
+                  {/* Processing Progress */}
+                  {currentLectureId && !recordingState.isRecording && (
+                    <div className="mt-6">
+                      <ProcessingProgress 
+                        lectureId={currentLectureId} 
+                        onProcessingComplete={() => {
+                          console.log('Processing complete for lecture:', currentLectureId);
+                          // Refresh the lectures list
+                          queryClient.invalidateQueries({ queryKey: ['/api/lectures'] });
+                          setCurrentLectureId(null);
+                        }}
+                      />
+                    </div>
+                  )}
 
                   {/* Live Transcript */}
                   {recordingState.isRecording && (
