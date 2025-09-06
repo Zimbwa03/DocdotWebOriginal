@@ -2489,7 +2489,8 @@ export default function Quiz() {
                   )}
                 </div>
               </div>
-            </CardContent>
+            )}
+          </CardContent>
           </Card>
         </div>
       );
