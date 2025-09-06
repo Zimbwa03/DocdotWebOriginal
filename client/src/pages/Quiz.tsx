@@ -326,7 +326,7 @@ export default function Quiz() {
       // If no stored question, generate a new one
       if (!question) {
         console.log('🔄 Generating new histopathology question...');
-        const response = await fetch('/api/histopathology/generate-question', {
+        const response = await fetch('/api/histopathology/generate-single-question', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
