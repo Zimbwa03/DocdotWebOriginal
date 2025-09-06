@@ -43,11 +43,9 @@ function AuthRedirect() {
   }
 
   if (user) {
-    // Check if profile setup is complete
+    // Check if profile setup is complete - make it optional for existing users
     const profileSetupComplete = localStorage.getItem('profileSetupComplete');
-    if (!profileSetupComplete) {
-      return <Redirect to="/profile-setup" />;
-    }
+    // Allow users to go to home directly, but they can still access profile setup if needed
     return <Redirect to="/home" />;
   }
 
