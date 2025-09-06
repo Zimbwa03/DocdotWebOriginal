@@ -2493,7 +2493,7 @@ export default function Quiz() {
           </Card>
         </div>
       );
-    };
+  };
 
   // Render single histopathology question
   const renderSingleHistoQuestion = () => {
