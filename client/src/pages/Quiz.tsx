@@ -2042,6 +2042,31 @@ export default function Quiz() {
           </CardContent>
         </Card>
 
+        {/* Histopathology - AI-Generated Questions */}
+        <Card 
+          className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300"
+          style={{ backgroundColor: '#F7FAFC' }}
+          onClick={() => {
+            setSelectedMCQSubject('histopathology');
+            fetchHistopathologyTopics();
+          }}
+        >
+          <CardHeader className="text-center">
+            <Heart className="w-16 h-16 mx-auto mb-4" style={{ color: '#3399FF' }} />
+            <CardTitle className="text-2xl" style={{ color: '#1C1C1C' }}>Histopathology</CardTitle>
+            <CardDescription style={{ color: '#2E2E2E' }}>
+              Disease processes and pathological changes
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Badge style={{ backgroundColor: '#3399FF', color: 'white' }}>AI-Generated</Badge>
+              <Badge variant="secondary">19 Topics</Badge>
+              <Badge variant="secondary">Robbins Reference</Badge>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Customize Exam - NEW FEATURE */}
         <Card 
           className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300 relative overflow-hidden"
@@ -2086,6 +2111,9 @@ export default function Quiz() {
     } else if (selectedMCQSubject === 'histology-embryology') {
       categories = histologyEmbryologyCategories;
       subjectTitle = 'Histology & Embryology';
+    } else if (selectedMCQSubject === 'histopathology') {
+      categories = histopathologyCategories;
+      subjectTitle = 'Histopathology';
     }
 
     // If no categories found, return to subject selection
