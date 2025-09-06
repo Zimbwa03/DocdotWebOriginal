@@ -109,9 +109,9 @@ export default function SimpleLanding() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       {/* Navigation */}
-      <nav className="bg-white shadow-lg backdrop-blur-md bg-opacity-95 sticky top-0 z-50">
+      <nav className="bg-white dark:bg-gray-800 shadow-lg backdrop-blur-md bg-opacity-95 dark:bg-opacity-95 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
@@ -120,7 +120,7 @@ export default function SimpleLanding() {
                 alt="DocDot Medical Student Logo" 
                 className="h-12 w-auto transform hover:scale-105 transition-transform duration-200"
               />
-              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
                 DocDot
               </span>
             </div>
@@ -128,7 +128,7 @@ export default function SimpleLanding() {
               <Link href="/auth">
                 <Button 
                   variant="outline" 
-                  className="text-gray-700 border-gray-300 hover:border-blue-500 hover:text-blue-600 transition-colors"
+                  className="text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
                   Sign In
                 </Button>
@@ -157,36 +157,36 @@ export default function SimpleLanding() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Column - Text Content */}
             <div className="text-center lg:text-left">
-              <div className="inline-flex items-center bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium mb-6 animate-pulse">
+              <div className="inline-flex items-center bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-4 py-2 rounded-full text-sm font-medium mb-6 animate-pulse">
                 <Zap className="w-4 h-4 mr-2" />
                 Trusted by 15,000+ Medical Students
               </div>
               
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
                 Master Medical Education with
-                <span className="block bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
+                <span className="block bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 dark:from-blue-400 dark:via-purple-400 dark:to-blue-600 bg-clip-text text-transparent">
                   AI-Powered Learning
                 </span>
               </h1>
               
-              <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto lg:mx-0">
+              <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto lg:mx-0">
                 The most comprehensive medical learning platform designed for students, residents, and healthcare professionals. 
                 Study smarter with personalized quizzes, AI explanations, and collaborative tools.
               </p>
 
               {/* Interactive Stats */}
-              <div className="mb-8 p-6 bg-white rounded-2xl shadow-lg border">
+              <div className="mb-8 p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
                 <div className="text-center">
                   <div className="flex items-center justify-center mb-2">
                     {(() => {
                       const IconComponent = stats[currentStat].icon;
                       return <IconComponent className="w-8 h-8 text-blue-600 mr-3" />;
                     })()}
-                    <span className="text-3xl font-bold text-gray-900 transition-all duration-500">
+                    <span className="text-3xl font-bold text-gray-900 dark:text-white transition-all duration-500">
                       {stats[currentStat].number}
                     </span>
                   </div>
-                  <p className="text-gray-600 transition-all duration-500">
+                  <p className="text-gray-600 dark:text-gray-300 transition-all duration-500">
                     {stats[currentStat].label}
                   </p>
                 </div>
@@ -212,14 +212,14 @@ export default function SimpleLanding() {
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="px-8 py-3 border-2 border-gray-300 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200"
+                  className="px-8 py-3 border-2 border-gray-300 dark:border-gray-600 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700 transition-all duration-200"
                 >
                   <Play className="w-5 h-5 mr-2" />
                   Watch Demo
                 </Button>
               </div>
               
-              <p className="text-sm text-gray-500 mt-4 flex items-center justify-center lg:justify-start">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-4 flex items-center justify-center lg:justify-start">
                 <Shield className="w-4 h-4 mr-2" />
                 Free forever • No credit card required • HIPAA Compliant
               </p>
