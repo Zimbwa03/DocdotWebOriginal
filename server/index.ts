@@ -30,7 +30,7 @@ async function verifyDatabaseConnection() {
     await db.execute(sql`SELECT NOW() as current_time`);
     console.log('✅ Database connection verified');
   } catch (error) {
-    console.error('❌ Database connection failed:', error.message);
+    console.error('❌ Database connection failed:', error instanceof Error ? error.message : String(error));
     process.exit(1);
   }
 }
