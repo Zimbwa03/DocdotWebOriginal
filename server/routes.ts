@@ -2906,18 +2906,37 @@ app.post("/api/study-groups", async (req, res) => {
       // Import PDF generator
       const { pdfGenerator } = await import('./pdf-generator');
       
-      // Generate PDF
-      const pdfPath = await pdfGenerator.generateLectureNotesPDF({
-        title: lecture.title,
-        module: lecture.module,
-        topic: lecture.topic || '',
-        lecturer: lecture.lecturer || '',
-        date: lecture.date.toISOString(),
-        notes: notes.liveNotes || notes.finalNotes || '',
-        summary: notes.summary || '',
-        keyPoints: notes.keyPoints || [],
-        medicalTerms: notes.medicalTerms || []
-      });
+      // Prepare the notes content
+      let notesContent = notes.liveNotes || notes.finalNotes || '';
+      
+      // Add summary and key points to notes if available
+      if (notes.summary) {
+        notesContent += `\n\n## Summary\n${notes.summary}`;
+      }
+      
+      if (notes.keyPoints) {
+        try {
+          const keyPoints = typeof notes.keyPoints === 'string' 
+            ? JSON.parse(notes.keyPoints) 
+            : notes.keyPoints;
+          if (Array.isArray(keyPoints) && keyPoints.length > 0) {
+            notesContent += `\n\n## Key Points\n` + keyPoints.map((point, i) => `${i + 1}. ${point}`).join('\n');
+          }
+        } catch (e) {
+          console.log('Error parsing key points:', e);
+        }
+      }
+      
+      // Generate PDF with correct parameter format
+      const pdfPath = await pdfGenerator.generateLectureNotesPDF(
+        lecture.title,
+        lecture.module,
+        lecture.topic || '',
+        '', // transcript - empty for now since we focus on notes
+        notesContent,
+        lecture.lecturer || '',
+        lecture.date.toISOString()
+      );
       
       // Send the PDF file
       res.download(pdfPath, `${lecture.title}_notes.pdf`, (err) => {

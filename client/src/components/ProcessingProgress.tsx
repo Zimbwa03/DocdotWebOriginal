@@ -32,17 +32,23 @@ export const ProcessingProgress: React.FC<ProcessingProgressProps> = ({
         const data = await response.json();
         setProgressData(data);
         
-        // Show progress indicator if processing has started
-        if (data.status === 'processing') {
+        // Show progress indicator if processing has started OR is processing
+        if (data.status === 'processing' || (data.progress > 0 && data.progress < 100)) {
           setIsVisible(true);
         }
         
-        // Hide and call callback when completed
+        // Keep showing for a brief moment when completed to show 100%
         if (data.status === 'completed') {
-          setIsVisible(false);
-          if (onProcessingComplete) {
-            onProcessingComplete();
-          }
+          setIsVisible(true); // Keep visible to show completion
+          
+          // Hide after a delay to show 100% completion
+          setTimeout(() => {
+            setIsVisible(false);
+            if (onProcessingComplete) {
+              onProcessingComplete();
+            }
+          }, 5000); // Show completion for 5 seconds
+          
           if (pollingInterval) {
             clearInterval(pollingInterval);
             setPollingInterval(null);
@@ -67,8 +73,8 @@ export const ProcessingProgress: React.FC<ProcessingProgressProps> = ({
     if (lectureId) {
       fetchProgress();
       
-      // Poll every 2 seconds for progress updates
-      const interval = setInterval(fetchProgress, 2000);
+      // Poll every 1 second for progress updates (faster for better UX)
+      const interval = setInterval(fetchProgress, 1000);
       setPollingInterval(interval);
       
       return () => {
