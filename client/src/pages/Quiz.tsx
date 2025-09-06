@@ -312,18 +312,18 @@ export default function Quiz() {
       const data = await response.json();
       console.log(`✅ Generated ${data.questions.length} histopathology questions`);
 
-      // Transform questions to match quiz format
+      // Transform questions to match True/False quiz format
       const transformedQuestions = data.questions.map((q: any, index: number) => ({
         id: index + 1,
         question: q.question,
-        options: Object.values(q.options), // Convert {A, B, C, D} to array
-        optionsObject: q.options, // Keep original format for display
+        options: ['True', 'False'], // True/False format like other MCQs
         correct_answer: q.correctAnswer,
         correctAnswer: q.correctAnswer,
         explanation: q.shortExplanation,
         detailedExplanation: q.detailedExplanation,
         ai_explanation: q.detailedExplanation,
         robbins_reference: q.robbinsReference,
+        reference_data: q.robbinsReference,
         category: 'Histopathology',
         topic: topicName,
         difficulty: 'intermediate'
