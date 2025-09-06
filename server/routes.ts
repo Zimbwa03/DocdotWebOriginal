@@ -3405,6 +3405,84 @@ This lecture covers important concepts in ${lecture.module}, focusing on ${lectu
     }
   }
 
+  // ===== HISTOPATHOLOGY API ROUTES =====
+
+  // Get all histopathology topics
+  app.get("/api/histopathology/topics", async (req, res) => {
+    try {
+      console.log('🧠 Fetching histopathology topics');
+      
+      const topics = await db.select({
+        id: sql`CAST(id AS VARCHAR)`.as('id'),
+        name: sql`name`,
+        description: sql`description`,
+        subtopic_count: sql`(SELECT COUNT(*) FROM histopathology_subtopics WHERE topic_id = histopathology_topics.id)`.as('subtopic_count')
+      }).from(sql`histopathology_topics`);
+
+      console.log(`📊 Found ${topics.length} histopathology topics`);
+      res.json(topics);
+    } catch (error) {
+      console.error("Error fetching histopathology topics:", error);
+      res.status(500).json({ error: "Failed to fetch histopathology topics" });
+    }
+  });
+
+  // Get subtopics for a specific histopathology topic
+  app.get("/api/histopathology/topics/:topicId/subtopics", async (req, res) => {
+    try {
+      const { topicId } = req.params;
+      console.log(`🧠 Fetching subtopics for histopathology topic: ${topicId}`);
+      
+      const subtopics = await db.select({
+        id: sql`CAST(id AS VARCHAR)`.as('id'),
+        name: sql`name`,
+        description: sql`description`
+      }).from(sql`histopathology_subtopics`)
+        .where(sql`topic_id = ${topicId}`);
+
+      console.log(`📊 Found ${subtopics.length} subtopics for topic ${topicId}`);
+      res.json(subtopics);
+    } catch (error) {
+      console.error("Error fetching histopathology subtopics:", error);
+      res.status(500).json({ error: "Failed to fetch subtopics" });
+    }
+  });
+
+  // Generate histopathology MCQ questions using DeepSeek AI
+  app.post("/api/histopathology/generate-questions", async (req, res) => {
+    try {
+      const { topicId, topicName, subtopics, count = 5 } = req.body;
+      
+      if (!topicName) {
+        return res.status(400).json({ error: "Topic name is required" });
+      }
+
+      console.log(`🧠 Generating ${count} histopathology MCQs for topic: ${topicName}`);
+
+      // Generate questions using DeepSeek AI
+      const questions = await ai.generateHistopathologyMCQs(
+        topicName,
+        subtopics || [],
+        parseInt(count)
+      );
+
+      console.log(`🎯 Successfully generated ${questions.length} histopathology MCQs`);
+      res.json({ 
+        questions: questions,
+        topic: topicName,
+        count: questions.length,
+        generatedAt: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error("Error generating histopathology questions:", error);
+      res.status(500).json({ 
+        error: "Failed to generate histopathology questions",
+        details: error.message 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

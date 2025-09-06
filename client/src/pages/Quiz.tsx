@@ -90,6 +90,18 @@ export default function Quiz() {
   const [mcqScore, setMcqScore] = useState(0);
   const [mcqCompleted, setMcqCompleted] = useState(false);
 
+  // Histopathology states
+  const [selectedHistopathologyTopic, setSelectedHistopathologyTopic] = useState<string | null>(null);
+  const [histopathologyTopics, setHistopathologyTopics] = useState<any[]>([]);
+  const [histopathologySubtopics, setHistopathologySubtopics] = useState<any[]>([]);
+  const [histopathologyQuestions, setHistopathologyQuestions] = useState<any[]>([]);
+  const [currentHistoIndex, setCurrentHistoIndex] = useState(0);
+  const [selectedHistoAnswer, setSelectedHistoAnswer] = useState('');
+  const [isHistoAnswered, setIsHistoAnswered] = useState(false);
+  const [histoScore, setHistoScore] = useState(0);
+  const [histoCompleted, setHistoCompleted] = useState(false);
+  const [isGeneratingHisto, setIsGeneratingHisto] = useState(false);
+
   // Customize Exam states
   const [examStep, setExamStep] = useState<'select-type' | 'select-topics' | 'select-count' | 'exam' | 'results' | 'review'>('select-type');
   const [examType, setExamType] = useState<'anatomy' | 'physiology' | ''>('');
@@ -164,6 +176,28 @@ export default function Quiz() {
     'Histology and Embryology'
   ];
 
+  const histopathologyCategories = [
+    'General Pathology',
+    'Blood Vessels', 
+    'The Heart',
+    'Hematologic Diseases',
+    'Red Blood Cell and Bleeding Disorders',
+    'The Lung',
+    'Head and Neck',
+    'Gastrointestinal Tract',
+    'Liver and Biliary System',
+    'The Pancreas',
+    'The Kidney',
+    'Male Genital System',
+    'Female Genital System',
+    'The Breast',
+    'Endocrine System',
+    'The Skin',
+    'Musculoskeletal System',
+    'Nervous System',
+    'The Eye'
+  ];
+
   // Customize Exam topic definitions
   const anatomyTopics = [
     { id: 1, name: 'Upper Limb', slug: 'upperlimb' },
@@ -222,6 +256,154 @@ export default function Quiz() {
       console.error('Error fetching questions:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch histopathology topics from API
+  const fetchHistopathologyTopics = async () => {
+    try {
+      console.log('🧠 Fetching histopathology topics');
+      const response = await fetch('/api/histopathology/topics');
+      if (!response.ok) {
+        throw new Error('Failed to fetch histopathology topics');
+      }
+      const topics = await response.json();
+      console.log(`📊 Received ${topics.length} histopathology topics`);
+      setHistopathologyTopics(topics);
+    } catch (error) {
+      console.error('Error fetching histopathology topics:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load histopathology topics"
+      });
+    }
+  };
+
+  // Generate histopathology questions using AI
+  const generateHistopathologyQuestions = async (topicId: string, topicName: string, count: number = 5) => {
+    setIsGeneratingHisto(true);
+    try {
+      console.log(`🧠 Generating ${count} histopathology questions for: ${topicName}`);
+      
+      // Get subtopics for the topic
+      const subtopicsResponse = await fetch(`/api/histopathology/topics/${topicId}/subtopics`);
+      let subtopics: string[] = [];
+      if (subtopicsResponse.ok) {
+        const subtopicsData = await subtopicsResponse.json();
+        subtopics = subtopicsData.map((sub: any) => sub.name);
+      }
+
+      const response = await fetch('/api/histopathology/generate-questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topicId,
+          topicName,
+          subtopics,
+          count
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate histopathology questions');
+      }
+
+      const data = await response.json();
+      console.log(`✅ Generated ${data.questions.length} histopathology questions`);
+
+      // Transform questions to match quiz format
+      const transformedQuestions = data.questions.map((q: any, index: number) => ({
+        id: index + 1,
+        question: q.question,
+        options: Object.values(q.options), // Convert {A, B, C, D} to array
+        optionsObject: q.options, // Keep original format for display
+        correct_answer: q.correctAnswer,
+        correctAnswer: q.correctAnswer,
+        explanation: q.shortExplanation,
+        detailedExplanation: q.detailedExplanation,
+        ai_explanation: q.detailedExplanation,
+        robbins_reference: q.robbinsReference,
+        category: 'Histopathology',
+        topic: topicName,
+        difficulty: 'intermediate'
+      }));
+
+      setHistopathologyQuestions(transformedQuestions);
+      setCurrentHistoIndex(0);
+      setHistoScore(0);
+      setHistoCompleted(false);
+      setSelectedHistoAnswer('');
+      setIsHistoAnswered(false);
+      setQuestionStartTime(Date.now());
+      setStartTime(new Date());
+
+      toast({
+        title: "Questions Generated",
+        description: `Generated ${transformedQuestions.length} histopathology questions for ${topicName}`
+      });
+
+    } catch (error) {
+      console.error('Error generating histopathology questions:', error);
+      toast({
+        variant: "destructive", 
+        title: "Generation Failed",
+        description: "Failed to generate histopathology questions. Please try again."
+      });
+    } finally {
+      setIsGeneratingHisto(false);
+    }
+  };
+
+  // Handle histopathology answer selection
+  const handleHistopathologyAnswer = async (answer: string) => {
+    if (isHistoAnswered) return;
+
+    setSelectedHistoAnswer(answer);
+    const currentQuestion = histopathologyQuestions[currentHistoIndex];
+    const isCorrect = answer === currentQuestion.correct_answer;
+    const timeSpent = questionStartTime ? Math.floor((Date.now() - questionStartTime) / 1000) : 0;
+
+    setIsHistoAnswered(true);
+
+    if (isCorrect) {
+      setHistoScore(histoScore + 1);
+    }
+
+    // Record histopathology attempt
+    if (user?.id) {
+      try {
+        const response = await fetch('/api/histopathology/record-attempt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user.id,
+            questionId: currentQuestion.id,
+            selectedAnswer: answer,
+            isCorrect,
+            timeSpent
+          })
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          console.log('✅ Histopathology attempt recorded:', result);
+        }
+      } catch (error) {
+        console.error('Error recording histopathology attempt:', error);
+      }
+    }
+  };
+
+  // Navigate to next histopathology question
+  const nextHistopathologyQuestion = () => {
+    if (currentHistoIndex < histopathologyQuestions.length - 1) {
+      setCurrentHistoIndex(currentHistoIndex + 1);
+      setSelectedHistoAnswer('');
+      setIsHistoAnswered(false);
+      setQuestionStartTime(Date.now());
+    } else {
+      setHistoCompleted(true);
     }
   };
 
