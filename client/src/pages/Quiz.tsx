@@ -3211,6 +3211,66 @@ export default function Quiz() {
       fetchQuestions(category);
   };
 
+  // Render quiz type selection interface
+  const renderQuizTypeSelection = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <Card 
+        className="cursor-pointer transition-all duration-200 hover:shadow-lg border-2 hover:border-blue-300"
+        onClick={() => setSelectedQuizType('mcq')}
+      >
+        <CardContent className="p-6 text-center">
+          <Brain className="w-12 h-12 mx-auto mb-4" style={{ color: '#3399FF' }} />
+          <h3 className="text-lg font-semibold mb-2">MCQ Questions</h3>
+          <p className="text-gray-600">Practice with multiple choice questions</p>
+        </CardContent>
+      </Card>
+
+      <Card 
+        className="cursor-pointer transition-all duration-200 hover:shadow-lg border-2 hover:border-blue-300"
+        onClick={() => setSelectedQuizType('ai-generator')}
+      >
+        <CardContent className="p-6 text-center">
+          <Bot className="w-12 h-12 mx-auto mb-4" style={{ color: '#3399FF' }} />
+          <h3 className="text-lg font-semibold mb-2">AI Generator</h3>
+          <p className="text-gray-600">Generate questions with AI</p>
+        </CardContent>
+      </Card>
+
+      <Card 
+        className="cursor-pointer transition-all duration-200 hover:shadow-lg border-2 hover:border-blue-300"
+        onClick={() => setSelectedQuizType('cadaver')}
+      >
+        <CardContent className="p-6 text-center">
+          <Eye className="w-12 h-12 mx-auto mb-4" style={{ color: '#3399FF' }} />
+          <h3 className="text-lg font-semibold mb-2">Cadaver Topics</h3>
+          <p className="text-gray-600">Study with anatomical specimens</p>
+        </CardContent>
+      </Card>
+
+      <Card 
+        className="cursor-pointer transition-all duration-200 hover:shadow-lg border-2 hover:border-blue-300"
+        onClick={() => setSelectedQuizType('histology')}
+      >
+        <CardContent className="p-6 text-center">
+          <Microscope className="w-12 h-12 mx-auto mb-4" style={{ color: '#3399FF' }} />
+          <h3 className="text-lg font-semibold mb-2">Histology</h3>
+          <p className="text-gray-600">Microscopic anatomy slides</p>
+        </CardContent>
+      </Card>
+
+      <Card 
+        className="cursor-pointer transition-all duration-200 hover:shadow-lg border-2 hover:border-blue-300"
+        onClick={() => setSelectedQuizType('ai-database')}
+      >
+        <CardContent className="p-6 text-center">
+          <Database className="w-12 h-12 mx-auto mb-4" style={{ color: '#3399FF' }} />
+          <h3 className="text-lg font-semibold mb-2">AI Database</h3>
+          <p className="text-gray-600">AI generated question bank</p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
   // Handle customize exam rendering FIRST (before other MCQ logic)
   if (selectedMCQSubject === 'customize-exam') {
     return (
