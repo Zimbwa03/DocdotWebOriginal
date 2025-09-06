@@ -37,7 +37,7 @@ import {
   Heart,
   Loader2
 } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 interface Question {
   id: number;
@@ -305,7 +305,7 @@ export default function Quiz() {
 
     try {
       setIsHistopathologyMode(true);
-      setCurrentCategory(topicName);
+      setSelectedCategory(topicName);
       setIsLoading(true);
 
       // First try to get stored questions for this topic
@@ -2410,7 +2410,7 @@ export default function Quiz() {
                   <button
                     key={option}
                     className={buttonStyle}
-                    onClick={() => handleMcqAnswerSelect(option)}
+                    onClick={() => handleAnswerSelect(option)}
                     disabled={isMcqAnswered}
                   >
                     <div className="flex items-center space-x-4">
