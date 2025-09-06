@@ -306,6 +306,8 @@ export default function Quiz() {
     try {
       setIsHistopathologyMode(true);
       setSelectedCategory(topicName);
+      setCurrentHistoTopicId(topicId);
+      setCurrentHistoTopic(topicName);
       setIsLoading(true);
 
       // First try to get stored questions for this topic
@@ -483,6 +485,12 @@ export default function Quiz() {
   // Generate next histopathology question
   const generateNextHistoQuestion = async () => {
     if (!currentHistoTopicId || !currentHistoTopic) return;
+    
+    // Reset answer state for new question
+    setSelectedHistoAnswer('');
+    setIsHistoAnswered(false);
+    setHistoQuestionCount(prev => prev + 1);
+    
     await generateSingleHistopathologyQuestion(currentHistoTopicId, currentHistoTopic);
   };
 
