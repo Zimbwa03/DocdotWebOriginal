@@ -34,7 +34,8 @@ import {
   Database,
   Zap,
   Timer,
-  Heart
+  Heart,
+  Loader2
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
@@ -2217,11 +2218,33 @@ export default function Quiz() {
                 } else if (selectedMCQSubject === 'histopathology') {
                   // For histopathology, start single question generation mode
                   setSelectedCategory(category);
-                  const topic = histopathologyTopics.find(t => t.name === category);
+                  
+                  // First try to find in loaded topics
+                  let topic = histopathologyTopics.find(t => t.name === category);
+                  
+                  // If topics aren't loaded yet, fetch them first
+                  if (!topic && histopathologyTopics.length === 0) {
+                    console.log('🔄 Histopathology topics not loaded, fetching first...');
+                    fetchHistopathologyTopics().then(() => {
+                      const foundTopic = histopathologyTopics.find(t => t.name === category);
+                      if (foundTopic) {
+                        startHistopathologyMode(foundTopic.id.toString(), category);
+                      } else {
+                        console.error('Topic not found after fetch:', category);
+                        toast({
+                          variant: "destructive",
+                          title: "Error", 
+                          description: "Topic not found. Please try again."
+                        });
+                      }
+                    });
+                    return;
+                  }
+                  
                   if (topic) {
                     startHistopathologyMode(topic.id.toString(), category);
                   } else {
-                    console.error('Topic not found:', category);
+                    console.error('Topic not found:', category, 'Available topics:', histopathologyTopics.map(t => t.name));
                     toast({
                       variant: "destructive",
                       title: "Error", 
