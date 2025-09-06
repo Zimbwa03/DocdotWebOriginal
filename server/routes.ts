@@ -3460,7 +3460,7 @@ This lecture covers important concepts in ${lecture.module}, focusing on ${lectu
       console.log(`🧠 Generating ${count} histopathology MCQs for topic: ${topicName}`);
 
       // Generate questions using DeepSeek AI
-      const questions = await ai.generateHistopathologyMCQs(
+      const questions = await openRouterAI.generateHistopathologyMCQs(
         topicName,
         subtopics || [],
         parseInt(count)
