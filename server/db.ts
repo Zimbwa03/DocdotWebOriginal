@@ -37,15 +37,45 @@ try {
   const isReplit = connectionString.includes('helium');
   
   if (isSupabase) {
-    // Supabase configuration with SSL
-    client = postgres(connectionString, {
-      ssl: 'require',
-      connect_timeout: 30,
-      idle_timeout: 30,
-      max: 10,
-      onnotice: () => {}
-    });
-    console.log('✅ Connecting to Supabase PostgreSQL with SSL');
+    // Supabase configuration with SSL - try different SSL modes
+    const configs = [
+      // First try: Default SSL with 'require'
+      {
+        ssl: 'require',
+        connect_timeout: 30,
+        idle_timeout: 30,
+        max: 10,
+        onnotice: () => {}
+      },
+      // Second try: More permissive SSL
+      {
+        ssl: { rejectUnauthorized: false },
+        connect_timeout: 30,
+        idle_timeout: 30,
+        max: 10,
+        onnotice: () => {}
+      },
+      // Third try: Prefer SSL but allow without
+      {
+        ssl: 'prefer',
+        connect_timeout: 30,
+        idle_timeout: 30,
+        max: 10,
+        onnotice: () => {}
+      }
+    ];
+    
+    let lastError;
+    for (let i = 0; i < configs.length; i++) {
+      try {
+        client = postgres(connectionString, configs[i]);
+        console.log(`✅ Connecting to Supabase PostgreSQL (attempt ${i + 1})`);
+        break;
+      } catch (err) {
+        lastError = err;
+        if (i === configs.length - 1) throw lastError;
+      }
+    }
   } else if (isReplit) {
     // Replit built-in database configuration  
     client = postgres(connectionString, {

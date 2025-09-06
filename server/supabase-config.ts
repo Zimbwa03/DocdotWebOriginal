@@ -7,7 +7,8 @@ const supabaseKey = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cC
 export const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
 // Database connection string for Drizzle - Use Supabase database
-export const DATABASE_URL = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL;
+// Try Supabase first, fallback to regular DATABASE_URL if needed
+export const DATABASE_URL = process.env.DATABASE_URL || process.env.SUPABASE_DATABASE_URL;
 
 // Export the connection string for use in other files
 export default DATABASE_URL;
