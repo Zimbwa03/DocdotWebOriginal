@@ -38,6 +38,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else if (session?.user) {
           console.log('Active session found:', session.user.email);
           setUser(session.user);
+          
+          // Sync user with database on initial session load
+          try {
+            const userData = {
+              id: session.user.id,
+              email: session.user.email || '',
+              firstName: session.user.user_metadata?.firstName,
+              lastName: session.user.user_metadata?.lastName
+            };
+            
+            console.log('🔄 Syncing user with database:', userData.id);
+            const response = await fetch('/api/user', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(userData),
+            });
+            
+            if (response.ok) {
+              console.log('✅ User synced successfully with database');
+            } else {
+              console.warn('⚠️ Failed to sync user with database:', await response.text());
+            }
+          } catch (syncError) {
+            console.error('❌ Error syncing user with database:', syncError);
+          }
+          
           setLoading(false);
         } else {
           console.log('No active session found');
@@ -57,6 +85,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('Auth state changed:', event, session?.user?.email);
         if (session?.user) {
           setUser(session.user);
+          
+          // Sync user with database when they authenticate
+          if (event === 'SIGNED_IN') {
+            try {
+              const userData = {
+                id: session.user.id,
+                email: session.user.email || '',
+                firstName: session.user.user_metadata?.firstName,
+                lastName: session.user.user_metadata?.lastName
+              };
+              
+              console.log('🔄 Syncing user with database after sign in:', userData.id);
+              const response = await fetch('/api/user', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(userData),
+              });
+              
+              if (response.ok) {
+                console.log('✅ User synced successfully with database');
+              } else {
+                console.warn('⚠️ Failed to sync user with database:', await response.text());
+              }
+            } catch (syncError) {
+              console.error('❌ Error syncing user with database:', syncError);
+            }
+          }
         } else {
           setUser(null);
         }
