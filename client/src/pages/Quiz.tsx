@@ -101,6 +101,13 @@ export default function Quiz() {
   const [histoScore, setHistoScore] = useState(0);
   const [histoCompleted, setHistoCompleted] = useState(false);
   const [isGeneratingHisto, setIsGeneratingHisto] = useState(false);
+  
+  // Single question histopathology mode states
+  const [histoSingleMode, setHistoSingleMode] = useState(false);
+  const [currentHistoQuestion, setCurrentHistoQuestion] = useState<any>(null);
+  const [currentHistoTopicId, setCurrentHistoTopicId] = useState('');
+  const [currentHistoTopic, setCurrentHistoTopic] = useState('');
+  const [histoQuestionCount, setHistoQuestionCount] = useState(0);
 
   // Customize Exam states
   const [examStep, setExamStep] = useState<'select-type' | 'select-topics' | 'select-count' | 'exam' | 'results' | 'review'>('select-type');
@@ -280,11 +287,24 @@ export default function Quiz() {
     }
   };
 
-  // Generate histopathology questions using AI
-  const generateHistopathologyQuestions = async (topicId: string, topicName: string, count: number = 5) => {
+  // Start single-question histopathology mode
+  const startHistopathologyMode = async (topicId: string, topicName: string) => {
+    setSelectedCategory(topicName);
+    setCurrentHistoTopicId(topicId);
+    setCurrentHistoTopic(topicName);
+    setHistoSingleMode(true);
+    setHistoScore(0);
+    setStartTime(new Date());
+    
+    // Generate the first question
+    await generateSingleHistopathologyQuestion(topicId, topicName);
+  };
+
+  // Generate single histopathology question on-demand
+  const generateSingleHistopathologyQuestion = async (topicId: string, topicName: string) => {
     setIsGeneratingHisto(true);
     try {
-      console.log(`🧠 Generating ${count} histopathology questions for: ${topicName}`);
+      console.log(`🧠 Generating single histopathology question for: ${topicName}`);
       
       // Get subtopics for the topic
       const subtopicsResponse = await fetch(`/api/histopathology/topics/${topicId}/subtopics`);
@@ -294,69 +314,52 @@ export default function Quiz() {
         subtopics = subtopicsData.map((sub: any) => sub.name);
       }
 
-      const response = await fetch('/api/histopathology/generate-questions', {
+      const response = await fetch('/api/histopathology/generate-single-question', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           topicId,
           topicName,
           subtopics,
-          count
+          userId: user?.id
         })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate histopathology questions');
+        throw new Error('Failed to generate histopathology question');
       }
 
       const data = await response.json();
-      console.log(`✅ Generated ${data.questions.length} histopathology questions`);
+      console.log(`✅ Generated single histopathology question`);
 
-      // Transform questions to match True/False quiz format for regular MCQ display
-      const transformedQuestions = data.questions.map((q: any, index: number) => ({
-        id: index + 1,
-        question: q.question,
-        options: ['True', 'False'], // True/False format like other MCQs
-        correct_answer: q.correctAnswer,
-        correctAnswer: q.correctAnswer,
-        explanation: q.shortExplanation,
-        detailedExplanation: q.detailedExplanation,
-        ai_explanation: q.detailedExplanation,
-        robbins_reference: q.robbinsReference,
-        reference_data: q.robbinsReference,
+      // Set the current question for display
+      const question = {
+        id: data.question.id,
+        question: data.question.question,
+        options: ['True', 'False'],
+        correct_answer: data.question.correctAnswer,
+        correctAnswer: data.question.correctAnswer,
+        explanation: data.question.shortExplanation,
+        detailedExplanation: data.question.detailedExplanation,
+        ai_explanation: data.question.detailedExplanation,
+        robbins_reference: data.question.robbinsReference,
+        reference_data: data.question.robbinsReference,
         category: 'Histopathology',
         topic: topicName,
         difficulty: 'intermediate'
-      }));
+      };
 
-      // Set both regular questions and histopathology questions for unified display
-      setQuestions(transformedQuestions);
-      setCurrentQuestionIndex(0);
-      setScore(0);
-      setQuizCompleted(false);
-      setSelectedAnswer('');
-      setIsAnswered(false);
-      
-      setHistopathologyQuestions(transformedQuestions);
-      setCurrentHistoIndex(0);
-      setHistoScore(0);
-      setHistoCompleted(false);
+      setCurrentHistoQuestion(question);
       setSelectedHistoAnswer('');
       setIsHistoAnswered(false);
       setQuestionStartTime(Date.now());
-      setStartTime(new Date());
-
-      toast({
-        title: "Questions Generated",
-        description: `Generated ${transformedQuestions.length} histopathology questions for ${topicName}`
-      });
 
     } catch (error) {
-      console.error('Error generating histopathology questions:', error);
+      console.error('Error generating single histopathology question:', error);
       toast({
         variant: "destructive", 
         title: "Generation Failed",
-        description: "Failed to generate histopathology questions. Please try again."
+        description: "Failed to generate histopathology question. Please try again."
       });
     } finally {
       setIsGeneratingHisto(false);
@@ -2158,11 +2161,11 @@ export default function Quiz() {
                   setSelectedUpperLimbMode('topical'); // Default to topical
                   fetchUpperLimbTopics();
                 } else if (selectedMCQSubject === 'histopathology') {
-                  // For histopathology, find the topic and generate AI questions
+                  // For histopathology, start single question generation mode
                   setSelectedCategory(category);
                   const topic = histopathologyTopics.find(t => t.name === category);
                   if (topic) {
-                    generateHistopathologyQuestions(topic.id.toString(), category);
+                    startHistopathologyMode(topic.id.toString(), category);
                   } else {
                     console.error('Topic not found:', category);
                     toast({

@@ -3448,7 +3448,73 @@ This lecture covers important concepts in ${lecture.module}, focusing on ${lectu
     }
   });
 
-  // Generate histopathology MCQ questions using DeepSeek AI
+  // Generate single histopathology MCQ question on-demand with database storage
+  app.post("/api/histopathology/generate-single-question", async (req, res) => {
+    try {
+      const { topicId, topicName, subtopics, userId } = req.body;
+      
+      if (!topicName) {
+        return res.status(400).json({ error: "Topic name is required" });
+      }
+
+      console.log(`🧠 Generating single histopathology MCQ for topic: ${topicName}`);
+
+      // Generate ONE question using DeepSeek AI
+      const questions = await openRouterAI.generateHistopathologyMCQs(
+        topicName,
+        subtopics || [],
+        1 // Generate only 1 question
+      );
+
+      if (!questions || questions.length === 0) {
+        throw new Error("No questions generated");
+      }
+
+      const question = questions[0];
+      
+      // Store the generated question in the database
+      const questionId = uuidv4();
+      const storedQuestion = await db.insert(sql`histopathology_questions`).values({
+        id: questionId,
+        topic_id: topicId,
+        question: question.question,
+        correct_answer: question.correctAnswer,
+        short_explanation: question.shortExplanation,
+        detailed_explanation: question.detailedExplanation,
+        robbins_reference: question.robbinsReference,
+        difficulty: question.difficulty || 'intermediate',
+        subtopic: question.subtopic || topicName,
+        generated_by: 'deepseek_ai',
+        created_at: new Date()
+      }).returning();
+
+      console.log(`✅ Generated and stored histopathology question: ${questionId}`);
+      
+      res.json({
+        question: {
+          id: questionId,
+          question: question.question,
+          correctAnswer: question.correctAnswer,
+          shortExplanation: question.shortExplanation,
+          detailedExplanation: question.detailedExplanation,
+          robbinsReference: question.robbinsReference,
+          topic: topicName,
+          subtopic: question.subtopic,
+          generatedAt: new Date().toISOString()
+        },
+        stored: true
+      });
+
+    } catch (error) {
+      console.error("Error generating single histopathology question:", error);
+      res.status(500).json({ 
+        error: "Failed to generate histopathology question",
+        details: error.message 
+      });
+    }
+  });
+
+  // Generate histopathology MCQ questions using DeepSeek AI (batch mode - kept for backward compatibility)
   app.post("/api/histopathology/generate-questions", async (req, res) => {
     try {
       const { topicId, topicName, subtopics, count = 5 } = req.body;
