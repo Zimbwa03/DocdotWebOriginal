@@ -89,6 +89,7 @@ export default function Record() {
   const [activeTab, setActiveTab] = useState<'record' | 'notes' | 'history'>('record');
   const [showTranscript, setShowTranscript] = useState(true);
   const [loadingLectureId, setLoadingLectureId] = useState<string | null>(null);
+  const [currentLectureId, setCurrentLectureId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterModule, setFilterModule] = useState('');
   const [liveTranscript, setLiveTranscript] = useState('');
@@ -102,6 +103,7 @@ export default function Record() {
   // Refs
   const intervalRef = useRef<NodeJS.Timeout>();
   const transcriptIntervalRef = useRef<NodeJS.Timeout>();
+  const liveNotesIntervalRef = useRef<NodeJS.Timeout>();
   const audioRef = useRef<HTMLAudioElement>(null);
   const wsRef = useRef<WebSocket | null>(null);
 
@@ -129,8 +131,11 @@ export default function Record() {
       return response.json();
     },
     onSuccess: (data) => {
+      console.log('🎙️ Recording started successfully:', data);
+      setCurrentLectureId(data.id || data.lectureId);
       setRecordingState(prev => ({ ...prev, isRecording: true, startTime: new Date() }));
       startSpeechRecognition();
+      startLiveNotesPolling(data.id || data.lectureId);
       toast({
         title: "Recording Started",
         description: "Lecture recording has begun. Speak clearly for best transcription results."
@@ -158,6 +163,8 @@ export default function Record() {
     onSuccess: () => {
       setRecordingState(prev => ({ ...prev, isRecording: false, isPaused: false }));
       stopSpeechRecognition();
+      stopLiveNotesPolling();
+      setCurrentLectureId(null);
       toast({
         title: "Recording Stopped", 
         description: "Processing your lecture notes. This may take a few minutes."
@@ -235,6 +242,60 @@ export default function Record() {
       recordingState.speechRecognition.stop();
       setRecordingState(prev => ({ ...prev, speechRecognition: null }));
     }
+  };
+
+  // Live notes polling functions
+  const startLiveNotesPolling = (lectureId: string) => {
+    console.log('🔄 Starting live notes polling for lecture:', lectureId);
+    
+    // Clear any existing interval
+    if (liveNotesIntervalRef.current) {
+      clearInterval(liveNotesIntervalRef.current);
+    }
+    
+    // Poll for live notes every 10 seconds
+    liveNotesIntervalRef.current = setInterval(async () => {
+      try {
+        setIsGeneratingNotes(true);
+        
+        // Get current transcript
+        const currentTranscript = finalTranscript || liveTranscript;
+        if (!currentTranscript.trim()) {
+          setIsGeneratingNotes(false);
+          return;
+        }
+        
+        // Generate live notes from current transcript
+        const response = await fetch('/api/lectures/generate-live-notes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            transcript: currentTranscript,
+            module: lectureData.module,
+            topic: lectureData.topic
+          })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setLiveNotes(data.notes || '');
+          console.log('📝 Live notes updated successfully');
+        }
+      } catch (error) {
+        console.error('❌ Error generating live notes:', error);
+      } finally {
+        setIsGeneratingNotes(false);
+      }
+    }, 10000); // Poll every 10 seconds
+  };
+  
+  const stopLiveNotesPolling = () => {
+    console.log('⏹️ Stopping live notes polling');
+    if (liveNotesIntervalRef.current) {
+      clearInterval(liveNotesIntervalRef.current);
+      liveNotesIntervalRef.current = undefined;
+    }
+    setIsGeneratingNotes(false);
   };
 
   // Timer update effect
@@ -488,7 +549,7 @@ export default function Record() {
                           <Button
                             variant="outline"
                             size="lg"
-                            onClick={() => stopRecordingMutation.mutate('current-lecture')}
+                            onClick={() => currentLectureId && stopRecordingMutation.mutate(currentLectureId)}
                             disabled={stopRecordingMutation.isPending}
                             className="px-6 py-3 text-red-600 border-red-300 hover:bg-red-50"
                           >
