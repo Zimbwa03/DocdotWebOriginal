@@ -274,52 +274,30 @@ export class DatabaseStorage {
 
   async updateUserStats(userId: string, isCorrect: boolean, xpEarned: number, timeSpent: number): Promise<void> {
     try {
-      // Use the comprehensive SQL function to recalculate stats and award badges
-      await db.execute(sql`SELECT initialize_user_complete(${userId})`);
+      // Simple manual update that works with existing Supabase tables
+      const existing = await db.select().from(userStats).where(eq(userStats.userId, userId)).limit(1);
 
-      // Create achievement notification for XP gained
-      if (xpEarned > 0) {
-        await this.createAchievementNotification(userId, null, `+${xpEarned} XP earned!`, xpEarned);
-      }
-
-      console.log(`🎉 Full analytics updated for user ${userId} - stats recalculated and badges checked`);
-    } catch (error) {
-      console.error('Error updating user stats with full system:', error);
-      // Fallback: try the basic analytics function
-      try {
-        await db.execute(sql`SELECT recalculate_user_analytics(${userId}::uuid)`);
+      if (existing.length > 0) {
+        const current = existing[0];
+        const newTotalXp = (current.totalXp || 0) + (xpEarned || 0);
+        const newLevel = Math.floor(newTotalXp / 100) + 1;
         
-        // Then try to award badges separately
-        const badgesAwarded = await db.execute(sql`SELECT check_and_award_badges(${userId}::uuid)`);
-        console.log(`📊 Analytics updated for user ${userId}, badges check completed`);
-      } catch (fallbackError) {
-        console.error('Fallback stats update also failed:', fallbackError);
-        // Last resort: manual update
-        try {
-          const existing = await db.select().from(userStats).where(eq(userStats.userId, userId)).limit(1);
-
-          if (existing.length > 0) {
-            const current = existing[0];
-            const newTotalXp = (current.totalXp || 0) + (xpEarned || 0);
-            const newLevel = Math.floor(newTotalXp / 1000) + 1;
-            
-            await db.update(userStats)
-              .set({
-                totalQuestions: (current.totalQuestions || 0) + 1,
-                correctAnswers: (current.correctAnswers || 0) + (isCorrect ? 1 : 0),
-                totalXp: newTotalXp,
-                currentLevel: newLevel,
-                level: newLevel,
-                averageScore: Math.round(((current.correctAnswers || 0) + (isCorrect ? 1 : 0)) / ((current.totalQuestions || 0) + 1) * 100),
-                updatedAt: new Date()
-              })
-              .where(eq(userStats.userId, userId));
-            console.log(`📈 Manual stats update completed for user ${userId}`);
-          }
-        } catch (manualError) {
-          console.error('Manual stats update failed:', manualError);
-        }
+        await db.update(userStats)
+          .set({
+            totalQuestions: (current.totalQuestions || 0) + 1,
+            correctAnswers: (current.correctAnswers || 0) + (isCorrect ? 1 : 0),
+            totalXp: newTotalXp,
+            currentLevel: newLevel,
+            level: newLevel,
+            averageScore: Math.round(((current.correctAnswers || 0) + (isCorrect ? 1 : 0)) / ((current.totalQuestions || 0) + 1) * 100),
+            averageAccuracy: Math.round(((current.correctAnswers || 0) + (isCorrect ? 1 : 0)) / ((current.totalQuestions || 0) + 1) * 100),
+            updatedAt: new Date()
+          })
+          .where(eq(userStats.userId, userId));
+        console.log(`📈 User stats updated for ${userId}: ${current.totalQuestions + 1} questions, ${(current.correctAnswers || 0) + (isCorrect ? 1 : 0)} correct`);
       }
+    } catch (error) {
+      console.error('Error updating user stats:', error);
     }
   }
 
