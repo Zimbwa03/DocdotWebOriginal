@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/utils/supabaseClient'; // Assuming supabase client is exported from here
+import { supabase } from '@/lib/supabase';
 
 // Simplified user interface for built-in backend
 interface User {
