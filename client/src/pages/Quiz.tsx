@@ -312,7 +312,7 @@ export default function Quiz() {
       const data = await response.json();
       console.log(`✅ Generated ${data.questions.length} histopathology questions`);
 
-      // Transform questions to match True/False quiz format
+      // Transform questions to match True/False quiz format for regular MCQ display
       const transformedQuestions = data.questions.map((q: any, index: number) => ({
         id: index + 1,
         question: q.question,
@@ -329,6 +329,14 @@ export default function Quiz() {
         difficulty: 'intermediate'
       }));
 
+      // Set both regular questions and histopathology questions for unified display
+      setQuestions(transformedQuestions);
+      setCurrentQuestionIndex(0);
+      setScore(0);
+      setQuizCompleted(false);
+      setSelectedAnswer('');
+      setIsAnswered(false);
+      
       setHistopathologyQuestions(transformedQuestions);
       setCurrentHistoIndex(0);
       setHistoScore(0);
@@ -2149,9 +2157,23 @@ export default function Quiz() {
                   setSelectedCategory(category);
                   setSelectedUpperLimbMode('topical'); // Default to topical
                   fetchUpperLimbTopics();
+                } else if (selectedMCQSubject === 'histopathology') {
+                  // For histopathology, find the topic and generate AI questions
+                  setSelectedCategory(category);
+                  const topic = histopathologyTopics.find(t => t.name === category);
+                  if (topic) {
+                    generateHistopathologyQuestions(topic.id.toString(), category);
+                  } else {
+                    console.error('Topic not found:', category);
+                    toast({
+                      variant: "destructive",
+                      title: "Error", 
+                      description: "Topic not found. Please try again."
+                    });
+                  }
                 } else {
-                setSelectedCategory(category);
-                fetchQuestions(category);
+                  setSelectedCategory(category);
+                  fetchQuestions(category);
                 }
               }}
             >
