@@ -326,13 +326,27 @@ export default function Quiz() {
       // If no stored question, generate a new one
       if (!question) {
         console.log('🔄 Generating new histopathology question...');
+        
+        // First, fetch the subtopics for this topic to guide DeepSeek
+        let subtopics = [];
+        try {
+          console.log(`📋 Fetching subtopics for ${topicName}...`);
+          const subtopicsResponse = await fetch(`/api/histopathology/topics/${topicId}/subtopics`);
+          if (subtopicsResponse.ok) {
+            subtopics = await subtopicsResponse.json();
+            console.log(`📊 Found ${subtopics.length} subtopics for ${topicName}:`, subtopics.map(s => s.name));
+          }
+        } catch (subtopicsError) {
+          console.log('No subtopics found, will generate with topic only');
+        }
+
         const response = await fetch('/api/histopathology/generate-single-question', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             topicId,
             topicName,
-            subtopics: []
+            subtopics: subtopics
           })
         });
 
