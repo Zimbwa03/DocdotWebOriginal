@@ -2886,6 +2886,52 @@ app.post("/api/study-groups", async (req, res) => {
     }
   });
 
+  // Download lecture notes as PDF
+  app.get("/api/lectures/:id/download-notes", async (req, res) => {
+    try {
+      const lectureId = req.params.id;
+      
+      // Get lecture details
+      const [lecture] = await db.select().from(lectures).where(eq(lectures.id, lectureId));
+      if (!lecture) {
+        return res.status(404).json({ error: "Lecture not found" });
+      }
+      
+      // Get lecture notes
+      const [notes] = await db.select().from(lectureNotes).where(eq(lectureNotes.lectureId, lectureId));
+      if (!notes) {
+        return res.status(404).json({ error: "Lecture notes not found" });
+      }
+      
+      // Import PDF generator
+      const { pdfGenerator } = await import('./pdf-generator');
+      
+      // Generate PDF
+      const pdfPath = await pdfGenerator.generateLectureNotesPDF({
+        title: lecture.title,
+        module: lecture.module,
+        topic: lecture.topic || '',
+        lecturer: lecture.lecturer || '',
+        date: lecture.date.toISOString(),
+        notes: notes.liveNotes || notes.finalNotes || '',
+        summary: notes.summary || '',
+        keyPoints: notes.keyPoints || [],
+        medicalTerms: notes.medicalTerms || []
+      });
+      
+      // Send the PDF file
+      res.download(pdfPath, `${lecture.title}_notes.pdf`, (err) => {
+        if (err) {
+          console.error('Error sending PDF:', err);
+          res.status(500).json({ error: "Failed to download PDF" });
+        }
+      });
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      res.status(500).json({ error: "Failed to generate PDF" });
+    }
+  });
+
   // Save lecture transcript
   app.post("/api/lectures/:id/save-transcript", async (req, res) => {
     try {

@@ -40,6 +40,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ProcessingProgress from '@/components/ProcessingProgress';
+import LectureNotesDisplay from '@/components/LectureNotesDisplay';
 
 interface Lecture {
   id: string;
@@ -91,6 +92,7 @@ export default function Record() {
   const [showTranscript, setShowTranscript] = useState(true);
   const [loadingLectureId, setLoadingLectureId] = useState<string | null>(null);
   const [currentLectureId, setCurrentLectureId] = useState<string | null>(null);
+  const [selectedLectureForNotes, setSelectedLectureForNotes] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterModule, setFilterModule] = useState('');
   const [liveTranscript, setLiveTranscript] = useState('');
@@ -328,8 +330,15 @@ export default function Record() {
   const handleViewLecture = async (lectureId: string) => {
     setLoadingLectureId(lectureId);
     try {
-      // Implement view logic
+      // Switch to notes tab and set the selected lecture
+      setActiveTab('notes');
+      setSelectedLectureForNotes(lectureId);
+      toast({
+        title: "Viewing Lecture",
+        description: "Switched to notes tab to view lecture details",
+      });
     } catch (error) {
+      console.error('Error viewing lecture:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -342,20 +351,54 @@ export default function Record() {
 
   const handleDownloadLecture = async (lectureId: string, title: string) => {
     try {
-      // Implement download logic
+      const response = await fetch(`/api/lectures/${lectureId}/download-notes`);
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${title}_notes.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        toast({
+          title: "Download Started",
+          description: `${title} notes are being downloaded`,
+        });
+      } else {
+        throw new Error('Download failed');
+      }
     } catch (error) {
+      console.error('Error downloading lecture:', error);
       toast({
         variant: "destructive", 
         title: "Download Failed",
-        description: "Failed to download lecture"
+        description: "Failed to download lecture notes"
       });
     }
   };
 
   const handleDeleteLecture = async (lectureId: string, title: string) => {
+    if (!confirm(`Are you sure you want to delete "${title}"? This action cannot be undone.`)) {
+      return;
+    }
+    
     try {
-      // Implement delete logic
+      const response = await fetch(`/api/lectures/${lectureId}`, {
+        method: 'DELETE',
+      });
+      
+      if (response.ok) {
+        toast({
+          title: "Lecture Deleted",
+          description: `"${title}" has been deleted successfully`,
+        });
+        // Refresh the lectures list
+        queryClient.invalidateQueries({ queryKey: ['/api/lectures'] });
+      } else {
+        throw new Error('Delete failed');
+      }
     } catch (error) {
+      console.error('Error deleting lecture:', error);
       toast({
         variant: "destructive",
         title: "Delete Failed", 
@@ -666,7 +709,46 @@ export default function Record() {
                       </div>
                     </div>
                   ) : (
-                    <p className="text-gray-500 italic text-center py-20">Start recording to generate live notes</p>
+                    <div className="space-y-4">
+                      {/* Select a completed lecture to view notes */}
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Select a completed lecture to view AI-generated notes:
+                        </label>
+                        <select
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          onChange={(e) => {
+                            if (e.target.value) {
+                              setSelectedLectureForNotes(e.target.value);
+                            }
+                          }}
+                          defaultValue=""
+                        >
+                          <option value="">Choose a lecture...</option>
+                          {lectures
+                            .filter((l: Lecture) => l.status === 'completed')
+                            .map((lecture: Lecture) => (
+                              <option key={lecture.id} value={lecture.id}>
+                                {lecture.title} - {lecture.module} ({new Date(lecture.date).toLocaleDateString()})
+                              </option>
+                            ))}
+                        </select>
+                      </div>
+                      
+                      {/* Display selected lecture notes */}
+                      {selectedLectureForNotes && (
+                        <LectureNotesDisplay lectureId={selectedLectureForNotes} />
+                      )}
+                      
+                      {!selectedLectureForNotes && (
+                        <div className="text-center py-20">
+                          <FileText className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                          <p className="text-gray-500 italic">
+                            Select a completed lecture above to view AI-generated notes, summaries, and key points
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               </CardContent>
