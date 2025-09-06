@@ -119,6 +119,55 @@ export const examGenerationHistory = pgTable("exam_generation_history", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Lecture Recording System - New Feature
+export const lectures = pgTable("lectures", {
+  id: text("id").primaryKey(), // UUID
+  userId: text("user_id").notNull().references(() => users.id),
+  title: text("title").notNull(),
+  module: text("module").notNull(), // e.g., "Anatomy", "Physiology"
+  topic: text("topic"), // e.g., "Upper Limb", "Cardiovascular System"
+  lecturer: text("lecturer"), // Lecturer name
+  venue: text("venue"), // Lecture hall/location
+  durationSeconds: integer("duration_seconds"), // Total lecture duration
+  status: text("status").default("recording"), // 'recording', 'processing', 'completed', 'failed'
+  audioFileUrl: text("audio_file_url"), // URL to stored audio file
+  hasShona: boolean("has_shona").default(false), // Mixed language indicator
+  languageConfidence: real("language_confidence").default(0.0), // AI confidence in language detection
+  processingStage: text("processing_stage").default("recording"), // 'recording', 'transcribing', 'translating', 'generating_notes', 'completed'
+  metadata: json("metadata").default({}), // Additional metadata
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const transcripts = pgTable("transcripts", {
+  id: text("id").primaryKey(), // UUID
+  lectureId: text("lecture_id").notNull().references(() => lectures.id, { onDelete: "cascade" }),
+  rawTranscript: text("raw_transcript"), // Original mixed-language transcript
+  unifiedTranscript: text("unified_transcript"), // English-unified transcript
+  translationConfidence: real("translation_confidence").default(0.0), // AI confidence in translation
+  timestamps: json("timestamps").default([]), // Array of timestamp objects
+  processingLog: json("processing_log").default([]), // Processing steps and errors
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const lectureNotes = pgTable("lecture_notes", {
+  id: text("id").primaryKey(), // UUID
+  lectureId: text("lecture_id").notNull().references(() => lectures.id, { onDelete: "cascade" }),
+  noteType: text("note_type").notNull(), // 'live', 'comprehensive', 'summary'
+  content: text("content").notNull(), // Markdown formatted notes
+  keyPoints: text("key_points").array().default([]), // Extracted key points
+  medicalTerms: json("medical_terms").default({}), // Terms with definitions
+  examQuestions: json("exam_questions").default([]), // Generated questions
+  researchEnhanced: boolean("research_enhanced").default(false), // Contains external research
+  qualityScore: real("quality_score").default(0.0), // AI-assessed quality (0-1)
+  wordCount: integer("word_count").default(0), // Content length metric
+  processingTimeMs: integer("processing_time_ms"), // Generation time
+  aiProvider: text("ai_provider").default("gemini"), // AI service used
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Quiz system (existing)  
 export const quizzes = pgTable("quizzes", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
@@ -416,9 +465,8 @@ export const insertMeetingReminderSchema = createInsertSchema(meetingReminders).
 
 // Lecture recording schemas
 export const insertLectureSchema = createInsertSchema(lectures).omit({ id: true, createdAt: true, updatedAt: true });
-export const insertLectureTranscriptSchema = createInsertSchema(lectureTranscripts).omit({ id: true, createdAt: true });
+export const insertTranscriptSchema = createInsertSchema(transcripts).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertLectureNotesSchema = createInsertSchema(lectureNotes).omit({ id: true, createdAt: true, updatedAt: true });
-export const insertLectureProcessingLogSchema = createInsertSchema(lectureProcessingLogs).omit({ id: true, createdAt: true });
 
 // Custom exam schemas
 export const insertCustomExamSchema = createInsertSchema(customExams).omit({ id: true, createdAt: true, updatedAt: true });
@@ -426,6 +474,11 @@ export const insertCustomExamStemSchema = createInsertSchema(customExamStems).om
 export const insertStemOptionSchema = createInsertSchema(stemOptions).omit({ id: true, createdAt: true });
 export const insertCustomExamAttemptSchema = createInsertSchema(customExamAttempts).omit({ id: true, startedAt: true });
 export const insertExamGenerationHistorySchema = createInsertSchema(examGenerationHistory).omit({ id: true, createdAt: true });
+
+// Lecture insert types
+export type InsertLecture = z.infer<typeof insertLectureSchema>;
+export type InsertTranscript = z.infer<typeof insertTranscriptSchema>;
+export type InsertLectureNotes = z.infer<typeof insertLectureNotesSchema>;
 
 // Type exports
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -439,6 +492,11 @@ export type InsertCustomExamStem = z.infer<typeof insertCustomExamStemSchema>;
 export type InsertStemOption = z.infer<typeof insertStemOptionSchema>;
 export type InsertCustomExamAttempt = z.infer<typeof insertCustomExamAttemptSchema>;
 export type InsertExamGenerationHistory = z.infer<typeof insertExamGenerationHistorySchema>;
+
+// Lecture select types
+export type Lecture = typeof lectures.$inferSelect;
+export type Transcript = typeof transcripts.$inferSelect;
+export type LectureNotes = typeof lectureNotes.$inferSelect;
 
 export type User = typeof users.$inferSelect;
 export type Category = typeof categories.$inferSelect;
