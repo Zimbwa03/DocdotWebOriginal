@@ -25,25 +25,52 @@ if (!connectionString) {
 console.log('Database connection details:');
 console.log('- URL configured:', !!connectionString);
 console.log('- URL starts with postgres:', connectionString.startsWith('postgres://'));
-console.log('- Using Supabase PostgreSQL:', connectionString.includes('supabase.co')); 
+console.log('- Using Supabase PostgreSQL:', connectionString.includes('supabase.co'));
+console.log('- Using Replit PostgreSQL:', connectionString.includes('helium'));
 
-// Configure postgres client for Supabase PostgreSQL database
+// Configure postgres client based on database type
 let client: ReturnType<typeof postgres>;
 let db: ReturnType<typeof drizzle>;
 
 try {
-  client = postgres(connectionString, {
-    ssl: 'require', // Supabase requires SSL
-    connect_timeout: 30,
-    idle_timeout: 30,
-    max: 10,
-    onnotice: () => {} // Suppress notices
-  });
+  const isSupabase = connectionString.includes('supabase.co');
+  const isReplit = connectionString.includes('helium');
+  
+  if (isSupabase) {
+    // Supabase configuration with SSL
+    client = postgres(connectionString, {
+      ssl: 'require',
+      connect_timeout: 30,
+      idle_timeout: 30,
+      max: 10,
+      onnotice: () => {}
+    });
+    console.log('✅ Connecting to Supabase PostgreSQL with SSL');
+  } else if (isReplit) {
+    // Replit built-in database configuration  
+    client = postgres(connectionString, {
+      connect_timeout: 30,
+      idle_timeout: 30,
+      max: 10,
+      onnotice: () => {}
+    });
+    console.log('✅ Connecting to Replit PostgreSQL');
+  } else {
+    // Default configuration
+    client = postgres(connectionString, {
+      connect_timeout: 30,
+      idle_timeout: 30,
+      max: 10,
+      onnotice: () => {}
+    });
+    console.log('✅ Connecting to PostgreSQL with default settings');
+  }
+  
   db = drizzle(client);
-  console.log('✅ Supabase PostgreSQL client initialized successfully');
+  console.log('✅ PostgreSQL client initialized successfully');
 } catch (error) {
-  console.error('❌ Supabase PostgreSQL client initialization failed:', error instanceof Error ? error.message : String(error));
-  throw new Error('Failed to connect to Supabase PostgreSQL database');
+  console.error('❌ PostgreSQL client initialization failed:', error instanceof Error ? error.message : String(error));
+  throw new Error('Failed to connect to PostgreSQL database');
 }
 
 export { db };
