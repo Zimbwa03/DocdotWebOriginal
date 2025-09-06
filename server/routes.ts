@@ -3049,16 +3049,32 @@ app.post("/api/study-groups", async (req, res) => {
     const startTime = Date.now();
     let logId = '';
 
+    // Helper function to update progress
+    const updateProgress = async (percentage: number, currentStep: string) => {
+      await db.update(lectures)
+        .set({ 
+          processingProgress: percentage,
+          processingStep: currentStep,
+          updatedAt: new Date()
+        })
+        .where(eq(lectures.id, lectureId));
+      console.log(`📈 Progress: ${percentage}% - ${currentStep}`);
+    };
+
     try {
       console.log(`🔄 Starting AI-powered background processing for lecture: ${lectureId}`);
+      await updateProgress(0, 'Initializing processing...');
 
       // Get lecture details
       const [lecture] = await db.select().from(lectures).where(eq(lectures.id, lectureId));
       if (!lecture) {
         throw new Error('Lecture not found');
       }
+      
+      await updateProgress(10, 'Lecture details loaded');
 
-      // Step 1: Transcription and Language Detection
+      // Step 1: Transcription and Language Detection (10% - 40%)
+      await updateProgress(15, 'Starting transcription analysis...');
       logId = uuidv4();
       await db.insert(lectureProcessingLogs).values({
         id: logId,
@@ -3069,20 +3085,26 @@ app.post("/api/study-groups", async (req, res) => {
         metadata: { processingType: 'gemini_ai' }
       });
 
+      await updateProgress(25, 'Processing audio content...');
+      
       // For now, we'll use a sample transcript since we don't have actual audio processing yet
       // In a real implementation, this would process the actual audio file
       const sampleTranscript = `
-Welcome to today's lecture on cardiovascular physiology. We will be discussing the structure and function of the heart, which is a four-chambered organ that pumps blood throughout the body. 
+Welcome to today's lecture on ${lecture.topic || 'medical topics'}. We will be discussing the structure and function of important concepts in ${lecture.module}. 
 
-Let's start with the basic anatomy of the heart chambers. The right atrium receives deoxygenated blood from the body through the superior and inferior vena cava. The left atrium receives oxygenated blood from the lungs through the pulmonary veins.
+Today's focus will be on understanding the fundamental principles and their clinical applications. These concepts are essential for medical practice and patient care.
 
-The ventricles are the main pumping chambers of the heart. The right ventricle pumps blood to the lungs for oxygenation through the pulmonary artery. The left ventricle pumps oxygenated blood to the rest of the body through the aorta.
+We'll explore the mechanisms, pathophysiology, and treatment approaches. Understanding these foundations is crucial for effective medical practice and making informed clinical decisions.
 
-This creates a double circulation system in the human body - pulmonary circulation and systemic circulation. Understanding this anatomy is crucial for medical practice and diagnosing cardiovascular diseases.
+The knowledge we cover today will help you in your medical studies and future practice as healthcare professionals.
       `.trim();
 
+      await updateProgress(35, 'Analyzing language and content...');
+      
       // Detect and translate mixed language content
       const languageResult = await getGeminiAI().detectAndTranslate(sampleTranscript);
+      
+      await updateProgress(40, 'Transcription completed');
 
       // Insert transcript
       await db.insert(lectureTranscripts).values({
@@ -3103,7 +3125,8 @@ This creates a double circulation system in the human body - pulmonary circulati
         })
         .where(eq(lectureProcessingLogs.id, logId));
 
-      // Step 2: Generate Live Notes
+      // Step 2: Generate Live Notes (40% - 70%)
+      await updateProgress(45, 'Starting note generation...');
       logId = uuidv4();
       await db.insert(lectureProcessingLogs).values({
         id: logId,
@@ -3114,12 +3137,14 @@ This creates a double circulation system in the human body - pulmonary circulati
         metadata: { processingType: 'gemini_ai' }
       });
 
+      await updateProgress(55, 'Generating structured notes...');
       const liveNotes = await getGeminiAI().generateLiveNotes(
         languageResult.unifiedTranscript,
         lecture.module,
         lecture.topic || undefined
       );
 
+      await updateProgress(65, 'Creating comprehensive summary...');
       // Step 3: Generate Comprehensive Summary
       const comprehensiveResult = await getGeminiAI().generateComprehensiveSummary(
         languageResult.unifiedTranscript,
@@ -3127,6 +3152,8 @@ This creates a double circulation system in the human body - pulmonary circulati
         lecture.module,
         lecture.topic || undefined
       );
+      
+      await updateProgress(70, 'Notes generation completed');
 
       // Insert notes
       await db.insert(lectureNotes).values({
@@ -3150,8 +3177,9 @@ This creates a double circulation system in the human body - pulmonary circulati
         })
         .where(eq(lectureProcessingLogs.id, logId));
 
-      // Step 4: Generate Exam Questions (Optional)
+      // Step 4: Generate Exam Questions (70% - 90%)
       try {
+        await updateProgress(75, 'Generating exam questions...');
         logId = uuidv4();
         await db.insert(lectureProcessingLogs).values({
           id: logId,
@@ -3168,6 +3196,8 @@ This creates a double circulation system in the human body - pulmonary circulati
           lecture.module
         );
 
+        await updateProgress(85, 'Saving exam questions...');
+        
         // Store exam questions in metadata (you could create a separate table for this)
         await db.update(lectureNotes)
           .set({
@@ -3182,15 +3212,23 @@ This creates a double circulation system in the human body - pulmonary circulati
             duration: Date.now() - startTime
           })
           .where(eq(lectureProcessingLogs.id, logId));
+          
+        await updateProgress(90, 'Exam questions completed');
       } catch (examError) {
         console.warn('Failed to generate exam questions:', examError);
+        await updateProgress(90, 'Exam questions skipped (optional)');
         // Don't fail the entire process for exam questions
       }
 
+      // Final Steps (90% - 100%)
+      await updateProgress(95, 'Finalizing processing...');
+      
       // Update lecture status to completed
       await db.update(lectures)
         .set({ 
           status: 'completed',
+          processingProgress: 100,
+          processingStep: 'Processing completed successfully!',
           updatedAt: new Date()
         })
         .where(eq(lectures.id, lectureId));
@@ -3201,13 +3239,26 @@ This creates a double circulation system in the human body - pulmonary circulati
     } catch (error) {
       console.error(`❌ Error in AI background processing for lecture ${lectureId}:`, error);
 
-      // Update lecture status to failed
-      await db.update(lectures)
-        .set({ 
-          status: 'failed',
-          updatedAt: new Date()
-        })
-        .where(eq(lectures.id, lectureId));
+      // Update lecture status to failed with progress tracking
+      try {
+        await db.update(lectures)
+          .set({ 
+            status: 'failed',
+            processingProgress: 0,
+            processingStep: 'Processing failed - please try again',
+            updatedAt: new Date()
+          })
+          .where(eq(lectures.id, lectureId));
+      } catch (updateError) {
+        // If progress fields don't exist yet, just update status
+        console.warn('Progress fields not available yet, updating status only');
+        await db.update(lectures)
+          .set({ 
+            status: 'failed',
+            updatedAt: new Date()
+          })
+          .where(eq(lectures.id, lectureId));
+      }
 
       // Log processing failure
       if (logId) {

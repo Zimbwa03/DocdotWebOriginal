@@ -354,6 +354,8 @@ export const lectures = pgTable("lectures", {
   date: timestamp("date").notNull().defaultNow(),
   duration: integer("duration").default(0), // seconds
   status: text("status").notNull().default("recording"), // recording, processing, completed, failed
+  processingProgress: integer("processing_progress").default(0), // percentage 0-100
+  processingStep: text("processing_step").default(""), // current step description
   audioUrl: text("audio_url"), // URL to stored audio file
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
