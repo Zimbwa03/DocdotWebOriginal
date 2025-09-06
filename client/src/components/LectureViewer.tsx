@@ -452,22 +452,20 @@ export function LectureViewer({ lecture, onBack }: LectureViewerProps) {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {notes?.keyPoints && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">Key Points Extracted</label>
-                    <p className="text-lg">{Array.isArray(notes.keyPoints) ? notes.keyPoints.length.toString() : "0"}</p>
-                  </div>
-                )}
-                {notes?.medicalTerms && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">Medical Terms</label>
-                    <p className="text-lg">
-                      {typeof notes.medicalTerms === 'object' && notes.medicalTerms !== null 
-                        ? Object.keys(notes.medicalTerms as object).length.toString()
-                        : "0"}
-                    </p>
-                  </div>
-                )}
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Key Points Extracted</label>
+                  <p className="text-lg">
+                    {notes?.keyPoints && Array.isArray(notes.keyPoints) ? notes.keyPoints.length : 0}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Medical Terms</label>
+                  <p className="text-lg">
+                    {notes?.medicalTerms && typeof notes.medicalTerms === 'object' && notes.medicalTerms !== null 
+                      ? Object.keys(notes.medicalTerms as object).length
+                      : 0}
+                  </p>
+                </div>
                 <div>
                   <label className="text-sm font-medium text-gray-600">AI Provider</label>
                   <p className="text-lg">Gemini AI</p>
