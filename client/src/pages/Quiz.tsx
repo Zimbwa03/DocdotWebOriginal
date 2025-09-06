@@ -360,7 +360,7 @@ export default function Quiz() {
       }
 
       if (question) {
-        setCurrentQuestion(question);
+        setCurrentHistoQuestion(question);
         setIsLoading(false);
       } else {
         throw new Error('No question available');
@@ -3285,6 +3285,17 @@ export default function Quiz() {
       </Card>
     </div>
   );
+
+  // Handle histopathology mode FIRST
+  if (isHistopathologyMode && currentHistoQuestion) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-gray-900">
+        <div className="max-w-4xl mx-auto px-8 py-12">
+          {renderSingleHistoQuestion()}
+        </div>
+      </div>
+    );
+  }
 
   // Handle customize exam rendering FIRST (before other MCQ logic)
   if (selectedMCQSubject === 'customize-exam') {
