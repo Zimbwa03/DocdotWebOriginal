@@ -28,8 +28,8 @@ console.log('- URL starts with postgres:', connectionString.startsWith('postgres
 console.log('- Using Supabase PostgreSQL:', connectionString.includes('supabase.co')); 
 
 // Configure postgres client for Supabase PostgreSQL database
-let client;
-let db;
+let client: ReturnType<typeof postgres>;
+let db: ReturnType<typeof drizzle>;
 
 try {
   client = postgres(connectionString, {
@@ -42,7 +42,7 @@ try {
   db = drizzle(client);
   console.log('✅ Supabase PostgreSQL client initialized successfully');
 } catch (error) {
-  console.error('❌ Supabase PostgreSQL client initialization failed:', error.message);
+  console.error('❌ Supabase PostgreSQL client initialization failed:', error instanceof Error ? error.message : String(error));
   throw new Error('Failed to connect to Supabase PostgreSQL database');
 }
 
