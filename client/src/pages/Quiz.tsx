@@ -125,6 +125,16 @@ export default function Quiz() {
   const [examError, setExamError] = useState<string | null>(null);
   const [examTimer, setExamTimer] = useState<number | null>(null);
 
+  // Added states for histopathology (from original code, may need adjustment if duplicating logic)
+  const [isHistopathologyMode, setIsHistopathologyMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState<any>(null);
+  const [currentTopic, setCurrentTopic] = useState<string | null>(null);
+  const [currentTopicId, setCurrentTopicId] = useState<string | null>(null);
+  const [currentScore, setCurrentScore] = useState(0);
+  const [questionCount, setQuestionCount] = useState(0);
+  const [isAnswerCorrect, setIsAnswerCorrect] = useState<boolean | null>(null);
+
   // Cleanup effect for timers
   useEffect(() => {
     return () => {
@@ -291,16 +301,68 @@ export default function Quiz() {
 
   // Start single-question histopathology mode
   const startHistopathologyMode = async (topicId: string, topicName: string) => {
-    setSelectedCategory(topicName);
-    setCurrentHistoTopicId(topicId);
-    setCurrentHistoTopic(topicName);
-    setHistoSingleMode(true);
-    setHistoScore(0);
-    setStartTime(new Date());
+    console.log(`🧠 Starting histopathology mode for: ${topicName} (ID: ${topicId})`);
 
-    // Generate the first question
-    await generateSingleHistopathologyQuestion(topicId, topicName);
+    try {
+      setIsHistopathologyMode(true);
+      setCurrentCategory(topicName);
+      setIsLoading(true);
+
+      // First try to get stored questions for this topic
+      let question = null;
+      try {
+        const storedResponse = await fetch(`/api/histopathology/questions/${topicId}?limit=1`);
+        if (storedResponse.ok) {
+          const storedData = await storedResponse.json();
+          if (storedData.questions && storedData.questions.length > 0) {
+            question = storedData.questions[0];
+            console.log('📚 Using stored histopathology question');
+          }
+        }
+      } catch (storedError) {
+        console.log('No stored questions found, will generate new one');
+      }
+
+      // If no stored question, generate a new one
+      if (!question) {
+        console.log('🔄 Generating new histopathology question...');
+        const response = await fetch('/api/histopathology/generate-question', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            topicId,
+            topicName,
+            subtopics: []
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to generate question: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log('🎯 Generated new histopathology question:', data);
+        question = data.question;
+      }
+
+      if (question) {
+        setCurrentQuestion(question);
+        setIsLoading(false);
+      } else {
+        throw new Error('No question available');
+      }
+
+    } catch (error) {
+      console.error('❌ Error starting histopathology mode:', error);
+      setIsLoading(false);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load histopathology question"
+      });
+    }
   };
+
 
   // Generate single histopathology question on-demand
   const generateSingleHistopathologyQuestion = async (topicId: string, topicName: string) => {
@@ -2427,12 +2489,11 @@ export default function Quiz() {
                   )}
                 </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    );
-  };
+            </CardContent>
+          </Card>
+        </div>
+      );
+    };
 
   // Render single histopathology question
   const renderSingleHistoQuestion = () => {

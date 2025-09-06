@@ -2860,7 +2860,7 @@ app.post("/api/study-groups", async (req, res) => {
   app.get("/api/lectures/:id/progress", async (req, res) => {
     try {
       const lectureId = req.params.id;
-      
+
       const [lecture] = await db.select({
         id: lectures.id,
         status: lectures.status,
@@ -2868,11 +2868,11 @@ app.post("/api/study-groups", async (req, res) => {
         processingStep: lectures.processingStep,
         updatedAt: lectures.updatedAt
       }).from(lectures).where(eq(lectures.id, lectureId));
-      
+
       if (!lecture) {
         return res.status(404).json({ error: "Lecture not found" });
       }
-      
+
       res.json({
         id: lecture.id,
         status: lecture.status,
@@ -2890,30 +2890,30 @@ app.post("/api/study-groups", async (req, res) => {
   app.get("/api/lectures/:id/download-notes", async (req, res) => {
     try {
       const lectureId = req.params.id;
-      
+
       // Get lecture details
       const [lecture] = await db.select().from(lectures).where(eq(lectures.id, lectureId));
       if (!lecture) {
         return res.status(404).json({ error: "Lecture not found" });
       }
-      
+
       // Get lecture notes
       const [notes] = await db.select().from(lectureNotes).where(eq(lectureNotes.lectureId, lectureId));
       if (!notes) {
         return res.status(404).json({ error: "Lecture notes not found" });
       }
-      
+
       // Import PDF generator
       const { pdfGenerator } = await import('./pdf-generator');
-      
+
       // Prepare the notes content
       let notesContent = notes.liveNotes || notes.finalNotes || '';
-      
+
       // Add summary and key points to notes if available
       if (notes.summary) {
         notesContent += `\n\n## Summary\n${notes.summary}`;
       }
-      
+
       if (notes.keyPoints) {
         try {
           const keyPoints = typeof notes.keyPoints === 'string' 
@@ -2926,11 +2926,11 @@ app.post("/api/study-groups", async (req, res) => {
           console.log('Error parsing key points:', e);
         }
       }
-      
+
       // Parse key points and medical terms
       let keyPoints: string[] = [];
       let medicalTerms: Array<{term: string; definition: string}> = [];
-      
+
       try {
         keyPoints = typeof notes.keyPoints === 'string' 
           ? JSON.parse(notes.keyPoints) 
@@ -2938,7 +2938,7 @@ app.post("/api/study-groups", async (req, res) => {
       } catch (e) {
         keyPoints = [];
       }
-      
+
       try {
         medicalTerms = typeof notes.medicalTerms === 'string' 
           ? JSON.parse(notes.medicalTerms) 
@@ -2946,7 +2946,7 @@ app.post("/api/study-groups", async (req, res) => {
       } catch (e) {
         medicalTerms = [];
       }
-      
+
       // Generate HTML file (printable as PDF)
       const pdfPath = await pdfGenerator.generateLectureNotesPDF({
         title: lecture.title,
@@ -2959,7 +2959,7 @@ app.post("/api/study-groups", async (req, res) => {
         keyPoints: keyPoints,
         medicalTerms: medicalTerms
       });
-      
+
       // Send the PDF file
       res.download(pdfPath, `${lecture.title}_notes.pdf`, (err) => {
         if (err) {
@@ -3189,7 +3189,7 @@ app.post("/api/study-groups", async (req, res) => {
       if (!lecture) {
         throw new Error('Lecture not found');
       }
-      
+
       await updateProgress(10, 'Lecture details loaded');
 
       // Step 1: Transcription and Language Detection (10% - 40%)
@@ -3205,7 +3205,7 @@ app.post("/api/study-groups", async (req, res) => {
       });
 
       await updateProgress(25, 'Processing audio content...');
-      
+
       // Get the actual recorded transcript from database
       let actualTranscript = '';
       try {
@@ -3214,7 +3214,7 @@ app.post("/api/study-groups", async (req, res) => {
           .where(eq(lectureTranscripts.lectureId, lectureId))
           .orderBy(desc(lectureTranscripts.createdAt))
           .limit(1);
-        
+
         actualTranscript = transcript?.unifiedTranscript || transcript?.rawTranscript || '';
         console.log(`📝 Using actual recorded transcript (${actualTranscript.length} characters)`);
       } catch (error) {
@@ -3231,10 +3231,10 @@ This lecture covers important concepts in ${lecture.module}, focusing on ${lectu
       }
 
       await updateProgress(35, 'Analyzing language and content...');
-      
+
       // Detect and translate mixed language content
       const languageResult = await getGeminiAI().detectAndTranslate(actualTranscript);
-      
+
       await updateProgress(40, 'Transcription completed');
 
       // Insert transcript
@@ -3283,7 +3283,7 @@ This lecture covers important concepts in ${lecture.module}, focusing on ${lectu
         lecture.module,
         lecture.topic || undefined
       );
-      
+
       await updateProgress(70, 'Notes generation completed');
 
       // Insert notes
@@ -3328,7 +3328,7 @@ This lecture covers important concepts in ${lecture.module}, focusing on ${lectu
         );
 
         await updateProgress(85, 'Saving exam questions...');
-        
+
         // Store exam questions in metadata (you could create a separate table for this)
         await db.update(lectureNotes)
           .set({
@@ -3343,7 +3343,7 @@ This lecture covers important concepts in ${lecture.module}, focusing on ${lectu
             duration: Date.now() - startTime
           })
           .where(eq(lectureProcessingLogs.id, logId));
-          
+
         await updateProgress(90, 'Exam questions completed');
       } catch (examError) {
         console.warn('Failed to generate exam questions:', examError);
@@ -3353,7 +3353,7 @@ This lecture covers important concepts in ${lecture.module}, focusing on ${lectu
 
       // Final Steps (90% - 100%)
       await updateProgress(95, 'Finalizing processing...');
-      
+
       // Update lecture status to completed
       await db.update(lectures)
         .set({ 
@@ -3411,7 +3411,7 @@ This lecture covers important concepts in ${lecture.module}, focusing on ${lectu
   app.get("/api/histopathology/topics", async (req, res) => {
     try {
       console.log('🧠 Fetching histopathology topics');
-      
+
       const topics = await db.select({
         id: sql`CAST(id AS VARCHAR)`.as('id'),
         name: sql`name`,
@@ -3432,7 +3432,7 @@ This lecture covers important concepts in ${lecture.module}, focusing on ${lectu
     try {
       const { topicId } = req.params;
       console.log(`🧠 Fetching subtopics for histopathology topic: ${topicId}`);
-      
+
       const subtopics = await db.select({
         id: sql`CAST(id AS VARCHAR)`.as('id'),
         name: sql`name`,
@@ -3452,7 +3452,7 @@ This lecture covers important concepts in ${lecture.module}, focusing on ${lectu
   app.post("/api/histopathology/generate-single-question", async (req, res) => {
     try {
       const { topicId, topicName, subtopics, userId } = req.body;
-      
+
       if (!topicName) {
         return res.status(400).json({ error: "Topic name is required" });
       }
@@ -3480,7 +3480,7 @@ This lecture covers important concepts in ${lecture.module}, focusing on ${lectu
       }
 
       const question = questions[0];
-      
+
       // Store the generated question in the existing quizzes table instead
       const questionId = uuidv4();
       const [storedQuestion] = await db.insert(quizzes).values({
@@ -3494,11 +3494,12 @@ This lecture covers important concepts in ${lecture.module}, focusing on ${lectu
       }).returning();
 
       console.log(`✅ Generated and stored histopathology question: ${storedQuestion.id}`);
-      
+
       res.json({
         question: {
           id: storedQuestion.id,
           question: question.question,
+          options: ['True', 'False'],
           correctAnswer: question.correctAnswer,
           shortExplanation: question.shortExplanation,
           detailedExplanation: question.detailedExplanation,
@@ -3506,7 +3507,6 @@ This lecture covers important concepts in ${lecture.module}, focusing on ${lectu
           topic: topicName,
           subtopic: question.subtopic || topicName,
           generatedAt: new Date().toISOString(),
-          options: ['True', 'False'],
           explanation: question.shortExplanation || question.detailedExplanation,
           dbId: storedQuestion.id
         },
@@ -3526,7 +3526,7 @@ This lecture covers important concepts in ${lecture.module}, focusing on ${lectu
   app.post("/api/histopathology/generate-questions", async (req, res) => {
     try {
       const { topicId, topicName, subtopics, count = 5 } = req.body;
-      
+
       if (!topicName) {
         return res.status(400).json({ error: "Topic name is required" });
       }
