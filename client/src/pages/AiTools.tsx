@@ -181,7 +181,7 @@ export default function AiTools() {
 
   const questionsMutation = useMutation({
     mutationFn: async ({ topic, difficulty, count }: { topic: string; difficulty: string; count: number }) => {
-      const response = await fetch('/api/ai/questions', {
+      const response = await fetch('/api/ai/generate-questions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ topic, difficulty, count, userId: user?.id })
@@ -203,7 +203,7 @@ export default function AiTools() {
 
   const caseAnalysisMutation = useMutation({
     mutationFn: async (caseDetails: string) => {
-      const response = await fetch('/api/ai/case-study', {
+      const response = await fetch('/api/ai/analyze-case', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ caseDetails, userId: user?.id })
@@ -252,10 +252,7 @@ export default function AiTools() {
     const userMessage = { role: 'user' as const, content: currentMessage };
     setChatMessages(prev => [...prev, userMessage]);
     
-    tutorMutation.mutate({
-      message: currentMessage,
-      sessionId: currentSessionId
-    });
+    tutorMutation.mutate(currentMessage);
     setCurrentMessage('');
   };
 

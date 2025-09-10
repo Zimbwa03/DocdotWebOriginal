@@ -15,6 +15,7 @@ import {
   type InsertLecture, type InsertLectureTranscript, type InsertLectureNotes, type InsertLectureProcessingLog
 } from '@shared/schema';
 import { eq, desc, sql, and, gte, isNotNull, lte, gt, lt, count, sum, avg } from 'drizzle-orm';
+import { v4 as uuidv4 } from 'uuid';
 
 // Use Supabase PostgreSQL database
 import { DATABASE_URL } from './supabase-config';
@@ -1029,6 +1030,76 @@ export class DatabaseStorage {
       `);
     } catch (error) {
       console.error('Error marking notifications as read:', error);
+    }
+  }
+
+  // AI Session Management
+  async createAiSession(userId: string, sessionType: string, title?: string): Promise<any> {
+    try {
+      const sessionId = uuidv4();
+      const [newSession] = await db.insert(aiSessions).values({
+        id: sessionId,
+        userId,
+        sessionType,
+        title: title || `AI ${sessionType} session`,
+        totalMessages: 0,
+        tokensUsed: 0
+      }).returning();
+
+      console.log(`✅ Created AI session: ${sessionId} for user ${userId}`);
+      return newSession;
+    } catch (error) {
+      console.error('Error creating AI session:', error);
+      throw error;
+    }
+  }
+
+  async addAiMessage(sessionId: string, userId: string, role: string, content: string, toolType?: string): Promise<any> {
+    try {
+      const messageId = uuidv4();
+      const [newMessage] = await db.insert(aiChats).values({
+        id: messageId,
+        sessionId,
+        userId,
+        role,
+        content,
+        metadata: toolType ? { toolType } : null
+      }).returning();
+
+      // Update session message count
+      await db.update(aiSessions)
+        .set({ 
+          totalMessages: sql`${aiSessions.totalMessages} + 1`,
+          endedAt: new Date()
+        })
+        .where(eq(aiSessions.id, sessionId));
+
+      return newMessage;
+    } catch (error) {
+      console.error('Error adding AI message:', error);
+      throw error;
+    }
+  }
+
+  async getAiSession(sessionId: string): Promise<any> {
+    try {
+      const session = await db.select().from(aiSessions).where(eq(aiSessions.id, sessionId)).limit(1);
+      return session[0] || null;
+    } catch (error) {
+      console.error('Error getting AI session:', error);
+      return null;
+    }
+  }
+
+  async getAiSessionMessages(sessionId: string): Promise<any[]> {
+    try {
+      const messages = await db.select().from(aiChats)
+        .where(eq(aiChats.sessionId, sessionId))
+        .orderBy(aiChats.timestamp);
+      return messages;
+    } catch (error) {
+      console.error('Error getting AI session messages:', error);
+      return [];
     }
   }
 }
